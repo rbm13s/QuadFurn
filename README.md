@@ -6,11 +6,12 @@
 
 **Chipboard & Panel Furniture CAD — 4-Viewport Spatial Designer + Guillotine Sheet Cutting Optimizer**
 
+[![Build & Release](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml/badge.svg)](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml)
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
 [![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-themes--22-language-localization)
-[![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows)](#getting-started)
+[![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#getting-started)
 
 </div>
 
@@ -229,19 +230,43 @@ In the **Materials** tab (`🎨 4. Materials`):
 
 ## Getting Started
 
-### Prerequisites
-- [Rust Toolchain](https://rustup.rs/) (`stable`, Rust 2021 edition)
-- Windows 10 / 11 (uses native `wgpu` backend and embeds the application icon via `build.rs`)
+### Pre-Built Binaries (GitHub Actions / Releases)
+Every push and release automatically builds ready-to-run packages via [GitHub Actions](https://github.com/rbm13s/QuadFurn/actions):
+- **Windows (`x86_64`)**: `QuadFurn-windows-x86_64.zip` — portable `QuadFurn.exe` with embedded icon.
+- **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
+  - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu installer package (installs binary, desktop menu entry, and application icon):
+    ```bash
+    sudo apt install ./quadfurn_0.1.0_amd64.deb
+    ```
+  - `QuadFurn-linux-x86_64.tar.gz` — portable standalone Linux archive.
+- **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` bundle with Retina `.icns` icon.
 
-### Build & Run
+---
+
+### Building from Source
+
+#### Prerequisites
+- [Rust Toolchain](https://rustup.rs/) (`stable`, Rust 2021 edition)
+- **Linux (Debian / Ubuntu)** system libraries:
+  ```bash
+  sudo apt-get update && sudo apt-get install -y \
+    build-essential pkg-config libxcb-render0-dev libxcb-shape0-dev \
+    libxcb-xfixes0-dev libxkbcommon-dev libxkbcommon-x11-dev libssl-dev \
+    libgtk-3-dev libglib2.0-dev libatk1.0-dev libgdk-pixbuf-2.0-dev \
+    libcairo2-dev libpango1.0-dev libgl1-mesa-dev fonts-dejavu-core fonts-noto-cjk
+  ```
+- **macOS**: Xcode Command Line Tools (`xcode-select --install`)
+- **Windows**: Windows 10 / 11 with MSVC Build Tools
+
+#### Build & Run Commands
 ```bash
 # Run in development mode
 cargo run
 
-# Build optimized release executable (target/release/quadfurn.exe)
+# Build optimized release executable
 cargo build --release
 
-# Run unit tests (cutter, math parser, multi-part copy/paste, icon rasterization, multi-language PDF export)
+# Run unit tests (cutter, math parser, multi-part copy/paste, multi-language PDF export)
 cargo test
 ```
 
@@ -250,7 +275,12 @@ cargo test
 ## Settings & File Formats
 
 - **User Settings (`settings.json`)**:
-  Stored automatically at `%APPDATA%\QuadFurn\settings.json` (`C:\Users\<User>\AppData\Roaming\QuadFurn\settings.json`). Persists:
+  Stored automatically in the platform's standard configuration directory:
+  - **Windows**: `%APPDATA%\QuadFurn\settings.json` (`C:\Users\<User>\AppData\Roaming\QuadFurn\settings.json`)
+  - **Linux**: `$XDG_CONFIG_HOME/QuadFurn/settings.json` or `~/.config/QuadFurn/settings.json`
+  - **macOS**: `~/Library/Application Support/QuadFurn/settings.json`
+  
+  Persists:
   - `theme_choice` (`Dark`, `Light`, `System`)
   - `language` (`En`, `Ru`, `Uk`, `De`, `Fr`, `Es`, `It`, `Pl`, `Cs`, `Sk`, `Da`, `Nl`, `No`, `Sv`, `Hu`, `Ro`, `Sl`, `Pt`, `Tr`, `Ko`, `ZhCn`, `Ja`)
   - `recent_projects` (up to 10 recently opened `.qfurn` / `.json` file paths)
@@ -263,8 +293,11 @@ cargo test
 
 ```text
 QuadFurn/
+├── .github/
+│   └── workflows/
+│       └── build.yml          # GitHub Actions CI/CD (Linux .deb/.tar.gz, macOS Universal .app, Windows .zip)
 ├── assets/
-│   ├── icon.jpeg              # Application logo & source image for Windows EXE icon
+│   ├── icon.jpeg              # Application logo & source image for Windows/Linux/macOS icons
 │   └── screenshots/           # UI screenshots for documentation
 ├── src/
 │   ├── main.rs                # App entry point, multi-tab workspace, Start Page, settings & shortcuts
@@ -275,6 +308,7 @@ QuadFurn/
 │   ├── export.rs              # Multi-page localized vector PDF generator, CSV & Cutting 3 exporters
 │   ├── ui_panels.rs           # CorelDRAW top bar, right Part Inspector, Specification, Cutting & Materials UI
 │   └── i18n.rs                # 22-language localization dictionaries & OS locale auto-detection
-├── build.rs                   # Converts assets/icon.jpeg into multi-size ICO & embeds PE resource into EXE
+├── build.rs                   # Converts assets/icon.jpeg into multi-size ICO & embeds PE resource on Windows
 └── Cargo.toml                 # Package manifest & dependencies
 ```
+

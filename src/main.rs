@@ -71,22 +71,45 @@ impl Default for AppSettings {
 }
 
 impl AppSettings {
-    /// Возвращает путь к файлу настроек программы:
-    /// на Windows — `%APPDATA%\QuadFurn\settings.json` (`C:\Users\<Пользователь>\AppData\Roaming\QuadFurn\settings.json`)
+    /// Возвращает кроссплатформенный путь к файлу настроек программы:
+    /// - Windows: `%APPDATA%\QuadFurn\settings.json`
+    /// - macOS: `~/Library/Application Support/QuadFurn/settings.json`
+    /// - Linux: `$XDG_CONFIG_HOME/QuadFurn/settings.json` или `~/.config/QuadFurn/settings.json`
     pub fn settings_file_path() -> std::path::PathBuf {
         if let Ok(appdata) = std::env::var("APPDATA") {
-            std::path::PathBuf::from(appdata)
+            return std::path::PathBuf::from(appdata)
                 .join("QuadFurn")
-                .join("settings.json")
-        } else if let Ok(home) = std::env::var("USERPROFILE") {
-            std::path::PathBuf::from(home)
+                .join("settings.json");
+        }
+        if let Ok(userprofile) = std::env::var("USERPROFILE") {
+            return std::path::PathBuf::from(userprofile)
                 .join("AppData")
                 .join("Roaming")
                 .join("QuadFurn")
-                .join("settings.json")
-        } else {
-            std::path::PathBuf::from("quadfurn_settings.json")
+                .join("settings.json");
         }
+        #[cfg(target_os = "macos")]
+        if let Ok(home) = std::env::var("HOME") {
+            return std::path::PathBuf::from(home)
+                .join("Library")
+                .join("Application Support")
+                .join("QuadFurn")
+                .join("settings.json");
+        }
+        if let Ok(xdg_config) = std::env::var("XDG_CONFIG_HOME") {
+            if !xdg_config.trim().is_empty() {
+                return std::path::PathBuf::from(xdg_config)
+                    .join("QuadFurn")
+                    .join("settings.json");
+            }
+        }
+        if let Ok(home) = std::env::var("HOME") {
+            return std::path::PathBuf::from(home)
+                .join(".config")
+                .join("QuadFurn")
+                .join("settings.json");
+        }
+        std::path::PathBuf::from("quadfurn_settings.json")
     }
 
     pub fn load() -> Self {
@@ -662,8 +685,8 @@ impl QuadFurnApp {
             return;
         }
 
-        // Ctrl+S -> Быстрое сохранение текущего проекта
-        if ctx.input(|i| i.modifiers.ctrl && i.key_pressed(Key::S)) {
+        // Ctrl+S / Cmd+S -> Быстрое сохранение текущего проекта
+        if ctx.input(|i| (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::S)) {
             let saved_path =
                 self.documents[self.active_doc_idx].save_interactive(&mut self.status_msg);
             if let Some(path) = saved_path {
@@ -675,8 +698,8 @@ impl QuadFurnApp {
         let lang = self.language;
         let doc = &mut self.documents[self.active_doc_idx];
 
-        // Ctrl+Z -> Отмена (Undo) в текущей вкладке мебели
-        if ctx.input(|i| i.modifiers.ctrl && i.key_pressed(Key::Z)) {
+        // Ctrl+Z / Cmd+Z -> Отмена (Undo) в текущей вкладке мебели
+        if ctx.input(|i| (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::Z)) {
             if let Some(prev) = doc.undo_stack.pop() {
                 doc.project = prev;
                 self.status_msg = lang
@@ -689,9 +712,9 @@ impl QuadFurnApp {
             return;
         }
 
-        // Ctrl+C -> Скопировать выделенную деталь или группу выделенных деталей в общий буфер обмена (для вставки в любую вкладку или окно мебели)
+        // Ctrl+C / Cmd+C -> Скопировать выделенную деталь или группу выделенных деталей в общий буфер обмена (для вставки в любую вкладку или окно мебели)
         if ctx.input(|i| {
-            (i.modifiers.ctrl && i.key_pressed(Key::C))
+            ((i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::C))
                 || i.events.iter().any(|e| matches!(e, egui::Event::Copy))
         }) {
             let copied = copy_selected_parts_to_clipboard(
@@ -731,11 +754,11 @@ impl QuadFurnApp {
             return;
         }
 
-        // Ctrl+V -> Вставить деталь или группу деталей из буфера обмена в текущую вкладку мебели
+        // Ctrl+V / Cmd+V -> Вставить деталь или группу деталей из буфера обмена в текущую вкладку мебели
         let mut paste_requested = false;
         let mut pasted_from_os: Option<Vec<ClipboardPart>> = None;
         ctx.input(|i| {
-            if i.modifiers.ctrl && i.key_pressed(Key::V) {
+            if (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::V) {
                 paste_requested = true;
             }
             for ev in &i.events {
@@ -791,8 +814,8 @@ impl QuadFurnApp {
             return;
         }
 
-        // Ctrl+D -> Дублировать выбранную деталь или группу деталей внутри текущей вкладки
-        if ctx.input(|i| i.modifiers.ctrl && i.key_pressed(Key::D)) {
+        // Ctrl+D / Cmd+D -> Дублировать выбранную деталь или группу деталей внутри текущей вкладки
+        if ctx.input(|i| (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::D)) {
             let ids_to_dup: Vec<PartId> = if !doc.viewport_ctrl.selected_parts.is_empty() {
                 doc.viewport_ctrl.selected_parts.clone()
             } else {
@@ -1568,8 +1591,8 @@ impl eframe::App for QuadFurnApp {
     }
 }
 
-/// Настраивает шрифты интерфейса: подключает системные шрифты Windows (Segoe UI, Consolas, Segoe UI Symbol, Segoe UI Emoji)
-/// для 100% отображения всех иконок, технических символов (Δ, ×, ∠, ↺) и кириллицы в едином визуальном стиле.
+/// Настраивает шрифты интерфейса: подключает системные шрифты Windows, Linux и macOS
+/// для отображения иконок, технических символов (Δ, ×, ∠, ↺), кириллицы и CJK (简体中文, 日本語, 한국어).
 pub fn configure_fonts(ctx: &egui::Context) {
     let mut fonts = egui::FontDefinitions::default();
 
@@ -1601,35 +1624,112 @@ pub fn configure_fonts(ctx: &egui::Context) {
         }
     }
 
-    // 3. Основной пропорциональный шрифт интерфейса (Segoe UI — приоритет №1 для текста, кириллицы и базовых знаков)
-    if let Ok(bytes) = std::fs::read("C:\\Windows\\Fonts\\segoeui.ttf") {
-        fonts.font_data.insert(
-            "segoeui".to_owned(),
-            egui::FontData::from_owned(bytes).into(),
-        );
-        if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
-            vec.insert(0, "segoeui".to_owned());
-        }
-        if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
-            vec.insert(0, "segoeui".to_owned());
+    // 3. Основной пропорциональный шрифт интерфейса (Windows: Segoe UI, macOS: SF / Helvetica / Arial, Linux: DejaVu Sans / Liberation Sans / Noto Sans)
+    for (font_key, path) in [
+        ("sys_sans_win", "C:\\Windows\\Fonts\\segoeui.ttf"),
+        (
+            "sys_sans_mac",
+            "/System/Library/Fonts/Supplemental/Arial.ttf",
+        ),
+        (
+            "sys_sans_linux_dejavu",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        ),
+        (
+            "sys_sans_linux_liberation",
+            "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        ),
+        (
+            "sys_sans_linux_noto",
+            "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
+        ),
+    ] {
+        if let Ok(raw) = std::fs::read(path) {
+            let ttf = crate::export::ensure_ttf_bytes(raw);
+            fonts
+                .font_data
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
+            if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
+                vec.insert(0, font_key.to_owned());
+            }
+            if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
+                vec.insert(0, font_key.to_owned());
+            }
+            break;
         }
     }
 
-    // 4. Моноширинный шрифт (Consolas — приоритет №1 для моноширинных размерных подписей на чертежах и картах раскроя)
-    if let Ok(bytes) = std::fs::read("C:\\Windows\\Fonts\\consola.ttf") {
-        fonts.font_data.insert(
-            "consola".to_owned(),
-            egui::FontData::from_owned(bytes).into(),
-        );
-        if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
-            vec.insert(0, "consola".to_owned());
+    // 4. Моноширинный шрифт (Windows: Consolas, macOS: Menlo / Courier New, Linux: DejaVu Sans Mono)
+    for (font_key, path) in [
+        ("sys_mono_win", "C:\\Windows\\Fonts\\consola.ttf"),
+        (
+            "sys_mono_mac",
+            "/System/Library/Fonts/Supplemental/Courier New.ttf",
+        ),
+        (
+            "sys_mono_linux",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
+        ),
+    ] {
+        if let Ok(raw) = std::fs::read(path) {
+            let ttf = crate::export::ensure_ttf_bytes(raw);
+            fonts
+                .font_data
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
+            if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
+                vec.insert(0, font_key.to_owned());
+            }
+            break;
         }
     }
 
-    // 5. Поддержка CJK (корейский 한국어, китайский упрощённый 简体中文, японский 日本語)
+    // 5. Fallback-шрифты символов для Linux / macOS (Apple Symbols, Noto Sans Symbols2, Symbola)
+    for (font_key, path) in [
+        ("sym_mac", "/System/Library/Fonts/Apple Symbols.ttf"),
+        (
+            "sym_mac_unicode",
+            "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+        ),
+        (
+            "sym_linux_noto2",
+            "/usr/share/fonts/truetype/noto/NotoSansSymbols2-Regular.ttf",
+        ),
+        (
+            "sym_linux_noto",
+            "/usr/share/fonts/truetype/noto/NotoSansSymbols-Regular.ttf",
+        ),
+    ] {
+        if let Ok(raw) = std::fs::read(path) {
+            let ttf = crate::export::ensure_ttf_bytes(raw);
+            fonts
+                .font_data
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
+            if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
+                vec.push(font_key.to_owned());
+            }
+            if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
+                vec.push(font_key.to_owned());
+            }
+        }
+    }
+
+    // 6. Поддержка CJK (корейский 한국어, китайский упрощённый 简体中文, японский 日本語) на Windows, macOS и Linux
     for (font_key, path) in [
         ("cjk_msyh", "C:\\Windows\\Fonts\\msyh.ttc"),
         ("cjk_malgun", "C:\\Windows\\Fonts\\malgun.ttf"),
+        ("cjk_mac_pingfang", "/System/Library/Fonts/PingFang.ttc"),
+        (
+            "cjk_mac_sdgothic",
+            "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+        ),
+        (
+            "cjk_linux_noto_ttc",
+            "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        ),
+        (
+            "cjk_linux_wqy",
+            "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+        ),
     ] {
         if let Ok(raw) = std::fs::read(path) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
@@ -1650,7 +1750,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
 
 const APP_ICON_JPEG: &[u8] = include_bytes!("../assets/icon.jpeg");
 
-/// Загружает иконку приложения из `e:\Projects\QuadFurn\assets\icon.jpeg` для заголовка окна и панели задач Windows
+/// Загружает иконку приложения из `assets/icon.jpeg` для заголовка окна и панели задач
 pub fn load_app_icon_data() -> Option<std::sync::Arc<egui::IconData>> {
     let dyn_img = image::load_from_memory(APP_ICON_JPEG).ok()?;
     let resized = dyn_img.resize_exact(256, 256, image::imageops::FilterType::Lanczos3);
@@ -1709,7 +1809,7 @@ fn main() -> eframe::Result<()> {
     )
 }
 
-#[cfg(test)]
+#[cfg(all(test, target_os = "windows"))]
 mod icon_tests {
     use super::*;
 

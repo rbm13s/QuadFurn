@@ -1,0 +1,283 @@
+name: Build & Release (Linux, macOS, Windows)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ============================================================================
+  # 1. Linux (Debian / Ubuntu x86_64) — Portable .tar.gz + Debian .deb package
+  # ============================================================================
+  build-linux:
+    name: Linux (Debian / Ubuntu x86_64)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies (X11, Wayland, GTK3, Fonts)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            pkg-config \
+            libxcb-render0-dev \
+            libxcb-shape0-dev \
+            libxcb-xfixes0-dev \
+            libxkbcommon-dev \
+            libxkbcommon-x11-dev \
+            libssl-dev \
+            libgtk-3-dev \
+            libglib2.0-dev \
+            libatk1.0-dev \
+            libgdk-pixbuf-2.0-dev \
+            libcairo2-dev \
+            libpango1.0-dev \
+            libgl1-mesa-dev \
+            fonts-dejavu-core \
+            fonts-liberation \
+            fonts-noto-cjk \
+            imagemagick
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run unit tests
+        run: cargo test --release
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Package portable tar.gz & Debian (.deb) installer
+        run: |
+          VERSION=$(grep '^version' Cargo.toml | head -n1 | cut -d '"' -f2)
+          strip target/release/quadfurn
+
+          # 1. Portable archive: QuadFurn-linux-x86_64.tar.gz
+          mkdir -p dist/QuadFurn-linux-x86_64
+          cp target/release/quadfurn dist/QuadFurn-linux-x86_64/
+          cp README.md dist/QuadFurn-linux-x86_64/
+          convert assets/icon.jpeg -resize 256x256 dist/QuadFurn-linux-x86_64/quadfurn.png
+          tar -czvf QuadFurn-linux-x86_64.tar.gz -C dist QuadFurn-linux-x86_64
+
+          # 2. Debian package: quadfurn_<version>_amd64.deb
+          DEB_DIR="deb_pkg/quadfurn_${VERSION}_amd64"
+          mkdir -p "${DEB_DIR}/DEBIAN"
+          mkdir -p "${DEB_DIR}/usr/bin"
+          mkdir -p "${DEB_DIR}/usr/share/applications"
+          mkdir -p "${DEB_DIR}/usr/share/icons/hicolor/256x256/apps"
+
+          cp target/release/quadfurn "${DEB_DIR}/usr/bin/quadfurn"
+          chmod 755 "${DEB_DIR}/usr/bin/quadfurn"
+          convert assets/icon.jpeg -resize 256x256 "${DEB_DIR}/usr/share/icons/hicolor/256x256/apps/quadfurn.png"
+
+          cat > "${DEB_DIR}/usr/share/applications/quadfurn.desktop" << 'EOF'
+          [Desktop Entry]
+          Name=QuadFurn CAD
+          Comment=3D Furniture & Cabinet CAD, Guillotine 2D Cutting Layout & PDF Export
+          Exec=/usr/bin/quadfurn
+          Icon=quadfurn
+          Terminal=false
+          Type=Application
+          Categories=Graphics;3DGraphics;Engineering;
+          StartupWMClass=quadfurn
+          EOF
+
+          cat > "${DEB_DIR}/DEBIAN/control" << EOF
+          Package: quadfurn
+          Version: ${VERSION}
+          Section: graphics
+          Priority: optional
+          Architecture: amd64
+          Depends: libc6, libgcc-s1, libstdc++6, libgtk-3-0, libxkbcommon0, libxkbcommon-x11-0, libgl1, fonts-dejavu-core
+          Recommends: fonts-noto-cjk
+          Maintainer: rbm13s <https://github.com/rbm13s/QuadFurn>
+          Description: QuadFurn CAD — 3D Furniture & Cabinet Design, Cutting Layout & PDF Export
+           Desktop CAD application for designing cabinet and panel furniture with a
+           4-viewport interface, 2D guillotine sheet cutting optimization, BOM specification,
+           and multi-page localized vector PDF export.
+          EOF
+
+          dpkg-deb --build --root-owner-group "${DEB_DIR}" "quadfurn_${VERSION}_amd64.deb"
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuadFurn-Linux-x86_64
+          path: |
+            QuadFurn-linux-x86_64.tar.gz
+            quadfurn_*_amd64.deb
+
+  # ============================================================================
+  # 2. macOS Universal (Apple Silicon M1-M4 + Intel x86_64) — QuadFurn.app .zip
+  # ============================================================================
+  build-macos:
+    name: macOS Universal (Apple Silicon + Intel)
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain (aarch64 + x86_64)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run unit tests
+        run: cargo test --release
+
+      - name: Build Universal macOS binary (ARM64 + x86_64)
+        run: |
+          cargo build --release --locked --target aarch64-apple-darwin
+          cargo build --release --locked --target x86_64-apple-darwin
+          mkdir -p target/universal-apple-darwin/release
+          lipo -create \
+            target/aarch64-apple-darwin/release/quadfurn \
+            target/x86_64-apple-darwin/release/quadfurn \
+            -output target/universal-apple-darwin/release/quadfurn
+
+      - name: Package macOS Application Bundle (QuadFurn.app)
+        run: |
+          VERSION=$(grep '^version' Cargo.toml | head -n1 | cut -d '"' -f2)
+          APP_DIR="dist/QuadFurn.app"
+          mkdir -p "${APP_DIR}/Contents/MacOS"
+          mkdir -p "${APP_DIR}/Contents/Resources"
+
+          cp target/universal-apple-darwin/release/quadfurn "${APP_DIR}/Contents/MacOS/quadfurn"
+          chmod +x "${APP_DIR}/Contents/MacOS/quadfurn"
+
+          # Generate macOS .icns icon from assets/icon.jpeg
+          ICONSET_DIR="AppIcon.iconset"
+          mkdir -p "${ICONSET_DIR}"
+          sips -s format png -z 16 16     assets/icon.jpeg --out "${ICONSET_DIR}/icon_16x16.png"
+          sips -s format png -z 32 32     assets/icon.jpeg --out "${ICONSET_DIR}/icon_16x16@2x.png"
+          sips -s format png -z 32 32     assets/icon.jpeg --out "${ICONSET_DIR}/icon_32x32.png"
+          sips -s format png -z 64 64     assets/icon.jpeg --out "${ICONSET_DIR}/icon_32x32@2x.png"
+          sips -s format png -z 128 128   assets/icon.jpeg --out "${ICONSET_DIR}/icon_128x128.png"
+          sips -s format png -z 256 256   assets/icon.jpeg --out "${ICONSET_DIR}/icon_128x128@2x.png"
+          sips -s format png -z 256 256   assets/icon.jpeg --out "${ICONSET_DIR}/icon_256x256.png"
+          sips -s format png -z 512 512   assets/icon.jpeg --out "${ICONSET_DIR}/icon_256x256@2x.png"
+          sips -s format png -z 512 512   assets/icon.jpeg --out "${ICONSET_DIR}/icon_512x512.png"
+          sips -s format png -z 1024 1024 assets/icon.jpeg --out "${ICONSET_DIR}/icon_512x512@2x.png"
+          iconutil -c icns "${ICONSET_DIR}" -o "${APP_DIR}/Contents/Resources/AppIcon.icns"
+
+          cat > "${APP_DIR}/Contents/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleName</key>
+              <string>QuadFurn CAD</string>
+              <key>CFBundleDisplayName</key>
+              <string>QuadFurn CAD</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.rbm13s.quadfurn</string>
+              <key>CFBundleVersion</key>
+              <string>${VERSION}</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${VERSION}</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+              <key>CFBundleExecutable</key>
+              <string>quadfurn</string>
+              <key>CFBundleIconFile</key>
+              <string>AppIcon</string>
+              <key>NSHighResolutionCapable</key>
+              <true/>
+              <key>LSMinimumSystemVersion</key>
+              <string>11.0</string>
+          </dict>
+          </plist>
+          EOF
+
+          cp README.md dist/
+          cd dist
+          ditto -c -k --sequesterRsrc --keepParent QuadFurn.app ../QuadFurn-macos-universal.zip
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuadFurn-macOS-Universal
+          path: QuadFurn-macos-universal.zip
+
+  # ============================================================================
+  # 3. Windows (x86_64 MSVC) — Portable .zip with embedded icon
+  # ============================================================================
+  build-windows:
+    name: Windows (x86_64)
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run unit tests
+        run: cargo test --release
+
+      - name: Build release binary
+        run: cargo build --release --locked
+
+      - name: Package Windows zip archive
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/QuadFurn-windows-x86_64 | Out-Null
+          Copy-Item target/release/quadfurn.exe dist/QuadFurn-windows-x86_64/QuadFurn.exe
+          Copy-Item README.md dist/QuadFurn-windows-x86_64/README.md
+          Compress-Archive -Path dist/QuadFurn-windows-x86_64/* -DestinationPath QuadFurn-windows-x86_64.zip -Force
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: QuadFurn-Windows-x86_64
+          path: QuadFurn-windows-x86_64.zip
+
+  # ============================================================================
+  # 4. Automatic GitHub Release when pushing a version tag (e.g. v0.1.0)
+  # ============================================================================
+  release:
+    name: Publish GitHub Release
+    needs: [build-linux, build-macos, build-windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            release-assets/QuadFurn-linux-x86_64.tar.gz
+            release-assets/quadfurn_*_amd64.deb
+            release-assets/QuadFurn-macos-universal.zip
+            release-assets/QuadFurn-windows-x86_64.zip
