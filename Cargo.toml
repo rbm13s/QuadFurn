@@ -5,7 +5,7 @@ edition = "2021"
 description = "САПР корпусной мебели из ЛДСП (4-экранный редактор Hammer/CorelDRAW + Раскрой Cutting 3)"
 
 [dependencies]
-eframe = { version = "0.29", default-features = false, features = ["wgpu", "default_fonts", "accesskit"] }
+eframe = { version = "0.29", default-features = false, features = ["wgpu", "default_fonts", "accesskit", "x11", "wayland"] }
 egui = "0.29"
 egui_extras = { version = "0.29", features = ["all_loaders"] }
 glam = { version = "0.29", features = ["serde"] }

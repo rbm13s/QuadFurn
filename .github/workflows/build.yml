@@ -64,7 +64,7 @@ jobs:
         run: cargo test --release
 
       - name: Build release binary
-        run: cargo build --release --locked
+        run: cargo build --release
 
       - name: Package portable tar.gz & Debian (.deb) installer
         run: |
@@ -149,8 +149,8 @@ jobs:
 
       - name: Build Universal macOS binary (ARM64 + x86_64)
         run: |
-          cargo build --release --locked --target aarch64-apple-darwin
-          cargo build --release --locked --target x86_64-apple-darwin
+          cargo build --release --target aarch64-apple-darwin
+          cargo build --release --target x86_64-apple-darwin
           mkdir -p target/universal-apple-darwin/release
           lipo -create \
             target/aarch64-apple-darwin/release/quadfurn \
@@ -241,7 +241,7 @@ jobs:
         run: cargo test --release
 
       - name: Build release binary
-        run: cargo build --release --locked
+        run: cargo build --release
 
       - name: Package Windows zip archive
         shell: pwsh
