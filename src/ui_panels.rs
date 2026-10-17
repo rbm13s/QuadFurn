@@ -1614,6 +1614,7 @@ pub fn ui_materials_manager_tab(
     project: &mut Project,
     active_material_id: &mut MaterialId,
     loaded_textures: &mut HashMap<MaterialId, TextureHandle>,
+    texture_warnings: &mut HashMap<MaterialId, String>,
     pending_delete_material: &mut Option<MaterialId>,
     pending_delete_edge: &mut Option<EdgeId>,
     status_msg: &mut String,
@@ -1724,22 +1725,41 @@ pub fn ui_materials_manager_tab(
                             )
                             .pick_file()
                         {
-                            match load_texture_from_path(ui.ctx(), &path, &m.name) {
-                                Ok(tex_handle) => {
-                                    loaded_textures.insert(m.id, tex_handle);
+                            match load_texture_from_path(ui.ctx(), &path, &m.name, lang) {
+                                Ok(tex_info) => {
+                                    loaded_textures.insert(m.id, tex_info.handle);
                                     m.texture_path = Some(path.clone());
-                                    *status_msg = match lang {
-                                        AppLanguage::Ru => format!(
-                                            "Загружена текстура для «{}»: {}",
-                                            m.name,
-                                            path.display()
-                                        ),
-                                        _ => format!(
-                                            "Loaded texture for \"{}\": {}",
-                                            m.name,
-                                            path.display()
-                                        ),
-                                    };
+                                    if let Some(ref w) = tex_info.warning {
+                                        texture_warnings.insert(m.id, w.clone());
+                                        *status_msg = match lang {
+                                            AppLanguage::Ru => format!(
+                                                "⚠️ Текстура для «{}» загружена: {}. {}",
+                                                m.name,
+                                                path.display(),
+                                                w
+                                            ),
+                                            _ => format!(
+                                                "⚠️ Texture for \"{}\" loaded: {}. {}",
+                                                m.name,
+                                                path.display(),
+                                                w
+                                            ),
+                                        };
+                                    } else {
+                                        texture_warnings.remove(&m.id);
+                                        *status_msg = match lang {
+                                            AppLanguage::Ru => format!(
+                                                "Загружена текстура для «{}»: {}",
+                                                m.name,
+                                                path.display()
+                                            ),
+                                            _ => format!(
+                                                "Loaded texture for \"{}\": {}",
+                                                m.name,
+                                                path.display()
+                                            ),
+                                        };
+                                    }
                                 }
                                 Err(e) => {
                                     *status_msg = e;
@@ -1754,11 +1774,19 @@ pub fn ui_materials_manager_tab(
                         {
                             m.texture_path = None;
                             loaded_textures.remove(&m.id);
+                            texture_warnings.remove(&m.id);
                         }
                         ui.label(
                             RichText::new(lang.tr("✔ Текстура активна", "✔ Texture active"))
                                 .color(Color32::GREEN),
                         );
+                        if let Some(warn) = texture_warnings.get(&m.id) {
+                            ui.label(
+                                RichText::new(format!("⚠️ {}", warn))
+                                    .color(Color32::from_rgb(240, 180, 50))
+                                    .small(),
+                            );
+                        }
                     } else {
                         ui.label(
                             RichText::new(lang.tr("Цвет (без фото)", "Solid color (no photo)"))
@@ -2044,19 +2072,79 @@ pub fn ui_materials_manager_tab(
     }
 }
 
+pub struct LoadedTextureInfo {
+    pub handle: TextureHandle,
+    pub warning: Option<String>,
+}
+
+pub const MAX_RECOMMENDED_TEXTURE_DIM: u32 = 4096;
+
 pub fn load_texture_from_path(
     ctx: &egui::Context,
     path: &std::path::Path,
     name: &str,
-) -> Result<TextureHandle, String> {
-    let img_bytes =
-        std::fs::read(path).map_err(|e| format!("Не удалось прочитать файл текстуры: {}", e))?;
-    let dyn_img = image::load_from_memory(&img_bytes)
-        .map_err(|e| format!("Ошибка декодирования изображения: {}", e))?;
-    let rgba = dyn_img.to_rgba8();
+    lang: AppLanguage,
+) -> Result<LoadedTextureInfo, String> {
+    if let Ok(meta) = std::fs::metadata(path) {
+        if meta.len() > 60 * 1024 * 1024 {
+            return Err(match lang {
+                AppLanguage::Ru => format!(
+                    "Файл текстуры слишком большой ({:.1} МБ). Максимальный размер файла: 60 МБ.",
+                    meta.len() as f64 / (1024.0 * 1024.0)
+                ),
+                _ => format!(
+                    "Texture file is too large ({:.1} MB). Maximum supported file size is 60 MB.",
+                    meta.len() as f64 / (1024.0 * 1024.0)
+                ),
+            });
+        }
+    }
+
+    let img_bytes = std::fs::read(path).map_err(|e| match lang {
+        AppLanguage::Ru => format!("Не удалось прочитать файл текстуры: {}", e),
+        _ => format!("Failed to read texture file: {}", e),
+    })?;
+
+    let dyn_img = image::load_from_memory(&img_bytes).map_err(|e| match lang {
+        AppLanguage::Ru => format!("Ошибка декодирования изображения текстуры: {}", e),
+        _ => format!("Failed to decode texture image: {}", e),
+    })?;
+
+    let (orig_w, orig_h) = (dyn_img.width(), dyn_img.height());
+    let gpu_limit = ctx.input(|i| i.max_texture_side) as u32;
+    let max_allowed = if gpu_limit > 0 {
+        gpu_limit.min(MAX_RECOMMENDED_TEXTURE_DIM)
+    } else {
+        MAX_RECOMMENDED_TEXTURE_DIM
+    };
+
+    let (final_img, warning) = if orig_w > max_allowed || orig_h > max_allowed {
+        let resized = dyn_img.resize(max_allowed, max_allowed, image::imageops::FilterType::Triangle);
+        let (nw, nh) = (resized.width(), resized.height());
+        let warn_msg = match lang {
+            AppLanguage::Ru => format!(
+                "Разрешение изображения {}×{} px превышает лимит ({} px). Текстура автоматически уменьшена до {}×{} px для предотвращения перегрузки видеокарты.",
+                orig_w, orig_h, max_allowed, nw, nh
+            ),
+            _ => format!(
+                "Image resolution {}x{} px exceeds limit ({} px). Texture was automatically downscaled to {}x{} px to prevent GPU issues.",
+                orig_w, orig_h, max_allowed, nw, nh
+            ),
+        };
+        (resized, Some(warn_msg))
+    } else {
+        (dyn_img, None)
+    };
+
+    let rgba = final_img.to_rgba8();
     let dims = [rgba.width() as usize, rgba.height() as usize];
     let color_img = egui::ColorImage::from_rgba_unmultiplied(dims, rgba.as_flat_samples().as_slice());
-    Ok(ctx.load_texture(name, color_img, egui::TextureOptions::LINEAR))
+    let handle = ctx.load_texture(name, color_img, egui::TextureOptions::LINEAR);
+
+    Ok(LoadedTextureInfo {
+        handle,
+        warning,
+    })
 }
 
 /// Вкладка «Спецификация и Экспорт»

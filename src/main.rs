@@ -155,6 +155,7 @@ pub struct FurnitureDocument {
     pub active_material_id: MaterialId,
     pub viewport_ctrl: QuadViewportController,
     pub loaded_textures: HashMap<MaterialId, TextureHandle>,
+    pub texture_warnings: HashMap<MaterialId, String>,
     pub new_group_name_buf: String,
     pub selected_sheet_idx: usize,
     pub pending_delete_material: Option<MaterialId>,
@@ -181,6 +182,7 @@ impl FurnitureDocument {
             active_material_id: first_mat,
             viewport_ctrl,
             loaded_textures: HashMap::new(),
+            texture_warnings: HashMap::new(),
             new_group_name_buf: String::new(),
             selected_sheet_idx: 0,
             pending_delete_material: None,
@@ -333,8 +335,11 @@ impl QuadFurnApp {
                     new_doc.mark_saved(Some(path.to_path_buf()));
                     for m in &new_doc.project.materials {
                         if let Some(tp) = &m.texture_path {
-                            if let Ok(th) = load_texture_from_path(ctx, tp, &m.name) {
-                                new_doc.loaded_textures.insert(m.id, th);
+                            if let Ok(info) = load_texture_from_path(ctx, tp, &m.name, self.language) {
+                                new_doc.loaded_textures.insert(m.id, info.handle);
+                                if let Some(w) = info.warning {
+                                    new_doc.texture_warnings.insert(m.id, w);
+                                }
                             }
                         }
                     }
@@ -1580,6 +1585,7 @@ impl eframe::App for QuadFurnApp {
                         &mut doc.project,
                         &mut doc.active_material_id,
                         &mut doc.loaded_textures,
+                        &mut doc.texture_warnings,
                         &mut doc.pending_delete_material,
                         &mut doc.pending_delete_edge,
                         &mut self.status_msg,

@@ -12,6 +12,7 @@
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
 [![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-themes--22-language-localization)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#getting-started)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 </div>
 
@@ -309,6 +310,14 @@ QuadFurn/
 │   ├── ui_panels.rs           # CorelDRAW top bar, right Part Inspector, Specification, Cutting & Materials UI
 │   └── i18n.rs                # 22-language localization dictionaries & OS locale auto-detection
 ├── build.rs                   # Converts assets/icon.jpeg into multi-size ICO & embeds PE resource on Windows
-└── Cargo.toml                 # Package manifest & dependencies
+├── Cargo.toml                 # Package manifest & dependencies
+└── LICENSE                    # MIT License
 ```
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE) — feel free to use, modify, and distribute for commercial or personal projects.
+
 

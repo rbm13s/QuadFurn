@@ -2,7 +2,11 @@
 name = "quadfurn"
 version = "0.1.0"
 edition = "2021"
-description = "САПР корпусной мебели из ЛДСП (4-экранный редактор Hammer/CorelDRAW + Раскрой Cutting 3)"
+description = "3D Furniture & Cabinet CAD (4-viewport designer + guillotine sheet cutting optimizer)"
+license = "MIT"
+repository = "https://github.com/rbm13s/QuadFurn"
+authors = ["rbm13s <rbm13s@gmail.com>"]
+readme = "README.md"
 
 [dependencies]
 eframe = { version = "0.29", default-features = false, features = ["wgpu", "default_fonts", "accesskit", "x11", "wayland"] }
