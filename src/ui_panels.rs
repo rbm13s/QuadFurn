@@ -1649,6 +1649,8 @@ pub fn ui_materials_manager_tab(
                 thickness_mm: 18.0,
                 color_rgb: [200, 175, 145],
                 texture_path: None,
+                texture_relative_path: None,
+                texture_base64: None,
                 sheet_length_mm: 2800.0,
                 sheet_width_mm: 2070.0,
                 default_grain_fixed: true,
@@ -1670,6 +1672,19 @@ pub fn ui_materials_manager_tab(
                 color_rgb: [180, 100, 240],
             });
         }
+
+        ui.separator();
+        ui.checkbox(
+            &mut project.embed_textures,
+            lang.tr(
+                "📦 Упаковывать текстуры в файл проекта (.qfurn)",
+                "📦 Embed textures into project file (.qfurn)",
+            ),
+        )
+        .on_hover_text(lang.tr(
+            "При сохранении все используемые текстуры будут сохранены прямо в файл проекта (Base64). Файл можно будет переносить на любой ПК без потери изображений.",
+            "When saving, all active textures will be embedded directly into the project file (Base64). The file can be transferred to any PC without losing images.",
+        ));
     });
 
     ui.separator();
@@ -1729,6 +1744,20 @@ pub fn ui_materials_manager_tab(
                                 Ok(tex_info) => {
                                     loaded_textures.insert(m.id, tex_info.handle);
                                     m.texture_path = Some(path.clone());
+                                    if let Some(fname) = path.file_name() {
+                                        m.texture_relative_path = Some(fname.to_string_lossy().to_string());
+                                    }
+                                    if project.embed_textures {
+                                        if let Ok(bytes) = std::fs::read(&path) {
+                                            if bytes.len() <= 60 * 1024 * 1024 {
+                                                use base64::Engine;
+                                                m.texture_base64 = Some(base64::engine::general_purpose::STANDARD.encode(&bytes));
+                                            }
+                                        }
+                                    } else {
+                                        m.texture_base64 = None;
+                                    }
+
                                     if let Some(ref w) = tex_info.warning {
                                         texture_warnings.insert(m.id, w.clone());
                                         *status_msg = match lang {
@@ -1767,17 +1796,24 @@ pub fn ui_materials_manager_tab(
                             }
                         }
                     }
-                    if m.texture_path.is_some() {
+                    if m.texture_path.is_some() || m.texture_base64.is_some() {
                         if ui
                             .small_button(lang.tr("✖ Сброс", "✖ Reset"))
                             .clicked()
                         {
                             m.texture_path = None;
+                            m.texture_relative_path = None;
+                            m.texture_base64 = None;
                             loaded_textures.remove(&m.id);
                             texture_warnings.remove(&m.id);
                         }
+                        let active_label = if m.texture_base64.is_some() {
+                            lang.tr("✔ Текстура (упакована)", "✔ Texture (embedded)")
+                        } else {
+                            lang.tr("✔ Текстура активна", "✔ Texture active")
+                        };
                         ui.label(
-                            RichText::new(lang.tr("✔ Текстура активна", "✔ Texture active"))
+                            RichText::new(active_label)
                                 .color(Color32::GREEN),
                         );
                         if let Some(warn) = texture_warnings.get(&m.id) {
@@ -2079,33 +2115,13 @@ pub struct LoadedTextureInfo {
 
 pub const MAX_RECOMMENDED_TEXTURE_DIM: u32 = 4096;
 
-pub fn load_texture_from_path(
+pub fn load_texture_from_memory(
     ctx: &egui::Context,
-    path: &std::path::Path,
+    img_bytes: &[u8],
     name: &str,
     lang: AppLanguage,
 ) -> Result<LoadedTextureInfo, String> {
-    if let Ok(meta) = std::fs::metadata(path) {
-        if meta.len() > 60 * 1024 * 1024 {
-            return Err(match lang {
-                AppLanguage::Ru => format!(
-                    "Файл текстуры слишком большой ({:.1} МБ). Максимальный размер файла: 60 МБ.",
-                    meta.len() as f64 / (1024.0 * 1024.0)
-                ),
-                _ => format!(
-                    "Texture file is too large ({:.1} MB). Maximum supported file size is 60 MB.",
-                    meta.len() as f64 / (1024.0 * 1024.0)
-                ),
-            });
-        }
-    }
-
-    let img_bytes = std::fs::read(path).map_err(|e| match lang {
-        AppLanguage::Ru => format!("Не удалось прочитать файл текстуры: {}", e),
-        _ => format!("Failed to read texture file: {}", e),
-    })?;
-
-    let dyn_img = image::load_from_memory(&img_bytes).map_err(|e| match lang {
+    let dyn_img = image::load_from_memory(img_bytes).map_err(|e| match lang {
         AppLanguage::Ru => format!("Ошибка декодирования изображения текстуры: {}", e),
         _ => format!("Failed to decode texture image: {}", e),
     })?;
@@ -2144,6 +2160,88 @@ pub fn load_texture_from_path(
     Ok(LoadedTextureInfo {
         handle,
         warning,
+    })
+}
+
+pub fn load_texture_from_path(
+    ctx: &egui::Context,
+    path: &std::path::Path,
+    name: &str,
+    lang: AppLanguage,
+) -> Result<LoadedTextureInfo, String> {
+    if let Ok(meta) = std::fs::metadata(path) {
+        if meta.len() > 60 * 1024 * 1024 {
+            return Err(match lang {
+                AppLanguage::Ru => format!(
+                    "Файл текстуры слишком большой ({:.1} МБ). Максимальный размер файла: 60 МБ.",
+                    meta.len() as f64 / (1024.0 * 1024.0)
+                ),
+                _ => format!(
+                    "Texture file is too large ({:.1} MB). Maximum supported file size is 60 MB.",
+                    meta.len() as f64 / (1024.0 * 1024.0)
+                ),
+            });
+        }
+    }
+
+    let img_bytes = std::fs::read(path).map_err(|e| match lang {
+        AppLanguage::Ru => format!("Не удалось прочитать файл текстуры: {}", e),
+        _ => format!("Failed to read texture file: {}", e),
+    })?;
+
+    load_texture_from_memory(ctx, &img_bytes, name, lang)
+}
+
+/// Находит и загружает текстуру материала, проверяя встроенный Base64 (Вариант B),
+/// затем относительные пути от файла проекта (Вариант A: рядом с .qfurn или в подпапке textures/),
+/// и исходный абсолютный путь
+pub fn resolve_and_load_material_texture(
+    ctx: &egui::Context,
+    m: &mut Material,
+    project_path: Option<&std::path::Path>,
+    lang: AppLanguage,
+) -> Result<LoadedTextureInfo, String> {
+    // 1. Приоритет №1 (Вариант B): Встроенная в файл проекта Base64-текстура
+    if let Some(ref b64) = m.texture_base64 {
+        if !b64.trim().is_empty() {
+            use base64::Engine;
+            if let Ok(bytes) = base64::engine::general_purpose::STANDARD.decode(b64.trim()) {
+                return load_texture_from_memory(ctx, &bytes, &m.name, lang);
+            }
+        }
+    }
+
+    // 2. Приоритет №2 (Вариант A): Поиск по относительному пути от каталога проекта
+    let project_dir = project_path
+        .and_then(|p| p.parent())
+        .unwrap_or(std::path::Path::new("."));
+
+    let mut candidate_paths: Vec<std::path::PathBuf> = Vec::new();
+
+    if let Some(ref rel) = m.texture_relative_path {
+        candidate_paths.push(project_dir.join(rel));
+        candidate_paths.push(project_dir.join("textures").join(rel));
+    }
+
+    if let Some(ref p) = m.texture_path {
+        if let Some(fname) = p.file_name() {
+            candidate_paths.push(project_dir.join(fname));
+            candidate_paths.push(project_dir.join("textures").join(fname));
+        }
+        candidate_paths.push(p.clone());
+    }
+
+    for candidate in candidate_paths {
+        if candidate.is_file() {
+            let res = load_texture_from_path(ctx, &candidate, &m.name, lang)?;
+            m.texture_path = Some(candidate);
+            return Ok(res);
+        }
+    }
+
+    Err(match lang {
+        AppLanguage::Ru => format!("Файл текстуры для «{}» не найден", m.name),
+        _ => format!("Texture file for \"{}\" not found", m.name),
     })
 }
 

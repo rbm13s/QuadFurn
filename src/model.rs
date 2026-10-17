@@ -18,7 +18,14 @@ pub struct Material {
     /// Цвет отображения в 2D/3D [R, G, B]
     pub color_rgb: [u8; 3],
     /// Опциональный путь к файлу текстуры (PNG/JPG)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub texture_path: Option<PathBuf>,
+    /// Относительный путь к текстуре относительно папки проекта (Вариант A)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub texture_relative_path: Option<String>,
+    /// Упакованные сжатые байты текстуры (PNG/JPG/WEBP) в формате Base64 (Вариант B)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub texture_base64: Option<String>,
     /// Стандартная длина листа для раскроя (мм), например 2800.0
     pub sheet_length_mm: f32,
     /// Стандартная ширина листа для раскроя (мм), например 2070.0
@@ -331,6 +338,9 @@ pub struct Project {
     pub groups: Vec<PartGroup>,
     pub parts: Vec<PartBlock>,
     pub cutting_settings: CuttingSettings,
+    /// Флаг: упаковывать ли текстуры в Base64 внутрь файла .qfurn при сохранении (Вариант B)
+    #[serde(default)]
+    pub embed_textures: bool,
     pub next_id: u64,
 }
 
@@ -391,6 +401,8 @@ impl Project {
             thickness_mm: 18.0,
             color_rgb: [235, 238, 242],
             texture_path: None,
+            texture_relative_path: None,
+            texture_base64: None,
             sheet_length_mm: 2800.0,
             sheet_width_mm: 2070.0,
             default_grain_fixed: false,
@@ -401,6 +413,8 @@ impl Project {
             thickness_mm: 18.0,
             color_rgb: [196, 148, 98],
             texture_path: None,
+            texture_relative_path: None,
+            texture_base64: None,
             sheet_length_mm: 2800.0,
             sheet_width_mm: 2070.0,
             default_grain_fixed: true,
@@ -411,6 +425,8 @@ impl Project {
             thickness_mm: 3.0,
             color_rgb: [210, 205, 195],
             texture_path: None,
+            texture_relative_path: None,
+            texture_base64: None,
             sheet_length_mm: 2800.0,
             sheet_width_mm: 2070.0,
             default_grain_fixed: false,
@@ -633,6 +649,7 @@ impl Project {
             groups: vec![grp_carcass, grp_fronts],
             parts,
             cutting_settings: CuttingSettings::default(),
+            embed_textures: false,
             next_id: 2000,
         }
     }
@@ -651,5 +668,77 @@ impl Project {
             expanded: true,
         });
         p
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_project_texture_backward_compatibility() {
+        // Старый формат JSON без embed_textures, texture_base64 и texture_relative_path
+        let legacy_json = r#"{
+            "name": "Тестовый шкаф",
+            "materials": [
+                {
+                    "id": 1,
+                    "name": "ЛДСП 18",
+                    "thickness_mm": 18.0,
+                    "color_rgb": [240, 240, 240],
+                    "texture_path": "C:\\textures\\oak.png",
+                    "sheet_length_mm": 2800.0,
+                    "sheet_width_mm": 2070.0,
+                    "default_grain_fixed": true
+                }
+            ],
+            "edge_bandings": [],
+            "groups": [],
+            "parts": [],
+            "cutting_settings": {
+                "kerf_mm": 4.0,
+                "trim_left_mm": 10.0,
+                "trim_right_mm": 10.0,
+                "trim_top_mm": 10.0,
+                "trim_bottom_mm": 10.0,
+                "group_identical_parts": true
+            },
+            "next_id": 10
+        }"#;
+
+        let proj: Result<Project, _> = serde_json::from_str(legacy_json);
+        assert!(proj.is_ok(), "Legacy project must deserialize without error");
+        let proj = proj.unwrap();
+        assert!(!proj.embed_textures, "embed_textures must default to false");
+        assert_eq!(proj.materials[0].texture_base64, None);
+        assert_eq!(proj.materials[0].texture_relative_path, None);
+        assert_eq!(
+            proj.materials[0].texture_path.as_deref(),
+            Some(std::path::Path::new("C:\\textures\\oak.png"))
+        );
+    }
+
+    #[test]
+    fn test_project_texture_embedding_roundtrip() {
+        let mut proj = Project::new_demo_cabinet();
+        proj.embed_textures = true;
+        proj.materials[0].texture_base64 = Some("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg==".to_string());
+        proj.materials[0].texture_relative_path = Some("textures/oak.png".to_string());
+
+        let json = serde_json::to_string_pretty(&proj).expect("Must serialize project");
+        assert!(json.contains("embed_textures"));
+        assert!(json.contains("texture_base64"));
+        assert!(json.contains("texture_relative_path"));
+
+        let restored: Project = serde_json::from_str(&json).expect("Must deserialize project");
+        assert!(restored.embed_textures);
+        assert_eq!(
+            restored.materials[0].texture_base64.as_deref(),
+            Some("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAAAAAA6fptVAAAACklEQVR4nGNiAAAABgADNjd8qAAAAABJRU5ErkJggg==")
+        );
+        assert_eq!(
+            restored.materials[0].texture_relative_path.as_deref(),
+            Some("textures/oak.png")
+        );
     }
 }

@@ -194,6 +194,13 @@ From the **Specification** tab (`📋 2. Specification`), you can export product
 In the **Materials** tab (`🎨 4. Materials`):
 - Add, edit, or delete **Sheet Materials** (`18 mm Chipboard`, `16 mm MDF`, `3 mm HDF`, etc.) with custom RGB colors, sheet dimensions (`Length × Width`), and default grain lock settings.
 - Load surface textures in **`PNG`**, **`JPG`/`JPEG`**, or **`WEBP`** formats for realistic 3D rendering.
+- **Texture Portability & Relative Path Fallbacks**: When saving, QuadFurn computes relative paths from the project file to external texture images. When reopening a `.qfurn` file on another PC or from a moved folder, it automatically searches for texture files:
+  1. Embedded directly within the project (Base64)
+  2. In the same directory as the `.qfurn` project file
+  3. In a `./textures/` subfolder next to the project file
+  4. By relative path or original absolute path
+- **Project Texture Packaging (`📦 Embed textures into project file`)**: Toggle the `📦 Embed textures` checkbox (accessible both next to the `Save` button in the top menu and in the Materials Manager toolbar) to store active texture images directly inside the `.qfurn` JSON file as Base64. This produces a completely self-contained project file that can be transferred anywhere without missing textures.
+- **GPU Safety & Auto-Downscaling**: Files exceeding 60 MB are blocked with a clear warning, while ultra-high resolution images (> 4096 px or hardware limit) are automatically downscaled to preserve GPU performance.
 - Add, edit, or delete **Edge Banding Types** with custom thicknesses (`mm`) and drawing marker colors. Deleting a material or edge banding that is in use shows a safety confirmation dialog and cleanly reassigns/clears affected parts.
 
 ---
@@ -286,7 +293,7 @@ cargo test
   - `language` (`En`, `Ru`, `Uk`, `De`, `Fr`, `Es`, `It`, `Pl`, `Cs`, `Sk`, `Da`, `Nl`, `No`, `Sv`, `Hu`, `Ro`, `Sl`, `Pt`, `Tr`, `Ko`, `ZhCn`, `Ja`)
   - `recent_projects` (up to 10 recently opened `.qfurn` / `.json` file paths)
 - **Project Files (`.qfurn` / `.json`)**:
-  Human-readable, UTF-8 JSON files containing all parts, groups, materials, textures, edge bandings, and cutting settings for a furniture product.
+  Human-readable, UTF-8 JSON files containing all parts, groups, materials, textures, edge bandings, and cutting settings for a furniture product. When `embed_textures` is enabled, texture image bytes are bundled as Base64 strings directly in the JSON file; otherwise, portable relative paths and fallback filenames are used.
 
 ---
 

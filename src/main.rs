@@ -11,7 +11,7 @@ mod viewport;
 use crate::i18n::AppLanguage;
 use crate::model::{EdgeId, MaterialId, PartId, Project};
 use crate::ui_panels::{
-    copy_selected_parts_to_clipboard, load_texture_from_path, paste_parts_into_project,
+    copy_selected_parts_to_clipboard, paste_parts_into_project, resolve_and_load_material_texture,
     ui_cutting_layout_tab, ui_materials_manager_tab, ui_right_inspector, ui_specification_tab,
     ui_top_coreldraw_toolbar, AppTab, ClipboardPart, CLIPBOARD_PREFIX,
 };
@@ -204,6 +204,42 @@ impl FurnitureDocument {
         }
     }
 
+    /// Подготавливает пути и данные текстур перед сохранением:
+    /// - Вариант A: вычисляет относительные пути к файлам текстур относительно каталога сохранения проекта
+    /// - Вариант B: если включен embed_textures, упаковывает байты текстур в Base64 для портативности
+    pub fn prepare_textures_for_saving(&mut self, target_save_path: &std::path::Path) {
+        let save_dir = target_save_path
+            .parent()
+            .unwrap_or(std::path::Path::new("."));
+        for m in &mut self.project.materials {
+            // Вариант A: вычисляем относительный путь
+            if let Some(ref p) = m.texture_path {
+                if let Ok(rel) = p.strip_prefix(save_dir) {
+                    m.texture_relative_path = Some(rel.to_string_lossy().replace('\\', "/"));
+                } else if let Some(file_name) = p.file_name() {
+                    m.texture_relative_path = Some(file_name.to_string_lossy().to_string());
+                }
+            }
+
+            // Вариант B: упаковка в Base64
+            if self.project.embed_textures {
+                if m.texture_base64.is_none() {
+                    if let Some(ref p) = m.texture_path {
+                        if let Ok(bytes) = std::fs::read(p) {
+                            if bytes.len() <= 60 * 1024 * 1024 {
+                                use base64::Engine;
+                                m.texture_base64 =
+                                    Some(base64::engine::general_purpose::STANDARD.encode(&bytes));
+                            }
+                        }
+                    }
+                }
+            } else {
+                m.texture_base64 = None;
+            }
+        }
+    }
+
     /// Сохраняет проект через диалог выбора файла (или в текущий файл). Возвращает путь при успешном сохранении.
     pub fn save_interactive(&mut self, status_msg: &mut String) -> Option<std::path::PathBuf> {
         let default_name = self
@@ -223,10 +259,16 @@ impl FurnitureDocument {
         }
 
         if let Some(path) = dialog.save_file() {
+            self.prepare_textures_for_saving(&path);
             if let Ok(json) = serde_json::to_string_pretty(&self.project) {
                 match std::fs::write(&path, json) {
                     Ok(()) => {
-                        *status_msg = format!("Изделие сохранено / Saved: {}", path.display());
+                        let is_embedded = self.project.embed_textures;
+                        *status_msg = if is_embedded {
+                            format!("Изделие сохранено (с упакованными текстурами) / Saved (embedded textures): {}", path.display())
+                        } else {
+                            format!("Изделие сохранено / Saved: {}", path.display())
+                        };
                         self.mark_saved(Some(path.clone()));
                         return Some(path);
                     }
@@ -266,6 +308,8 @@ pub struct QuadFurnApp {
     pub status_msg: String,
     /// Счётчик стартовых кадров для гарантированного разворачивания окна на весь экран в Windows
     pub startup_maximize_frames: u8,
+    pub screenshot_target: Option<std::path::PathBuf>,
+    pub screenshot_frame_delay: u8,
 }
 
 impl Default for QuadFurnApp {
@@ -296,6 +340,8 @@ impl Default for QuadFurnApp {
             language: lang,
             status_msg: default_status,
             startup_maximize_frames: 0,
+            screenshot_target: None,
+            screenshot_frame_delay: 0,
         }
     }
 }
@@ -333,9 +379,17 @@ impl QuadFurnApp {
                 Ok(proj) => {
                     let mut new_doc = FurnitureDocument::new(proj);
                     new_doc.mark_saved(Some(path.to_path_buf()));
-                    for m in &new_doc.project.materials {
-                        if let Some(tp) = &m.texture_path {
-                            if let Ok(info) = load_texture_from_path(ctx, tp, &m.name, self.language) {
+                    for m in &mut new_doc.project.materials {
+                        if m.texture_path.is_some()
+                            || m.texture_base64.is_some()
+                            || m.texture_relative_path.is_some()
+                        {
+                            if let Ok(info) = resolve_and_load_material_texture(
+                                ctx,
+                                m,
+                                Some(path),
+                                self.language,
+                            ) {
                                 new_doc.loaded_textures.insert(m.id, info.handle);
                                 if let Some(w) = info.warning {
                                     new_doc.texture_warnings.insert(m.id, w);
@@ -907,6 +961,34 @@ impl eframe::App for QuadFurnApp {
             self.active_doc_idx = self.documents.len() - 1;
         }
 
+        // Автоматическое снятие скриншота окна через egui::ViewportCommand::Screenshot
+        for event in ctx.input(|i| i.raw.events.clone()) {
+            if let egui::Event::Screenshot { image, .. } = event {
+                if let Some(path) = self.screenshot_target.take() {
+                    let (w, h) = (image.width() as u32, image.height() as u32);
+                    let _ = image::save_buffer(
+                        &path,
+                        image.as_raw(),
+                        w,
+                        h,
+                        image::ExtendedColorType::Rgba8,
+                    );
+                    self.allow_exit = true;
+                    ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                }
+            }
+        }
+
+        if self.screenshot_target.is_some() {
+            if self.screenshot_frame_delay < 6 {
+                self.screenshot_frame_delay += 1;
+                ctx.request_repaint();
+            } else if self.screenshot_frame_delay == 6 {
+                self.screenshot_frame_delay += 1;
+                ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
+            }
+        }
+
         // Перехват закрытия окна приложения: проверяем, есть ли несохранённые изменения
         if ctx.input(|i| i.viewport().close_requested()) {
             // Всегда освобождаем курсор мыши, если он был захвачен в 3D Noclip
@@ -961,6 +1043,19 @@ impl eframe::App for QuadFurnApp {
                     };
                     if let Some(path) = saved_path {
                         self.record_recent_project(path);
+                    }
+                }
+
+                if has_open_docs {
+                    if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                        ui.checkbox(
+                            &mut doc.project.embed_textures,
+                            lang.tr("📦 Упаковать текстуры", "📦 Embed textures"),
+                        )
+                        .on_hover_text(lang.tr(
+                            "Упаковывать текстуры прямо в файл проекта (.qfurn) в формате Base64 при сохранении для бесшовного переноса на любой ПК",
+                            "Embed textures directly into the project file (.qfurn) as Base64 when saving for seamless portability across PCs",
+                        ));
                     }
                 }
 
@@ -1810,6 +1905,41 @@ fn main() -> eframe::Result<()> {
             let mut app = QuadFurnApp::default();
             app.app_icon_tex = load_app_icon_texture(&cc.egui_ctx);
             app.theme_choice.apply(&cc.egui_ctx);
+
+            let mut args = std::env::args().skip(1);
+            while let Some(arg) = args.next() {
+                if arg == "--demo" {
+                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet()));
+                    app.active_doc_idx = app.documents.len() - 1;
+                    app.active_tab = AppTab::Designer4View;
+                } else if arg == "--materials" {
+                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet()));
+                    app.active_doc_idx = app.documents.len() - 1;
+                    app.active_tab = AppTab::MaterialsManager;
+                } else if arg == "--embed" {
+                    if let Some(doc) = app.documents.last_mut() {
+                        doc.project.embed_textures = true;
+                    }
+                } else if arg == "--lang" {
+                    if let Some(l) = args.next() {
+                        if l.eq_ignore_ascii_case("ru") {
+                            app.language = AppLanguage::Ru;
+                        } else if l.eq_ignore_ascii_case("en") {
+                            app.language = AppLanguage::En;
+                        }
+                    }
+                } else if arg == "--screenshot" {
+                    if let Some(target) = args.next() {
+                        app.screenshot_target = Some(std::path::PathBuf::from(target));
+                    }
+                } else {
+                    let p = std::path::PathBuf::from(&arg);
+                    if p.exists() {
+                        app.open_project_from_path(&cc.egui_ctx, &p);
+                    }
+                }
+            }
+
             Ok(Box::new(app))
         }),
     )
@@ -1826,7 +1956,7 @@ mod icon_tests {
         let icons = [
             "🌙", "☀", "🖥", "🪚", "📂", "💾", "↩", "📐", "📋", "🎨", "🗄", "✖", "➕", "✔",
             "↖", "📏", "🔍", "↺", "📁", "📄", "📥", "🗑", "▼", "▶", "👁", "🚫", "🔒", "🔓",
-            "⇄", "🌲", "🔄", "⚠", "►", "◄", "▲", "∠", "Δ", "×", "°", "🌐",
+            "⇄", "🌲", "🔄", "⚠", "►", "◄", "▲", "∠", "Δ", "×", "°", "🌐", "📦",
         ];
         let _ = ctx.run(egui::RawInput::default(), |ctx| {
             ctx.fonts(|f| {
