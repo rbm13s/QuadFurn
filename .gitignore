@@ -1,0 +1,22 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Generated Windows ICO (rebuilt automatically from assets/icon.jpeg by build.rs)
+/assets/icon.ico
+
+# Local fallback settings file (if run without APPDATA)
+quadfurn_settings.json
+
+# IDE & Editor directories
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini

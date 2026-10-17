@@ -1,0 +1,21 @@
+[package]
+name = "quadfurn"
+version = "0.1.0"
+edition = "2021"
+description = "САПР корпусной мебели из ЛДСП (4-экранный редактор Hammer/CorelDRAW + Раскрой Cutting 3)"
+
+[dependencies]
+eframe = { version = "0.29", default-features = false, features = ["wgpu", "default_fonts", "accesskit"] }
+egui = "0.29"
+egui_extras = { version = "0.29", features = ["all_loaders"] }
+glam = { version = "0.29", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rfd = "0.15"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
+csv = "1.3"
+ab_glyph = "0.2"
+
+[build-dependencies]
+image = { version = "0.25", default-features = false, features = ["png", "jpeg"] }
+
