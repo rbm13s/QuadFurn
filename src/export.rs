@@ -207,23 +207,31 @@ pub fn ensure_ttf_bytes(bytes: Vec<u8>) -> Vec<u8> {
 
 /// Returns the Windows Fonts directory, checking `%WINDIR%` or `%SystemRoot%` before falling back to `C:\Windows\Fonts`.
 pub fn get_windows_fonts_dir() -> std::path::PathBuf {
-    if let Ok(windir) = std::env::var("WINDIR") {
-        let trimmed = windir.trim();
-        if !trimmed.is_empty() {
-            return std::path::PathBuf::from(trimmed).join("Fonts");
+    #[cfg(target_os = "windows")]
+    {
+        if let Ok(windir) = std::env::var("WINDIR") {
+            let trimmed = windir.trim();
+            if !trimmed.is_empty() {
+                return std::path::PathBuf::from(trimmed).join("Fonts");
+            }
         }
-    }
-    if let Ok(sysroot) = std::env::var("SystemRoot") {
-        let trimmed = sysroot.trim();
-        if !trimmed.is_empty() {
-            return std::path::PathBuf::from(trimmed).join("Fonts");
+        if let Ok(sysroot) = std::env::var("SystemRoot") {
+            let trimmed = sysroot.trim();
+            if !trimmed.is_empty() {
+                return std::path::PathBuf::from(trimmed).join("Fonts");
+            }
         }
+        std::path::PathBuf::from("C:\\Windows\\Fonts")
     }
-    std::path::PathBuf::from("C:\\Windows\\Fonts")
+    #[cfg(not(target_os = "windows"))]
+    {
+        std::path::PathBuf::from("C:/Windows/Fonts")
+    }
 }
 
 /// Reads a system font file bytes, resolving Windows font paths dynamically via `%WINDIR%` / `%SystemRoot%` with fallback.
 pub fn read_system_font_bytes(path: &str) -> Option<Vec<u8>> {
+    #[cfg(target_os = "windows")]
     if let Some(stripped) = path.strip_prefix("C:\\Windows\\Fonts\\") {
         let win_fonts = get_windows_fonts_dir();
         let dynamic_path = win_fonts.join(stripped);
@@ -2058,6 +2066,8 @@ mod tests {
     fn test_windows_fonts_dir_resolution() {
         let dir = get_windows_fonts_dir();
         assert!(!dir.as_os_str().is_empty());
+        let dir_str = dir.to_string_lossy();
+        assert!(dir_str.ends_with("Fonts") || dir_str.ends_with("fonts"));
         assert!(dir.ends_with("Fonts"));
     }
 }
