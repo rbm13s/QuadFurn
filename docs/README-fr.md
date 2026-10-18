@@ -51,10 +51,10 @@
 - [Captures d'écran et visite visuelle](#captures-décran-et-visite-visuelle)
 - [Fonctionnalités clés](#fonctionnalités-clés)
 - [Documentation fonctionnelle](#documentation-fonctionnelle)
-  - [1. Concepteur CAO 4 vues (ergonomie Hammer Editor + CorelDRAW)](#1-concepteur-cao-4-vues-ergonomie-hammer-editor--coreldraw)
+  - [1. Concepteur CAO 4 vues et contrôles de précision](#1-concepteur-cao-4-vues-et-contrôles-de-précision)
   - [2. Expressions arithmétiques dans les champs numériques](#2-expressions-arithmétiques-dans-les-champs-numériques)
   - [3. Placage de chants et déduction automatique de la cote brute de sciage](#3-placage-de-chants-et-déduction-automatique-de-la-cote-brute-de-sciage)
-  - [4. Optimisation de découpe 2D par guillotine (style Cutting 3)](#4-optimisation-de-découpe-2d-par-guillotine-style-cutting-3)
+  - [4. Optimisation de découpe 2D par guillotine](#4-optimisation-de-découpe-2d-par-guillotine)
   - [5. Onglets multi-projets et presse-papiers inter-projets](#5-onglets-multi-projets-et-presse-papiers-inter-projets)
   - [6. Exportation du passeport technique (PDF vectoriel, CSV, presse-papiers)](#6-exportation-du-passeport-technique-pdf-vectoriel-csv-presse-papiers)
   - [7. Catalogue de panneaux, textures et chants](#7-catalogue-de-panneaux-textures-et-chants)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** est une application CAO de bureau ultra-rapide et native écrite en Rust, conçue pour la conception de meubles en panneaux (mélaminé/panneaux de particules, MDF, HDF, contreplaqué), avec génération automatique de nomenclatures et optimisation de découpe de panneaux 2D par passes guillotine.
 
 QuadFurn associe l'ergonomie de trois outils de référence en un flux de travail continu :
-1. **Modélisation 4 vues inspirée de Valve Hammer Editor** : Édition synchronisée sur trois projections orthogonales 2D (**Haut XY — Plan**, **Face XZ — Élévation**, **Côté YZ — Coupe**) avec ascenseurs Hammer, magnétisme d'arêtes et vue **3D Orbit / Vol libre première personne (`Z` Noclip)** en temps réel.
-2. **Barre de transformation de précision style CorelDRAW** : Saisie numérique immédiate des coordonnées (`X`, `Y`, `Z`), dimensions hors-tout (`L × W × T`) et angle de rotation (`∠Z`), avec évaluation mathématique en ligne (par exemple `600-4` ou `720+18`).
-3. **Déduction des chants et imbrication façon Cutting 3** : Déduction automatique de l'épaisseur du chant PVC/ABS sur les 4 côtés pour calculer les **cotes brutes de sciage**, couplée à un optimiseur de découpe 2D par guillotine respectant le sens du fil du bois, la largeur du trait de scie et les chutes réutilisables.
+1. **Modélisation spatiale 4 vues** : Édition synchronisée sur trois projections orthogonales 2D (**Haut XY — Plan**, **Face XZ — Élévation**, **Côté YZ — Coupe**) avec ascenseurs, magnétisme d'arêtes et vue **3D Orbit / Vol libre première personne (`Z` Noclip)** en temps réel.
+2. **Barre de transformation de précision** : Saisie numérique immédiate des coordonnées (`X`, `Y`, `Z`), dimensions hors-tout (`L × W × T`) et angle de rotation (`∠Z`), avec évaluation mathématique en ligne (par exemple `600-4` ou `720+18`).
+3. **Découpe de panneaux et déduction des chants** : Déduction automatique de l'épaisseur du chant PVC/ABS sur les 4 côtés pour calculer les **cotes brutes de sciage**, couplée à un optimiseur de découpe 2D par guillotine respectant le sens du fil du bois, la largeur du trait de scie et les chutes réutilisables.
 
 ---
 
@@ -115,7 +115,7 @@ Changement de langue instantané sans redémarrage via le sélecteur **`🌐`** 
 ## Fonctionnalités clés
 
 - **Espace de travail 4 vues synchronisé** : Travaillez dans Haut (`XY`), Face (`XZ`), Côté (`YZ`), ou maximisez n'importe quelle vue en un clic (`[Agrandir]` / `[Restaurer 4 vues]`).
-- **Prévisualisation 3D accélérée par GPU** : Caméra orbitale (`Bouton droit`/`Bouton central`) + mode vol libre à la première personne façon Hammer (`touche Z` + `ZQSD`/`Espace`/`Ctrl`) avec texturation UV et sélection précise par lancer de rayons OBB.
+- **Prévisualisation 3D accélérée par GPU** : Caméra orbitale (`Bouton droit`/`Bouton central`) + mode vol libre à la première personne en vue première personne (`touche Z` + `ZQSD`/`Espace`/`Ctrl`) avec texturation UV et sélection précise par lancer de rayons OBB.
 - **Magnétisme et cotation dynamique des jeux** : Accrochage automatique à la grille (`1`, `9`, `18`, `50 mm` ou personnalisée), collage magnétique aux faces et coins adjacents (`0 mm`), et affichage dynamique des distances aux pièces voisines.
 - **Sélection par rectangle et transformation de groupe** : Tracez un cadre de sélection dans n'importe quelle vue 2D pour manipuler plusieurs pièces, les dupliquer (`Ctrl+D`) ou les copier/coller d'un meuble à un autre (`Ctrl+C` / `Ctrl+V`).
 - **Calculatrice arithmétique intégrée** : Tous les champs numériques acceptent des formules telles que `600+100`, `800-36`, `720/2` ou `45+15`.
@@ -132,7 +132,7 @@ Changement de langue instantané sans redémarrage via le sélecteur **`🌐`** 
 
 ## Documentation fonctionnelle
 
-### 1. Concepteur CAO 4 vues (ergonomie Hammer Editor + CorelDRAW)
+### 1. Concepteur CAO 4 vues et contrôles de précision
 
 L'onglet **Concepteur** (`📐 1. Concepteur`) comprend trois zones :
 
@@ -146,7 +146,7 @@ L'onglet **Concepteur** (`📐 1. Concepteur`) comprend trois zones :
    - **Cadrage de caméra** :
      - `🔍 Centrer la vue` : Recentrage sur l'origine/le centre du meuble.
      - `📐 Ajuster à la fenêtre` : Zoom automatique calculant l'encombrement global du meuble pour l'adapter à chaque fenêtre.
-   - **Barre de transformation CorelDRAW** : Affichage et édition directe des coordonnées `X`, `Y`, `Z`, dimensions hors-tout `L`, `W`, `T`, badge vert de cote de sciage `[Découpe: L × W mm]` et rotation `∠Z`.
+   - **Barre de transformation de précision** : Affichage et édition directe des coordonnées `X`, `Y`, `Z`, dimensions hors-tout `L`, `W`, `T`, badge vert de cote de sciage `[Découpe: L × W mm]` et rotation `∠Z`.
 
 2. **Fenêtres 4 vues** :
    - **Vues 2D (`Haut XY`, `Face XZ`, `Côté YZ`)** avec ascenseurs interactifs, règles graduées en mm et surlignage couleur des chants plaqués.
@@ -178,7 +178,7 @@ Tous les champs numériques supportent les formules mathématiques :
 
 ---
 
-### 4. Optimisation de découpe 2D par guillotine (style Cutting 3)
+### 4. Optimisation de découpe 2D par guillotine
 
 L'onglet **Plan de découpe** (`🪚 3. Plan de découpe`) optimise le calepinage de l'ensemble des panneaux :
 - **Paramètres de sciage réglables** :
@@ -212,7 +212,7 @@ Depuis l'onglet **Spécification** (`📋 2. Spécification`) :
    - **Section 4** : Récapitulatif des matériaux et métrés de chants (longueur nette et $+15\%$ de sécurité).
    - Document généré dans la **langue actuellement active** avec polices vectorielles intégrées (`Identity-H`).
 2. **`💾 Exporter en CSV (Excel)`** : Fichier tableur encodé en UTF-8 avec BOM et séparateur `;`, directement exploitable sous Excel ou LibreOffice Calc.
-3. **`📋 Copier la liste de débit`** : Copie dans le presse-papiers des cotes de sciage prêtes à coller dans des optimiseurs externes (comme Cutting 3).
+3. **`📋 Copier la liste de débit`** : Copie dans le presse-papiers des cotes de sciage prêtes à coller dans des logiciels de découpe externes ou tableurs.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Point d'entrée, gestionnaire multi-onglets, page d'accueil et raccourcis
 │   ├── model.rs               # Modèle de données (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # Moteur 4 vues Hammer/CorelDRAW, rendu 2D et 3D wgpu/painter
+│   ├── viewport.rs            # Contrôleur 4 vues, rendu 2D et 3D wgpu/painter
 │   ├── snapping.rs            # Magnétisme aux arêtes et à la grille, axes de projection
 │   ├── cutter.rs              # Moteur d'imbrication 2D et déduction des chants au sciage
 │   ├── export.rs              # Générateur de PDF vectoriel A4 Paysage localisé et export CSV
-│   ├── ui_panels.rs           # Barre CorelDRAW, Inspecteur de pièces, Spécification, Calepinage et Matériaux
+│   ├── ui_panels.rs           # Barre de transformation, Inspecteur de pièces, Spécification, Calepinage et Matériaux
 │   └── i18n.rs                # Dictionnaires de traduction pour 22 langues et détection de l'OS
 ├── build.rs                   # Conversion automatique d'icône Windows ICO et ressource PE
 ├── Cargo.toml                 # Dépendances et configuration du paquet

@@ -51,10 +51,10 @@
 - [Skjermbilder og visuell oversikt](#skjermbilder-og-visuell-oversikt)
 - [Hovedfunksjoner](#hovedfunksjoner)
 - [Funksjonell dokumentasjon](#funksjonell-dokumentasjon)
-  - [1. 4-visnings CAD-designer (Hammer Editor + CorelDRAW arbeidsflyt)](#1-4-visnings-cad-designer-hammer-editor--coreldraw-arbeidsflyt)
+  - [1. 4-visnings CAD-designer & presisjonskontroll](#1-4-visnings-cad-designer--presisjonskontroll)
   - [2. Matematiske uttrykk i tallfelt](#2-matematiske-uttrykk-i-tallfelt)
   - [3. Kantlister og automatisk fradrag for renskåret kuttmål](#3-kantlister-og-automatisk-fradrag-for-renskåret-kuttmål)
-  - [4. 2D giljotin kappeoptimalisering (Cutting 3-stil)](#4-2d-giljotin-kappeoptimalisering-cutting-3-stil)
+  - [4. 2D giljotin kappeoptimalisering](#4-2d-giljotin-kappeoptimalisering)
   - [5. Prosjektfaner og utklippstavle på tvers av prosjekter](#5-prosjektfaner-og-utklippstavle-på-tvers-av-prosjekter)
   - [6. Eksport av produksjonspass (vektor-PDF, CSV, utklippstavle)](#6-eksport-av-produksjonspass-vektor-pdf-csv-utklippstavle)
   - [7. Plate-, tekstur- og kantlistkatalog](#7-plate--tekstur--og-kantlistkatalog)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** er et lynraskt, integrert skrivebords-CAD-program skrevet i Rust, utviklet for konstruksjon av skap- og platemøbler i laminert sponplate (melamin), MDF, HDF og kryssfiner, komplett med automatisk stykklisteregning og 2D giljotin-kappeoptimalisering for platesager.
 
 QuadFurn forener ergonomien fra tre velkjente verktøy i én sømløs arbeidsflyt:
-1. **4-visnings modellering inspirert av Valve Hammer Editor**: Samtidig redigering i tre synkroniserte 2D ortogonale projeksjoner (**Plan XY — Plantegning**, **Front XZ — Oppriss**, **Side YZ — Snitt**) med Hammer-rullefelt, magnetisk kantlås og en interaktiv sanntids **3D Bane / Førstepersons Flymodus (`Z` Noclip)**.
-2. **Presisjonstransformeringslinje i CorelDRAW-stil**: Umiddelbar numerisk inntasting av koordinater (`X`, `Y`, `Z`), platestørrelse (`L × W × T`) og rotasjonsvinkel (`∠Z`) med innebygd beregning i alle tekstbokser (f.eks. `600-4` eller `720+18`).
-3. **Kantlistfradrag og nesting i Cutting 3-stil**: Automatisk fradrag for PVC/ABS-kantlistetykkelse på alle 4 kanter for å beregne det nøyaktige **netto sagmålet for formatsagen**, sammen med en 2D giljotin-nestingmotor som ivaretar treretning, bladbredde og kantavretting på råplatene.
+1. **4-visnings romlig modellering**: Samtidig redigering i tre synkroniserte 2D ortogonale projeksjoner (**Plan XY — Plantegning**, **Front XZ — Oppriss**, **Side YZ — Snitt**) med rullefelt, magnetisk kantlås og en interaktiv sanntids **3D Bane / Førstepersons Flymodus (`Z` Noclip)**.
+2. **Presisjonstransformeringslinje**: Umiddelbar numerisk inntasting av koordinater (`X`, `Y`, `Z`), platestørrelse (`L × W × T`) og rotasjonsvinkel (`∠Z`) med innebygd beregning i alle tekstbokser (f.eks. `600-4` eller `720+18`).
+3. **Platekapping og automatisk kantlistfradrag**: Automatisk fradrag for PVC/ABS-kantlistetykkelse på alle 4 kanter for å beregne det nøyaktige **netto sagmålet for formatsagen**, sammen med en 2D giljotin-nestingmotor som ivaretar treretning, bladbredde og kantavretting på råplatene.
 
 ---
 
@@ -115,7 +115,7 @@ Umiddelbart språkbytte uten omstart via **`🌐`**-knappen i verktøylinjen, au
 ## Hovedfunksjoner
 
 - **Synkronisert 4-visnings arbeidsflate**: Arbeid i Plan (`XY`), Front (`XZ`), Side (`YZ`), eller maksimer en hvilken som helst rute med ett klikk (`[Maksimer]` / `[Gjenopprett 4 visninger]`).
-- **Maskinvareakselerert 3D-forhåndsvisning**: Orbit-kamera (`Høyre museknapp`/`Midtknapp`) + frifluktkamera i Hammer-stil (`tast Z` + `WASD`/`Mellomrom`/`Ctrl`) med UV-teksturer og presis OBB-strålekasting.
+- **Maskinvareakselerert 3D-forhåndsvisning**: Orbit-kamera (`Høyre museknapp`/`Midtknapp`) + frifluktkamera i førsteperson (`tast Z` + `WASD`/`Mellomrom`/`Ctrl`) med UV-teksturer og presis OBB-strålekasting.
 - **Magnetisk festefunksjon og dynamiske avstandsmål**: Automatisk snapping til rutenett (`1`, `9`, `18`, `50 mm` eller egendefinert), magnetisk låsing mot tilstøtende flater og kanter (`0 mm`) og visning av faktiske avstander i millimeter til naboplater.
 - **Rammemarkering og gruppetransformasjon**: Dra en markeringsramme i en 2D-visning for å flytte flere plater samlet, duplisere (`Ctrl+D`) eller kopiere dem på tvers av åpne møbelprosjekter (`Ctrl+C` / `Ctrl+V`).
 - **Innebygd formelregner**: Alle numeriske felt godtar matematiske uttrykk som `600+100`, `800-36`, `720/2` eller `45+15`.
@@ -132,7 +132,7 @@ Umiddelbart språkbytte uten omstart via **`🌐`**-knappen i verktøylinjen, au
 
 ## Funksjonell dokumentasjon
 
-### 1. 4-visnings CAD-designer (Hammer Editor + CorelDRAW arbeidsflyt)
+### 1. 4-visnings CAD-designer & presisjonskontroll
 
 Fanen **Designer** (`📐 1. Designer`) består av tre hovedområder:
 
@@ -146,7 +146,7 @@ Fanen **Designer** (`📐 1. Designer`) består av tre hovedområder:
    - **Kamerajustering**:
      - `🔍 Sentrer visning`: Sentrerer kameraet på nullpunktet eller møbelets midtpunkt.
      - `📐 Tilpass til vindu`: Beregner automatisk møbelets ytre mål og tilpasser skalaen i alle 4 vinduer samtidig.
-   - **CorelDRAW-transformeringslinje**: Direkte inntasting og redigering av koordinater `X`, `Y`, `Z`, elementstørrelse `L`, `W`, `T`, grønn kuttetikett `[Kutt: L × W mm]` og rotasjonsvinkel `∠Z`.
+   - **Presisjonstransformeringslinje**: Direkte inntasting og redigering av koordinater `X`, `Y`, `Z`, elementstørrelse `L`, `W`, `T`, grønn kuttetikett `[Kutt: L × W mm]` og rotasjonsvinkel `∠Z`.
 
 2. **Fire visningsruter**:
    - **2D ortogonale visninger (`Plan XY`, `Front XZ`, `Side YZ`)** med rullefelt, millimeterlinjaler og fargede kantlistmarkeringer.
@@ -178,7 +178,7 @@ Alle numeriske inndatafelt støtter matematiske formler:
 
 ---
 
-### 4. 2D giljotin kappeoptimalisering (Cutting 3-stil)
+### 4. 2D giljotin kappeoptimalisering
 
 Fanen **Kappeskjema** (`🪚 3. Kappeskjema`) beregner den mest optimale fordelingen av plateelementer på råplatene:
 - **Justerbare sagparametere**:
@@ -212,7 +212,7 @@ I fanen **Stykkliste** (`📋 2. Stykkliste`):
    - **Seksjon 4**: Plateoversikt og forbruk av kantlister (netto meter og $+15 \%$ sikkerhetstillegg).
    - Dokumentet genereres på det **aktive språket** med innebygde TrueType/CID-vektorskrifttyper.
 2. **`💾 Eksporter til CSV (Excel)`**: Regneark i UTF-8 med BOM og semikolon `;`, klart til bruk i Microsoft Excel eller LibreOffice Calc.
-3. **`📋 Kopier kuttliste`**: Kopierer kuttmålene til utklippstavlen med tabulatorer for enkel overføring til eksterne optimeringsprogrammer (som Cutting 3).
+3. **`📋 Kopier kuttliste`**: Kopierer kuttmålene til utklippstavlen med tabulatorer for enkel overføring til eksterne kappeprogrammer eller regneark.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Inngangspunkt, håndtering av prosjektfaner, startside og hurtigtaster
 │   ├── model.rs               # Datamodell (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4-visnings grafisk motor Hammer/CorelDRAW, 2D og 3D rendering wgpu/painter
+│   ├── viewport.rs            # 4-visnings kontroller, 2D og 3D rendering wgpu/painter
 │   ├── snapping.rs            # Magnetisk festefunksjon til rutenett og kanter, projeksjonsakser
 │   ├── cutter.rs              # 2D giljotin kappeoptimalisering og fradrag for kantlister
 │   ├── export.rs              # Vektoriell PDF A4 Liggende eksportør og CSV-eksportør
-│   ├── ui_panels.rs           # CorelDRAW-linje, Elementinspektør, Stykkliste, Kappeskjema og Materialer
+│   ├── ui_panels.rs           # Transformeringslinje, Elementinspektør, Stykkliste, Kappeskjema og Materialer
 │   └── i18n.rs                # Oversettelsesordbøker for 22 språk og automatisk gjenkjenning av OS-språk
 ├── build.rs                   # Automatisk konvertering av ICO-ikon for Windows og PE-ressurs
 ├── Cargo.toml                 # Pakkekonfigurasjon og avhengigheter

@@ -112,10 +112,10 @@ impl OrthoViewportState {
 
 /// 3D camera state supporting two modes:
 /// 1) CAD Orbit (orbiting around target)
-/// 2) Hammer Editor Noclip Fly via `Z` key (WASD + free mouse look)
+/// 2) First-person Noclip Fly via `Z` key (WASD + free mouse look)
 #[derive(Clone, Debug)]
 pub struct Camera3D {
-    /// Whether Hammer Noclip fly mode is active (toggled by Z key)
+    /// Whether first-person Noclip fly mode is active (toggled by Z key)
     pub noclip_active: bool,
     /// Camera eye position in millimeters (X, Y horizontal, Z height up)
     pub eye_mm: Vec3,
@@ -221,7 +221,7 @@ pub enum MaximizedPane {
     SideYZ,
 }
 
-/// 4-viewport desktop state (Hammer Editor style)
+/// 4-viewport desktop state (Top XY, Front XZ, Side YZ, and 3D Perspective)
 pub struct QuadViewportController {
     pub top_xy: OrthoViewportState,
     pub front_xz: OrthoViewportState,
@@ -776,7 +776,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Rendering and interaction for a single 2D orthogonal viewport (Top XY / Front XZ / Side YZ) with Hammer Editor style scrollbars
+    /// Rendering and interaction for a single 2D orthogonal viewport (Top XY / Front XZ / Side YZ) with scrollbars
     fn render_ortho_pane(
         &mut self,
         ui: &mut egui::Ui,
@@ -794,7 +794,7 @@ impl QuadViewportController {
         };
         self.last_pane_sizes[pane_idx] = rect.size();
 
-        // Allocate space for horizontal (bottom) and vertical (right) scrollbars like in Hammer Editor
+        // Allocate space for horizontal (bottom) and vertical (right) scrollbars
         let sb_thick = 14.0_f32;
         let canvas_rect = Rect::from_min_max(
             rect.min,
@@ -820,7 +820,7 @@ impl QuadViewportController {
         }
         let painter = ui.painter_at(canvas_rect);
 
-        // Dark drafting background in WorldCraft / Hammer Editor style
+        // Dark drafting background
         painter.rect_filled(canvas_rect, 0.0, Color32::from_rgb(18, 22, 26));
 
         // Mouse wheel zooming relative to cursor and RMB / MMB panning
@@ -930,7 +930,7 @@ impl QuadViewportController {
         // 5. Viewport header with fullscreen maximize button
         self.draw_ortho_header_overlay(ui, &painter, canvas_rect, vp);
 
-        // 6. Scrollbars at the bottom and right of the 2D window (Hammer Editor style) and outer border
+        // 6. Scrollbars at the bottom and right of the 2D window and outer border
         self.draw_and_handle_ortho_scrollbars(
             ui,
             canvas_rect,
@@ -1175,7 +1175,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Draws 8 square resize handle markers (like in Hammer Editor and CorelDRAW) around the selected part
+    /// Draws 8 square resize handle markers around the selected part
     fn draw_selection_handles_2d(
         &self,
         painter: &Painter,
@@ -1890,7 +1890,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Rendering and interaction for scrollbars (horizontal and vertical) in 2D views in Hammer Editor / J.A.C.K. style
+    /// Rendering and interaction for scrollbars (horizontal and vertical) in 2D views
     fn draw_and_handle_ortho_scrollbars(
         &self,
         ui: &mut egui::Ui,
@@ -1990,7 +1990,7 @@ impl QuadViewportController {
             );
             h_painter.rect_stroke(h_thumb, 2.0, Stroke::new(1.0, Color32::from_gray(135)));
 
-            // 3 grip marks in the middle of the slider like in Hammer Editor (|||)
+            // 3 grip marks in the middle of the slider (|||)
             let cx = h_thumb.center().x;
             for dx in [-3.0_f32, 0.0, 3.0] {
                 h_painter.line_segment(
@@ -2373,7 +2373,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Interactive 3D viewport rendering (Perspective, perspective-correct textures/colors, edge banding, Orbit controls, and Hammer Editor Z-Noclip)
+    /// Interactive 3D viewport rendering (Perspective, perspective-correct textures/colors, edge banding, Orbit controls, and first-person Z-Noclip)
     fn render_3d_pane(
         &mut self,
         ui: &mut egui::Ui,
@@ -2391,7 +2391,7 @@ impl QuadViewportController {
         // 3D scene background
         painter.rect_filled(rect, 0.0, Color32::from_rgb(22, 26, 32));
 
-        // Toggle Hammer Editor Noclip on unmodified `Z` key (WITHOUT Ctrl/Alt) only when cursor is over the 3D window!
+        // Toggle first-person Noclip on unmodified `Z` key (WITHOUT Ctrl/Alt) only when cursor is over the 3D window!
         let text_input_busy = ui.ctx().wants_keyboard_input();
         let pointer_in_3d = ui
             .input(|i| i.pointer.hover_pos())
@@ -2431,7 +2431,7 @@ impl QuadViewportController {
             ui.ctx()
                 .send_viewport_cmd(egui::ViewportCommand::CursorPosition(rect.center()));
 
-            // Hammer Editor Z-Noclip mode: take raw mouse delta from DeviceEvent::MouseMotion (pointer.motion)
+            // First-person Z-Noclip mode: take raw mouse delta from DeviceEvent::MouseMotion (pointer.motion)
             let raw_motion = ui
                 .input(|i| i.pointer.motion())
                 .unwrap_or_else(|| ui.input(|i| i.pointer.delta()));
@@ -2986,7 +2986,7 @@ impl QuadViewportController {
             }
         }
 
-        // Crosshair in the center of the 3D screen in Hammer Editor Z-Noclip mode
+        // Crosshair in the center of the 3D screen in first-person Z-Noclip mode
         if self.cam_3d.noclip_active {
             let c = rect.center();
             let ch_col = Color32::from_rgb(90, 255, 120);
@@ -3255,7 +3255,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Manages grab and visibility of the system cursor in Hammer Editor Z-Noclip mode
+    /// Manages grab and visibility of the system cursor in first-person Z-Noclip mode
     pub fn set_noclip_cursor_grab(ctx: &egui::Context, active: bool, center_pos: Pos2) {
         if active {
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorGrab(

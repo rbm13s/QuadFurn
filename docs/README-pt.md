@@ -51,10 +51,10 @@
 - [Capturas de ecrã e apresentação visual](#capturas-de-ecrã-e-apresentação-visual)
 - [Principais funcionalidades](#principais-funcionalidades)
 - [Documentação funcional](#documentação-funcional)
-  - [1. Modelador CAD de 4 vistas (fluxo de trabalho Hammer Editor + CorelDRAW)](#1-modelador-cad-de-4-vistas-fluxo-de-trabalho-hammer-editor--coreldraw)
+  - [1. Modelador CAD de 4 vistas e controlos de precisão](#1-modelador-cad-de-4-vistas-e-controlos-de-precisão)
   - [2. Expressões aritméticas em campos numéricos](#2-expressões-aritméticas-em-campos-numéricos)
   - [3. Fita de bordo e dedução automática da medida de corte](#3-fita-de-bordo-e-dedução-automática-da-medida-de-corte)
-  - [4. Otimização de corte de chapas 2D por guilhotina (estilo Cutting 3)](#4-otimização-de-corte-de-chapas-2d-por-guilhotina-estilo-cutting-3)
+  - [4. Otimização de corte de chapas 2D por guilhotina](#4-otimização-de-corte-de-chapas-2d-por-guilhotina)
   - [5. Separadores de projetos e área de transferência entre projetos](#5-separadores-de-projetos-e-área-de-transferência-entre-projetos)
   - [6. Exportação do passaporte técnico (PDF vetorial, CSV, área de transferência)](#6-exportação-do-passaporte-técnico-pdf-vetorial-csv-área-de-transferência)
   - [7. Catálogo de chapas, texturas e fitas de bordo](#7-catálogo-de-chapas-texturas-e-fitas-de-bordo)
@@ -72,9 +72,9 @@
 O **QuadFurn CAD** é uma aplicação CAD nativa e de alto desempenho para computador, escrita em Rust, desenvolvida para o desenho de mobiliário em painéis (MDP/MDF melamínico, contraplacado, HDF), geração automática de lista de corte e especificações, e otimização de corte 2D por guilhotina.
 
 O QuadFurn reúne a ergonomia de três ferramentas consagradas num único fluxo de trabalho:
-1. **Modelagem de 4 vistas inspirada no Valve Hammer Editor**: Edição simultânea em três projeções ortogonais 2D (**Planta XY**, **Elevação Frontal XZ**, **Corte Lateral YZ**) com barras de rolagem estilo Hammer, atração magnética às arestas e uma vista **3D Órbita / Voo livre em primeira pessoa (`Z` Noclip)** em tempo real.
-2. **Barra de transformação de precisão estilo CorelDRAW**: Entrada numérica rápida de coordenadas (`X`, `Y`, `Z`), dimensões totais (`L × W × T`) e rotação horizontal (`∠Z`), com cálculo matemático direto nos próprios campos de texto (por exemplo, digitando `600-4` ou `720+18`).
-3. **Dedução de bordas e nesting estilo Cutting 3**: Subtração automática da espessura da fita de bordo em PVC/ABS dos 4 lados da peça para calcular as **dimensões exatas de corte bruto na serra**, em conjunto com um otimizador 2D por passagens guilhotina que respeita o sentido do veio da madeira, a espessura da serra e os refilos de fábrica.
+1. **Modelação espacial em 4 vistas**: Edição simultânea em três projeções ortogonais 2D (**Planta XY**, **Elevação Frontal XZ**, **Corte Lateral YZ**) com barras de rolagem em primeira pessoa, atração magnética às arestas e uma vista **3D Órbita / Voo livre em primeira pessoa (`Z` Noclip)** em tempo real.
+2. **Barra de transformação de precisão**: Entrada numérica rápida de coordenadas (`X`, `Y`, `Z`), dimensões totais (`L × W × T`) e rotação horizontal (`∠Z`), com cálculo matemático direto nos próprios campos de texto (por exemplo, digitando `600-4` ou `720+18`).
+3. **Corte de chapas e dedução automática de orlas**: Subtração automática da espessura da fita de bordo em PVC/ABS dos 4 lados da peça para calcular as **dimensões exatas de corte bruto na serra**, em conjunto com um otimizador 2D por passagens guilhotina que respeita o sentido do veio da madeira, a espessura da serra e os refilos de fábrica.
 
 ---
 
@@ -115,7 +115,7 @@ Troca instantânea de idioma sem reiniciar através do seletor **`🌐`** na bar
 ## Principais funcionalidades
 
 - **Espaço de trabalho de 4 vistas sincronizado**: Alterne ou edite livremente em Planta (`XY`), Frontal (`XZ`), Lateral (`YZ`), ou expanda qualquer janela com um clique (`[Maximizar]` / `[Restaurar 4 vistas]`).
-- **Pré-visualização 3D acelerada por hardware**: Câmara orbital (`Botão direito`/`Botão central`) + voo livre em primeira pessoa estilo Hammer (`tecla Z` + `WASD`/`Espaço`/`Ctrl`) com mapeamento de texturas e seleção precisa por raycasting OBB.
+- **Pré-visualização 3D acelerada por hardware**: Câmara orbital (`Botão direito`/`Botão central`) + voo livre em primeira pessoa em primeira pessoa (`tecla Z` + `WASD`/`Espaço`/`Ctrl`) com mapeamento de texturas e seleção precisa por raycasting OBB.
 - **Encaixe magnético e cotas dinâmicas de folga**: Atração automática à grelha (`1`, `9`, `18`, `50 mm` ou personalizada), encaixe magnético a faces e cantos adjacentes (`0 mm`) e medição dinâmica da distância entre peças vizinhas.
 - **Seleção por caixa e transformação em grupo**: Arraste um retângulo de seleção em qualquer vista 2D para mover várias peças juntas, duplicá-las (`Ctrl+D`) ou copiá-las e colá-las entre móveis diferentes (`Ctrl+C` / `Ctrl+V`).
 - **Calculadora aritmética integrada**: Todos os campos numéricos aceitam fórmulas como `600+100`, `800-36`, `720/2` ou `45+15`.
@@ -132,7 +132,7 @@ Troca instantânea de idioma sem reiniciar através do seletor **`🌐`** na bar
 
 ## Documentação funcional
 
-### 1. Modelador CAD de 4 vistas (fluxo de trabalho Hammer Editor + CorelDRAW)
+### 1. Modelador CAD de 4 vistas e controlos de precisão
 
 O separador **Modelador** (`📐 1. Modelador`) divide-se em três áreas fundamentais:
 
@@ -146,7 +146,7 @@ O separador **Modelador** (`📐 1. Modelador`) divide-se em três áreas fundam
    - **Enquadramento da câmara**:
      - `🔍 Centrar vista`: Centraliza a câmara na origem/centro do móvel.
      - `📐 Ajustar à janela`: Calcula as dimensões exteriores do móvel e enquadra perfeitamente as 4 vistas.
-   - **Barra de transformação CorelDRAW**: Entrada e alteração rápida de coordenadas `X`, `Y`, `Z`, dimensões `L`, `W`, `T`, etiqueta verde de corte `[Corte: L × W mm]` e ângulo `∠Z`.
+   - **Barra de transformação de precisão**: Entrada e alteração rápida de coordenadas `X`, `Y`, `Z`, dimensões `L`, `W`, `T`, etiqueta verde de corte `[Corte: L × W mm]` e ângulo `∠Z`.
 
 2. **Janelas de 4 vistas**:
    - **Vistas ortogonais 2D (`Planta XY`, `Frontal XZ`, `Lateral YZ`)** com barras de rolagem dinâmicas, réguas milimétricas e linhas coloridas indicando as fitas de bordo aplicadas.
@@ -178,7 +178,7 @@ Todos os campos numéricos da aplicação aceitam fórmulas aritméticas:
 
 ---
 
-### 4. Otimização de corte de chapas 2D por guilhotina (estilo Cutting 3)
+### 4. Otimização de corte de chapas 2D por guilhotina
 
 O separador **Plano de corte** (`🪚 3. Plano de corte`) calcula a melhor distribuição de peças nas chapas:
 - **Parâmetros de corte ajustáveis**:
@@ -212,7 +212,7 @@ No separador **Especificação** (`📋 2. Especificação`):
    - **Secção 4**: Relação de chapas e metragem de fitas de bordo (metros úteis e $+15\%$ de desperdício).
    - Documento produzido no **idioma atualmente ativo** com fontes vetoriais TrueType/CID incorporadas.
 2. **`💾 Exportar para CSV (Excel)`**: Ficheiro de folha de cálculo UTF-8 com BOM e delimitador `;`, pronto para o Excel ou LibreOffice.
-3. **`📋 Copiar lista de corte`**: Copia a tabela com delimitadores de tabulação para a área de transferência, perfeita para importar em outros programas de corte (como o Cutting 3).
+3. **`📋 Copiar lista de corte`**: Copia a tabela com delimitadores de tabulação para a área de transferência, perfeita para importar em programas de corte externos ou folhas de cálculo.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Ponto de entrada, gestão de separadores, ecrã inicial e atalhos
 │   ├── model.rs               # Estrutura de dados (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # Motor de 4 vistas Hammer/CorelDRAW, renderização 2D e 3D wgpu/painter
+│   ├── viewport.rs            # Controlador de 4 vistas, renderização 2D e 3D wgpu/painter
 │   ├── snapping.rs            # Encaixe magnético na grelha e arestas, eixos de projeção
 │   ├── cutter.rs              # Otimizador de corte de chapas por guilhotina e cálculo de fitas de bordo
 │   ├── export.rs              # Exportador de PDF vetorial A4 Horizontal e ficheiros CSV
-│   ├── ui_panels.rs           # Barra CorelDRAW, Inspetor de peças, Especificação, Corte e Materiais
+│   ├── ui_panels.rs           # Barra de transformação, Inspetor de peças, Especificação, Corte e Materiais
 │   └── i18n.rs                # Tabelas de tradução para 22 idiomas e deteção do sistema
 ├── build.rs                   # Conversão automática do ícone ICO para Windows e recurso PE
 ├── Cargo.toml                 # Configuração do pacote e dependências

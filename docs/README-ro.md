@@ -51,10 +51,10 @@
 - [Capturi de ecran și tur vizual](#capturi-de-ecran-și-tur-vizual)
 - [Funcționalități principale](#funcționalități-principale)
 - [Documentație funcțională](#documentație-funcțională)
-  - [1. Proiectant CAD cu 4 vederi (flux de lucru Hammer Editor + CorelDRAW)](#1-proiectant-cad-cu-4-vederi-flux-de-lucru-hammer-editor--coreldraw)
+  - [1. Proiectant CAD cu 4 vederi și comenzi de precizie](#1-proiectant-cad-cu-4-vederi-și-comenzi-de-precizie)
   - [2. Expresii aritmetice în câmpurile numerice](#2-expresii-aritmetice-în-câmpurile-numerice)
   - [3. Aplicare cant și scăderea automată a cotei de debitare](#3-aplicare-cant-și-scăderea-automată-a-cotei-de-debitare)
-  - [4. Optimizare 2D a debitării prin ghilotină (stil Cutting 3)](#4-optimizare-2d-a-debitării-prin-ghilotină-stil-cutting-3)
+  - [4. Optimizare 2D a debitării prin ghilotină](#4-optimizare-2d-a-debitării-prin-ghilotină)
   - [5. File de proiecte multiple și clipboard între proiecte](#5-file-de-proiecte-multiple-și-clipboard-între-proiecte)
   - [6. Exportul pașaportului de producție (PDF vectorial, CSV, clipboard)](#6-exportul-pașaportului-de-producție-pdf-vectorial-csv-clipboard)
   - [7. Catalog de plăci, texturi și canturi](#7-catalog-de-plăci-texturi-și-canturi)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** este o aplicație desktop nativă extrem de rapidă scrisă în Rust, special creată pentru proiectarea mobilierului din panouri (PAL melaminat, MDF, HDF, placaj), cu generare automată a listei de piese și optimizare 2D a debitării prin tăieri drepte de tip ghilotină.
 
 QuadFurn reunește ergonomia a trei instrumente de referință într-un singur flux de lucru:
-1. **Modelare cu 4 vederi inspirată de Valve Hammer Editor**: Editare sincronă în trei proiecții ortogonale 2D (**Vedere de sus XY — Plan**, **Vedere frontală XZ — Fațadă**, **Vedere laterală YZ — Secțiune**) cu bare de derulare, aliniere magnetică la muchii și o fereastră **3D Orbit / Zbor liber persoana întâi (`Z` Noclip)** în timp real.
-2. **Bară de transformare de precizie în stil CorelDRAW**: Introducere numerică instantanee a coordonatelor (`X`, `Y`, `Z`), dimensiunilor piesei (`L × W × T`) și unghiului de rotație (`∠Z`), cu calculator matematic integrat direct în câmpuri (de ex. `600-4` sau `720+18`).
-3. **Scăderea cantului și croire în stil Cutting 3**: Scăderea automată a grosimii cantului PVC/ABS de pe toate cele 4 laturi pentru a calcula **dimensiunile exacte de tăiere la circular**, corelată cu un optimizator 2D de tip ghilotină care respectă fibra lemnului, lățimea pânzei de circular și tăierile de îndreptare a marginilor.
+1. **Modelare spațială în 4 vederi**: Editare sincronă în trei proiecții ortogonale 2D (**Vedere de sus XY — Plan**, **Vedere frontală XZ — Fațadă**, **Vedere laterală YZ — Secțiune**) cu bare de derulare, aliniere magnetică la muchii și o fereastră **3D Orbit / Zbor liber persoana întâi (`Z` Noclip)** în timp real.
+2. **Bară de transformare de precizie**: Introducere numerică instantanee a coordonatelor (`X`, `Y`, `Z`), dimensiunilor piesei (`L × W × T`) și unghiului de rotație (`∠Z`), cu calculator matematic integrat direct în câmpuri (de ex. `600-4` sau `720+18`).
+3. **Debitarea plăcilor și deducerea automată a cantului**: Scăderea automată a grosimii cantului PVC/ABS de pe toate cele 4 laturi pentru a calcula **dimensiunile exacte de tăiere la circular**, corelată cu un optimizator 2D de tip ghilotină care respectă fibra lemnului, lățimea pânzei de circular și tăierile de îndreptare a marginilor.
 
 ---
 
@@ -115,7 +115,7 @@ Schimbare instantanee a limbii fără repornire prin butonul **`🌐`** din bara
 ## Funcționalități principale
 
 - **Spațiu de lucru sincronizat cu 4 vederi**: Proiectați în Sus (`XY`), Față (`XZ`), Lateral (`YZ`), sau măriți orice fereastră pe tot ecranul cu un clic (`[Maximizează]` / `[Restaurează cele 4 vederi]`).
-- **Previzualizare 3D accelerată grafic**: Cameră orbitală (`Click dreapta`/`Click mijloc`) + mod zbor liber la persoana întâi în stil Hammer (`tasta Z` + `WASD`/`Spațiu`/`Ctrl`) cu texturi UV și selecție precisă prin raze OBB.
+- **Previzualizare 3D accelerată grafic**: Cameră orbitală (`Click dreapta`/`Click mijloc`) + mod zbor liber la persoana întâi la persoana întâi (`tasta Z` + `WASD`/`Spațiu`/`Ctrl`) cu texturi UV și selecție precisă prin raze OBB.
 - **Atragere magnetică și cote dinamice de distanță**: Fixare automată la grilă (`1`, `9`, `18`, `50 mm` sau personalizat), atragere magnetică la fețe și muchii învecinate (`0 mm`) și afișarea cotelor reale în milimetri până la piesele adiacente.
 - **Selecție cadru și transformare de grup**: Trageți un cadru de selecție în orice vedere 2D pentru a muta mai multe piese deodată, a le duplica (`Ctrl+D`) sau a le copia între diferite corpuri de mobilier deschise (`Ctrl+C` / `Ctrl+V`).
 - **Calculator integrat**: Toate câmpurile numerice acceptă formule matematice precum `600+100`, `800-36`, `720/2` sau `45+15`.
@@ -132,7 +132,7 @@ Schimbare instantanee a limbii fără repornire prin butonul **`🌐`** din bara
 
 ## Documentație funcțională
 
-### 1. Proiectant CAD cu 4 vederi (flux de lucru Hammer Editor + CorelDRAW)
+### 1. Proiectant CAD cu 4 vederi și comenzi de precizie
 
 Fila **Proiectant** (`📐 1. Proiectant`) este compusă din trei zone principale:
 
@@ -146,7 +146,7 @@ Fila **Proiectant** (`📐 1. Proiectant`) este compusă din trei zone principal
    - **Încadrare cameră**:
      - `🔍 Centrează vederea`: Readuce camera în centrul mobilierului sau în origine.
      - `📐 Potrivește în fereastră`: Calculează dimensiunile exterioare ale mobilierului și ajustează scara în toate cele 4 ferestre simultan.
-   - **Bara de transformare CorelDRAW**: Introducere și editare directă a coordonatelor `X`, `Y`, `Z`, dimensiunilor `L`, `W`, `T`, etichetei verzi de tăiere `[Tăiere: L × W mm]` și unghiului `∠Z`.
+   - **Bara de transformare de precizie**: Introducere și editare directă a coordonatelor `X`, `Y`, `Z`, dimensiunilor `L`, `W`, `T`, etichetei verzi de tăiere `[Tăiere: L × W mm]` și unghiului `∠Z`.
 
 2. **Cele patru ferestre de vizualizare**:
    - **Vederi ortogonale 2D (`Sus XY`, `Față XZ`, `Lateral YZ`)** prevăzute cu bare de derulare, rigle gradate în milimetri și benzi colorate ce indică muchiile cantuite.
@@ -178,7 +178,7 @@ Toate casetele de introducere numerică permit utilizarea formulelor:
 
 ---
 
-### 4. Optimizare 2D a debitării prin ghilotină (stil Cutting 3)
+### 4. Optimizare 2D a debitării prin ghilotină
 
 Fila **Plan de debitare** (`🪚 3. Plan de debitare`) calculează așezarea ideală a pieselor pe plăci:
 - **Parametri de tăiere ajustabili**:
@@ -212,7 +212,7 @@ Fila **Plan de debitare** (`🪚 3. Plan de debitare`) calculează așezarea ide
    - **Secțiunea 4**: Centralizator de materiale și consum de cant (metri utili și $+15 \%$ rezervă tehnologică).
    - Documentul este redactat în **limba curentă a interfeței** cu fonturi vectoriale TrueType/CID integrate.
 2. **`💾 Exportă în CSV (Excel)`**: Fișier tabelar UTF-8 cu BOM și delimitator `;`, direct compatibil cu Microsoft Excel sau LibreOffice Calc.
-3. **`📋 Copiază lista de debitare`**: Copiază cotele de tăiere în clipboard cu separatori de tip tab pentru import în programe externe de optimizare (cum ar fi Cutting 3).
+3. **`📋 Copiază lista de debitare`**: Copiază cotele de tăiere în clipboard cu separatori de tip tab pentru import în programe externe de debitare sau foi de calcul.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Punct de intrare, gestionare file de proiecte, ecran de start și scurtături
 │   ├── model.rs               # Model de date (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # Motor de randare cu 4 vederi Hammer/CorelDRAW, grafică 2D și 3D wgpu/painter
+│   ├── viewport.rs            # Controler cu 4 vederi, grafică 2D și 3D wgpu/painter
 │   ├── snapping.rs            # Atragere magnetică la grilă și muchii, axe de proiecție
 │   ├── cutter.rs              # Optimizator 2D de croire ghilotină și deducere canturi
 │   ├── export.rs              # Generator de PDF vectorial A4 Landscape și exportator CSV
-│   ├── ui_panels.rs           # Bară CorelDRAW, Inspector de piese, Specificație, Debitarea plăcilor și Materiale
+│   ├── ui_panels.rs           # Bară de transformare, Inspector de piese, Specificație, Debitarea plăcilor și Materiale
 │   └── i18n.rs                # Dicționare de traducere pentru 22 de limbi și detecție automată a limbii
 ├── build.rs                   # Conversie automată a pictogramei ICO pentru Windows și resursă PE
 ├── Cargo.toml                 # Configurația pachetului și dependențe

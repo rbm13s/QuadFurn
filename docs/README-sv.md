@@ -51,10 +51,10 @@
 - [Skärmdumpar och visuell rundtur](#skärmdumpar-och-visuell-rundtur)
 - [Nyckelfunktioner](#nyckelfunktioner)
 - [Funktionell dokumentation](#funktionell-dokumentation)
-  - [1. 4-vyers CAD-konstruktör (Hammer Editor + CorelDRAW arbetsflöde)](#1-4-vyers-cad-konstruktör-hammer-editor--coreldraw-arbetsflöde)
+  - [1. 4-vyers CAD-konstruktör & precisionskontroller](#1-4-vyers-cad-konstruktör--precisionskontroller)
   - [2. Aritmetiska uttryck i numeriska inmatningsfält](#2-aritmetiska-uttryck-i-numeriska-inmatningsfält)
   - [3. Kantlister och automatiskt avdrag för nettosågmått](#3-kantlister-och-automatiskt-avdrag-för-nettosågmått)
-  - [4. 2D giljotin skäroptimering (Cutting 3-stil)](#4-2d-giljotin-skäroptimering-cutting-3-stil)
+  - [4. 2D giljotin skäroptimering](#4-2d-giljotin-skäroptimering)
   - [5. Projektflikar och urklipp mellan projekt](#5-projektflikar-och-urklipp-mellan-projekt)
   - [6. Export av produktionspass (vektor-PDF, CSV, urklipp)](#6-export-av-produktionspass-vektor-pdf-csv-urklipp)
   - [7. Skiv-, textur- och kantlistkatalog](#7-skiv--textur--och-kantlistkatalog)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** är ett blixtsnabbt, integrerat skrivbords-CAD-program skrivet i Rust, framtaget för formgivning av skåp- och panelmöbler i laminerad spånskiva (melamin), MDF, HDF och plywood, komplett med automatisk stycklistgenerering och 2D giljotinkapningsoptimering för formatsågar.
 
 QuadFurn förenar ergonomin från tre beprövade verktyg till ett sammanhållet arbetsflöde:
-1. **4-vyers modellering inspirerad av Valve Hammer Editor**: Samtidig redigering i tre synkroniserade 2D ortogonala vyer (**Plan XY — Planritning**, **Front XZ — Fasad/Uppställning**, **Sida YZ — Sektion**) med Hammer-rullningslister, magnetisk kantlåsning och en interaktiv **3D Orbit / Förstaperson flygläge (`Z` Noclip)** i realtid.
-2. **Precisionstransformeringsfält i CorelDRAW-stil**: Omedelbar numerisk inmatning av koordinater (`X`, `Y`, `Z`), skivmått (`L × W × T`) och vridningsvinkel (`∠Z`) med inbyggd formelberäkning direkt i inmatningsfälten (t.ex. `600-4` eller `720+18`).
-3. **Kantlistavdrag och nesting i Cutting 3-stil**: Automatiskt avdrag för tjockleken på PVC/ABS-kantlister på alla 4 sidor för att beräkna det exakta **nettosågmåttet för justersågen**, kopplat till en 2D giljotinoptimerare som respekterar träets ådringsriktning, sågklingans snittbredd och renkapning av skivans råkanter.
+1. **4-vyers rumslig modellering**: Samtidig redigering i tre synkroniserade 2D ortogonala vyer (**Plan XY — Planritning**, **Front XZ — Fasad/Uppställning**, **Sida YZ — Sektion**) med rullningslister, magnetisk kantlåsning och en interaktiv **3D Orbit / Förstaperson flygläge (`Z` Noclip)** i realtid.
+2. **Precisionstransformeringsfält**: Omedelbar numerisk inmatning av koordinater (`X`, `Y`, `Z`), skivmått (`L × W × T`) och vridningsvinkel (`∠Z`) med inbyggd formelberäkning direkt i inmatningsfälten (t.ex. `600-4` eller `720+18`).
+3. **Skivsågning och automatiskt kantlistavdrag**: Automatiskt avdrag för tjockleken på PVC/ABS-kantlister på alla 4 sidor för att beräkna det exakta **nettosågmåttet för justersågen**, kopplat till en 2D giljotinoptimerare som respekterar träets ådringsriktning, sågklingans snittbredd och renkapning av skivans råkanter.
 
 ---
 
@@ -115,7 +115,7 @@ Omedelbart språkbyte utan omstart via **`🌐`**-knappen i verktygsraden, autom
 ## Nyckelfunktioner
 
 - **Synkroniserad 4-vyers arbetsyta**: Arbeta i Plan (`XY`), Front (`XZ`), Sida (`YZ`), eller maximera valfri vy med ett klick (`[Maximera]` / `[Återställ 4 vyer]`).
-- **Hårdvaruaccelererad 3D-förhandsgranskning**: Orbit-kamera (`Höger musknapp`/`Mittenknapp`) + friflygande kamera i Hammer-stil (`tangent Z` + `WASD`/`Mellanslag`/`Ctrl`) med UV-texturer och precis OBB-strålkastning.
+- **Hårdvaruaccelererad 3D-förhandsgranskning**: Orbit-kamera (`Höger musknapp`/`Mittenknapp`) + friflygande kamera i förstapersonsperspektiv (`tangent Z` + `WASD`/`Mellanslag`/`Ctrl`) med UV-texturer och precis OBB-strålkastning.
 - **Magnetisk snäppfunktion och dynamiska avståndsmått**: Automatisk snäppning till rutnät (`1`, `9`, `18`, `50 mm` eller valfritt), magnetisk anslutning mot intilliggande ytor och kanter (`0 mm`) samt visning av verkliga avstånd i millimeter till intilliggande paneler.
 - **Rektangelmarkering och grupptransformation**: Dra en markeringsrektangel i valfri 2D-vy för att flytta flera skivor samtidigt, duplicera (`Ctrl+D`) eller kopiera mellan olika öppna möbelprojekt (`Ctrl+C` / `Ctrl+V`).
 - **Inbyggd miniräknare**: Alla numeriska fält hanterar matematiska formler som `600+100`, `800-36`, `720/2` eller `45+15`.
@@ -132,7 +132,7 @@ Omedelbart språkbyte utan omstart via **`🌐`**-knappen i verktygsraden, autom
 
 ## Funktionell dokumentation
 
-### 1. 4-vyers CAD-konstruktör (Hammer Editor + CorelDRAW arbetsflöde)
+### 1. 4-vyers CAD-konstruktör & precisionskontroller
 
 Fliken **Konstruktör** (`📐 1. Konstruktör`) omfattar tre huvuddelar:
 
@@ -146,7 +146,7 @@ Fliken **Konstruktör** (`📐 1. Konstruktör`) omfattar tre huvuddelar:
    - **Kamerajustering**:
      - `🔍 Centrera vy`: Centrerar kameran mot nollpunkten eller möbelns mitt.
      - `📐 Anpassa till fönster`: Beräknar automatiskt möbelns yttermått och skalar om i alla 4 fönster samtidigt.
-   - **CorelDRAW-transformeringsfält**: Direkt inmatning och redigering av koordinater `X`, `Y`, `Z`, elementstorlek `L`, `W`, `T`, grön sågmåttsetikett `[Såg: L × W mm]` samt vridningsvinkel `∠Z`.
+   - **Precisionstransformeringsfält**: Direkt inmatning och redigering av koordinater `X`, `Y`, `Z`, elementstorlek `L`, `W`, `T`, grön sågmåttsetikett `[Såg: L × W mm]` samt vridningsvinkel `∠Z`.
 
 2. **Fyra arbetsfönster**:
    - **2D ortogonala vyer (`Plan XY`, `Front XZ`, `Sida YZ`)** med rullningslister, millimeterlinjaler och färgade kantlistmarkeringar.
@@ -178,7 +178,7 @@ Samtliga sifferfält i programmet hanterar matematiska beräkningar:
 
 ---
 
-### 4. 2D giljotin skäroptimering (Cutting 3-stil)
+### 4. 2D giljotin skäroptimering
 
 Fliken **Skivoptimeringsplan** (`🪚 3. Skivoptimeringsplan`) räknar ut bästa möjliga fördelning av komponenterna på råskivorna:
 - **Justerbara sågparametrar**:
@@ -212,7 +212,7 @@ I fliken **Stycklista** (`📋 2. Stycklista`):
    - **Sektion 4**: Skivöversikt och förbrukning av kantlister (nettometer och $+15 \%$ säkerhetsmarginal).
    - Dokumentet skapas på det **aktiva språket** med inbäddade TrueType/CID-vektortypsnitt.
 2. **`💾 Exportera till CSV (Excel)`**: Kalkylblad i UTF-8 med BOM och semikolon `;`, klart för Microsoft Excel eller LibreOffice Calc.
-3. **`📋 Kopiera såglista`**: Kopierar sågmåtten till urklipp med tabulatorer för enkel import till externa optimeringsprogram (såsom Cutting 3).
+3. **`📋 Kopiera såglista`**: Kopierar sågmåtten till urklipp med tabulatorer för enkel import till externa optimeringsprogram eller kalkylblad.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Startpunkt, hantering av projektflikar, startsida och tangentbordsgenvägar
 │   ├── model.rs               # Datamodell (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4-vyers grafikmotor Hammer/CorelDRAW, 2D och 3D rendering wgpu/painter
+│   ├── viewport.rs            # 4-vyers kontroller, 2D och 3D rendering wgpu/painter
 │   ├── snapping.rs            # Magnetisk snäppfunktion till rutnät och kanter, projektionsaxlar
 │   ├── cutter.rs              # 2D giljotin skäroptimering och avdrag för kantlister
 │   ├── export.rs              # Vektoriell PDF A4 Liggande exportör och CSV-exportör
-│   ├── ui_panels.rs           # CorelDRAW-rad, Komponentinspektör, Stycklista, Skivoptimeringsplan och Material
+│   ├── ui_panels.rs           # Transformeringsfält, Komponentinspektör, Stycklista, Skivoptimeringsplan och Material
 │   └── i18n.rs                # Översättningsordböcker för 22 språk och automatisk språkidentifiering
 ├── build.rs                   # Automatisk konvertering av ICO-ikon för Windows och PE-resurs
 ├── Cargo.toml                 # Paketkonfiguration och beroenden

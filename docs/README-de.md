@@ -51,10 +51,10 @@
 - [Screenshots & Visuelle Tour](#screenshots--visuelle-tour)
 - [Hauptfunktionen](#hauptfunktionen)
 - [Funktionsdokumentation](#funktionsdokumentation)
-  - [1. 4-Projektionen-CAD-Designer (Hammer Editor + CorelDRAW Workflow)](#1-4-projektionen-cad-designer-hammer-editor--coreldraw-workflow)
+  - [1. 4-Projektionen-CAD-Designer & Präzisionssteuerung](#1-4-projektionen-cad-designer--präzisionssteuerung)
   - [2. Mathematische Ausdrücke in numerischen Feldern](#2-mathematische-ausdrücke-in-numerischen-feldern)
   - [3. Kantenanleimen & automatischer Sägeabzug](#3-kantenanleimen--automatischer-sägeabzug)
-  - [4. Guillotinen-2D-Plattenzuschnitt-Optimierung (Cutting 3 Stil)](#4-guillotinen-2d-plattenzuschnitt-optimierung-cutting-3-stil)
+  - [4. Guillotinen-2D-Plattenzuschnitt-Optimierung](#4-guillotinen-2d-plattenzuschnitt-optimierung)
   - [5. Produkt-Tabs & Projektübergreifendes Kopieren/Einfügen](#5-produkt-tabs--projektübergreifendes-kopiereneinfügen)
   - [6. Produktionspass-Export (Vektor-PDF, Excel CSV, Zwischenablage)](#6-produktionspass-export-vektor-pdf-excel-csv-zwischenablage)
   - [7. Plattenwerkstoffe, Texturen & Kantenkatalog](#7-plattenwerkstoffe-texturen--kantenkatalog)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** ist eine schnelle, native Desktop-CAD-Anwendung in Rust für die Konstruktion von Korpus- und Plattenmöbeln aus beschichteten Spanplatten, MDF, HDF und Sperrholz, komplett mit automatischer Stücklistenerstellung und 2D-Guillotinen-Plattenzuschnitt-Optimierung.
 
 QuadFurn kombiniert die besten Arbeitsabläufe aus drei klassischen Werkzeugen:
-1. **Valve Hammer Editor 4-Projektionen-Modellierung**: Gleichzeitiges Arbeiten in drei synchronisierten 2D-Projektionen (**Draufsicht XY — Grundriss**, **Frontansicht XZ — Aufriss**, **Seitenansicht YZ — Schnitt**) mit Scrollbalken, magnetischem Fangen und einem Echtzeit-**3D-Orbit-/Freiflugfenster (`Z` Noclip)**.
-2. **CorelDRAW Präzisions-Transformationsleiste**: Sofortige Eingabe von Koordinaten (`X`, `Y`, `Z`), Abmessungen (`L × B × T`) und Drehwinkel (`∠Z`) mit direktem Rechenausdruck (z. B. Eingabe von `600-4` oder `720+18`).
-3. **Cutting 3 Plattenaufteilung & Kantenstärkenabzug**: Automatischer Abzug der PVC/ABS-Kantenstärke von den Fertigmaßen zur Berechnung exakter **Netto-Sägezuschnittmaße**, kombiniert mit einem 2D-Guillotinen-Packer unter Berücksichtigung von Faserrichtung, Sägeschnittbreite und Besäumschnitt.
+1. **4-Projektionen-Raummodellierung**: Gleichzeitiges Arbeiten in drei synchronisierten 2D-Projektionen (**Draufsicht XY — Grundriss**, **Frontansicht XZ — Aufriss**, **Seitenansicht YZ — Schnitt**) mit Scrollbalken, magnetischem Fangen und einem Echtzeit-**3D-Orbit-/Freiflugfenster (`Z` Noclip)**.
+2. **Präzisions-Transformationsleiste**: Sofortige Eingabe von Koordinaten (`X`, `Y`, `Z`), Abmessungen (`L × B × T`) und Drehwinkel (`∠Z`) mit direktem Rechenausdruck (z. B. Eingabe von `600-4` oder `720+18`).
+3. **Plattenzuschnitt & Kantenstärkenabzug**: Automatischer Abzug der PVC/ABS-Kantenstärke von den Fertigmaßen zur Berechnung exakter **Netto-Sägezuschnittmaße**, kombiniert mit einem 2D-Guillotinen-Packer unter Berücksichtigung von Faserrichtung, Sägeschnittbreite und Besäumschnitt.
 
 ---
 
@@ -115,7 +115,7 @@ Sofortige Umschaltung der Sprache über die Schaltfläche **`🌐`** in der ober
 ## Hauptfunktionen
 
 - **Synchronisierter 4-Projektionen-Arbeitsbereich**: Bearbeitung in Draufsicht (`XY`), Front (`XZ`), Seite (`YZ`) oder Maximierung jedes Fensters mit einem Klick (`[Maximieren]` / `[4 Ansichten]`).
-- **Hardwarebeschleunigte 3D-Vorschau**: Orbit-Kamera (`RMB`/`MMB`) + Ego-Freiflug-Kamera im Hammer-Stil (`Z`-Taste + `WASD`/`Leertaste`/`Ctrl`) mit OBB-Raycasting.
+- **Hardwarebeschleunigte 3D-Vorschau**: Orbit-Kamera (`RMB`/`MMB`) + Ego-Freiflug-Kamera (`Z`-Taste + `WASD`/`Leertaste`/`Ctrl`) mit OBB-Raycasting.
 - **Magnetisches Fangen & Live-Abstandsmessung**: Automatisches Fangen an Rasterschritten (`1`, `9`, `18`, `50 mm`) und an Kanten benachbarter Bauteile (`0 mm` Bündigstoß) mit Abstandsanzeigen.
 - **Rahmenauswahl & Gruppentransformation**: Rechteckige Rahmenauswahl in 2D-Ansichten, gemeinsames Verschieben, Duplizieren (`Ctrl+D`) und Kopieren/Einfügen zwischen Projekten (`Ctrl+C` / `Ctrl+V`).
 - **Integrierter Rechner**: Alle numerischen Felder akzeptieren mathematische Ausdrücke wie `600+100`, `800-36`, `720/2` oder `45+15`.
@@ -132,7 +132,7 @@ Sofortige Umschaltung der Sprache über die Schaltfläche **`🌐`** in der ober
 
 ## Funktionsdokumentation
 
-### 1. 4-Projektionen-CAD-Designer (Hammer Editor + CorelDRAW Workflow)
+### 1. 4-Projektionen-CAD-Designer & Präzisionssteuerung
 
 Der Reiter **Designer** (`📐 1. Designer`) gliedert sich in drei Hauptbereiche:
 
@@ -146,7 +146,7 @@ Der Reiter **Designer** (`📐 1. Designer`) gliedert sich in drei Hauptbereiche
    - **Kamera-Zentrierung**:
      - `🔍 Zentrieren`: Zentriert alle Kameras auf das Modell.
      - `📐 In Fenster einpassen`: Berechnet die Gesamtabmessungen und zoomt alle 4 Ansichten optimal ein.
-   - **CorelDRAW Transformationsleiste**: Anzeige und Änderung von `X`, `Y`, `Z`, `Länge (L)`, `Breite (B)`, `Stärke (T)`, grünem Zuschnittabzeichen `[Schnitt: L × B mm]` und Drehwinkel `∠Z`.
+   - **Präzisions-Transformationsleiste**: Anzeige und Änderung von `X`, `Y`, `Z`, `Länge (L)`, `Breite (B)`, `Stärke (T)`, grünem Zuschnittabzeichen `[Schnitt: L × B mm]` und Drehwinkel `∠Z`.
 
 2. **4 Ansichtsfenster**:
    - **Draufsicht (`Draufsicht XY`)**, **Frontansicht (`Front XZ`)** und **Seitenansicht (`Seite YZ`)** mit Scrollbalken, Linealen und Farbkantenmarkierungen.
@@ -179,7 +179,7 @@ In der Möbelfertigung muss die Kantenstärke vor dem Zuschnitt vom Fertigmaß a
 
 ---
 
-### 4. Guillotinen-2D-Plattenzuschnitt-Optimierung (Cutting 3 Stil)
+### 4. Guillotinen-2D-Plattenzuschnitt-Optimierung
 
 Der Reiter **Zuschnitt** (`🪚 3. Zuschnitt`) verschachtelt alle sichtbaren Bauteile automatisch auf Platten:
 - **Sägeparameter**: Sägeblattbreite (Standard `4.0 mm`), Besäumschnitt an allen 4 Plattenrändern (Standard `10 mm`).
@@ -206,7 +206,7 @@ Im Reiter **Spezifikation** (`📋 2. Spezifikation`):
    - Detaillierte Schnittpläne für jede Platte.
    - Material- und Kantenzusammenfassung inklusive `+15%` Verschnittzugabe.
 2. **`💾 In CSV exportieren (Excel)`**: Semikolon-getrennte Tabelle mit UTF-8-BOM für Microsoft Excel.
-3. **`📋 Zuschnittliste kopieren`**: Tabulatorgetrennter Text zum Einfügen in externe Optimierer (Cutting 3 etc.).
+3. **`📋 Zuschnittliste kopieren`**: Tabulatorgetrennter Text zum Einfügen in externe Zuschnittsoftware oder Tabellenkalkulationen.
 
 ---
 

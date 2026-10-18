@@ -51,10 +51,10 @@
 - [Képernyőképek és vizuális bemutató](#képernyőképek-és-vizuális-bemutató)
 - [Főbb jellemzők](#főbb-jellemzők)
 - [Funkcionális dokumentáció](#funkcionális-dokumentáció)
-  - [1. 4-nézetes CAD szerkesztő (Hammer Editor + CorelDRAW munkamenet)](#1-4-nézetes-cad-szerkesztő-hammer-editor--coreldraw-munkamenet)
+  - [1. 4-nézetes CAD szerkesztő és precíziós vezérlők](#1-4-nézetes-cad-szerkesztő-és-precíziós-vezérlők)
   - [2. Aritmetikai kifejezések a numerikus beviteli mezőkben](#2-aritmetikai-kifejezések-a-numerikus-beviteli-mezőkben)
   - [3. Élzárás és a nettó vágásméret automatikus levonása](#3-élzárás-és-a-nettó-vágásméret-automatikus-levonása)
-  - [4. 2D guillotine lapszabászati optimalizálás (Cutting 3 stílusban)](#4-2d-guillotine-lapszabászati-optimalizálás-cutting-3-stílusban)
+  - [4. 2D guillotine lapszabászati optimalizálás](#4-2d-guillotine-lapszabászati-optimalizálás)
   - [5. Többlapos projektkezelés és projektek közötti vágólap](#5-többlapos-projektkezelés-és-projektek-közötti-vágólap)
   - [6. Gyártási útlevél exportálása (vektoros PDF, CSV, vágólap)](#6-gyártási-útlevél-exportálása-vektoros-pdf-csv-vágólap)
   - [7. Lapanyag-, textúra- és élzárókatalógus](#7-lapanyag--textúra--és-élzárókatalógus)
@@ -72,9 +72,9 @@
 A **QuadFurn CAD** egy villámgyors, natív asztali CAD alkalmazás Rust nyelven megírva, amelyet kifejezetten laminált bútorlapból (faforgácslap, MDF, HDF, rétegelt lemez) készülő korpuszbútorok tervezésére fejlesztettek, automatikus alkatrészjegyzék-készítéssel és 2D guillotine lapszabászati optimalizáló motorral kiegészítve.
 
 A QuadFurn három elismert szoftver ergonomikus előnyeit ötvözi egyetlen munkafolyamatban:
-1. **4-nézetes modellezés a Valve Hammer Editor stílusában**: Egyidejű szerkesztés három szinkronizált 2D merőleges vetületben (**Felülnézet XY — Alaprajz**, **Elölnézet XZ — Homlokzat**, **Oldalnézet YZ — Metszet**) gördítősávokkal, mágneses élillesztéssel és valós idejű **3D Körbeforgatás / Belső nézetes szabad repülés (`Z` Noclip)** ablakkal.
-2. **Precíziós transzformációs sáv CorelDRAW stílusban**: Azonnali koordinátamegadás (`X`, `Y`, `Z`), készméret-állítás (`L × W × T`) és elforgatási szög (`∠Z`) beépített matematikai kifejezésértékelővel minden mezőben (pl. `600-4` vagy `720+18`).
-3. **Élzárólevonás és fészkelés Cutting 3 stílusban**: Az ABS/PVC élzárók vastagságának automatikus levonása mind a 4 oldalon a lapszabász fűrészgéphez szükséges **nettó szabásméret** kiszámításához, kiegészítve egy guillotine-elvű 2D optimalizálóval, amely figyelembe veszi a szálirányt, a fűrészlap vágásvastagságát és a szélezési levágásokat.
+1. **4-nézetes térbeli modellezés**: Egyidejű szerkesztés három szinkronizált 2D merőleges vetületben (**Felülnézet XY — Alaprajz**, **Elölnézet XZ — Homlokzat**, **Oldalnézet YZ — Metszet**) gördítősávokkal, mágneses élillesztéssel és valós idejű **3D Körbeforgatás / Belső nézetes szabad repülés (`Z` Noclip)** ablakkal.
+2. **Precíziós transzformációs sáv**: Azonnali koordinátamegadás (`X`, `Y`, `Z`), készméret-állítás (`L × W × T`) és elforgatási szög (`∠Z`) beépített matematikai kifejezésértékelővel minden mezőben (pl. `600-4` vagy `720+18`).
+3. **Lapszabászat és automatikus élzárólevonás**: Az ABS/PVC élzárók vastagságának automatikus levonása mind a 4 oldalon a lapszabász fűrészgéphez szükséges **nettó szabásméret** kiszámításához, kiegészítve egy guillotine-elvű 2D optimalizálóval, amely figyelembe veszi a szálirányt, a fűrészlap vágásvastagságát és a szélezési levágásokat.
 
 ---
 
@@ -115,7 +115,7 @@ Azonnali nyelvváltás újraindítás nélkül a felső eszköztár **`🌐`** g
 ## Főbb jellemzők
 
 - **Szinkronizált 4-nézetes munkaterület**: Szerkesszen a Felül (`XY`), Elöl (`XZ`), Oldalt (`YZ`) nézetekben, vagy nagyítson ki bármelyik ablakot egyetlen kattintással (`[Maximalizálás]` / `[4 nézet visszaállítása]`).
-- **Hardveresen gyorsított 3D előnézet**: Körbeforgatás (`Jobb egérgomb`/`Középső gomb`) + Hammer stílusú szabad repülés (`Z gomb` + `WASD`/`Szóköz`/`Ctrl`) UV-textúrázással és pontos OBB sugárkövetéses kijelöléssel.
+- **Hardveresen gyorsított 3D előnézet**: Körbeforgatás (`Jobb egérgomb`/`Középső gomb`) + első személyű szabad repülés (`Z gomb` + `WASD`/`Szóköz`/`Ctrl`) UV-textúrázással és pontos OBB sugárkövetéses kijelöléssel.
 - **Mágneses illesztés és dinamikus hézagméretezés**: Automatikus rácshoz illesztés (`1`, `9`, `18`, `50 mm` vagy egyéni), mágneses tapadás a szomszédos elemek lapjaihoz és éleihez (`0 mm`), valamint a szomszédos alkatrészek valós távolságának milliméteres kijelzése.
 - **Keretes kijelölés és csoportos mozgatás**: Rajzoljon kijelölő keretet bármely 2D nézetben több alkatrész egyszerre történő mozgatásához, duplázásához (`Ctrl+D`) vagy más bútorprojektekbe való átmásolásához (`Ctrl+C` / `Ctrl+V`).
 - **Beépített számológép**: Minden numerikus beviteli mező fogad matematikai műveleteket, például `600+100`, `800-36`, `720/2` vagy `45+15`.
@@ -132,7 +132,7 @@ Azonnali nyelvváltás újraindítás nélkül a felső eszköztár **`🌐`** g
 
 ## Funkcionális dokumentáció
 
-### 1. 4-nézetes CAD szerkesztő (Hammer Editor + CorelDRAW munkamenet)
+### 1. 4-nézetes CAD szerkesztő és precíziós vezérlők
 
 A **Szerkesztő** lap (`📐 1. Szerkesztő`) három fő területből áll:
 
@@ -146,7 +146,7 @@ A **Szerkesztő** lap (`📐 1. Szerkesztő`) három fő területből áll:
    - **Kamerabeállítások**:
      - `🔍 Nézet középre igazítása`: A kamerát az origóra vagy a bútor középpontjára állítja.
      - `📐 Ablakhoz igazítás`: Kiszámítja a bútor külső méreteit és mind a 4 ablakban egyszerre a képernyőhöz igazítja a méretarányt.
-   - **CorelDRAW transzformációs sáv**: Közvetlen koordináta-beírás `X`, `Y`, `Z`, alkatrészméretek `L`, `W`, `T`, zöld vágási címke `[Vágás: L × W mm]` és szögelforgatás `∠Z`.
+   - **Precíziós transzformációs sáv**: Közvetlen koordináta-beírás `X`, `Y`, `Z`, alkatrészméretek `L`, `W`, `T`, zöld vágási címke `[Vágás: L × W mm]` és szögelforgatás `∠Z`.
 
 2. **Négy szerkesztőablak**:
    - **2D ortogonális nézetek (`Felülnézet XY`, `Elölnézet XZ`, `Oldalnézet YZ`)** görgetősávokkal, milliméteres vonalzókkal és az élzárások színes sávjaival.
@@ -178,7 +178,7 @@ A program összes számmezője támogatja a matematikai műveleteket:
 
 ---
 
-### 4. 2D guillotine lapszabászati optimalizálás (Cutting 3 stílusban)
+### 4. 2D guillotine lapszabászati optimalizálás
 
 A **Szabásterv** lap (`🪚 3. Szabásterv`) kiszámítja az alkatrészek legoptimálisabb elhelyezését az alapanyag lapokon:
 - **Testreszabható fűrészelési paraméterek**:
@@ -212,7 +212,7 @@ A **Specifikáció** lapon (`📋 2. Specifikáció`):
    - **4. fejezet**: Lapanyag-összesítő és élzáró-fogyasztás (nettó folyóméter és $+15 \%$ tartalék).
    - A dokumentum az **aktuális nyelven** készül beágyazott TrueType/CID vektoros betűtípusokkal.
 2. **`💾 Exportálás CSV-be (Excel)`**: UTF-8 BOM kódolású, pontosvesszővel `;` tagolt táblázat Microsoft Excelhez és LibreOffice-hoz.
-3. **`📋 Vágási lista másolása`**: A szabásméreteket tabulátorral elválasztva a vágólapra másolja külső lapszabászati programokba (mint a Cutting 3) való beillesztéshez.
+3. **`📋 Vágási lista másolása`**: A szabásméreteket tabulátorral elválasztva a vágólapra másolja külső lapszabászati programokba (mint a külső lapszabászati programok vagy táblázatok) való beillesztéshez.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Belépési pont, lapfülek kezelése, kezdőoldal és gyorsbillentyűk
 │   ├── model.rs               # Adatmodell (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4-nézetes grafikus motor Hammer/CorelDRAW, 2D és 3D megjelenítés wgpu/painter
+│   ├── viewport.rs            # 4-nézetes munkaterület-vezérlő, 2D és 3D megjelenítés wgpu/painter
 │   ├── snapping.rs            # Mágneses rács- és élillesztés, vetületi tengelyek
 │   ├── cutter.rs              # 2D guillotine lapszabászat és élzárólevonás
 │   ├── export.rs              # Vektoros fekvő A4 PDF exportáló és CSV exportáló
-│   ├── ui_panels.rs           # CorelDRAW sáv, Alkatrész-felügyelő, Specifikáció, Szabásterv és Anyagok
+│   ├── ui_panels.rs           # Precíziós transzformációs sáv, Alkatrész-felügyelő, Specifikáció, Szabásterv és Anyagok
 │   └── i18n.rs                # Fordítási szótárak 22 nyelvre és operációs rendszer nyelvfelismerése
 ├── build.rs                   # Windows ICO ikon és PE erőforrás automatikus generálása
 ├── Cargo.toml                 # Csomagkonfiguráció és függőségek

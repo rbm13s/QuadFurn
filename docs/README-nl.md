@@ -51,10 +51,10 @@
 - [Schermafbeeldingen en visuele rondleiding](#schermafbeeldingen-en-visuele-rondleiding)
 - [Belangrijkste kenmerken](#belangrijkste-kenmerken)
 - [Functionele documentatie](#functionele-documentatie)
-  - [1. 4-weergaven CAD-ontwerper (Hammer Editor + CorelDRAW workflow)](#1-4-weergaven-cad-ontwerper-hammer-editor--coreldraw-workflow)
+  - [1. 4-weergaven CAD-ontwerper & precisiebediening](#1-4-weergaven-cad-ontwerper--precisiebediening)
   - [2. Rekenkundige formules in invoervelden](#2-rekenkundige-formules-in-invoervelden)
   - [3. Kantenband en automatische aftrek van netto zaagmaten](#3-kantenband-en-automatische-aftrek-van-netto-zaagmaten)
-  - [4. 2D guillotine zaagoptimalisatie (Cutting 3-stijl)](#4-2d-guillotine-zaagoptimalisatie-cutting-3-stijl)
+  - [4. 2D guillotine zaagoptimalisatie](#4-2d-guillotine-zaagoptimalisatie)
   - [5. Projecttabbladen en klembord tussen projecten](#5-projecttabbladen-en-klembord-tussen-projecten)
   - [6. Export van productiepaspoort (vector-PDF, CSV, klembord)](#6-export-van-productiepaspoort-vector-pdf-csv-klembord)
   - [7. Platen-, texturen- en kantenbandcatalogus](#7-platen--texturen--en-kantenbandcatalogus)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** is een snelle, native desktop CAD-toepassing geschreven in Rust, ontworpen voor het construeren van kasten en paneelmeubels van gelamineerd spaanplaat (melamine), MDF, HDF en multiplex, compleet met automatische stuklijstberekening en 2D guillotine-zaagoptimalisatie.
 
 QuadFurn brengt de ergonomie van drie beproefde gereedschappen samen:
-1. **4-weergaven ontwerpen geïnspireerd op de Valve Hammer Editor**: Gelijktijdig werken in drie gesynchroniseerde 2D orthogonale aanzichten (**Bovenaanzicht XY — Plattegrond**, **Vooraanzicht XZ — Aanzicht**, **Zijaanzicht YZ — Doorsnede**) met schuifbalken, magnetische hoek- en randvergrendeling en een realtime **3D Orbit / Eerstepersoons Vlucht (`Z` Noclip)** weergave.
-2. **Precisie-transformatiebalk in CorelDRAW-stijl**: Direct numerieke invoer van coördinaten (`X`, `Y`, `Z`), paneelafmetingen (`L × W × T`) en rotatiehoek (`∠Z`) met ingebouwde rekenmachine in elk invoerveld (bijv. typ `600-4` of `720+18`).
-3. **Kantenbandaftrek en nesting in Cutting 3-stijl**: Automatische aftrek van de dikte van PVC/ABS-kantenband aan alle 4 de zijden om exacte **netto zaagmaten voor de paneelzaag** te berekenen, gekoppeld aan een 2D guillotine-nestingalgoritme dat rekening houdt met nerfrichting, zaagsnede en voorrandsnede.
+1. **4-weergaven ruimtelijke modellering**: Gelijktijdig werken in drie gesynchroniseerde 2D orthogonale aanzichten (**Bovenaanzicht XY — Plattegrond**, **Vooraanzicht XZ — Aanzicht**, **Zijaanzicht YZ — Doorsnede**) met schuifbalken, magnetische hoek- en randvergrendeling en een realtime **3D Orbit / Eerstepersoons Vlucht (`Z` Noclip)** weergave.
+2. **Precisie-transformatiebalk**: Direct numerieke invoer van coördinaten (`X`, `Y`, `Z`), paneelafmetingen (`L × W × T`) en rotatiehoek (`∠Z`) met ingebouwde rekenmachine in elk invoerveld (bijv. typ `600-4` of `720+18`).
+3. **Plaatzagen en automatische kantenbandaftrek**: Automatische aftrek van de dikte van PVC/ABS-kantenband aan alle 4 de zijden om exacte **netto zaagmaten voor de paneelzaag** te berekenen, gekoppeld aan een 2D guillotine-nestingalgoritme dat rekening houdt met nerfrichting, zaagsnede en voorrandsnede.
 
 ---
 
@@ -115,7 +115,7 @@ Direct wisselen van taal zonder herstart via de knop **`🌐`** in de bovenbalk,
 ## Belangrijkste kenmerken
 
 - **Gesynchroniseerde 4-weergaven werkruimte**: Bewerk in Boven (`XY`), Voor (`XZ`), Zij (`YZ`), of maximaliseer elk aanzicht met één klik (`[Maximaliseren]` / `[4 weergaven herstellen]`).
-- **Hardware-versnelde 3D-weergave**: Orbit-camera (`Rechtermuisknop`/`Middelste knop`) + vrije vluchtcamera in Hammer-stijl (`Z-toets` + `WASD`/`Spatie`/`Ctrl`) met UV-texturen en precieze OBB-raycasting.
+- **Hardware-versnelde 3D-weergave**: Orbit-camera (`Rechtermuisknop`/`Middelste knop`) + vrije vluchtcamera in eerstepersoonsperspectief (`Z-toets` + `WASD`/`Spatie`/`Ctrl`) met UV-texturen en precieze OBB-raycasting.
 - **Magnetisch snappen en dynamische tussenruimtematen**: Automatisch snappen op het raster (`1`, `9`, `18`, `50 mm` of aangepast), magnetisch vastklikken op aangrenzende vlakken en randen (`0 mm`) en dynamische afstandsmetingen in millimeters naar naburige panelen.
 - **Kaderselectie en groepstransformatie**: Sleep een selectiekader in een willekeurig 2D-aanzicht om meerdere panelen tegelijk te selecteren, verplaatsen, dupliceren (`Ctrl+D`) of tussen verschillende meubels te kopiëren (`Ctrl+C` / `Ctrl+V`).
 - **Ingebouwde rekenmachine**: Elk invoerveld accepteert formules zoals `600+100`, `800-36`, `720/2` of `45+15`.
@@ -132,7 +132,7 @@ Direct wisselen van taal zonder herstart via de knop **`🌐`** in de bovenbalk,
 
 ## Functionele documentatie
 
-### 1. 4-weergaven CAD-ontwerper (Hammer Editor + CorelDRAW workflow)
+### 1. 4-weergaven CAD-ontwerper & precisiebediening
 
 Het tabblad **Ontwerper** (`📐 1. Ontwerper`) bestaat uit drie hoofdgebieden:
 
@@ -146,7 +146,7 @@ Het tabblad **Ontwerper** (`📐 1. Ontwerper`) bestaat uit drie hoofdgebieden:
    - **Camerakadrering**:
      - `🔍 Weergave centreren`: Centreert de camera op het nulpunt of het midden van het meubel.
      - `📐 Passend maken`: Berekent de totale afmetingen van het meubel en past de schaal in alle 4 de vensters aan.
-   - **CorelDRAW-transformatiebalk**: Directe invoer en bewerking van coördinaten `X`, `Y`, `Z`, paneelafmetingen `L`, `W`, `T`, groen zaagmaatlabel `[Zaag: L × W mm]` en rotatiehoek `∠Z`.
+   - **Precisie-transformatiebalk**: Directe invoer en bewerking van coördinaten `X`, `Y`, `Z`, paneelafmetingen `L`, `W`, `T`, groen zaagmaatlabel `[Zaag: L × W mm]` en rotatiehoek `∠Z`.
 
 2. **Vier aanzichtsvensters**:
    - **2D orthogonale aanzichten (`Boven XY`, `Voor XZ`, `Zij YZ`)** met schuifbalken, millimeterlinialen en gekleurde markeringen van kantenband.
@@ -178,7 +178,7 @@ Alle numerieke velden ondersteunen wiskundige bewerkingen:
 
 ---
 
-### 4. 2D guillotine zaagoptimalisatie (Cutting 3-stijl)
+### 4. 2D guillotine zaagoptimalisatie
 
 Het tabblad **Zaagplan** (`🪚 3. Zaagplan`) berekent de optimale verdeling van alle panelen over de beschikbare platen:
 - **Instelbare zaagparameters**:
@@ -212,7 +212,7 @@ In het tabblad **Stuklijst** (`📋 2. Stuklijst`):
    - **Sectie 4**: Platen- en kantenbandoverzicht (netto meters en $+15\%$ zaagverlies).
    - Het document wordt gegenereerd in de **actieve taal** met ingebedde TrueType/CID-vectorlettertypen.
 2. **`💾 Exporteren naar CSV (Excel)`**: Spreadsheet in UTF-8 met BOM en `;`-scheidingsteken voor direct gebruik in Microsoft Excel of LibreOffice Calc.
-3. **`📋 Zaaglijst kopiëren`**: Kopieert de zaagmaten naar het klembord met tab-scheidingstekens voor import in externe zaagoptimalisatiesoftware (zoals Cutting 3).
+3. **`📋 Zaaglijst kopiëren`**: Kopieert de zaagmaten naar het klembord met tab-scheidingstekens voor import in externe zaagsoftware of spreadsheets.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Startpunt, beheer van projecttabbladen, startpagina en sneltoetsen
 │   ├── model.rs               # Datamodel (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4-weergaven engine Hammer/CorelDRAW, 2D en 3D rendering wgpu/painter
+│   ├── viewport.rs            # 4-weergaven controller, 2D en 3D rendering wgpu/painter
 │   ├── snapping.rs            # Magnetisch snappen aan raster en randen, projectie-assen
 │   ├── cutter.rs              # 2D guillotine zaagoptimalisatie en kantenbandaftrek
 │   ├── export.rs              # Gelokaliseerde vector-PDF A4 Liggend exporteur en CSV-exporteur
-│   ├── ui_panels.rs           # CorelDRAW-balk, Onderdeleninspecteur, Stuklijst, Zaagplan en Materialen
+│   ├── ui_panels.rs           # Transformatiebalk, Onderdeleninspecteur, Stuklijst, Zaagplan en Materialen
 │   └── i18n.rs                # Vertaalwoordenboeken voor 22 talen en OS-taaldetectie
 ├── build.rs                   # Automatische conversie van ICO-pictogram voor Windows en PE-bron
 ├── Cargo.toml                 # Pakketconfiguratie en afhankelijkheden

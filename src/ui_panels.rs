@@ -2,7 +2,7 @@ use crate::cutter::{
     build_specification_i18n, compute_cutting_layout, CuttingReport, SheetLayout, SpecRow,
 };
 use crate::export::{
-    export_spec_to_csv_file_i18n, export_spec_to_pdf_file, generate_cutting3_clipboard_text_i18n,
+    export_spec_to_csv_file_i18n, export_spec_to_pdf_file, generate_cutting_clipboard_text_i18n,
 };
 use crate::i18n::AppLanguage;
 use crate::model::{
@@ -17,11 +17,11 @@ use std::collections::HashMap;
 /// Active application tab
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AppTab {
-    /// 4-viewport designer (Hammer Editor + CorelDRAW)
+    /// 4-viewport designer (quad viewports and precision transform bar)
     Designer4View,
     /// Parts specification table and export
     Specification,
-    /// Cutting layout utility in Cutting 3 style
+    /// Guillotine sheet cutting layout utility
     CuttingLayout,
     /// Materials catalog (18 mm thickness, colors, textures) and edge bandings
     MaterialsManager,
@@ -160,8 +160,8 @@ pub fn math_drag_value(value: &mut f32) -> egui::DragValue<'_> {
     egui::DragValue::new(value).custom_parser(eval_math_expression)
 }
 
-/// Renders CorelDRAW-style top toolbar (precise coordinate inputs X/Y/Z, dimensions L/W/T, rotation, grid, and tools)
-pub fn ui_top_coreldraw_toolbar(
+/// Renders precision top transform bar (precise coordinate inputs X/Y/Z, dimensions L/W/T, rotation, grid, and tools)
+pub fn ui_top_transform_toolbar(
     ui: &mut egui::Ui,
     project: &mut Project,
     selected_part: &mut Option<PartId>,
@@ -368,7 +368,7 @@ pub fn ui_top_coreldraw_toolbar(
 
     ui.separator();
 
-    // Second row of CorelDRAW panel: numeric input of coordinates X, Y, Z and dimensions Length / Width / Thickness / Rotation for selected part or group
+    // Second row of transform bar: numeric input of coordinates X, Y, Z and dimensions Length / Width / Thickness / Rotation for selected part or group
     ui.horizontal_wrapped(|ui| {
         ui.spacing_mut().item_spacing.x = 6.0;
 
@@ -518,7 +518,7 @@ pub fn ui_top_coreldraw_toolbar(
 
                 ui.separator();
 
-                // Part dimensions (Length x Width x Thickness) in millimeters, CorelDRAW-style
+                // Part dimensions (Length x Width x Thickness) in millimeters
                 ui.label(RichText::new(lang.tr("Габарит с кромкой:", "Full size w/ edge:")).strong());
                 let mut len = project.parts[idx].length_mm;
                 let mut wid = project.parts[idx].width_mm;
@@ -2405,7 +2405,7 @@ pub fn ui_specification_tab(
             ))
             .clicked()
         {
-            let text = generate_cutting3_clipboard_text_i18n(project, lang);
+            let text = generate_cutting_clipboard_text_i18n(project, lang);
             ui.ctx().copy_text(text);
             *status_msg = lang
                 .tr(
@@ -2811,7 +2811,7 @@ pub fn ui_cutting_layout_tab(
     });
 }
 
-/// Renders graphical cutting sheet layout diagram in Cutting 3 style
+/// Renders graphical cutting sheet layout diagram with offcuts and edge markers
 fn draw_cutting_sheet_diagram(
     ui: &egui::Ui,
     canvas_rect: Rect,
@@ -2863,7 +2863,7 @@ fn draw_cutting_sheet_diagram(
         Color32::from_rgb(220, 225, 235),
     );
 
-    // 1. Render free offcuts (remnants) with hatching and dimensions, Cutting 3 style
+    // 1. Render free offcuts (remnants) with dimensions
     for rem in &sheet.remnants {
         let r_min = Pos2::new(origin.x + rem.x_mm * scale, origin.y + rem.y_mm * scale);
         let r_rect = Rect::from_min_size(
@@ -2904,7 +2904,7 @@ fn draw_cutting_sheet_diagram(
         );
         painter.rect_stroke(p_rect, 0.0, Stroke::new(1.2, Color32::from_rgb(20, 20, 20)));
 
-        // Render edge banding markers inside part on cutting layout (Cutting 3 style)
+        // Render edge banding markers inside part on cutting layout
         let inset = 3.0;
         let edge_stroke = |eid: Option<EdgeId>| -> Option<Stroke> {
             let e = project.get_edge(eid?)?;

@@ -51,10 +51,10 @@
 - [Skærmbilleder og visuel gennemgang](#skærmbilleder-og-visuel-gennemgang)
 - [Nøglefunktioner](#nøglefunktioner)
 - [Funktionel dokumentation](#funktionel-dokumentation)
-  - [1. 4-visnings CAD-designer (Hammer Editor + CorelDRAW arbejdsgang)](#1-4-visnings-cad-designer-hammer-editor--coreldraw-arbejdsgang)
+  - [1. 4-visnings CAD-designer & præcisionsstyring](#1-4-visnings-cad-designer--præcisionsstyring)
   - [2. Matematiske udtryk i numeriske felter](#2-matematiske-udtryk-i-numeriske-felter)
   - [3. Kantbånd og automatisk fradrag i savmål](#3-kantbånd-og-automatisk-fradrag-i-savmål)
-  - [4. 2D guillotine skæreoptimering (Cutting 3-stil)](#4-2d-guillotine-skæreoptimering-cutting-3-stil)
+  - [4. 2D guillotine skæreoptimering](#4-2d-guillotine-skæreoptimering)
   - [5. Projektfaner og udklipsholder på tværs af projekter](#5-projektfaner-og-udklipsholder-på-tværs-af-projekter)
   - [6. Eksport af produktionspas (vektor-PDF, CSV, udklipsholder)](#6-eksport-af-produktionspas-vektor-pdf-csv-udklipsholder)
   - [7. Plade-, tekstur- og kantbåndskatalog](#7-plade--tekstur--og-kantbåndskatalog)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** er et lynhurtigt, indbygget desktop CAD-program skrevet i Rust, udviklet til design af skabs- og plademøbler i melaminbelagte spånplader, MDF, HDF og krydsfiner, komplet med automatisk styklisteberegning og 2D guillotine-skæreoptimering.
 
 QuadFurn forener ergonomien fra tre klassiske værktøjer i ét samlet arbejdsflow:
-1. **4-visnings modellering inspireret af Valve Hammer Editor**: Samtidig redigering i tre synkroniserede 2D ortogonale projektioner (**Plan XY — Plantegning**, **Front XZ — Opstalt**, **Side YZ — Snit**) med rullebjælker, magnetisk kantlås og en interaktiv realtids **3D Orbit / Førstepersons Flyvetilstand (`Z` Noclip)**.
-2. **Præcisionstransformeringslinje i CorelDRAW-stil**: Øjeblikkelig numerisk indtastning af koordinater (`X`, `Y`, `Z`), pladestørrelse (`L × W × T`) og rotationsvinkel (`∠Z`) med indbygget matematisk beregning i alle felter (f.eks. `600-4` eller `720+18`).
-3. **Kantbåndsfradrag og nesting i Cutting 3-stil**: Automatisk fradrag af PVC/ABS-kantbåndstykkelse på alle 4 kanter for at beregne det nøjagtige **netto savmål for formatsaven**, koblet med en 2D guillotine-nestingmotor, der overholder træets åreretning, savklingens snitbredde og renskæring af pladekanter.
+1. **4-visnings rumlig modellering**: Samtidig redigering i tre synkroniserede 2D ortogonale projektioner (**Plan XY — Plantegning**, **Front XZ — Opstalt**, **Side YZ — Snit**) med rullebjælker, magnetisk kantlås og en interaktiv realtids **3D Orbit / Førstepersons Flyvetilstand (`Z` Noclip)**.
+2. **Præcisionstransformeringslinje**: Øjeblikkelig numerisk indtastning af koordinater (`X`, `Y`, `Z`), pladestørrelse (`L × W × T`) og rotationsvinkel (`∠Z`) med indbygget matematisk beregning i alle felter (f.eks. `600-4` eller `720+18`).
+3. **Pladeskæring og automatisk kantbåndsfradrag**: Automatisk fradrag af PVC/ABS-kantbåndstykkelse på alle 4 kanter for at beregne det nøjagtige **netto savmål for formatsaven**, koblet med en 2D guillotine-nestingmotor, der overholder træets åreretning, savklingens snitbredde og renskæring af pladekanter.
 
 ---
 
@@ -115,7 +115,7 @@ Moderne lyst tema med høj kontrast ved siden af det mørke tema, inklusive auto
 ## Nøglefunktioner
 
 - **Synkroniseret 4-visnings arbejdsområde**: Arbejd i Plan (`XY`), Front (`XZ`), Side (`YZ`), eller maksimér enhver visning med et enkelt klik (`[Maksimer]` / `[Gendan 4 visninger]`).
-- **Hardwareaccelereret 3D-forhåndsvisning**: Orbit-kamera (`Højre museknap`/`Midterknap`) + fri flyvetilstand i Hammer-stil (`tast Z` + `WASD`/`Mellemrum`/`Ctrl`) med UV-teksturer og præcis OBB-strålekastning.
+- **Hardwareaccelereret 3D-forhåndsvisning**: Orbit-kamera (`Højre museknap`/`Midterknap`) + fri flyvetilstand i førstepersonsperspektiv (`tast Z` + `WASD`/`Mellemrum`/`Ctrl`) med UV-teksturer og præcis OBB-strålekastning.
 - **Magnetisk snappe-funktion og dynamiske mellemrumsmål**: Automatisk snapping til gitter (`1`, `9`, `18`, `50 mm` eller brugerdefineret), magnetisk fasthæftning til tilstødende flader og kanter (`0 mm`) og visning af reelle afstande i millimeter til naboplader.
 - **Rammemarkering og gruppetransformation**: Træk en markeringsramme i en 2D-visning for at flytte flere plader sammen, duplikere (`Ctrl+D`) eller kopiere dem på tværs af åbne møbelprojekter (`Ctrl+C` / `Ctrl+V`).
 - **Indbygget lommeregner**: Alle numeriske felter accepterer matematiske formler som `600+100`, `800-36`, `720/2` eller `45+15`.
@@ -132,7 +132,7 @@ Moderne lyst tema med høj kontrast ved siden af det mørke tema, inklusive auto
 
 ## Funktionel dokumentation
 
-### 1. 4-visnings CAD-designer (Hammer Editor + CorelDRAW arbejdsgang)
+### 1. 4-visnings CAD-designer & præcisionsstyring
 
 Fanen **Designer** (`📐 1. Designer`) består af tre primære sektioner:
 
@@ -146,7 +146,7 @@ Fanen **Designer** (`📐 1. Designer`) består af tre primære sektioner:
    - **Kamerajustering**:
      - `🔍 Centrer visning`: Centrerer kameraet på nulpunktet eller møblets midte.
      - `📐 Tilpas til vindue`: Beregner automatisk møblets ydre mål og tilpasser skalaen i alle 4 ruder på én gang.
-   - **CorelDRAW-transformeringslinje**: Direkte indtastning og redigering af koordinater `X`, `Y`, `Z`, elementstørrelse `L`, `W`, `T`, grønt savmålsmærke `[Sav: L × W mm]` og rotationsvinkel `∠Z`.
+   - **Præcisionstransformeringslinje**: Direkte indtastning og redigering af koordinater `X`, `Y`, `Z`, elementstørrelse `L`, `W`, `T`, grønt savmålsmærke `[Sav: L × W mm]` og rotationsvinkel `∠Z`.
 
 2. **Fire visningsruder**:
    - **2D ortogonale visninger (`Plan XY`, `Front XZ`, `Side YZ`)** med rullebjælker, millimeterlinealer og farvede kantbåndsmarkeringer.
@@ -178,7 +178,7 @@ Alle numeriske indtastningsfelter understøtter matematiske formler:
 
 ---
 
-### 4. 2D guillotine skæreoptimering (Cutting 3-stil)
+### 4. 2D guillotine skæreoptimering
 
 Fanen **Skæreplan** (`🪚 3. Skæreplan`) beregner den mest fordelagtige fordeling af pladeelementer på råpladerne:
 - **Justerbare savparametre**:
@@ -212,7 +212,7 @@ I fanen **Stykliste** (`📋 2. Stykliste`):
    - **Sektion 4**: Pladeoversigt og forbrug af kantbånd (netto meter og $+15 \%$ sikkerhedstillæg).
    - Dokumentet genereres på det **aktive sprog** med indlejrede TrueType/CID-vektorskrifttyper.
 2. **`💾 Eksportér til CSV (Excel)`**: Regneark i UTF-8 med BOM og semikolon `;`, klar til Microsoft Excel eller LibreOffice Calc.
-3. **`📋 Kopiér skæreliste`**: Kopierer savmålene til udklipsholderen med tabulatorer for nem overførsel til eksterne optimeringsprogrammer (såsom Cutting 3).
+3. **`📋 Kopiér skæreliste`**: Kopierer savmålene til udklipsholderen med tabulatorer for nem overførsel til eksterne skæreprogrammer eller regneark.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Indgangspunkt, håndtering af projektfaner, startside og tastaturgenveje
 │   ├── model.rs               # Datamodel (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4-visnings grafisk motor Hammer/CorelDRAW, 2D og 3D rendering wgpu/painter
+│   ├── viewport.rs            # 4-visnings controller, 2D og 3D rendering wgpu/painter
 │   ├── snapping.rs            # Magnetisk snappe-funktion til gitter og kanter, projektionsakser
 │   ├── cutter.rs              # 2D guillotine skæreoptimering og fradrag for kantbånd
 │   ├── export.rs              # Vektoriel PDF A4 Liggende eksportør og CSV-eksportør
-│   ├── ui_panels.rs           # CorelDRAW-linje, Elementinspektør, Stykliste, Skæreplan og Materialer
+│   ├── ui_panels.rs           # Transformeringslinje, Elementinspektør, Stykliste, Skæreplan og Materialer
 │   └── i18n.rs                # Oversættelsesordbøger for 22 sprog og automatisk registrering af OS-sprog
 ├── build.rs                   # Automatisk konvertering af ICO-ikon til Windows og PE-ressource
 ├── Cargo.toml                 # Pakkekonfiguration og afhængigheder

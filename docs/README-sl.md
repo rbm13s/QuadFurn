@@ -51,10 +51,10 @@
 - [Posnetki zaslona in vizualni pregled](#posnetki-zaslona-in-vizualni-pregled)
 - [Ključne funkcije](#ključne-funkcije)
 - [Funkcionalna dokumentacija](#funkcionalna-dokumentacija)
-  - [1. 4-pogledni CAD načrtovalec (delovni potek Hammer Editor + CorelDRAW)](#1-4-pogledni-cad-načrtovalec-delovni-potek-hammer-editor--coreldraw)
+  - [1. 4-pogledni CAD načrtovalec in natančno upravljanje](#1-4-pogledni-cad-načrtovalec-in-natančno-upravljanje)
   - [2. Aritmetični izrazi v številskih poljih](#2-aritmetični-izrazi-v-številskih-poljih)
   - [3. Robni trakovi in samodejni odštevek debeline traku pri razrezu](#3-robni-trakovi-in-samodejni-odštevek-debeline-traku-pri-razrezu)
-  - [4. 2D gilotinska optimizacija razreza plošč (slog Cutting 3)](#4-2d-gilotinska-optimizacija-razreza-plošč-slog-cutting-3)
+  - [4. 2D gilotinska optimizacija razreza plošč](#4-2d-gilotinska-optimizacija-razreza-plošč)
   - [5. Zavihki projektov in odložišče med projekti](#5-zavihki-projektov-in-odložišče-med-projekti)
   - [6. Izvoz proizvodnega potnega lista (vektorski PDF, CSV, odložišče)](#6-izvoz-proizvodnega-potnega-lista-vektorski-pdf-csv-odložišče)
   - [7. Katalog ploskovnih materialov, tekstur in robnih trakov](#7-katalog-ploskovnih-materialov-tekstur-in-robnih-trakov)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** je izjemno hitra, domorodna namizna aplikacija CAD, napisana v programskem jeziku Rust, zasnovana za načrtovanje korpusnega in panelnega pohištva iz oplemenitene iverne plošče (iveral), MDF, HDF ter vezanega lesa, s samodejnim ustvarjanjem kosovnic ter 2D gilotinsko optimizacijo razreza plošč.
 
 QuadFurn združuje najboljšo ergonomijo treh uveljavljenih orodij:
-1. **4-pogledno modeliranje v slogu Valve Hammer Editor**: Hkratno urejanje v treh sinhroniziranih 2D pravokotnih projekcijah (**Tloris XY**, **Naris XZ**, **Stranski ris YZ**) z drsniki Hammer, magnetnim pripenjanjem na robove in interaktivnim **3D pogledom (Orbita / Prosti let iz prve osebe `Z` Noclip)**.
-2. **Natančna vrstica transformacij v slogu CorelDRAW**: Takojšen vnos koordinat (`X`, `Y`, `Z`), končnih mer elementa (`L × W × T`) in kota zasukovanja (`∠Z`) z neposrednim računanjem matematičnih formul (npr. `600-4` ali `720+18`).
-3. **Odštevanje robov in gnezdenje v slogu Cutting 3**: Samodejni odštevek debeline ABS/PVC robnih trakov z vseh 4 strani za izračun natančnih **čistih rezalnih mer za žago**, povezan z gilotinskim 2D algoritmom, ki upošteva smer lesnih vlaken, rezalno režo žaginega lista ter robne obreze surovih plošč.
+1. **4-pogledno prostorsko modeliranje**: Hkratno urejanje v treh sinhroniziranih 2D pravokotnih projekcijah (**Tloris XY**, **Naris XZ**, **Stranski ris YZ**) z drsniki, magnetnim pripenjanjem na robove in interaktivnim **3D pogledom (Orbita / Prosti let iz prve osebe `Z` Noclip)**.
+2. **Natančna vrstica transformacij**: Takojšen vnos koordinat (`X`, `Y`, `Z`), končnih mer elementa (`L × W × T`) in kota zasukovanja (`∠Z`) z neposrednim računanjem matematičnih formul (npr. `600-4` ali `720+18`).
+3. **Razrez plošč in samodejno odštevanje robov**: Samodejni odštevek debeline ABS/PVC robnih trakov z vseh 4 strani za izračun natančnih **čistih rezalnih mer za žago**, povezan z gilotinskim 2D algoritmom, ki upošteva smer lesnih vlaken, rezalno režo žaginega lista ter robne obreze surovih plošč.
 
 ---
 
@@ -115,7 +115,7 @@ Takojšnje preklapljanje med jeziki brez ponovnega zagona prek gumba **`🌐`** 
 ## Ključne funkcije
 
 - **Sinhroniziran 4-pogledni delovni prostor**: Delajte v Tlorisu (`XY`), Narisu (`XZ`), Stranskem risu (`YZ`), ali poljuben pogled povečajte čez celotno okno (`[Povečaj]` / `[Obnovi 4 poglede]`).
-- **Strojno pospešen 3D predogled**: Orbitalna kamera (`Desni`/`Srednji gumb miške`) + prosti let iz prve osebe v slogu Hammer (`tipka Z` + `WASD`/`Preslednica`/`Ctrl`) s teksturiranjem UV in natančnim žarkovnim zaznavanjem OBB.
+- **Strojno pospešen 3D predogled**: Orbitalna kamera (`Desni`/`Srednji gumb miške`) + prosti let iz prve osebe iz prve osebe (`tipka Z` + `WASD`/`Preslednica`/`Ctrl`) s teksturiranjem UV in natančnim žarkovnim zaznavanjem OBB.
 - **Magnetno pripenjanje in dinamično kotiranje odmikov**: Samodejni skok na mrežo (`1`, `9`, `18`, `50 mm` ali po meri), magnetni oprijem na robove in ploskve sosednjih kosov (`0 mm`) ter prikaz razdalj v milimetrih do sosednjih elementov.
 - **Izbira z okvirjem in skupinsko preoblikovanje**: Z vlečenjem miške v poljubnem 2D pogledu označite več elementov hkrati, jih skupaj premikajte, podvajajte (`Ctrl+D`) ali kopirajte med odprtimi projekti (`Ctrl+C` / `Ctrl+V`).
 - **Vgrajen računski modul**: Vsa številska polja omogočajo vnos računskih izrazov, kot so `600+100`, `800-36`, `720/2` ali `45+15`.
@@ -132,7 +132,7 @@ Takojšnje preklapljanje med jeziki brez ponovnega zagona prek gumba **`🌐`** 
 
 ## Funkcionalna dokumentacija
 
-### 1. 4-pogledni CAD načrtovalec (delovni potek Hammer Editor + CorelDRAW)
+### 1. 4-pogledni CAD načrtovalec in natančno upravljanje
 
 Zavihek **Načrtovalec** (`📐 1. Načrtovalec`) obsega tri poglavitna območja:
 
@@ -146,7 +146,7 @@ Zavihek **Načrtovalec** (`📐 1. Načrtovalec`) obsega tri poglavitna območja
    - **Kadriranje pogleda**:
      - `🔍 Usredini pogled`: Usredini kamero na izhodišče ali središče pohištva.
      - `📐 Prilagodi oknu`: Samodejno izračuna zunanje mere pohištva in optimalno zapolni vsa 4 okna hkrati.
-   - **Vrstica transformacij CorelDRAW**: Prikaz in neposredno spreminjanje koordinat `X`, `Y`, `Z`, mer `L`, `W`, `T`, zelene značke čistega reza `[Rez: L × W mm]` ter kota zasuka `∠Z`.
+   - **Natančna vrstica transformacij**: Prikaz in neposredno spreminjanje koordinat `X`, `Y`, `Z`, mer `L`, `W`, `T`, zelene značke čistega reza `[Rez: L × W mm]` ter kota zasuka `∠Z`.
 
 2. **Štiri delovna okna**:
    - **2D pravokotne projekcije (`Tloris XY`, `Naris XZ`, `Stranski ris YZ`)** z drsniki, milimetrskimi merili in barvnimi črtami nanesenih robnih trakov.
@@ -178,7 +178,7 @@ Vsa številska polja v programu podpirajo neposreden vnos matematičnih formul:
 
 ---
 
-### 4. 2D gilotinska optimizacija razreza plošč (slog Cutting 3)
+### 4. 2D gilotinska optimizacija razreza plošč
 
 Zavihek **Načrt razreza** (`🪚 3. Načrt razreza`) izračuna najugodnejšo razporeditev elementov na surove plošče:
 - **Nastavljivi parametri razreza**:
@@ -212,7 +212,7 @@ V zavihku **Kosovnica** (`📋 2. Kosovnica`):
    - **4. razdelek**: Pregled plošč in porabe robnih trakov (čista dolžina in varnostni pribitek `+15 %`).
    - Dokument je pripravljen v **trenutno izbranem jeziku** z vgrajenimi vektorskimi pisavami TrueType/CID.
 2. **`💾 Izvozi v CSV (Excel)`**: Preglednica UTF-8 z BOM in ločilom `;`, pripravljena za Microsoft Excel ali LibreOffice Calc.
-3. **`📋 Kopiraj seznam razreza`**: Kopira tabelo mer v odložišče s tabulatorji za enostavno uvažanje v zunanje programe za razrez (kot je Cutting 3).
+3. **`📋 Kopiraj seznam razreza`**: Kopira tabelo mer v odložišče s tabulatorji za enostavno uvažanje v zunanje programe za razrez (kot so namenski programi ali preglednice).
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Vstopna točka, upravljanje zavihkov projektov, začetna stran in bližnjice
 │   ├── model.rs               # Podatkovni model (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4-pogledni izrisovalnik Hammer/CorelDRAW, 2D in 3D izris wgpu/painter
+│   ├── viewport.rs            # 4-pogledni krmilnik delovnega prostora, 2D in 3D izris wgpu/painter
 │   ├── snapping.rs            # Magnetno pripenjanje na mrežo in robove, projekcijske osi
 │   ├── cutter.rs              # 2D gilotinski optimizator razreza in odštevanje robnih trakov
 │   ├── export.rs              # Izvoznik vektorskega PDF A4 ležeče in izvoznik CSV
-│   ├── ui_panels.rs           # Vrstica CorelDRAW, Inšpektor elementov, Kosovnica, Razrez in Materiali
+│   ├── ui_panels.rs           # Vrstica transformacij, Inšpektor elementov, Kosovnica, Razrez in Materiali
 │   └── i18n.rs                # Slovarji prevodov za 22 jezikov in samodejno zaznavanje sistema
 ├── build.rs                   # Samodejna pretvorba ikone ICO za Windows in vir PE
 ├── Cargo.toml                 # Konfiguracija paketa in odvisnosti

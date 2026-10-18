@@ -51,10 +51,10 @@
 - [Capturas de pantalla y recorrido visual](#capturas-de-pantalla-y-recorrido-visual)
 - [Características principales](#características-principales)
 - [Documentación funcional](#documentación-funcional)
-  - [1. Diseñador CAD de 4 vistas (flujo de trabajo Hammer + CorelDRAW)](#1-diseñador-cad-de-4-vistas-flujo-de-trabajo-hammer--coreldraw)
+  - [1. Diseñador CAD de 4 vistas y controles de precisión](#1-diseñador-cad-de-4-vistas-y-controles-de-precisión)
   - [2. Expresiones aritméticas en campos numéricos](#2-expresiones-aritméticas-en-campos-numéricos)
   - [3. Canto y deducción automática del tamaño de corte neto](#3-canto-y-deducción-automática-del-tamaño-de-corte-neto)
-  - [4. Optimización de corte 2D por guillotina (estilo Cutting 3)](#4-optimización-de-corte-2d-por-guillotina-estilo-cutting-3)
+  - [4. Optimización de corte 2D por guillotina](#4-optimización-de-corte-2d-por-guillotina)
   - [5. Pestañas de proyectos y portapapeles entre proyectos](#5-pestañas-de-proyectos-y-portapapeles-entre-proyectos)
   - [6. Exportación del pasaporte de producción (PDF vectorial, CSV, portapapeles)](#6-exportación-del-pasaporte-de-producción-pdf-vectorial-csv-portapapeles)
   - [7. Catálogo de tableros, texturas y cantos](#7-catálogo-de-tableros-texturas-y-cantos)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** es una aplicación CAD de escritorio nativa y de alto rendimiento desarrollada en Rust para el diseño de muebles de paneles y gabinetes en tableros aglomerados laminados (melamina), MDF, HDF y contrachapado, con cálculo automatizado de especificaciones y optimizador de corte en guillotina 2D.
 
 QuadFurn combina la mejor ergonomía de tres herramientas clásicas:
-1. **Modelado en 4 vistas al estilo Valve Hammer Editor**: Edición simultánea en tres proyecciones ortogonales (**Planta Superior XY**, **Alzado Frontal XZ**, **Sección Lateral YZ**) con barras de desplazamiento, ajuste magnético y una vista **3D con órbita y vuelo libre en primera persona (`Z` Noclip)**.
-2. **Barra de transformación de precisión al estilo CorelDRAW**: Entrada numérica directa de coordenadas (`X`, `Y`, `Z`), dimensiones (`L × An × Gr`) y ángulo de rotación (`∠Z`) con calculadora integrada (por ejemplo, `600-4` o `720+18`).
-3. **Deducción de cantos y optimización de corte al estilo Cutting 3**: Resta automática del grosor de canto PVC/ABS de las dimensiones de las piezas para obtener los **tamaños netos de corte de sierra**, junto con anidado guillotina 2D que respeta la veta de la madera, el grosor de corte de la sierra y los márgenes de refilado.
+1. **Modelado espacial en 4 vistas**: Edición simultánea en tres proyecciones ortogonales (**Planta Superior XY**, **Alzado Frontal XZ**, **Sección Lateral YZ**) con barras de desplazamiento, ajuste magnético y una vista **3D con órbita y vuelo libre en primera persona (`Z` Noclip)**.
+2. **Barra de transformación de precisión**: Entrada numérica directa de coordenadas (`X`, `Y`, `Z`), dimensiones (`L × An × Gr`) y ángulo de rotación (`∠Z`) con calculadora integrada (por ejemplo, `600-4` o `720+18`).
+3. **Optimización de corte y deducción de cantos**: Resta automática del grosor de canto PVC/ABS de las dimensiones de las piezas para obtener los **tamaños netos de corte de sierra**, junto con anidado guillotina 2D que respeta la veta de la madera, el grosor de corte de la sierra y los márgenes de refilado.
 
 ---
 
@@ -131,7 +131,7 @@ Cambio de idioma instantáneo desde la barra superior mediante el botón **`🌐
 
 ## Documentación funcional
 
-### 1. Diseñador CAD de 4 vistas (flujo de trabajo Hammer + CorelDRAW)
+### 1. Diseñador CAD de 4 vistas y controles de precisión
 
 La pestaña **Diseñador** (`📐 1. Diseñador`) se divide en tres áreas principales:
 
@@ -141,7 +141,7 @@ La pestaña **Diseñador** (`📐 1. Diseñador`) se divide en tres áreas princ
    - `📏 Cinta métrica (M)`: Medición milimétrica precisa en vistas 2D.
    - **Inserción rápida**: Botones de un clic (`+ Balda (XY)`, `+ Lateral (YZ)`, `+ Frontal (XZ)`).
    - **Rejilla y atracción magnética**: Pasos de rejilla (`1`, `9`, `18`, `50 mm`), atracción a bordes y visualización de cotas de holgura (`Holguras (mm)`).
-   - **Barra de transformación CorelDRAW**: Coordenadas `X`, `Y`, `Z`, dimensiones `L`, `An`, `Gr`, medidor de corte `[Corte: L × An mm]` y rotación `∠Z`.
+   - **Barra de transformación de precisión**: Coordenadas `X`, `Y`, `Z`, dimensiones `L`, `An`, `Gr`, medidor de corte `[Corte: L × An mm]` y rotación `∠Z`.
 
 2. **4 vistas de trabajo**:
    - Vistas ortogonales con barras de desplazamiento, reglas y marcas de color de cantos.
@@ -173,7 +173,7 @@ En la fabricación de muebles, el espesor del canto debe descontarse del tamaño
 
 ---
 
-### 4. Optimización de corte 2D por guillotina (estilo Cutting 3)
+### 4. Optimización de corte 2D por guillotina
 
 La pestaña **Corte** (`🪚 3. Corte`) anida las piezas en tableros de sus materiales:
 - **Parámetros de corte**: Grosor de sierra (por defecto `4.0 mm`), márgenes de refilado en los 4 bordes (por defecto `10 mm`).
@@ -199,7 +199,7 @@ En la pestaña **Especificación** (`📋 2. Especificación`):
    - Planos de corte detallados por tablero.
    - Resumen de materiales y cantos en metros lineales con `+15%` de desperdicio.
 2. **`💾 Exportar a CSV (Excel)`**: Hoja de cálculo separada por punto y coma con UTF-8 BOM.
-3. **`📋 Copiar lista de corte`**: Texto tabulado para optimizadores externos (Cutting 3, etc.).
+3. **`📋 Copiar lista de corte`**: Texto tabulado para optimizadores externos o hojas de cálculo.
 
 ---
 
@@ -297,7 +297,7 @@ QuadFurn/
 │   ├── viewport.rs            # Controlador 4 vistas, renderizado 2D/3D
 │   ├── snapping.rs            # Atracción magnética y cotas
 │   ├── cutter.rs              # Lista de corte y optimización 2D
-│   ├── export.rs              # Exportación PDF, CSV, Cutting 3
+│   ├── export.rs              # Exportación PDF, CSV, listas de corte
 │   ├── ui_panels.rs           # Barras de herramientas, inspector
 │   └── i18n.rs                # Diccionarios en 22 idiomas
 ├── build.rs                   # Integración de iconos en Windows

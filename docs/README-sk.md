@@ -51,10 +51,10 @@
 - [Snímky obrazovky a vizuálne predstavenie](#snímky-obrazovky-a-vizuálne-predstavenie)
 - [Kľúčové vlastnosti](#kľúčové-vlastnosti)
 - [Funkčná dokumentácia](#funkčná-dokumentácia)
-  - [1. 4-pohľadový CAD konštruktér (ergonómia Hammer Editor + CorelDRAW)](#1-4-pohľadový-cad-konštruktér-ergonómia-hammer-editor--coreldraw)
+  - [1. 4-pohľadový CAD konštruktér a presné polohovanie](#1-4-pohľadový-cad-konštruktér-a-presné-polohovanie)
   - [2. Aritmetické výrazy v číselných poliach](#2-aritmetické-výrazy-v-číselných-poliach)
   - [3. Hranovanie a automatický odpočet hrúbky hrany z rezného rozmeru](#3-hranovanie-a-automatický-odpočet-hrúbky-hrany-z-rezného-rozmeru)
-  - [4. 2D gilotínová optimalizácia nárezových plánov (štýl Cutting 3)](#4-2d-gilotínová-optimalizácia-nárezových-plánov-štýl-cutting-3)
+  - [4. 2D gilotínová optimalizácia nárezových plánov](#4-2d-gilotínová-optimalizácia-nárezových-plánov)
   - [5. Záložky projektov a schránka medzi projektmi](#5-záložky-projektov-a-schránka-medzi-projektmi)
   - [6. Export výrobného pasu (vektorové PDF, CSV, schránka)](#6-export-výrobného-pasu-vektorové-pdf-csv-schránka)
   - [7. Katalóg plošných materiálov, textúr a hrán](#7-katalóg-plošných-materiálov-textúr-a-hrán)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** je mimoriadne rýchla, natívna desktopová CAD aplikácia napísaná v jazyku Rust, určená na navrhovanie korpusového a doskového nábytku z laminovanej drevotriesky (LDTD), MDF, HDF a preglejky, vrátane automatického generovania kusovníkov a 2D gilotínovej optimalizácie nárezových plánov veľkoplošných materiálov.
 
 QuadFurn spája najlepšiu ergonómiu troch osvedčených nástrojov:
-1. **4-pohľadové modelovanie v štýle Valve Hammer Editor**: Súčasná práca v troch synchronizovaných 2D pravouhlých priemetoch (**Pôdorys XY**, **Nárys XZ**, **Bokorys YZ**) s posuvníkmi, magnetickým prichytávaním k hranám a interaktívnym **3D pohľadom (Orbit / Voľný let z pohľadu prvej osoby `Z` Noclip)**.
-2. **Presný transformačný panel v štýle CorelDRAW**: Okamžité zadávanie súradníc (`X`, `Y`, `Z`), rozmerov dielca (`L × W × T`) a uhla natočenia (`∠Z`) s integrovaným vyhodnocovaním matematických výrazov (napr. `600-4` alebo `720+18`).
-3. **Odpočet hrán a nesting v štýle Cutting 3**: Automatický odpočet hrúbky ABS/PVC hrán zo všetkých 4 strán pre zistenie presných **čistých rezných rozmerov pre formátovaciu pílu**, prepojený s gilotínovým 2D algoritmom rešpektujúcim smer štruktúry dreva, prerez pílového kotúča a formátovací orez dosiek.
+1. **4-pohľadové priestorové modelovanie**: Súčasná práca v troch synchronizovaných 2D pravouhlých priemetoch (**Pôdorys XY**, **Nárys XZ**, **Bokorys YZ**) s posuvníkmi, magnetickým prichytávaním k hranám a interaktívnym **3D pohľadom (Orbit / Voľný let z pohľadu prvej osoby `Z` Noclip)**.
+2. **Presný transformačný panel**: Okamžité zadávanie súradníc (`X`, `Y`, `Z`), rozmerov dielca (`L × W × T`) a uhla natočenia (`∠Z`) s integrovaným vyhodnocovaním matematických výrazov (napr. `600-4` alebo `720+18`).
+3. **Nárezové plány a automatický odpočet hrán**: Automatický odpočet hrúbky ABS/PVC hrán zo všetkých 4 strán pre zistenie presných **čistých rezných rozmerov pre formátovaciu pílu**, prepojený s gilotínovým 2D algoritmom rešpektujúcim smer štruktúry dreva, prerez pílového kotúča a formátovací orez dosiek.
 
 ---
 
@@ -115,7 +115,7 @@ Okamžité prepínanie jazykov bez reštartu tlačidlom **`🌐`** v hornej liš
 ## Kľúčové vlastnosti
 
 - **Synchronizovaný 4-pohľadový pracovný priestor**: Navrhujte v Pôdoryse (`XY`), Náryse (`XZ`), Bokoryse (`YZ`), alebo ľubovoľné okno zväčšite na celú plochu (`[Zväčšiť]` / `[Obnoviť 4 pohľady]`).
-- **Hardvérovo akcelerovaný 3D náhľad**: Orbitálna kamera (`Pravé`/`Stredné tlačidlo myši`) + voľný let z prvej osoby v štýle Hammer (`kláves Z` + `WASD`/`Medzerník`/`Ctrl`) s perspektívnym UV textúrovaním a presným OBB lúčovým výberom.
+- **Hardvérovo akcelerovaný 3D náhľad**: Orbitálna kamera (`Pravé`/`Stredné tlačidlo myši`) + voľný let z prvej osoby z pohľadu prvej osoby (`kláves Z` + `WASD`/`Medzerník`/`Ctrl`) s perspektívnym UV textúrovaním a presným OBB lúčovým výberom.
 - **Magnetické prichytávanie a dynamické kótovanie medzier**: Automatický úchyt k mriežke (`1`, `9`, `18`, `50 mm` alebo vlastná), prichytenie k plochám a hranám susedných dielcov (`0 mm`) a zobrazenie reálnych vzdialeností v milimetroch k susedným doskám.
 - **Rámčekový výber a skupinová transformácia**: Ťahaním myši v 2D pohľadoch vyberte viac dielcov naraz, posúvajte ich spoločne, duplikujte (`Ctrl+D`) alebo kopírujte medzi otvorenými výrobkami (`Ctrl+C` / `Ctrl+V`).
 - **Integrovaná kalkulačka**: Všetky číselné polia prijímajú matematické vzorce ako `600+100`, `800-36`, `720/2` alebo `45+15`.
@@ -132,7 +132,7 @@ Okamžité prepínanie jazykov bez reštartu tlačidlom **`🌐`** v hornej liš
 
 ## Funkčná dokumentácia
 
-### 1. 4-pohľadový CAD konštruktér (ergonómia Hammer Editor + CorelDRAW)
+### 1. 4-pohľadový CAD konštruktér a presné polohovanie
 
 Záložka **Konštruktér** (`📐 1. Konštruktér`) sa skladá z troch hlavných častí:
 
@@ -146,7 +146,7 @@ Záložka **Konštruktér** (`📐 1. Konštruktér`) sa skladá z troch hlavný
    - **Nastavenie kamery**:
      - `🔍 Vycentrovať pohľad`: Vycentruje zobrazenie na počiatok alebo stred nábytku.
      - `📐 Prispôsobiť oknu`: Automaticky spočíta rozmery výrobku a prispôsobí mierku vo všetkých 4 oknách súčasne.
-   - **Transformačná lišta CorelDRAW**: Zobrazenie a priama editácia súradníc `X`, `Y`, `Z`, rozmerov dielca `L`, `W`, `T`, zeleného štítku čistého rezu `[Rez: L × W mm]` a uhla otočenia `∠Z`.
+   - **Presná transformačná lišta**: Zobrazenie a priama editácia súradníc `X`, `Y`, `Z`, rozmerov dielca `L`, `W`, `T`, zeleného štítku čistého rezu `[Rez: L × W mm]` a uhla otočenia `∠Z`.
 
 2. **Štyri pracovné okná**:
    - **2D pravouhlé priemety (`Pôdorys XY`, `Nárys XZ`, `Bokorys YZ`)** s posuvníkmi, milimetrovými pravítkami a farebným zvýraznením olepených hrán.
@@ -178,7 +178,7 @@ Všetky číselné polia v programe umožňujú zadávanie matematických výraz
 
 ---
 
-### 4. 2D gilotínová optimalizácia nárezových plánov (štýl Cutting 3)
+### 4. 2D gilotínová optimalizácia nárezových plánov
 
 Záložka **Nárezový plán** (`🪚 3. Nárezový plán`) vypočíta optimálne rozloženie dielcov na veľkoplošné dosky:
 - **Nastaviteľné parametre rezania**:
@@ -212,7 +212,7 @@ V záložke **Kusovník** (`📋 2. Kusovník`):
    - **Časť 4**: Prehľad plošných materiálov a spotreby hrán (čistá dĺžka a $+15 \%$ rezerva).
    - Dokument je vygenerovaný v **aktuálne nastavenom jazyku** s vloženými TrueType/CID vektorovými písmami.
 2. **`💾 Exportovať do CSV (Excel)`**: Tabuľkový súbor v kódovaní UTF-8 s BOM a oddeľovačom `;`, priamo otvárateľný v Microsoft Excel alebo LibreOffice Calc.
-3. **`📋 Skopírovať zoznam pre rezanie`**: Skopíruje tabuľku rezných rozmerov do schránky s tabulátormi pre jednoduché vloženie do externých programov (ako Cutting 3).
+3. **`📋 Skopírovať zoznam pre rezanie`**: Skopíruje tabuľku rezných rozmerov do schránky s tabulátormi pre jednoduché vloženie do externých optimalizačných programov alebo tabuliek.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Vstupný bod, správa záložiek projektov, úvodná obrazovka a klávesové skratky
 │   ├── model.rs               # Dátový model (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4-pohľadový vykresľovací modul Hammer/CorelDRAW, 2D a 3D zobrazenie wgpu/painter
+│   ├── viewport.rs            # 4-pohľadový vykresľovací modul pracovnej plochy, 2D a 3D zobrazenie wgpu/painter
 │   ├── snapping.rs            # Magnetické prichytávanie k mriežke a hranám, priemetové osi
 │   ├── cutter.rs              # 2D optimalizátor nárezových plánov a odpočet hrán
 │   ├── export.rs              # Generátor vektorového PDF formátu A4 a export do formátu CSV
-│   ├── ui_panels.rs           # Panel CorelDRAW, Inšpektor dielcov, Kusovník, Nárezový plán a Materiály
+│   ├── ui_panels.rs           # Transformačný panel, Inšpektor dielcov, Kusovník, Nárezový plán a Materiály
 │   └── i18n.rs                # Prekladové slovníky pre 22 jazykov a autodetekcia jazyka systému
 ├── build.rs                   # Automatická konverzia ikony Windows ICO a PE zdroj
 ├── Cargo.toml                 # Konfigurácia balíka a závislosti

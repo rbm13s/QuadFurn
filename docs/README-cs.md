@@ -51,10 +51,10 @@
 - [Snímky obrazovky a vizuální představení](#snímky-obrazovky-a-vizuální-představení)
 - [Klíčové vlastnosti](#klíčové-vlastnosti)
 - [Funkční dokumentace](#funkční-dokumentace)
-  - [1. 4pohledový CAD konstruktér (ergonomie Hammer Editor + CorelDRAW)](#1-4pohledový-cad-konstruktér-ergonomie-hammer-editor--coreldraw)
+  - [1. 4pohledový CAD konstruktér a přesné polohování](#1-4pohledový-cad-konstruktér-a-přesné-polohování)
   - [2. Aritmetické výrazy v číselných polích](#2-aritmetické-výrazy-v-číselných-polích)
   - [3. Hranování a automatický odpočet tloušťky hrany z řezného rozměru](#3-hranování-a-automatický-odpočet-tloušťky-hrany-z-řezného-rozměru)
-  - [4. 2D gilotinová optimalizace nářezových plánů (styl Cutting 3)](#4-2d-gilotinová-optimalizace-nářezových-plánů-styl-cutting-3)
+  - [4. 2D gilotinová optimalizace nářezových plánů](#4-2d-gilotinová-optimalizace-nářezových-plánů)
   - [5. Záložky projektů a schránka mezi projekty](#5-záložky-projektů-a-schránka-mezi-projekty)
   - [6. Export výrobního pasu (vektorové PDF, CSV, schránka)](#6-export-výrobního-pasu-vektorové-pdf-csv-schránka)
   - [7. Katalog plošných materiálů, textur a hran](#7-katalog-plošných-materiálů-textur-a-hran)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** je rychlá, nativní desktopová CAD aplikace napsaná v jazyce Rust, určená pro navrhování korpusového a deskového nábytku z laminované dřevotřísky (LDTD), MDF, HDF a překližky, včetně automatického generování kusovníků a 2D gilotinové optimalizace nářezových plánů velkoplošných materiálů.
 
 QuadFurn spojuje to nejlepší z ergonomie tří osvědčených nástrojů:
-1. **4pohledové modelování ve stylu Valve Hammer Editor**: Současná práce ve třech synchronizovaných 2D pravoúhlých průmětech (**Půdorys XY**, **Nárys XZ**, **Bokorys YZ**) s posuvníky, magnetickým přichytáváním k hranám a interaktivním **3D pohledem (Orbit / Volný let z pohledu první osoby `Z` Noclip)**.
-2. **Přesný transformační panel ve stylu CorelDRAW**: Okamžité zadávání souřadnic (`X`, `Y`, `Z`), rozměrů dílce (`L × W × T`) a úhlu natočení (`∠Z`) s integrovaným vyhodnocováním matematických výrazů (např. `600-4` nebo `720+18`).
-3. **Odpočet tloušťky hran a nesting ve stylu Cutting 3**: Automatický odpočet tloušťky ABS/PVC hran ze všech 4 stran pro zjištění přesných **čistých řezných rozměrů pro formátovací pilu**, propojený s gilotinovým 2D algoritmem respektujícím směr letokruhů dřeva, prořez pilového kotouče a formátovací ořez desek.
+1. **4pohledové prostorové modelování**: Současná práce ve třech synchronizovaných 2D pravoúhlých průmětech (**Půdorys XY**, **Nárys XZ**, **Bokorys YZ**) s posuvníky, magnetickým přichytáváním k hranám a interaktivním **3D pohledem (Orbit / Volný let z pohledu první osoby `Z` Noclip)**.
+2. **Přesný transformační panel**: Okamžité zadávání souřadnic (`X`, `Y`, `Z`), rozměrů dílce (`L × W × T`) a úhlu natočení (`∠Z`) s integrovaným vyhodnocováním matematických výrazů (např. `600-4` nebo `720+18`).
+3. **Nářezové plány a automatický odpočet hran**: Automatický odpočet tloušťky ABS/PVC hran ze všech 4 stran pro zjištění přesných **čistých řezných rozměrů pro formátovací pilu**, propojený s gilotinovým 2D algoritmem respektujícím směr letokruhů dřeva, prořez pilového kotouče a formátovací ořez desek.
 
 ---
 
@@ -115,7 +115,7 @@ Okamžité přepínání jazyků bez restartu tlačítkem **`🌐`** v horní li
 ## Klíčové vlastnosti
 
 - **Synchronizovaný 4pohledový pracovní prostor**: Navrhujte v Půdorysu (`XY`), Nárysu (`XZ`), Bokorysu (`YZ`), nebo libovolné okno zvětšete na celou plochu (`[Zvětšit]` / `[Obnovit 4 pohledy]`).
-- **Hardwarově akcelerovaný 3D náhled**: Orbitální kamera (`Pravé`/`Prostřední tlačítko myši`) + volný let z první osoby ve stylu Hammer (`klávesa Z` + `WASD`/`Mezerník`/`Ctrl`) s perspektivní UV texturací a přesným OBB paprskovým výběrem.
+- **Hardwarově akcelerovaný 3D náhled**: Orbitální kamera (`Pravé`/`Prostřední tlačítko myši`) + volný let z první osoby z pohledu první osoby (`klávesa Z` + `WASD`/`Mezerník`/`Ctrl`) s perspektivní UV texturací a přesným OBB paprskovým výběrem.
 - **Magnetické přichytávání a dynamické kótování mezer**: Automatický úchyt k mřížce (`1`, `9`, `18`, `50 mm` nebo vlastní), přilnutí k plochám a hranám sousedních dílců (`0 mm`) a zobrazení reálných vzdáleností v milimetrech k sousedním deskám.
 - **Rámečkový výběr a skupinová transformace**: Tažením myši ve 2D pohledech vyberte více dílců naráz, posouvejte je společně, duplikujte (`Ctrl+D`) nebo kopírujte mezi otevřenými výrobky (`Ctrl+C` / `Ctrl+V`).
 - **Integrovaná kalkulačka**: Všechna číselná pole přijímají matematické vzorce jako `600+100`, `800-36`, `720/2` nebo `45+15`.
@@ -132,7 +132,7 @@ Okamžité přepínání jazyků bez restartu tlačítkem **`🌐`** v horní li
 
 ## Funkční dokumentace
 
-### 1. 4pohledový CAD konstruktér (ergonomie Hammer Editor + CorelDRAW)
+### 1. 4pohledový CAD konstruktér a přesné polohování
 
 Záložka **Konstruktér** (`📐 1. Konstruktér`) se skládá ze tří hlavních částí:
 
@@ -146,7 +146,7 @@ Záložka **Konstruktér** (`📐 1. Konstruktér`) se skládá ze tří hlavní
    - **Nastavení kamery**:
      - `🔍 Vycentrovat pohled`: Vycentruje zobrazení na počátek nebo střed nábytku.
      - `📐 Přizpůsobit oknu`: Automaticky spočítá rozměry výrobku a přizpůsobí měřítko ve všech 4 oknech současně.
-   - **Transformační lišta CorelDRAW**: Zobrazení a přímá editace souřadnic `X`, `Y`, `Z`, rozměrů dílce `L`, `W`, `T`, zeleného štítku čistého řezu `[Řez: L × W mm]` a úhlu otočení `∠Z`.
+   - **Přesná transformační lišta**: Zobrazení a přímá editace souřadnic `X`, `Y`, `Z`, rozměrů dílce `L`, `W`, `T`, zeleného štítku čistého řezu `[Řez: L × W mm]` a úhlu otočení `∠Z`.
 
 2. **Čtyři pracovní okna**:
    - **2D pravoúhlé průměty (`Půdorys XY`, `Nárys XZ`, `Bokorys YZ`)** s posuvníky, milimetrovými pravítky a barevným zvýrazněním olepených hran.
@@ -178,7 +178,7 @@ Všechna číselná pole v programu umožňují zadávání matematických výra
 
 ---
 
-### 4. 2D gilotinová optimalizace nářezových plánů (styl Cutting 3)
+### 4. 2D gilotinová optimalizace nářezových plánů
 
 Záložka **Nářezový plán** (`🪚 3. Nářezový plán`) vypočítá optimální rozložení dílců na velkoplošné desky:
 - **Nastavitelné parametry řezání**:
@@ -212,7 +212,7 @@ V záložce **Kusovník** (`📋 2. Kusovník`):
    - **Část 4**: Přehled plošných materiálů a spotřeby hran (čistá délka a $+15 \%$ rezerva).
    - Dokument je vygenerován v **aktuálně nastaveném jazyce** s vloženými TrueType/CID vektorovými písmy.
 2. **`💾 Exportovat do CSV (Excel)`**: Tabulkový soubor v kódování UTF-8 s BOM a oddělovačem `;`, přímo otevíratelný v Microsoft Excel nebo LibreOffice Calc.
-3. **`📋 Zkopírovat seznam pro řezání`**: Zkopíruje tabulku řezných rozměrů do schránky s tabulátory pro snadné vložení do externích programů (jako Cutting 3).
+3. **`📋 Zkopírovat seznam pro řezání`**: Zkopíruje tabulku řezných rozměrů do schránky s tabulátory pro snadné vložení do externích optimalizačních programů nebo tabulek.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Vstupní bod, správa záložek projektů, úvodní obrazovka a klávesové zkratky
 │   ├── model.rs               # Datový model (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4pohledový vykreslovací modul Hammer/CorelDRAW, 2D a 3D zobrazení wgpu/painter
+│   ├── viewport.rs            # 4pohledový vykreslovací modul pracovní plochy, 2D a 3D zobrazení wgpu/painter
 │   ├── snapping.rs            # Magnetické přichytávání k mřížce a hranám, průmětové osy
 │   ├── cutter.rs              # 2D optimalizátor nářezových plánů a odpočet hran
 │   ├── export.rs              # Generátor vektorového PDF formátu A4 a export do formátu CSV
-│   ├── ui_panels.rs           # Panel CorelDRAW, Inspektor dílců, Kusovník, Nářezový plán a Materiály
+│   ├── ui_panels.rs           # Transformační panel, Inspektor dílců, Kusovník, Nářezový plán a Materiály
 │   └── i18n.rs                # Překladové slovníky pro 22 jazyků a autodetekce jazyka systému
 ├── build.rs                   # Automatická konverze ikony Windows ICO a PE zdroj
 ├── Cargo.toml                 # Konfigurace balíčku a závislosti

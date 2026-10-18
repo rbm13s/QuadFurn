@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -51,10 +51,10 @@
 - [Screenshots & Visual Tour](#screenshots--visual-tour)
 - [Key Features](#key-features)
 - [Functional Documentation](#functional-documentation)
-  - [1. 4-Viewport CAD Designer (Hammer Editor + CorelDRAW Workflow)](#1-4-viewport-cad-designer-hammer-editor--coreldraw-workflow)
+  - [1. 4-Viewport CAD Designer & Precision Controls](#1-4-viewport-cad-designer--precision-controls)
   - [2. Inline Arithmetic Expressions in Numeric Fields](#2-inline-arithmetic-expressions-in-numeric-fields)
   - [3. Edge Banding & Automatic Net Saw Size Deduction](#3-edge-banding--automatic-net-saw-size-deduction)
-  - [4. Guillotine 2D Sheet Cutting Optimization (Cutting 3 Style)](#4-guillotine-2d-sheet-cutting-optimization-cutting-3-style)
+  - [4. Guillotine 2D Sheet Cutting Optimization](#4-guillotine-2d-sheet-cutting-optimization)
   - [5. Multi-Product Tabs & Cross-Project Copy/Paste](#5-multi-product-tabs--cross-project-copypaste)
   - [6. Production Passport Export (Vector PDF, Excel CSV, Clipboard)](#6-production-passport-export-vector-pdf-excel-csv-clipboard)
   - [7. Sheet Materials, Textures & Edge Banding Catalog](#7-sheet-materials-textures--edge-banding-catalog)
@@ -70,10 +70,10 @@
 
 **QuadFurn CAD** is a fast, native desktop CAD application written in Rust for designing cabinet and panel furniture made of laminated chipboard (LDSP), MDF, HDF, and plywood, complete with automated specification generation and 2D guillotine sheet cutting optimization.
 
-QuadFurn combines the best ergonomics from three classic tools into one cohesive workflow:
-1. **Valve Hammer Editor 4-Viewport Modeling**: Simultaneous editing across three synchronized 2D orthographic projections (**Top XY — Plan**, **Front XZ — Elevation**, **Side YZ — Section**) with Hammer-style viewport scrollbars, magnetic edge snapping, and a real-time **3D Orbit / First-Person Fly (`Z` Noclip)** viewport.
-2. **CorelDRAW Precision Transform Bar**: Instant numeric coordinate (`X`, `Y`, `Z`), full dimension (`L × W × T`), and yaw angle (`∠Z`) input with built-in inline math evaluation (e.g., typing `600-4` or `720+18` directly into any input box).
-3. **Cutting 3 Sheet Layout & Edge Banding Deduction**: Automatic subtraction of PVC/ABS edge banding thickness from full part dimensions to compute exact **net saw cutting sizes**, paired with a guillotine 2D bin-packing optimizer that respects wood grain direction, saw kerf width, and sheet edge trim margins.
+QuadFurn combines three essential furniture manufacturing capabilities into one cohesive workflow:
+1. **4-Viewport Spatial Modeling**: Simultaneous editing across three synchronized 2D orthographic projections (**Top XY — Plan**, **Front XZ — Elevation**, **Side YZ — Section**) with viewport scrollbars, magnetic edge snapping, and a real-time **3D Orbit / First-Person Fly (`Z` Noclip)** viewport.
+2. **Precision Transform Bar**: Instant numeric coordinate (`X`, `Y`, `Z`), full dimension (`L × W × T`), and yaw angle (`∠Z`) input with built-in inline math evaluation (e.g., typing `600-4` or `720+18` directly into any input box).
+3. **Sheet Cutting Layout & Edge Banding Deduction**: Automatic subtraction of PVC/ABS edge banding thickness from full part dimensions to compute exact **net saw cutting sizes**, paired with a guillotine 2D bin-packing optimizer that respects wood grain direction, saw kerf width, and sheet edge trim margins.
 
 ---
 
@@ -114,7 +114,7 @@ Instant runtime language switching via the **`🌐`** selector in the top toolba
 ## Key Features
 
 - **Synchronized 4-Viewport Workspace**: Edit in Top (`XY`), Front (`XZ`), Side (`YZ`), or maximize any viewport with one click (`[Maximize]` / `[Restore 4 Views]`).
-- **3D Hardware-Accelerated Preview**: Orbit camera (`RMB`/`MMB`) + Hammer-style first-person free-fly camera (`Z` key + `WASD`/`Space`/`Ctrl`) with perspective-correct subdivided texture rendering and exact OBB raycasting.
+- **3D Hardware-Accelerated Preview**: Orbit camera (`RMB`/`MMB`) + first-person free-fly camera (`Z` key + `WASD`/`Space`/`Ctrl`) with perspective-correct subdivided texture rendering and exact OBB raycasting.
 - **Magnetic Snapping & Live Gap Dimensions**: Automatic snapping to grid steps (`1`, `9`, `18`, `50 mm`, or custom) and adjacent part faces/corners (`0 mm` flush joint), plus real-time distance callouts to neighboring parts.
 - **Box-Selection & Group Transform**: Drag a marquee selection box in any 2D viewport to select multiple parts, move them together, duplicate (`Ctrl+D`), or copy/paste them across different open furniture projects (`Ctrl+C` / `Ctrl+V`).
 - **Inline Math Calculator**: Every numeric input field accepts arithmetic expressions like `600+100`, `800-36`, `720/2`, or `45+15`.
@@ -131,7 +131,7 @@ Instant runtime language switching via the **`🌐`** selector in the top toolba
 
 ## Functional Documentation
 
-### 1. 4-Viewport CAD Designer (Hammer Editor + CorelDRAW Workflow)
+### 1. 4-Viewport CAD Designer & Precision Controls
 
 The **Designer** tab (`📐 1. Designer`) is divided into three main areas:
 
@@ -145,7 +145,7 @@ The **Designer** tab (`📐 1. Designer`) is divided into three main areas:
    - **Camera Framing**:
      - `🔍 Center View`: Centers all 2D/3D cameras on the origin/model center.
      - `📐 Fit to Window`: Automatically calculates the bounding box of all visible parts and zooms/pans all 4 viewports so the entire product fits comfortably in each pane.
-   - **CorelDRAW Transform Bar**: Displays and edits the active part's `X`, `Y`, `Z` coordinates, full `Length (L)`, `Width (W)`, `Thickness (T)`, real-time green `[Cut: L × W mm]` badge, and horizontal rotation angle `∠Z` (allowing angled doors/facades at `45°`, `90°`, etc. in Top XY view).
+   - **Precision Transform Bar**: Displays and edits the active part's `X`, `Y`, `Z` coordinates, full `Length (L)`, `Width (W)`, `Thickness (T)`, real-time green `[Cut: L × W mm]` badge, and horizontal rotation angle `∠Z` (allowing angled doors/facades at `45°`, `90°`, etc. in Top XY view).
 
 2. **Quad Viewports**:
    - **Top View (`Top XY — Plan`)**, **Front View (`Front XZ — Elevation`)**, and **Side View (`Side YZ — Section`)** feature interactive horizontal and vertical scrollbars, dynamic millimeter rulers, and edge-banding color highlights along panel perimeters.
@@ -178,7 +178,7 @@ In furniture manufacturing, edge banding thickness must be subtracted from the f
 
 ---
 
-### 4. Guillotine 2D Sheet Cutting Optimization (Cutting 3 Style)
+### 4. Guillotine 2D Sheet Cutting Optimization
 
 The **Cutting Layout** tab (`🪚 3. Cutting Layout`) automatically packs all visible parts onto sheets of their respective materials:
 - **Configurable Saw Parameters**:
@@ -212,7 +212,7 @@ From the **Specification** tab (`📋 2. Specification`), you can export product
    - **Section 4**: Sheet Materials & Edge Banding Catalog with sheet counts and linear edge banding consumption (net meters and $+15\%$ waste allowance).
    - *Note*: The entire PDF document is generated in the **currently active interface language** with embedded TrueType/CID fonts (`Identity-H` + `/ToUnicode` CMap for full search/copy support across Latin, Cyrillic, and CJK scripts).
 2. **`💾 Export to CSV (Excel)`**: UTF-8 with BOM `;`-delimited spreadsheet ready to open directly in Microsoft Excel.
-3. **`📋 Copy Cutting List`**: Copies a tab-separated table of net saw dimensions to the clipboard for pasting into external optimizers (such as Cutting 3).
+3. **`📋 Copy Cutting List`**: Copies a tab-separated table of net saw dimensions to the clipboard for pasting into external cutting software or spreadsheets.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # App entry point, multi-tab workspace, Start Page, settings & shortcuts
 │   ├── model.rs               # Core data structures (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4-viewport Hammer/CorelDRAW controller, 2D ortho & 3D wgpu/painter rendering
+│   ├── viewport.rs            # 4-viewport workspace controller, 2D ortho & 3D wgpu/painter rendering
 │   ├── snapping.rs            # Magnetic grid & part-edge snapping, 2D projection axes
 │   ├── cutter.rs              # Specification grouping, edge deduction & guillotine 2D bin-packing engine
-│   ├── export.rs              # Multi-page localized vector PDF generator, CSV & Cutting 3 exporters
-│   ├── ui_panels.rs           # CorelDRAW top bar, right Part Inspector, Specification, Cutting & Materials UI
+│   ├── export.rs              # Multi-page localized vector PDF generator, CSV & cutting list exporters
+│   ├── ui_panels.rs           # Top transform bar, right Part Inspector, Specification, Cutting & Materials UI
 │   └── i18n.rs                # 22-language localization dictionaries & OS locale auto-detection
 ├── build.rs                   # Converts assets/icon.jpeg into multi-size ICO & embeds PE resource on Windows
 ├── Cargo.toml                 # Package manifest & dependencies

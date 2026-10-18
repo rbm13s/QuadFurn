@@ -51,10 +51,10 @@
 - [Zrzuty ekranu i prezentacja](#zrzuty-ekranu-i-prezentacja)
 - [Główne funkcje](#główne-funkcje)
 - [Dokumentacja funkcjonalna](#dokumentacja-funkcjonalna)
-  - [1. 4-rzutowy projektant CAD (ergonomia Hammer Editor + CorelDRAW)](#1-4-rzutowy-projektant-cad-ergonomia-hammer-editor--coreldraw)
+  - [1. 4-rzutowy projektant CAD i precyzyjne pozycjonowanie](#1-4-rzutowy-projektant-cad-i-precyzyjne-pozycjonowanie)
   - [2. Wyrażenia arytmetyczne w polach liczbowych](#2-wyrażenia-arytmetyczne-w-polach-liczbowych)
   - [3. Okleinowanie i automatyczne odliczanie grubości obrzeża](#3-okleinowanie-i-automatyczne-odliczanie-grubości-obrzeża)
-  - [4. Optymalizacja rozkroju gilotynowego 2D (styl Cutting 3)](#4-optymalizacja-rozkroju-gilotynowego-2d-styl-cutting-3)
+  - [4. Optymalizacja rozkroju gilotynowego 2D](#4-optymalizacja-rozkroju-gilotynowego-2d)
   - [5. Zakładki projektów i schowek między projektami](#5-zakładki-projektów-i-schowek-między-projektami)
   - [6. Eksport paszportu produkcyjnego (wektorowy PDF, CSV Excel, schowek)](#6-eksport-paszportu-produkcyjnego-wektorowy-pdf-csv-excel-schowek)
   - [7. Katalog materiałów płytowych, tekstur i obrzeży](#7-katalog-materiałów-płytowych-tekstur-i-obrzeży)
@@ -72,9 +72,9 @@
 **QuadFurn CAD** to szybka, natywna aplikacja desktopowa w języku Rust, przeznaczona do projektowania mebli skrzyniowych i panelowych z płyt wiórowych laminowanych, MDF, HDF i sklejki, wyposażona w automatyczne generowanie specyfikacji oraz optymalizator rozkroju gilotynowego 2D.
 
 QuadFurn łączy zalety trzech klasycznych narzędzi:
-1. **Modelowanie 4-rzutowe w stylu Valve Hammer Editor**: Jednoczesna praca w trzech rzutach ortogonalnych (**Góra XY — Rzut z góry**, **Przód XZ — Elewacja**, **Bok YZ — Przekrój**) z suwakami, magnetycznym przyciąganiem i interaktywnym oknem **3D Orbit / Lot swobodny (`Z` Noclip)**.
-2. **Pasek precyzyjnej transformacji CorelDRAW**: Błyskawiczne wprowadzanie współrzędnych (`X`, `Y`, `Z`), wymiarów (`Dł × Szer × Grub`) i kąta obrotu (`∠Z`) z wbudowanym kalkulatorem (np. `600-4` lub `720+18`).
-3. **Odliczanie obrzeży i rozkrój w stylu Cutting 3**: Automatyczne odejmowanie grubości obrzeża PCV/ABS od wymiarów formatek meblowych w celu uzyskania dokładnych **wymiarów cięcia**, połączone z gilotynowym rozkrojem uwzględniającym usłojenie, grubość rzazu piły i marginesy obrzynania płyty.
+1. **4-rzutowe modelowanie przestrzenne**: Jednoczesna praca w trzech rzutach ortogonalnych (**Góra XY — Rzut z góry**, **Przód XZ — Elewacja**, **Bok YZ — Przekrój**) z suwakami, magnetycznym przyciąganiem i interaktywnym oknem **3D Orbit / Lot swobodny (`Z` Noclip)**.
+2. **Pasek precyzyjnej transformacji**: Błyskawiczne wprowadzanie współrzędnych (`X`, `Y`, `Z`), wymiarów (`Dł × Szer × Grub`) i kąta obrotu (`∠Z`) z wbudowanym kalkulatorem (np. `600-4` lub `720+18`).
+3. **Rozkrój płyt i automatyczne odliczanie obrzeży**: Automatyczne odejmowanie grubości obrzeża PCV/ABS od wymiarów formatek meblowych w celu uzyskania dokładnych **wymiarów cięcia**, połączone z gilotynowym rozkrojem uwzględniającym usłojenie, grubość rzazu piły i marginesy obrzynania płyty.
 
 ---
 
@@ -115,7 +115,7 @@ Przełączanie języka w czasie rzeczywistym przyciskiem **`🌐`**, automatyczn
 ## Główne funkcje
 
 - **Zsynchronizowana przestrzeń 4 rzutów**: Edycja w rzutach Góra (`XY`), Przód (`XZ`), Bok (`YZ`) lub powiększenie dowolnego widoku jednym kliknięciem (`[Maksymalizuj]` / `[4 widoki]`).
-- **Podgląd 3D ze sprzętową akceleracją**: Obrót wokół modelu (`PPM`/`ŚPM`) + swobodny lot pierwszoosobowy w stylu Hammer (`Z` + `WASD`/`Spacja`/`Ctrl`) z teksturami i rzutowaniem promieni OBB.
+- **Podgląd 3D ze sprzętową akceleracją**: Obrót wokół modelu (`PPM`/`ŚPM`) + swobodny lot pierwszoosobowy (`Z` + `WASD`/`Spacja`/`Ctrl`) z teksturami i rzutowaniem promieni OBB.
 - **Magnetyczne przyciąganie i wymiary szczelin na żywo**: Przyciąganie do siatki (`1`, `9`, `18`, `50 mm`) oraz do krawędzi sąsiednich formatek na styk (`0 mm`), a także dynamiczne linie wymiarowe do sąsiednich elementów.
 - **Zaznaczanie ramką i transformacja grupowa**: Rysowanie ramki zaznaczenia w 2D, jednoczesne przesuwanie, duplikowanie (`Ctrl+D`) i kopiowanie między projektami (`Ctrl+C` / `Ctrl+V`).
 - **Wbudowany kalkulator**: Wszystkie pola liczbowe przyjmują wyrażenia takie jak `600+100`, `800-36`, `720/2` czy `45+15`.
@@ -132,7 +132,7 @@ Przełączanie języka w czasie rzeczywistym przyciskiem **`🌐`**, automatyczn
 
 ## Dokumentacja funkcjonalna
 
-### 1. 4-rzutowy projektant CAD (ergonomia Hammer Editor + CorelDRAW)
+### 1. 4-rzutowy projektant CAD i precyzyjne pozycjonowanie
 
 Zakładka **Projektant** (`📐 1. Projektant`) składa się z trzech głównych stref:
 
@@ -146,7 +146,7 @@ Zakładka **Projektant** (`📐 1. Projektant`) składa się z trzech głównych
    - **Kadrowanie widoków**:
      - `🔍 Do środka`: Centruje widoki na środku modelu.
      - `📐 Dopasuj do okna`: Oblicza gabaryt i powiększa rzuty tak, aby cały mebel mieścił się w oknach.
-   - **Pasek transformacji CorelDRAW**: Precyzyjne wartości `X`, `Y`, `Z`, wymiary `Długość (L)`, `Szerokość (W)`, `Grubość (T)`, zielony wskaźnik wymiaru cięcia `[Cięcie: D × S mm]` oraz kąt obrotu `∠Z`.
+   - **Pasek precyzyjnej transformacji**: Precyzyjne wartości `X`, `Y`, `Z`, wymiary `Długość (L)`, `Szerokość (W)`, `Grubość (T)`, zielony wskaźnik wymiaru cięcia `[Cięcie: D × S mm]` oraz kąt obrotu `∠Z`.
 
 2. **4 okna rzutów**:
    - **Rzut z góry (`Góra XY`)**, **Rzut z przodu (`Przód XZ`)** i **Rzut z boku (`Bok YZ`)** z paskami przewijania, linijkami milimetrowymi i kolorami obrzeży na krawędziach.
@@ -179,7 +179,7 @@ W produkcji mebli grubość obrzeża musi zostać odliczona od gotowego wymiaru 
 
 ---
 
-### 4. Optymalizacja rozkroju gilotynowego 2D (styl Cutting 3)
+### 4. Optymalizacja rozkroju gilotynowego 2D
 
 Zakładka **Rozkrój** (`🪚 3. Rozkrój`) automatycznie rozmieszcza wszystkie widoczne elementy na arkuszach:
 - **Parametry cięcia**: Rzaz piły (domyślnie `4.0 mm`), marginesy obrzynania arkusza (domyślnie `10 mm` z 4 stron).
@@ -206,7 +206,7 @@ W zakładce **Specyfikacja** (`📋 2. Specyfikacja`):
    - Szczegółowe mapy rozkroju dla każdego arkusza.
    - Zestawienie materiałów i obrzeży w metrach bieżących z zapasem $+15\%$.
 2. **`💾 Eksportuj do CSV (Excel)`**: Tabela rozdzielana średnikami z kodowaniem UTF-8 BOM dla Excela.
-3. **`📋 Kopiuj tabelę cięcia`**: Tekst rozdzielany tabulatorami do wklejania do zewnętrznych programów optymalizujących (Cutting 3 itp.).
+3. **`📋 Kopiuj tabelę cięcia`**: Tekst rozdzielany tabulatorami do wklejania do zewnętrznych programów do rozkroju lub arkuszy kalkulacyjnych.
 
 ---
 
@@ -324,7 +324,7 @@ QuadFurn/
 │   ├── viewport.rs            # Kontroler 4 rzutów, render 2D/3D
 │   ├── snapping.rs            # Przyciąganie magnetyczne i pomiary
 │   ├── cutter.rs              # Zestawienia i rozkrój gilotynowy 2D
-│   ├── export.rs              # Eksport PDF, CSV, Cutting 3
+│   ├── export.rs              # Eksport PDF, CSV, list rozkroju
 │   ├── ui_panels.rs           # Paski narzędzi, inspektor, dialogi
 │   └── i18n.rs                # Słowniki 22 języków
 ├── build.rs                   # Osadzanie ikony w systemie Windows

@@ -51,10 +51,10 @@
 - [Ekran Görüntüleri ve Görsel Tanıtım](#ekran-görüntüleri-ve-görsel-tanıtım)
 - [Önemli Özellikler](#önemli-özellikler)
 - [Fonksiyonel Dokümantasyon](#fonksiyonel-dokümantasyon)
-  - [1. 4 Görünümlü CAD Tasarımcısı (Hammer Editor + CorelDRAW İş Akışı)](#1-4-görünümlü-cad-tasarımcısı-hammer-editor--coreldraw-iş-akışı)
+  - [1. 4 Görünümlü CAD Tasarımcısı ve Hassas Kontroller](#1-4-görünümlü-cad-tasarımcısı-ve-hassas-kontroller)
   - [2. Sayısal Alanlarda Aritmetik İfadeler](#2-sayısal-alanlarda-aritmetik-ifadeler)
   - [3. Kenar Bandı ve Otomatik Net Testere Kesim Ölçüsü Düşümü](#3-kenar-bandı-ve-otomatik-net-testere-kesim-ölçüsü-düşümü)
-  - [4. 2D Giyotin Panel Kesim Optimizasyonu (Cutting 3 Tarzı)](#4-2d-giyotin-panel-kesim-optimizasyonu-cutting-3-tarzı)
+  - [4. 2D Giyotin Panel Kesim Optimizasyonu](#4-2d-giyotin-panel-kesim-optimizasyonu)
   - [5. Çoklu Proje Sekmeleri ve Projeler Arası Pano](#5-çoklu-proje-sekmeleri-ve-projeler-arası-pano)
   - [6. Üretim Pasaportu Dışa Aktarma (Vektör PDF, CSV, Pano)](#6-üretim-pasaportu-dışa-aktarma-vektör-pdf-csv-pano)
   - [7. Panel Malzemeleri, Dokular ve Kenar Bandı Kataloğu](#7-panel-malzemeleri-dokular-ve-kenar-bandı-kataloğu)
@@ -72,9 +72,9 @@
 **QuadFurn CAD**, suntalam, MDF, HDF ve kontrplak gibi levha malzemelerden gövde ve panel mobilya tasarımı yapmak, otomatik parça kesim listesi üretmek ve 2D giyotin panel kesim optimizasyonu sağlamak amacıyla Rust ile geliştirilmiş yerel ve son derece hızlı bir masaüstü CAD uygulamasıdır.
 
 QuadFurn, üç köklü aracın ergonomisini tek bir kusursuz iş akışında birleştirir:
-1. **Valve Hammer Editor Tarzı 4 Görünümlü Modelleme**: Üç senkronize 2D dik projeksiyonda (**Üst XY — Plan**, **Ön XZ — Görünüş**, **Yan YZ — Kesit**) kaydırma çubukları, manyetik kenar yakalama ve eş zamanlı gerçek zamanlı **3D Yörünge / Birinci Şahıs Serbest Uçuş (`Z` Noclip)** ile tasarım.
-2. **CorelDRAW Tarzı Hassas Dönüşüm Çubuğu**: Koordinatların (`X`, `Y`, `Z`), parça boyutlarının (`L × W × T`) ve dönüş açısının (`∠Z`) doğrudan metin kutuları içinden matematiksel formüllerle (örn. `600-4` veya `720+18`) anında girilmesi.
-3. **Cutting 3 Tarzı Kenar Bandı Düşümü ve Yerleşim**: Parça boyutlarından 4 kenardaki PVC/ABS bant kalınlıklarının otomatik düşülerek **net testere ebatlama ölçülerinin** hesaplanması ve ahşap desen yönü, testere bıçağı payı ve kenar tıraşlamalarını gözeten 2D giyotin optimizasyon algoritması.
+1. **4 Görünümlü Mekânsal Modelleme**: Üç senkronize 2D dik projeksiyonda (**Üst XY — Plan**, **Ön XZ — Görünüş**, **Yan YZ — Kesit**) kaydırma çubukları, manyetik kenar yakalama ve eş zamanlı gerçek zamanlı **3D Yörünge / Birinci Şahıs Serbest Uçuş (`Z` Noclip)** ile tasarım.
+2. **Hassas Dönüşüm Çubuğu**: Koordinatların (`X`, `Y`, `Z`), parça boyutlarının (`L × W × T`) ve dönüş açısının (`∠Z`) doğrudan metin kutuları içinden matematiksel formüllerle (örn. `600-4` veya `720+18`) anında girilmesi.
+3. **Panel Kesimi ve Otomatik Kenar Bandı Düşümü**: Parça boyutlarından 4 kenardaki PVC/ABS bant kalınlıklarının otomatik düşülerek **net testere ebatlama ölçülerinin** hesaplanması ve ahşap desen yönü, testere bıçağı payı ve kenar tıraşlamalarını gözeten 2D giyotin optimizasyon algoritması.
 
 ---
 
@@ -115,7 +115,7 @@ Koyu temanın yanı sıra modern yüksek kontrastlı Açık Tema ve işletim sis
 ## Önemli Özellikler
 
 - **Senkronize 4 Görünümlü Çalışma Alanı**: Üst (`XY`), Ön (`XZ`), Yan (`YZ`) görünümlerinde çalışın veya dilediğiniz pencereyi tek tıkla büyütün (`[Ekranı Kapla]` / `[4 Görünüme Dön]`).
-- **Donanım Hızlandırmalı 3D Önizleme**: Yörünge kamerası (`Sağ fare tuşu`/`Orta tuş`) + Hammer tarzı serbest uçuş kamerası (`Z tuşu` + `WASD`/`Boşluk`/`Ctrl`) ile UV doku kaplama ve hassas OBB ışın seçimi.
+- **Donanım Hızlandırmalı 3D Önizleme**: Yörünge kamerası (`Sağ fare tuşu`/`Orta tuş`) + birinci şahıs serbest uçuş kamerası (`Z tuşu` + `WASD`/`Boşluk`/`Ctrl`) ile UV doku kaplama ve hassas OBB ışın seçimi.
 - **Manyetik Yakalama ve Dinamik Boşluk Ölçüleri**: Izgaraya otomatik yakalama (`1`, `9`, `18`, `50 mm` veya özel), komşu parça yüzey ve kenarlarına manyetik yapışma (`0 mm`) ve bitişik panellere olan net mesafelerin canlı gösterimi.
 - **Kutu Seçimi ve Grup Hareketi**: Herhangi bir 2D görünümde çerçeve çizerek birden fazla parçayı seçin, birlikte taşıyın, çoğaltın (`Ctrl+D`) veya farklı mobilya sekmeleri arasında kopyalayıp yapıştırın (`Ctrl+C` / `Ctrl+V`).
 - **Dahili Hesap Makinesi**: Tüm sayısal alanlar `600+100`, `800-36`, `720/2` veya `45+15` gibi matematiksel ifadeleri doğrudan kabul eder.
@@ -132,7 +132,7 @@ Koyu temanın yanı sıra modern yüksek kontrastlı Açık Tema ve işletim sis
 
 ## Fonksiyonel Dokümantasyon
 
-### 1. 4 Görünümlü CAD Tasarımcısı (Hammer Editor + CorelDRAW İş Akışı)
+### 1. 4 Görünümlü CAD Tasarımcısı ve Hassas Kontroller
 
 **Tasarımcı** sekmesi (`📐 1. Tasarımcı`) üç ana bölüme ayrılır:
 
@@ -146,7 +146,7 @@ Koyu temanın yanı sıra modern yüksek kontrastlı Açık Tema ve işletim sis
    - **Kamera Çerçeveleme**:
      - `🔍 Görünümü Ortala`: Kamerayı orijine veya mobilyanın merkezine odaklar.
      - `📐 Pencereye Sığdır`: Mobilyanın dış ölçülerini hesaplar ve tüm 4 görünümü aynı anda ekrana sığdırır.
-   - **CorelDRAW Dönüşüm Çubuğu**: Koordinatların `X`, `Y`, `Z`, parça ebatlarının `L`, `W`, `T`, yeşil testere kesim etiketinin `[Kesim: L × W mm]` ve dönüş açısının `∠Z` doğrudan girilmesi.
+   - **Hassas Dönüşüm Çubuğu**: Koordinatların `X`, `Y`, `Z`, parça ebatlarının `L`, `W`, `T`, yeşil testere kesim etiketinin `[Kesim: L × W mm]` ve dönüş açısının `∠Z` doğrudan girilmesi.
 
 2. **Dört Çalışma Penceresi**:
    - **2D Dik Projeksiyonlar (`Üst XY`, `Ön XZ`, `Yan YZ`)**: Kaydırma çubukları, milimetrik cetveller ve bantlı kenarların renkli çizgileri.
@@ -178,7 +178,7 @@ Programdaki tüm sayısal giriş kutuları matematiksel ifadeleri destekler:
 
 ---
 
-### 4. 2D Giyotin Panel Kesim Optimizasyonu (Cutting 3 Tarzı)
+### 4. 2D Giyotin Panel Kesim Optimizasyonu
 
 **Kesim Şeması** sekmesi (`🪚 3. Kesim Şeması`) tüm parçaları levhalara en verimli şekilde yerleştirir:
 - **Ayarlanabilir Kesim Parametreleri**:
@@ -212,7 +212,7 @@ Programdaki tüm sayısal giriş kutuları matematiksel ifadeleri destekler:
    - **Bölüm 4**: Levha sarfiyatı ve kenar bandı metrajı (net metre ve `+%15` zayiat payı).
    - Belge, gömülü TrueType/CID vektör yazı tipleriyle **etkin arayüz dilinde** oluşturulur.
 2. **`💾 CSV (Excel) Olarak Dışa Aktar`**: Microsoft Excel ve LibreOffice ile tam uyumlu UTF-8 BOM noktalı virgül `;` ayrımlı tablo.
-3. **`📋 Kesim Listesini Kopyala`**: Harici kesim optimizasyon programlarına (Cutting 3 gibi) yapıştırmak üzere sekmeli metin olarak panoya kopyalar.
+3. **`📋 Kesim Listesini Kopyala`**: Harici kesim optimizasyon yazılımlarına veya elektronik tablolara yapıştırmak üzere sekmeli metin olarak panoya kopyalar.
 
 ---
 
@@ -339,11 +339,11 @@ QuadFurn/
 ├── src/
 │   ├── main.rs                # Giriş noktası, sekme yönetimi, başlangıç sayfası ve kısayollar
 │   ├── model.rs               # Veri modeli (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
-│   ├── viewport.rs            # 4 görünümlü Hammer/CorelDRAW motoru, 2D ve 3D wgpu/painter çizimi
+│   ├── viewport.rs            # 4 görünümlü çalışma alanı yöneticisi, 2D ve 3D wgpu/painter çizimi
 │   ├── snapping.rs            # Izgara ve kenar yakalama, projeksiyon eksenleri
 │   ├── cutter.rs              # 2D giyotin kesim optimizasyonu ve kenar bandı düşümü
 │   ├── export.rs              # Vektörel A4 Yatay PDF ve CSV dışa aktarıcı
-│   ├── ui_panels.rs           # CorelDRAW çubuğu, Parça Denetçisi, Şartname, Kesim Şeması ve Malzemeler
+│   ├── ui_panels.rs           # Dönüşüm çubuğu, Parça Denetçisi, Şartname, Kesim Şeması ve Malzemeler
 │   └── i18n.rs                # 22 dil için çeviri sözlükleri ve sistem dili algılama
 ├── build.rs                   # Windows ICO simge dönüşümü ve PE kaynağı
 ├── Cargo.toml                 # Paket yapılandırması ve bağımlılıklar

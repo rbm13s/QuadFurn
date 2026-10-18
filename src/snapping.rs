@@ -2,7 +2,7 @@ use crate::i18n::AppLanguage;
 use crate::model::{PartBlock, PartId, Project};
 use glam::{Vec2, Vec3};
 
-/// 2D orthogonal projections in Hammer Editor style
+/// 2D orthogonal projections (Top XY, Front XZ, Side YZ)
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OrthoAxis {
     /// Top view (Plan XY): Horizontal = X, Vertical = Y (+Y points up on screen)

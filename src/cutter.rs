@@ -272,7 +272,7 @@ pub struct CuttingReport {
     pub edge_banding_totals_m: Vec<(String, f32, [u8; 3])>,
 }
 
-/// Executes guillotine cutting optimization (Cutting 3 style) for all project materials.
+/// Executes 2D guillotine cutting optimization for all project materials.
 pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
     let spec_rows = build_specification(project);
     let settings = &project.cutting_settings;

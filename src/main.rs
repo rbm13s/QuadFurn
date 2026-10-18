@@ -13,7 +13,7 @@ use crate::model::{EdgeId, MaterialId, PartId, Project};
 use crate::ui_panels::{
     copy_selected_parts_to_clipboard, paste_parts_into_project, resolve_and_load_material_texture,
     ui_cutting_layout_tab, ui_materials_manager_tab, ui_right_inspector, ui_specification_tab,
-    ui_top_coreldraw_toolbar, AppTab, ClipboardPart, CLIPBOARD_PREFIX,
+    ui_top_transform_toolbar, AppTab, ClipboardPart, CLIPBOARD_PREFIX,
 };
 use crate::viewport::{EditorTool, QuadViewportController};
 use egui::{Color32, Key, RichText, TextureHandle};
@@ -1680,10 +1680,10 @@ impl eframe::App for QuadFurnApp {
 
         match self.active_tab {
             AppTab::Designer4View => {
-                // Top CorelDRAW-style toolbar for precise dimensions and coordinates
-                egui::TopBottomPanel::top("coreldraw_transform_bar").show(ctx, |ui| {
+                // Top transform toolbar for precise dimensions and coordinates
+                egui::TopBottomPanel::top("top_transform_bar").show(ctx, |ui| {
                     let undo_ref = &mut doc.undo_stack;
-                    ui_top_coreldraw_toolbar(
+                    ui_top_transform_toolbar(
                         ui,
                         &mut doc.project,
                         &mut doc.selected_part,

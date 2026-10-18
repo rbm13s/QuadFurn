@@ -98,8 +98,8 @@ pub fn generate_csv_string_i18n(project: &Project, lang: AppLanguage) -> String 
     out
 }
 
-/// Generates tab-separated text table for direct clipboard pasting into Cutting 3 (Length, Width, Qty, Grain, Edges, Note), localized to `lang`.
-pub fn generate_cutting3_clipboard_text_i18n(project: &Project, lang: AppLanguage) -> String {
+/// Generates tab-separated text table of cutting sizes for clipboard pasting into external optimization software (Length, Width, Qty, Grain, Edges, Note), localized to `lang`.
+pub fn generate_cutting_clipboard_text_i18n(project: &Project, lang: AppLanguage) -> String {
     let rows = build_specification(project);
     let mut out = String::new();
     match lang {
@@ -138,10 +138,10 @@ pub fn generate_cutting3_clipboard_text_i18n(project: &Project, lang: AppLanguag
     out
 }
 
-/// Generates tab-separated text table for direct clipboard pasting into Cutting 3 (default Russian headers).
+/// Generates tab-separated text table of cutting sizes for clipboard pasting into external optimization software (default Russian headers).
 #[allow(dead_code)]
-pub fn generate_cutting3_clipboard_text(project: &Project) -> String {
-    generate_cutting3_clipboard_text_i18n(project, AppLanguage::Ru)
+pub fn generate_cutting_clipboard_text(project: &Project) -> String {
+    generate_cutting_clipboard_text_i18n(project, AppLanguage::Ru)
 }
 
 /// If given a TrueType Collection (`.ttc`, header `ttcf`), extracts the first face (face 0)

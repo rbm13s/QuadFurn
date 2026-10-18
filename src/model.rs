@@ -302,7 +302,7 @@ impl PartBlock {
     }
 }
 
-/// Cutting settings (Cutting 3 style).
+/// Guillotine sheet cutting settings.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CuttingSettings {
     /// Blade / router cutter kerf width (mm).
