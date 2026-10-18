@@ -260,6 +260,7 @@ Az **Anyagok** lapon (`🎨 4. Anyagok`):
 | **`Ctrl + C` / `Ctrl + V`** | Kijelölt elemek másolása / beillesztése (fülek között is működik) |
 | **`Ctrl + D`** | Kijelölt elemek megkettőzése |
 | **`Delete` / `Backspace`** | Kijelölt elemek törlése |
+| **`←` `→` `↑` `↓` (2D nézetek)** | Kijelölt alkatrészek mozgatása a rácslépésköz szerint (`Shift` a duplázáshoz) |
 
 ---
 
@@ -271,7 +272,7 @@ Minden kiadás automatikusan generál futtatásra kész csomagokat a [GitHub Act
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<verzió>_amd64.deb` — hivatalos Debian/Ubuntu csomag (telepíti a programot, a menübejegyzést és a rendszerikonokat):
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — hordozható Linux archívum.
 - **macOS (`Univerzális: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — natív `QuadFurn.app` alkalmazás Retina ikonnal.
@@ -354,4 +355,5 @@ QuadFurn/
 ## Licenc
 
 Ez a projekt a [MIT Licenc](../LICENSE) alatt érhető el — szabadon használható, módosítható és terjeszthető kereskedelmi és magáncélú projektekben egyaránt.
+
 

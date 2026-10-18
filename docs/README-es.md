@@ -241,6 +241,7 @@ En la pestaña **Materiales** (`🎨 4. Materiales`):
 | **`Ctrl + C` / `Ctrl + V`** | Copiar / Pegar piezas seleccionadas (entre pestañas) |
 | **`Ctrl + D`** | Duplicar piezas seleccionadas |
 | **`Delete` / `Backspace`** | Eliminar piezas seleccionadas |
+| **`←` `→` `↑` `↓` (vistas 2D)** | Desplazar las piezas seleccionadas según el paso de cuadrícula (`Shift` para duplicar) |
 
 ---
 
@@ -309,4 +310,5 @@ QuadFurn/
 ## Licencia
 
 Distribuido bajo la [Licencia MIT](../LICENSE) — libre para uso comercial y personal.
+
 

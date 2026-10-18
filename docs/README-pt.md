@@ -260,6 +260,7 @@ No separador **Materiais** (`🎨 4. Materiais`):
 | **`Ctrl + C` / `Ctrl + V`** | Copiar / Colar peças selecionadas (funciona entre diferentes separadores) |
 | **`Ctrl + D`** | Duplicar peças selecionadas |
 | **`Delete` / `Backspace`** | Eliminar peças selecionadas |
+| **`←` `→` `↑` `↓` (vistas 2D)** | Mover as peças selecionadas pelo passo da grade (`Shift` para duplicar) |
 
 ---
 
@@ -271,7 +272,7 @@ Cada versão gera executáveis prontos para uso através do [GitHub Actions](htt
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versão>_amd64.deb` — pacote oficial para Debian/Ubuntu (instala o executável, entrada de menu e ícones do sistema):
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — arquivo Linux portátil.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — aplicação nativa `QuadFurn.app` com ícone Retina.
@@ -354,4 +355,5 @@ QuadFurn/
 ## Licença
 
 Este projeto está licenciado sob a [Licença MIT](../LICENSE) — gratuito para utilização pessoal ou comercial, modificação e distribuição.
+
 

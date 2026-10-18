@@ -260,6 +260,7 @@ In het tabblad **Materialen** (`🎨 4. Materialen`):
 | **`Ctrl + C` / `Ctrl + V`** | Kopiëren / Plakken van geselecteerde onderdelen (werkt tussen tabbladen) |
 | **`Ctrl + D`** | Geselecteerde onderdelen dupliceren |
 | **`Delete` / `Backspace`** | Geselecteerde onderdelen verwijderen |
+| **`←` `→` `↑` `↓` (2D-weergaven)** | Geselecteerde onderdelen verplaatsen met geselecteerde rasterstap (`Shift` voor dubbele stap) |
 
 ---
 
@@ -271,7 +272,7 @@ Elke release bouwt automatisch direct te gebruiken pakketten via [GitHub Actions
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versie>_amd64.deb` — officieel installatiepakket voor Debian/Ubuntu (installeert het programma, menukoppeling en systeemiconen):
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — draagbaar Linux-archief.
 - **macOS (`Universeel: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` met Retina-pictogram.
@@ -354,4 +355,5 @@ QuadFurn/
 ## Licentie
 
 Dit project is vrijgegeven onder de [MIT-licentie](../LICENSE) — vrij te gebruiken, aan te passen en te verspreiden voor zowel commerciële als persoonlijke projecten.
+
 

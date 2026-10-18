@@ -260,6 +260,7 @@
 | **`Ctrl + C` / `Ctrl + V`** | 選択部品のコピー / 貼り付け（別タブ間でも動作） |
 | **`Ctrl + D`** | 選択部品の複製（デュプリケート） |
 | **`Delete` / `Backspace`** | 選択部品の削除 |
+| **`←` `→` `↑` `↓` (2D ビュー)** | 選択したパーツを選択したグリッド刻みで微小移動（`Shift` で 2 倍） |
 
 ---
 
@@ -271,7 +272,7 @@
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu 公式インストーラー（バイナリ、メニュー項目、アイコンを自動登録）：
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — ポータブル Linux アーカイブ。
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — Retina アイコンを内蔵したネイティブ `QuadFurn.app`。
@@ -354,4 +355,5 @@ QuadFurn/
 ## ライセンス
 
 本プロジェクトは [MIT ライセンス](../LICENSE) のもとで公開されており、商用・非商用を問わず自由に使用、改変、再配布が可能です。
+
 

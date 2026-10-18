@@ -260,6 +260,7 @@ V zavihku **Materiali** (`🎨 4. Materiali`):
 | **`Ctrl + C` / `Ctrl + V`** | Kopiraj / Prilepi izbrane elemente (deluje tudi med različnimi zavihki) |
 | **`Ctrl + D`** | Podvoji izbrane elemente |
 | **`Delete` / `Backspace`** | Izbriši izbrane elemente |
+| **`←` `→` `↑` `↓` (2D pogledi)** | Premik izbranih delov za korak izbrane mreže (`Shift` za dvojni korak) |
 
 ---
 
@@ -271,7 +272,7 @@ Vsaka nova različica samodejno ustvari pakete prek storitve [GitHub Actions](ht
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<različica>_amd64.deb` — uradni paket za Debian/Ubuntu (namesti program, vnos v meni ter ikone):
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — prenosni arhiv za Linux.
 - **macOS (`Univerzalno: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — nativna aplikacija `QuadFurn.app` z ikono Retina.
@@ -354,4 +355,5 @@ QuadFurn/
 ## Licenca
 
 Ta projekt je objavljen pod odprtokodno licenco [MIT](../LICENSE) — prost za osebno ali komercialno uporabo, predelavo in deljenje.
+
 

@@ -260,6 +260,7 @@ QuadFurn 深度融合了三款经典工业设计软件的人机工程学优势�
 | **`Ctrl + C` / `Ctrl + V`** | 复制 / 粘贴选中的板件（支持跨标签页复制粘贴） |
 | **`Ctrl + D`** | 原位快速克隆复制作业部件 |
 | **`Delete` / `Backspace`** | 删除当前选中的板件 |
+| **`←` `→` `↑` `↓` (2D 视图)** | 按当前网格步长微调移动所选零件（按住 `Shift` 步长翻倍） |
 
 ---
 
@@ -271,7 +272,7 @@ QuadFurn 深度融合了三款经典工业设计软件的人机工程学优势�
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**：
   - `quadfurn_<版本号>_amd64.deb` — Debian/Ubuntu 官方安装包（自动配置系统二进制命令、启动菜单项以及高分辨率图标）：
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — 绿色解压即用版 Linux 压缩包。
 - **macOS (`Universal 通用架构：Apple Silicon M1–M4 + Intel x86_64`)**：`QuadFurn-macos-universal.zip` — 原生封装的 `QuadFurn.app`，带 Retina `.icns` 矢量图标。
@@ -354,4 +355,5 @@ QuadFurn/
 ## 开源协议
 
 本项目基于宽松的 [MIT 开源协议](../LICENSE) 分发发行 — 允许任何个人或企业免费用于商业开发、二次修改与再分发。
+
 

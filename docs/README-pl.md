@@ -248,6 +248,7 @@ W zakładce **Materiały** (`🎨 4. Materiały`):
 | **`Ctrl + C` / `Ctrl + V`** | Kopiowanie / Wklejanie zaznaczonych elementów (między zakładkami) |
 | **`Ctrl + D`** | Duplikowanie zaznaczonych elementów |
 | **`Delete` / `Backspace`** | Usunięcie zaznaczonych elementów |
+| **`←` `→` `↑` `↓` (widoki 2D)** | Przesunięcie zaznaczonych części o krok wybranej siatki (`Shift` — podwójny krok) |
 
 ---
 
@@ -259,7 +260,7 @@ Automatyczne kompilacje przy każdym wydaniu na [GitHub Actions](https://github.
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — pakiet instalacyjny Debian/Ubuntu:
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — archiwum przenośne.
 - **macOS (`Universal: Apple Silicon + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — aplikacja `QuadFurn.app`.
@@ -336,4 +337,5 @@ QuadFurn/
 ## Licencja
 
 Projekt jest udostępniany na licencji [MIT License](../LICENSE) — dozwolone bezpłatne użycie w celach prywatnych i komercyjnych.
+
 

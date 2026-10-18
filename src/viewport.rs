@@ -254,6 +254,8 @@ pub struct QuadViewportController {
     pub edge_snap_enabled: bool,
     pub show_distance_callouts: bool,
     pub grid_step_mm: f32,
+    /// Last active or hovered 2D orthogonal viewport (TopXY, FrontXZ, SideYZ)
+    pub last_active_ortho: OrthoAxis,
     /// Current UI language for viewport and 3D titles
     pub lang: crate::i18n::AppLanguage,
 }
@@ -280,6 +282,7 @@ impl Default for QuadViewportController {
             edge_snap_enabled: true,
             show_distance_callouts: true,
             grid_step_mm: 18.0, // Default grid step is 18 mm (for standard 18 mm chipboard)
+            last_active_ortho: OrthoAxis::TopXY,
             lang: crate::i18n::AppLanguage::Ru,
         }
     }
@@ -437,6 +440,119 @@ impl QuadViewportController {
         self.cam_3d.sync_eye_from_orbit();
     }
 
+    /// Computes 3D displacement vector for arrow key nudge in a 2D viewport.
+    /// Returns None if no displacement or invalid inputs.
+    pub fn compute_arrow_nudge_delta(
+        axis: OrthoAxis,
+        left: bool,
+        right: bool,
+        up: bool,
+        down: bool,
+        grid_step_mm: f32,
+        shift: bool,
+    ) -> Option<Vec3> {
+        let base_step = if grid_step_mm > 0.001 {
+            grid_step_mm
+        } else {
+            1.0
+        };
+        let step = if shift { base_step * 2.0 } else { base_step };
+
+        let mut delta_uv = Vec2::ZERO;
+        if left {
+            delta_uv.x -= step;
+        }
+        if right {
+            delta_uv.x += step;
+        }
+        if up {
+            delta_uv.y += step;
+        }
+        if down {
+            delta_uv.y -= step;
+        }
+
+        if delta_uv == Vec2::ZERO {
+            None
+        } else {
+            Some(axis.unproject_into(delta_uv, Vec3::ZERO))
+        }
+    }
+
+    /// Handles arrow keys nudging of selected parts in the active 2D orthogonal viewport.
+    fn handle_arrow_keys_nudge(
+        &self,
+        ui: &mut egui::Ui,
+        axis: OrthoAxis,
+        project: &mut Project,
+        selected_part: Option<PartId>,
+        on_before_mutate: &mut impl FnMut(&Project),
+    ) {
+        if ui.ctx().wants_keyboard_input() {
+            return;
+        }
+        if self.cam_3d.noclip_active {
+            return;
+        }
+        if self.active_drag.is_some()
+            || self.box_select_drag.is_some()
+            || self.creating_drag.is_some()
+        {
+            return;
+        }
+
+        let delta_3d = ui.input(|i| {
+            if i.modifiers.ctrl || i.modifiers.command || i.modifiers.alt {
+                return None;
+            }
+            let left = i.key_pressed(Key::ArrowLeft);
+            let right = i.key_pressed(Key::ArrowRight);
+            let up = i.key_pressed(Key::ArrowUp);
+            let down = i.key_pressed(Key::ArrowDown);
+
+            if !left && !right && !up && !down {
+                return None;
+            }
+
+            Self::compute_arrow_nudge_delta(
+                axis,
+                left,
+                right,
+                up,
+                down,
+                self.grid_step_mm,
+                i.modifiers.shift,
+            )
+        });
+
+        if let Some(delta) = delta_3d {
+            let sel_ids: Vec<PartId> = if !self.selected_parts.is_empty() {
+                self.selected_parts.clone()
+            } else {
+                selected_part.into_iter().collect()
+            };
+
+            let visible_sel_ids: Vec<PartId> = sel_ids
+                .into_iter()
+                .filter(|pid| project.parts.iter().any(|p| p.id == *pid && project.is_part_visible(p)))
+                .collect();
+
+            if visible_sel_ids.is_empty() {
+                return;
+            }
+
+            on_before_mutate(project);
+
+            for pid in visible_sel_ids {
+                if let Some(part) = project.parts.iter_mut().find(|p| p.id == pid) {
+                    part.position_mm += delta;
+                }
+            }
+
+            ui.ctx().request_repaint();
+        }
+    }
+
     /// Renders all 4 viewports (or one maximized) in central workspace
     pub fn ui_quad_viewports(
         &mut self,
@@ -461,6 +577,56 @@ impl QuadViewportController {
                 Some(PartOrientation::VerticalYZ) => PartOrientation::FrontalXZ,
                 Some(PartOrientation::FrontalXZ) => PartOrientation::HorizontalXY,
             });
+        }
+
+        // Determine active 2D orthogonal viewport for keyboard nudging
+        let active_ortho_axis = match self.maximized {
+            MaximizedPane::TopXY => Some(OrthoAxis::TopXY),
+            MaximizedPane::FrontXZ => Some(OrthoAxis::FrontXZ),
+            MaximizedPane::SideYZ => Some(OrthoAxis::SideYZ),
+            MaximizedPane::Perspective3D => None,
+            MaximizedPane::None => {
+                let mid_x = avail.left() + avail.width() * self.split_x;
+                let mid_y = avail.top() + avail.height() * self.split_y;
+                let gap = 4.0;
+                let rect_tl = Rect::from_min_max(
+                    avail.min,
+                    Pos2::new(mid_x - gap * 0.5, mid_y - gap * 0.5),
+                );
+                let rect_tr = Rect::from_min_max(
+                    Pos2::new(mid_x + gap * 0.5, avail.top()),
+                    Pos2::new(avail.right(), mid_y - gap * 0.5),
+                );
+                let rect_bl = Rect::from_min_max(
+                    Pos2::new(avail.left(), mid_y + gap * 0.5),
+                    Pos2::new(mid_x - gap * 0.5, avail.bottom()),
+                );
+                let rect_br = Rect::from_min_max(
+                    Pos2::new(mid_x + gap * 0.5, mid_y + gap * 0.5),
+                    avail.max,
+                );
+
+                if let Some(pos) = ui.input(|i| i.pointer.hover_pos()) {
+                    if rect_tl.contains(pos) {
+                        Some(OrthoAxis::TopXY)
+                    } else if rect_bl.contains(pos) {
+                        Some(OrthoAxis::FrontXZ)
+                    } else if rect_br.contains(pos) {
+                        Some(OrthoAxis::SideYZ)
+                    } else if rect_tr.contains(pos) {
+                        None // 3D Perspective viewport
+                    } else {
+                        Some(self.last_active_ortho)
+                    }
+                } else {
+                    Some(self.last_active_ortho)
+                }
+            }
+        };
+
+        if let Some(axis) = active_ortho_axis {
+            self.last_active_ortho = axis;
+            self.handle_arrow_keys_nudge(ui, axis, project, *selected_part, &mut on_before_mutate);
         }
 
         match self.maximized {
@@ -649,6 +815,9 @@ impl QuadViewportController {
 
         let id = ui.id().with(("ortho_pane", vp.axis as u8));
         let resp = ui.interact(canvas_rect, id, Sense::click_and_drag());
+        if resp.hovered() || resp.clicked() || resp.dragged() {
+            self.last_active_ortho = vp.axis;
+        }
         let painter = ui.painter_at(canvas_rect);
 
         // Dark drafting background in WorldCraft / Hammer Editor style
@@ -3191,5 +3360,215 @@ fn is_face_a_in_front_of_b(
     }
 
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_compute_arrow_nudge_delta_top_xy() {
+        // TopXY: U is X, V is Y
+        let left = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::TopXY,
+            true,
+            false,
+            false,
+            false,
+            5.0,
+            false,
+        );
+        assert_eq!(left, Some(Vec3::new(-5.0, 0.0, 0.0)));
+
+        let right = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::TopXY,
+            false,
+            true,
+            false,
+            false,
+            5.0,
+            false,
+        );
+        assert_eq!(right, Some(Vec3::new(5.0, 0.0, 0.0)));
+
+        let up = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::TopXY,
+            false,
+            false,
+            true,
+            false,
+            5.0,
+            false,
+        );
+        assert_eq!(up, Some(Vec3::new(0.0, 5.0, 0.0)));
+
+        let down = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::TopXY,
+            false,
+            false,
+            false,
+            true,
+            5.0,
+            false,
+        );
+        assert_eq!(down, Some(Vec3::new(0.0, -5.0, 0.0)));
+
+        // With Shift (step doubled: 5.0 * 2.0 = 10.0)
+        let right_shift = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::TopXY,
+            false,
+            true,
+            false,
+            false,
+            5.0,
+            true,
+        );
+        assert_eq!(right_shift, Some(Vec3::new(10.0, 0.0, 0.0)));
+
+        let up_shift = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::TopXY,
+            false,
+            false,
+            true,
+            false,
+            5.0,
+            true,
+        );
+        assert_eq!(up_shift, Some(Vec3::new(0.0, 10.0, 0.0)));
+    }
+
+    #[test]
+    fn test_compute_arrow_nudge_delta_front_xz() {
+        // FrontXZ: U is X, V is Z
+        let left = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::FrontXZ,
+            true,
+            false,
+            false,
+            false,
+            18.0,
+            false,
+        );
+        assert_eq!(left, Some(Vec3::new(-18.0, 0.0, 0.0)));
+
+        let right = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::FrontXZ,
+            false,
+            true,
+            false,
+            false,
+            18.0,
+            false,
+        );
+        assert_eq!(right, Some(Vec3::new(18.0, 0.0, 0.0)));
+
+        let up = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::FrontXZ,
+            false,
+            false,
+            true,
+            false,
+            18.0,
+            false,
+        );
+        assert_eq!(up, Some(Vec3::new(0.0, 0.0, 18.0)));
+
+        let down = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::FrontXZ,
+            false,
+            false,
+            false,
+            true,
+            18.0,
+            false,
+        );
+        assert_eq!(down, Some(Vec3::new(0.0, 0.0, -18.0)));
+
+        // With Shift (step doubled: 18.0 * 2.0 = 36.0)
+        let up_shift = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::FrontXZ,
+            false,
+            false,
+            true,
+            false,
+            18.0,
+            true,
+        );
+        assert_eq!(up_shift, Some(Vec3::new(0.0, 0.0, 36.0)));
+    }
+
+    #[test]
+    fn test_compute_arrow_nudge_delta_side_yz() {
+        // SideYZ: U is Y, V is Z
+        let left = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::SideYZ,
+            true,
+            false,
+            false,
+            false,
+            32.0,
+            false,
+        );
+        assert_eq!(left, Some(Vec3::new(0.0, -32.0, 0.0)));
+
+        let right = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::SideYZ,
+            false,
+            true,
+            false,
+            false,
+            32.0,
+            false,
+        );
+        assert_eq!(right, Some(Vec3::new(0.0, 32.0, 0.0)));
+
+        let up = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::SideYZ,
+            false,
+            false,
+            true,
+            false,
+            32.0,
+            false,
+        );
+        assert_eq!(up, Some(Vec3::new(0.0, 0.0, 32.0)));
+
+        let down = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::SideYZ,
+            false,
+            false,
+            false,
+            true,
+            32.0,
+            false,
+        );
+        assert_eq!(down, Some(Vec3::new(0.0, 0.0, -32.0)));
+
+        // With Shift (step doubled: 32.0 * 2.0 = 64.0)
+        let down_shift = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::SideYZ,
+            false,
+            false,
+            false,
+            true,
+            32.0,
+            true,
+        );
+        assert_eq!(down_shift, Some(Vec3::new(0.0, 0.0, -64.0)));
+    }
+
+    #[test]
+    fn test_compute_arrow_nudge_delta_none_when_no_keys() {
+        let none = QuadViewportController::compute_arrow_nudge_delta(
+            OrthoAxis::TopXY,
+            false,
+            false,
+            false,
+            false,
+            5.0,
+            false,
+        );
+        assert_eq!(none, None);
+    }
 }
 

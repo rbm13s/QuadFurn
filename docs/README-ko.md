@@ -260,6 +260,7 @@ QuadFurn은 널리 검증된 3가지 전문 도구의 장점을 결합하여 설
 | **`Ctrl + C` / `Ctrl + V`** | 선택된 부품 복사 / 붙여넣기 (다른 탭 간에도 작동) |
 | **`Ctrl + D`** | 선택된 부품 제자리 복제 |
 | **`Delete` / `Backspace`** | 선택된 부품 삭제 |
+| **`←` `→` `↑` `↓` (2D 뷰)** | 선택된 부품을 선택한 그리드 간격만큼 이동 (`Shift` 누르면 2배) |
 
 ---
 
@@ -271,7 +272,7 @@ QuadFurn은 널리 검증된 3가지 전문 도구의 장점을 결합하여 설
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<버전>_amd64.deb` — 공식 Debian/Ubuntu 설치 패키지 (실행 바이너리, 메뉴 등록 및 시스템 아이콘 자동 구성):
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — 독립 실행형 포터블 Linux 압축 파일.
 - **macOS (`Universal 통합 아키텍처: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — Retina 아이콘이 포함된 네이티브 `QuadFurn.app`.
@@ -354,4 +355,5 @@ QuadFurn/
 ## 라이선스
 
 이 프로젝트는 [MIT 라이선스](../LICENSE)에 따라 배포됩니다 — 상업적 또는 개인적 목적을 불문하고 자유롭게 사용, 수정 및 재배포할 수 있습니다.
+
 

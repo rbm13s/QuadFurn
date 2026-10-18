@@ -260,6 +260,7 @@ I fliken **Material** (`🎨 4. Material`):
 | **`Ctrl + C` / `Ctrl + V`** | Kopiera / Klistra in markerade komponenter (fungerar mellan flikar) |
 | **`Ctrl + D`** | Duplicera markerade komponenter |
 | **`Delete` / `Backspace`** | Ta bort markerade komponenter |
+| **`←` `→` `↑` `↓` (2D-vyer)** | Flytta markerade delar med valt rutnätssteg (`Shift` för dubbelt steg) |
 
 ---
 
@@ -271,7 +272,7 @@ Varje ny utgåva bygger automatiskt färdiga paket via [GitHub Actions](https://
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — officiellt installationspaket för Debian/Ubuntu (installerar binärfil, menyval och systemikoner):
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portabelt Linux-arkiv.
 - **macOS (`Universellt: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — infödd `QuadFurn.app` med Retina-ikon.
@@ -354,4 +355,5 @@ QuadFurn/
 ## Licens
 
 Detta projekt är licensierat under den öppna [MIT-licensen](../LICENSE) — fritt att använda, anpassa och distribuera för såväl kommersiella som privata ändamål.
+
 

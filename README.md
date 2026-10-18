@@ -260,6 +260,7 @@ In the **Materials** tab (`🎨 4. Materials`):
 | **`Ctrl + C` / `Ctrl + V`** | Copy / Paste selected part(s) (works across different product tabs) |
 | **`Ctrl + D`** | Duplicate selected part(s) |
 | **`Delete` / `Backspace`** | Delete selected part(s) |
+| **`←` `→` `↑` `↓` (2D View)** | Nudge selected part(s) by current grid step (`Shift` for double step) |
 
 ---
 
@@ -271,7 +272,7 @@ Every push and release automatically builds ready-to-run packages via [GitHub Ac
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu installer package (installs binary, desktop menu entry, and application icon):
     ```bash
-    sudo apt install ./quadfurn_0.2.1_amd64.deb
+    sudo apt install ./quadfurn_0.2.2_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portable standalone Linux archive.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` bundle with Retina `.icns` icon.
@@ -354,6 +355,7 @@ QuadFurn/
 ## License
 
 This project is licensed under the [MIT License](LICENSE) — feel free to use, modify, and distribute for commercial or personal projects.
+
 
 
 
