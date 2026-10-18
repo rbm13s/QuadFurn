@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -308,3 +308,4 @@ QuadFurn/
 ## Licencia
 
 Distribuido bajo la [Licencia MIT](../LICENSE) — libre para uso comercial y personal.
+

@@ -967,14 +967,14 @@ impl QuadFurnApp {
             }
         }
 
-        // Tool switching hotkeys (V, B, M — only without Ctrl!)
-        if ctx.input(|i| !i.modifiers.ctrl && i.key_pressed(Key::V)) {
+        // Tool switching hotkeys (V, B, M — only without Ctrl, Cmd, or Alt modifiers!)
+        if ctx.input(|i| !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt && i.key_pressed(Key::V)) {
             doc.viewport_ctrl.tool = EditorTool::SelectAndMove;
         }
-        if ctx.input(|i| !i.modifiers.ctrl && i.key_pressed(Key::B)) {
+        if ctx.input(|i| !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt && i.key_pressed(Key::B)) {
             doc.viewport_ctrl.tool = EditorTool::CreateBlock;
         }
-        if ctx.input(|i| !i.modifiers.ctrl && i.key_pressed(Key::M)) {
+        if ctx.input(|i| !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt && i.key_pressed(Key::M)) {
             doc.viewport_ctrl.tool = EditorTool::MeasureTape;
         }
     }
@@ -1765,7 +1765,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
     let mut fonts = egui::FontDefinitions::default();
 
     // 1. Windows emoji font (Segoe UI Emoji — monochromatic outlines for modern icons, including 🪚 and 🌐)
-    if let Ok(bytes) = std::fs::read("C:\\Windows\\Fonts\\seguiemj.ttf") {
+    if let Some(bytes) = crate::export::read_system_font_bytes("C:\\Windows\\Fonts\\seguiemj.ttf") {
         fonts.font_data.insert(
             "seguiemj".to_owned(),
             egui::FontData::from_owned(bytes).into(),
@@ -1779,7 +1779,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
     }
 
     // 2. Windows technical symbols font (Segoe UI Symbol — vector icons 🗄, 🗑, 👁, 🖥, 📁, 💾, 🔍, 🔒 and arrows)
-    if let Ok(bytes) = std::fs::read("C:\\Windows\\Fonts\\seguisym.ttf") {
+    if let Some(bytes) = crate::export::read_system_font_bytes("C:\\Windows\\Fonts\\seguisym.ttf") {
         fonts.font_data.insert(
             "seguisym".to_owned(),
             egui::FontData::from_owned(bytes).into(),
@@ -1812,7 +1812,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             "/usr/share/fonts/truetype/noto/NotoSans-Regular.ttf",
         ),
     ] {
-        if let Ok(raw) = std::fs::read(path) {
+        if let Some(raw) = crate::export::read_system_font_bytes(path) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
@@ -1839,7 +1839,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             "/usr/share/fonts/truetype/dejavu/DejaVuSansMono.ttf",
         ),
     ] {
-        if let Ok(raw) = std::fs::read(path) {
+        if let Some(raw) = crate::export::read_system_font_bytes(path) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
@@ -1867,7 +1867,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             "/usr/share/fonts/truetype/noto/NotoSansSymbols-Regular.ttf",
         ),
     ] {
-        if let Ok(raw) = std::fs::read(path) {
+        if let Some(raw) = crate::export::read_system_font_bytes(path) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
@@ -1899,7 +1899,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
         ),
     ] {
-        if let Ok(raw) = std::fs::read(path) {
+        if let Some(raw) = crate::export::read_system_font_bytes(path) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data

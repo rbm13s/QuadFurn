@@ -205,6 +205,35 @@ pub fn ensure_ttf_bytes(bytes: Vec<u8>) -> Vec<u8> {
     out
 }
 
+/// Returns the Windows Fonts directory, checking `%WINDIR%` or `%SystemRoot%` before falling back to `C:\Windows\Fonts`.
+pub fn get_windows_fonts_dir() -> std::path::PathBuf {
+    if let Ok(windir) = std::env::var("WINDIR") {
+        let trimmed = windir.trim();
+        if !trimmed.is_empty() {
+            return std::path::PathBuf::from(trimmed).join("Fonts");
+        }
+    }
+    if let Ok(sysroot) = std::env::var("SystemRoot") {
+        let trimmed = sysroot.trim();
+        if !trimmed.is_empty() {
+            return std::path::PathBuf::from(trimmed).join("Fonts");
+        }
+    }
+    std::path::PathBuf::from("C:\\Windows\\Fonts")
+}
+
+/// Reads a system font file bytes, resolving Windows font paths dynamically via `%WINDIR%` / `%SystemRoot%` with fallback.
+pub fn read_system_font_bytes(path: &str) -> Option<Vec<u8>> {
+    if let Some(stripped) = path.strip_prefix("C:\\Windows\\Fonts\\") {
+        let win_fonts = get_windows_fonts_dir();
+        let dynamic_path = win_fonts.join(stripped);
+        if let Ok(bytes) = std::fs::read(&dynamic_path) {
+            return Some(bytes);
+        }
+    }
+    std::fs::read(path).ok()
+}
+
 /// Helper structure for TrueType font handling in vector PDF generation with full Latin, Cyrillic, and CJK support.
 struct PdfTrueTypeFont {
     raw_bytes: Vec<u8>,
@@ -216,7 +245,7 @@ struct PdfTrueTypeFont {
 impl PdfTrueTypeFont {
     fn load(candidates: &[&str], lang: AppLanguage) -> Result<Self, String> {
         for path in candidates {
-            if let Ok(raw) = std::fs::read(path) {
+            if let Some(raw) = read_system_font_bytes(path) {
                 let bytes = ensure_ttf_bytes(raw);
                 if let Ok(font) = FontArc::try_from_vec(bytes.clone()) {
                     let upm = font.units_per_em().unwrap_or(2048.0).max(1.0);
@@ -2023,5 +2052,12 @@ mod tests {
             let pdf_str = String::from_utf8_lossy(&bytes);
             assert!(pdf_str.contains("/Count 6"));
         }
+    }
+
+    #[test]
+    fn test_windows_fonts_dir_resolution() {
+        let dir = get_windows_fonts_dir();
+        assert!(!dir.as_os_str().is_empty());
+        assert!(dir.ends_with("Fonts"));
     }
 }

@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -270,7 +270,7 @@ Hver utgivelse genererer automatisk installasjonspakker via [GitHub Actions](htt
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versjon>_amd64.deb` — offisiell installasjonspakke for Debian/Ubuntu (installerer programfil, menyoppføring og systemikoner):
     ```bash
-    sudo apt install ./quadfurn_0.2.0_amd64.deb
+    sudo apt install ./quadfurn_0.2.1_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — bærbar Linux-arkivfil.
 - **macOS (`Universell: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — nativ `QuadFurn.app` med Retina-ikon.
@@ -353,3 +353,4 @@ QuadFurn/
 ## Lisens
 
 Dette prosjektet er utgitt under [MIT-lisensen](../LICENSE) — fritt tilgjengelig for privat og kommersiell bruk, endring og videredistribusjon.
+
