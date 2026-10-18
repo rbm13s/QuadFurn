@@ -7,18 +7,18 @@ use egui::{Color32, FontId, Key, Painter, Pos2, Rect, Sense, Shape, Stroke, Text
 use glam::{Mat4, Vec2, Vec3, Vec4};
 use std::collections::HashMap;
 
-/// Инструмент в редакторе
+/// Editor tool
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum EditorTool {
-    /// Выбор, перемещение и ресайз блоков за ручки
+    /// Select, move, and resize blocks using handles
     SelectAndMove,
-    /// Создание новой детали рамкой в любом 2D-окне
+    /// Create new part by drawing a box in any 2D view
     CreateBlock,
-    /// Измерительная рулетка между двумя точками в 2D
+    /// Measuring tape between two points in 2D
     MeasureTape,
 }
 
-/// Какую ручку ресайза или сам блок тянет пользователь в 2D-окне
+/// Which resize handle or part body is being dragged by the user in 2D view
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum DragHandle2D {
     MoveWholeBlock,
@@ -33,7 +33,7 @@ pub enum DragHandle2D {
 }
 
 impl DragHandle2D {
-    /// Возвращает иконку двусторонней стрелки для курсора мыши при наведении/перетаскивании маркера
+    /// Returns double-sided arrow cursor icon when hovering/dragging a handle
     pub fn cursor_icon(&self) -> egui::CursorIcon {
         match self {
             DragHandle2D::MoveWholeBlock => egui::CursorIcon::Move,
@@ -53,7 +53,7 @@ impl DragHandle2D {
     }
 }
 
-/// Состояние активного перетаскивания (одиночного или группового) в 2D-окне
+/// State of active dragging (single or multi-part) in 2D view
 #[derive(Clone, Debug)]
 pub struct ActiveDrag2D {
     pub axis: OrthoAxis,
@@ -62,19 +62,19 @@ pub struct ActiveDrag2D {
     pub start_mouse_uv: Vec2,
     pub orig_min_3d: Vec3,
     pub orig_max_3d: Vec3,
-    /// Исходные мировые координаты `position_mm` всех деталей, перемещаемых вместе группой
+    /// Original world coordinates `position_mm` of all parts dragged together as a group
     pub group_orig_positions: Vec<(PartId, Vec3)>,
     pub active_guides_u: Vec<f32>,
     pub active_guides_v: Vec<f32>,
 }
 
-/// Состояние одной 2D ортогональной проекции
+/// State of a single 2D orthogonal viewport
 #[derive(Clone, Debug)]
 pub struct OrthoViewportState {
     pub axis: OrthoAxis,
-    /// Центр камеры в мировых миллиметрах (U, V)
+    /// Camera center in world millimeters (U, V)
     pub pan_uv_mm: Vec2,
-    /// Масштаб: сколько пикселей экрана в 1 миллиметре (например 0.45 px/mm)
+    /// Zoom scale: screen pixels per millimeter (e.g. 0.45 px/mm)
     pub zoom_px_per_mm: f32,
 }
 
@@ -92,8 +92,8 @@ impl OrthoViewportState {
         }
     }
 
-    /// Перевод из мировых миллиметров (U, V) в экранные пиксели `Pos2`
-    /// Ось U направлена вправо (+X), ось V направлена вверх (-Y на экране)
+    /// Converts world millimeters (U, V) to screen pixels `Pos2`
+    /// U axis points right (+X), V axis points up (-Y on screen)
     pub fn world_to_screen(&self, rect: Rect, uv_mm: Vec2) -> Pos2 {
         let center = rect.center();
         let dx = (uv_mm.x - self.pan_uv_mm.x) * self.zoom_px_per_mm;
@@ -101,7 +101,7 @@ impl OrthoViewportState {
         Pos2::new(center.x + dx, center.y + dy)
     }
 
-    /// Перевод из экранных пикселей `Pos2` в мировые миллиметры (U, V)
+    /// Converts screen pixels `Pos2` to world millimeters (U, V)
     pub fn screen_to_world(&self, rect: Rect, screen_pos: Pos2) -> Vec2 {
         let center = rect.center();
         let u = self.pan_uv_mm.x + (screen_pos.x - center.x) / self.zoom_px_per_mm;
@@ -110,28 +110,28 @@ impl OrthoViewportState {
     }
 }
 
-/// Состояние 3D-камеры с поддержкой двух режимов:
-/// 1) CAD Orbit (вращение вокруг цели)
-/// 2) Hammer Editor Noclip Fly по клавише `Z` (WASD + свободный обзор мышью)
+/// 3D camera state supporting two modes:
+/// 1) CAD Orbit (orbiting around target)
+/// 2) Hammer Editor Noclip Fly via `Z` key (WASD + free mouse look)
 #[derive(Clone, Debug)]
 pub struct Camera3D {
-    /// Включен ли режим полета Hammer Noclip (по клавише Z)
+    /// Whether Hammer Noclip fly mode is active (toggled by Z key)
     pub noclip_active: bool,
-    /// Позиция глаза камеры в миллиметрах (X, Y — горизонталь, Z — высота вверх)
+    /// Camera eye position in millimeters (X, Y horizontal, Z height up)
     pub eye_mm: Vec3,
-    /// Точка прицела для режима Orbit (мм)
+    /// Target aim point for Orbit mode (mm)
     pub orbit_target_mm: Vec3,
-    /// Дистанция до цели в режиме Orbit (мм)
+    /// Distance to target in Orbit mode (mm)
     pub orbit_distance_mm: f32,
-    /// Горизонтальный угол обзора (рыскание вокруг Z в радианах)
+    /// Horizontal view angle (yaw around Z in radians)
     pub yaw_rad: f32,
-    /// Вертикальный угол обзора (тангаж в радианах, от -1.5 до +1.5)
+    /// Vertical view angle (pitch in radians, from -1.5 to +1.5)
     pub pitch_rad: f32,
-    /// Базовая скорость полета в режиме Z-Noclip (мм/сек)
+    /// Base fly speed in Z-Noclip mode (mm/sec)
     pub fly_speed_mm_per_sec: f32,
-    /// Показывать ли полупрозрачный каркас (X-Ray) или плотную заливку
+    /// Whether to show wireframe overlay (X-Ray) or solid fill
     pub wireframe_overlay: bool,
-    /// Показывать ли маркеры кромок в 3D
+    /// Whether to show edge banding markers in 3D
     pub show_edge_banding_3d: bool,
 }
 
@@ -154,7 +154,7 @@ impl Default for Camera3D {
 }
 
 impl Camera3D {
-    /// Единичный вектор направления взгляда камеры в системе координат (X вправо, Y вглубь, Z вверх)
+    /// Unit forward direction vector of camera in world coordinates (X right, Y inward, Z up)
     pub fn forward_dir(&self) -> Vec3 {
         let cp = self.pitch_rad.cos();
         let sp = self.pitch_rad.sin();
@@ -163,32 +163,32 @@ impl Camera3D {
         Vec3::new(cp * cy, cp * sy, sp).normalize_or_zero()
     }
 
-    /// Единичный вектор «вправо» от взгляда камеры (в горизонтальной плоскости XY)
+    /// Unit "right" direction vector of camera (in horizontal XY plane)
     pub fn right_dir(&self) -> Vec3 {
         let f = self.forward_dir();
         f.cross(Vec3::Z).normalize_or_zero()
     }
 
-    /// Единичный вектор «вверх» камеры
+    /// Unit "up" direction vector of camera
     pub fn up_dir(&self) -> Vec3 {
         let r = self.right_dir();
         let f = self.forward_dir();
         r.cross(f).normalize_or_zero()
     }
 
-    /// Пересчитывает `eye_mm` из параметров `orbit_target_mm`, `orbit_distance_mm`, `yaw_rad`, `pitch_rad`
+    /// Recalculates `eye_mm` from `orbit_target_mm`, `orbit_distance_mm`, `yaw_rad`, `pitch_rad`
     pub fn sync_eye_from_orbit(&mut self) {
         let fwd = self.forward_dir();
         self.eye_mm = self.orbit_target_mm - fwd * self.orbit_distance_mm;
     }
 
-    /// При выходе из Noclip обновляет `orbit_target_mm` перед камерой для бесшовного переключения
+    /// When exiting Noclip, updates `orbit_target_mm` ahead of camera for seamless transition
     pub fn sync_orbit_from_eye(&mut self) {
         let fwd = self.forward_dir();
         self.orbit_target_mm = self.eye_mm + fwd * self.orbit_distance_mm;
     }
 
-    /// Матрица View-Projection для перспективной 3D проекции
+    /// View-Projection matrix for perspective 3D projection
     pub fn view_proj_matrix(&self, aspect: f32) -> Mat4 {
         let target = self.eye_mm + self.forward_dir() * 100.0;
         let view = Mat4::look_at_rh(self.eye_mm, target, Vec3::Z);
@@ -196,8 +196,8 @@ impl Camera3D {
         proj * view
     }
 
-    /// Проецирует 3D-точку в экранные координаты `Pos2` и возвращает `(Pos2, depth_w)`
-    /// Если точка позади камеры (`w <= 10.0`), возвращает `None`
+    /// Projects 3D point to screen coordinates `Pos2` and returns `(Pos2, depth_w)`
+    /// Returns `None` if point is behind camera (`w <= 10.0`)
     pub fn project_point(&self, vp_mat: &Mat4, rect: Rect, pt_mm: Vec3) -> Option<(Pos2, f32)> {
         let clip: Vec4 = *vp_mat * pt_mm.extend(1.0);
         if clip.w <= 10.0 {
@@ -211,7 +211,7 @@ impl Camera3D {
     }
 }
 
-/// Какое из 4 окон развернуто на весь экран (по клавише Space или кнопке `[Maximize]`)
+/// Which of the 4 viewports is maximized to full screen (via Space key or `[Maximize]` button)
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum MaximizedPane {
     None,
@@ -221,40 +221,40 @@ pub enum MaximizedPane {
     SideYZ,
 }
 
-/// Состояние 4-экранного рабочего стола (Hammer Editor style)
+/// 4-viewport desktop state (Hammer Editor style)
 pub struct QuadViewportController {
     pub top_xy: OrthoViewportState,
     pub front_xz: OrthoViewportState,
     pub side_yz: OrthoViewportState,
     pub cam_3d: Camera3D,
     pub maximized: MaximizedPane,
-    /// Положение вертикального и горизонтального разделителя 4 экранов (от 0.2 до 0.8, по умолчанию 0.5)
+    /// Position of vertical and horizontal splitters of the 4 viewports (0.2 to 0.8, default 0.5)
     pub split_x: f32,
     pub split_y: f32,
-    /// Последние известные размеры 4 окон в пикселях (TopXY, FrontXZ, SideYZ, 3D) для точного вписывания модели в окно
+    /// Last known pane sizes in pixels (TopXY, FrontXZ, SideYZ, 3D) for fitting the model into windows
     pub last_pane_sizes: [EguiVec2; 4],
 
-    /// Активный инструмент
+    /// Active tool
     pub tool: EditorTool,
-    /// Список всех выделенных деталей (для группового выделения рамкой или через Shift/Ctrl+клик)
+    /// List of all selected parts (for marquee box multi-selection or via Shift/Ctrl+click)
     pub selected_parts: Vec<PartId>,
-    /// Начало рамки группового выделения в режиме SelectAndMove: (OrthoAxis, start_uv_mm, current_uv_mm, append_mode)
+    /// Marquee selection box drag state: (OrthoAxis, start_uv_mm, current_uv_mm, append_mode)
     pub box_select_drag: Option<(OrthoAxis, Vec2, Vec2, bool, Vec<PartId>)>,
-    /// Ориентация по умолчанию для создания новой детали (можно переключать клавишей Tab)
+    /// Default orientation override when creating new part (can be cycled with Tab key)
     pub create_orientation_override: Option<PartOrientation>,
-    /// Начало рамки создания новой детали в 2D: (OrthoAxis, start_uv_mm, current_uv_mm)
+    /// Box drag state when creating new part in 2D: (OrthoAxis, start_uv_mm, current_uv_mm)
     pub creating_drag: Option<(OrthoAxis, Vec2, Vec2)>,
-    /// Активное перетаскивание или ресайз существующего блока (или группы блоков)
+    /// Active dragging or resizing of existing part (or group of parts)
     pub active_drag: Option<ActiveDrag2D>,
-    /// Точки рулетки измерения: (OrthoAxis, start_uv_mm, end_uv_mm)
+    /// Measuring tape points: (OrthoAxis, start_uv_mm, end_uv_mm)
     pub measure_points: Option<(OrthoAxis, Vec2, Vec2)>,
 
-    /// Настройки сетки и привязки
+    /// Grid and snapping settings
     pub grid_snap_enabled: bool,
     pub edge_snap_enabled: bool,
     pub show_distance_callouts: bool,
     pub grid_step_mm: f32,
-    /// Текущий язык интерфейса для заголовков проекций и 3D-окна
+    /// Current UI language for viewport and 3D titles
     pub lang: crate::i18n::AppLanguage,
 }
 
@@ -279,14 +279,14 @@ impl Default for QuadViewportController {
             grid_snap_enabled: true,
             edge_snap_enabled: true,
             show_distance_callouts: true,
-            grid_step_mm: 18.0, // По умолчанию шаг сетки 18 мм (под базовый ЛДСП 18 мм)
+            grid_step_mm: 18.0, // Default grid step is 18 mm (for standard 18 mm chipboard)
             lang: crate::i18n::AppLanguage::Ru,
         }
     }
 }
 
 impl QuadViewportController {
-    /// Синхронизирует список группового выделения `selected_parts` с основным `selected_part`
+    /// Synchronizes multi-selection list `selected_parts` with primary `selected_part`
     pub fn sync_selection(&mut self, selected_part: &mut Option<PartId>, project: &Project) {
         self.selected_parts
             .retain(|&id| project.parts.iter().any(|p| p.id == id && project.is_part_visible(p)));
@@ -320,7 +320,7 @@ impl QuadViewportController {
         selected_part == Some(id) || self.selected_parts.contains(&id)
     }
 
-    /// Вычисляет общий 3D AABB всех видимых деталей проекта
+    /// Computes combined 3D AABB of all visible project parts
     pub fn compute_project_bounds(project: &Project) -> Option<(Vec3, Vec3)> {
         let mut min_pt = Vec3::splat(f32::MAX);
         let mut max_pt = Vec3::splat(f32::MIN);
@@ -340,7 +340,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Вычисляет общий 3D AABB для текущих выделенных деталей
+    /// Computes combined 3D AABB for currently selected parts
     pub fn compute_selected_bounds(&self, project: &Project) -> Option<(Vec3, Vec3)> {
         let mut min_pt = Vec3::splat(f32::MAX);
         let mut max_pt = Vec3::splat(f32::MIN);
@@ -361,7 +361,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Центрирует все 4 вида на центре текущего проекта (без принудительного сброса масштаба)
+    /// Centers all 4 viewports on current project center (without resetting zoom)
     pub fn focus_all_on_project(&mut self, project: &Project) {
         let Some((min_pt, max_pt)) = Self::compute_project_bounds(project) else {
             return;
@@ -374,14 +374,14 @@ impl QuadViewportController {
         self.cam_3d.sync_eye_from_orbit();
     }
 
-    /// Вписывает всю модель целиком в каждое из 4 окон (3 ортогональные 2D-проекции и 3D-вид)
+    /// Fits entire model into each of the 4 viewports (3 ortho 2D projections + 3D view)
     pub fn fit_all_to_window(&mut self, project: &Project) {
         let (min_pt, max_pt) = Self::compute_project_bounds(project)
             .unwrap_or((Vec3::ZERO, Vec3::new(800.0, 500.0, 720.0)));
         let center = (min_pt + max_pt) * 0.5;
         let span = (max_pt - min_pt).max(Vec3::splat(60.0));
 
-        // 1. Вписываем во все три 2D проекции с учетом размеров их окон, заголовков и полос прокрутки
+        // 1. Fit into all three 2D projections accounting for pane sizes, headers, and scrollbars
         let fit_ortho = |vp: &mut OrthoViewportState, span_u: f32, span_v: f32, pane_sz: EguiVec2| {
             let usable_w = (pane_sz.x - 28.0).max(120.0) * 0.80;
             let usable_h = (pane_sz.y - 52.0).max(100.0) * 0.80;
@@ -399,7 +399,7 @@ impl QuadViewportController {
         self.side_yz.pan_uv_mm = Vec2::new(center.y, center.z);
         fit_ortho(&mut self.side_yz, span.y, span.z, self.last_pane_sizes[2]);
 
-        // 2. Вписываем 3D-модель в пирамиду видимости 3D-камеры
+        // 2. Fit 3D model into viewing frustum of 3D camera
         self.cam_3d.noclip_active = false;
         self.cam_3d.orbit_target_mm = center;
         let pane_3d = self.last_pane_sizes[3];
@@ -437,7 +437,7 @@ impl QuadViewportController {
         self.cam_3d.sync_eye_from_orbit();
     }
 
-    /// Отрисовка всех 4 экранов (или одного развернутого) в центральном рабочем поле
+    /// Renders all 4 viewports (or one maximized) in central workspace
     pub fn ui_quad_viewports(
         &mut self,
         ui: &mut egui::Ui,
@@ -454,7 +454,7 @@ impl QuadViewportController {
             return;
         }
 
-        // Проверяем горячую клавишу Tab для переключения ориентации создаваемой детали
+        // Check Tab shortcut to cycle orientation of newly created part
         if ui.input(|i| i.key_pressed(Key::Tab)) && !ui.ctx().wants_keyboard_input() {
             self.create_orientation_override = Some(match self.create_orientation_override {
                 None | Some(PartOrientation::HorizontalXY) => PartOrientation::VerticalYZ,
@@ -511,9 +511,9 @@ impl QuadViewportController {
                 let mid_x = avail.left() + avail.width() * self.split_x;
                 let mid_y = avail.top() + avail.height() * self.split_y;
 
-                // Рамки 4 вьюпортов:
-                // Верхний левый: Top (XY) | Верхний правый: 3D Perspective
-                // Нижний левый: Front (XZ) | Нижний правый: Side (YZ)
+                // Bounds for the 4 viewports:
+                // Top-left: Top (XY) | Top-right: 3D Perspective
+                // Bottom-left: Front (XZ) | Bottom-right: Side (YZ)
                 let rect_tl = Rect::from_min_max(
                     avail.min,
                     Pos2::new(mid_x - gap * 0.5, mid_y - gap * 0.5),
@@ -531,7 +531,7 @@ impl QuadViewportController {
                     avail.max,
                 );
 
-                // Отрисовка 4 экранов
+                // Render the 4 viewport panes
                 let mut vp_top = self.top_xy.clone();
                 self.render_ortho_pane(
                     ui,
@@ -570,7 +570,7 @@ impl QuadViewportController {
                 );
                 self.side_yz = vp_side;
 
-                // Перетаскивание разделителей 4 экранов
+                // Dragging the 4-viewport splitters
                 let v_split_rect = Rect::from_min_max(
                     Pos2::new(mid_x - 4.0, avail.top()),
                     Pos2::new(mid_x + 4.0, avail.bottom()),
@@ -610,7 +610,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Отрисовка и интерактивность одного 2D ортогонального экрана (Top XY / Front XZ / Side YZ) с полосами прокрутки в стиле Hammer Editor
+    /// Rendering and interaction for a single 2D orthogonal viewport (Top XY / Front XZ / Side YZ) with Hammer Editor style scrollbars
     fn render_ortho_pane(
         &mut self,
         ui: &mut egui::Ui,
@@ -628,7 +628,7 @@ impl QuadViewportController {
         };
         self.last_pane_sizes[pane_idx] = rect.size();
 
-        // Выделяем место под горизонтальную (внизу) и вертикальную (справа) полосы прокрутки как в Hammer Editor
+        // Allocate space for horizontal (bottom) and vertical (right) scrollbars like in Hammer Editor
         let sb_thick = 14.0_f32;
         let canvas_rect = Rect::from_min_max(
             rect.min,
@@ -651,10 +651,10 @@ impl QuadViewportController {
         let resp = ui.interact(canvas_rect, id, Sense::click_and_drag());
         let painter = ui.painter_at(canvas_rect);
 
-        // Темный чертежный фон в стиле WorldCraft / Hammer Editor
+        // Dark drafting background in WorldCraft / Hammer Editor style
         painter.rect_filled(canvas_rect, 0.0, Color32::from_rgb(18, 22, 26));
 
-        // Масштабирование колесиком мыши относительно курсора и панорамирование ПКМ / СКМ
+        // Mouse wheel zooming relative to cursor and RMB / MMB panning
         if resp.hovered() {
             let scroll_y = ui.input(|i| i.smooth_scroll_delta.y);
             if scroll_y.abs() > 0.1 {
@@ -668,7 +668,7 @@ impl QuadViewportController {
             }
         }
 
-        // Панорамирование средней или правой кнопкой мыши
+        // Pan using middle or right mouse button
         if resp.dragged_by(egui::PointerButton::Middle)
             || resp.dragged_by(egui::PointerButton::Secondary)
         {
@@ -677,10 +677,10 @@ impl QuadViewportController {
             vp.pan_uv_mm.y += delta.y / vp.zoom_px_per_mm;
         }
 
-        // 1. Отрисовка миллиметровой сетки
+        // 1. Render millimeter grid
         self.draw_ortho_grid(&painter, canvas_rect, vp);
 
-        // 2. Отрисовка всех видимых деталей в 2D проекции
+        // 2. Render all visible parts in 2D projection
         for part in &project.parts {
             if !project.is_part_visible(part) {
                 continue;
@@ -689,7 +689,7 @@ impl QuadViewportController {
             self.draw_part_in_ortho(&painter, canvas_rect, vp, project, part, is_sel);
         }
 
-        // 3. Отрисовка ручек ресайза (для одиночного выделения) или общей рамки группового выделения
+        // 3. Render resize handles (for single selection) or common bounding box for group selection
         if self.selected_parts.len() > 1 {
             if let Some((gmin_3d, gmax_3d)) = self.compute_selected_bounds(project) {
                 let min_uv = vp.axis.project(gmin_3d);
@@ -745,7 +745,7 @@ impl QuadViewportController {
             }
         }
 
-        // 4. Обработка левой кнопки мыши: Выделение (одиночное и групповое рамкой), Перетаскивание/Ресайз, Создание блока, Рулетка
+        // 4. Handle LMB interaction: Selection (single and marquee box), Drag/Resize, Block creation, Tape measure
         self.handle_ortho_lmb_interaction(
             ui,
             &resp,
@@ -758,10 +758,10 @@ impl QuadViewportController {
             on_before_mutate,
         );
 
-        // 5. Заголовок вьюпорта с кнопкой разворота на весь экран
+        // 5. Viewport header with fullscreen maximize button
         self.draw_ortho_header_overlay(ui, &painter, canvas_rect, vp);
 
-        // 6. Полосы прокрутки внизу и справа 2D-окна (как в Hammer Editor) и внешняя рамка
+        // 6. Scrollbars at the bottom and right of the 2D window (Hammer Editor style) and outer border
         self.draw_and_handle_ortho_scrollbars(
             ui,
             canvas_rect,
@@ -779,7 +779,7 @@ impl QuadViewportController {
         let min_uv = vp.screen_to_world(rect, Pos2::new(rect.left(), rect.bottom()));
         let max_uv = vp.screen_to_world(rect, Pos2::new(rect.right(), rect.top()));
 
-        // Выбираем адаптивный шаг визуальной сетки, чтобы линии не сливались при отдалении
+        // Choose adaptive visual grid step so lines don't blend together when zoomed out
         let mut visual_step = self.grid_step_mm.max(1.0);
         while visual_step * vp.zoom_px_per_mm < 10.0 {
             visual_step *= 2.0;
@@ -825,14 +825,14 @@ impl QuadViewportController {
             v += visual_step;
         }
 
-        // Точка (0, 0) с подписями миллиметровых осей
+        // Origin point (0, 0) with millimeter axis labels
         let origin_scr = vp.world_to_screen(rect, Vec2::ZERO);
         if rect.contains(origin_scr) {
             painter.circle_filled(origin_scr, 3.5, Color32::from_rgb(220, 180, 60));
             painter.text(
                 origin_scr + EguiVec2::new(5.0, -5.0),
                 egui::Align2::LEFT_BOTTOM,
-                "(0, 0 мм)",
+                format!("(0, 0 {})", self.lang.dict().unit_mm),
                 FontId::monospace(10.0),
                 Color32::from_rgb(180, 180, 140),
             );
@@ -863,7 +863,7 @@ impl QuadViewportController {
             Color32::from_rgb(rgb[0], rgb[1], rgb[2])
         };
 
-        // Если деталь повернута вокруг оси Z и мы в TopXY — рисуем повернутый 4-угольник
+        // If part is rotated around Z axis and we are in TopXY, draw a rotated quadrilateral
         if vp.axis == OrthoAxis::TopXY && part.yaw_deg.abs() > 0.05 {
             let verts = part.world_vertices(thick);
             let poly: Vec<Pos2> = (0..4)
@@ -907,10 +907,10 @@ impl QuadViewportController {
             Stroke::new(if is_selected { 2.0 } else { 1.2 }, stroke_color),
         );
 
-        // Отображение кромок на гранях детали в 2D проекциях
+        // Display edge banding on part faces in 2D projections
         self.draw_part_edges_in_ortho(painter, part_rect, vp.axis, project, part);
 
-        // Если деталь видна пластью и достаточно крупная на экране — рисуем стрелку направления текстуры и размер
+        // If part is viewed flat and is large enough on screen, draw texture direction arrow and dimensions
         if part_rect.width() > 48.0 && part_rect.height() > 20.0 {
             let dim_u = max_uv.x - min_uv.x;
             let dim_v = max_uv.y - min_uv.y;
@@ -933,7 +933,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Подсвечивает оклеенные кромкой стороны детали цветными линиями на 2D-чертеже
+    /// Highlights edge-banded sides of a part with colored lines on the 2D drawing
     fn draw_part_edges_in_ortho(
         &self,
         painter: &Painter,
@@ -949,12 +949,12 @@ impl QuadViewportController {
             Some(Stroke::new(w, c))
         };
 
-        // Сопоставляем стороны детали (Д1=Перед/Низ, Д2=Зад/Верх, Ш1=Лев/Низ, Ш2=Прав/Верх) с экранным прямоугольником
+        // Map part sides (L1=Front/Bottom, L2=Back/Top, W1=Left/Bottom, W2=Right/Top) to the screen rectangle
         match (axis, part.orientation) {
             (OrthoAxis::TopXY, PartOrientation::HorizontalXY) => {
-                // Полка в плане XY: Длина по X, Ширина по Y.
-                // Д1 = передняя грань (верх экрана +Y -> top), Д2 = задняя грань (низ экрана -Y -> bottom)
-                // Ш1 = левый торец (left), Ш2 = правый торец (right)
+                // Shelf in XY plan: Length along X, Width along Y.
+                // L1 = front face (top of screen +Y -> top), L2 = rear face (bottom of screen -Y -> bottom)
+                // W1 = left edge (left), W2 = right edge (right)
                 if let Some(s) = edge_stroke(part.edges.l1) {
                     painter.line_segment([part_rect.left_top(), part_rect.right_top()], s);
                 }
@@ -969,9 +969,9 @@ impl QuadViewportController {
                 }
             }
             (OrthoAxis::SideYZ, PartOrientation::VerticalYZ) => {
-                // Боковая стойка в профиле YZ: Ширина по Y (горизонталь), Длина по Z (вертикаль).
-                // Д1 = передняя вертикальная грань (+Y -> right), Д2 = задняя вертикальная грань (-Y -> left)
-                // Ш1 = нижний торец (bottom), Ш2 = верхний торец (top)
+                // Side upright in YZ profile: Width along Y (horizontal), Length along Z (vertical).
+                // L1 = front vertical face (+Y -> right), L2 = rear vertical face (-Y -> left)
+                // W1 = bottom edge (bottom), W2 = top edge (top)
                 if let Some(s) = edge_stroke(part.edges.l1) {
                     painter.line_segment([part_rect.right_top(), part_rect.right_bottom()], s);
                 }
@@ -986,9 +986,9 @@ impl QuadViewportController {
                 }
             }
             (OrthoAxis::FrontXZ, PartOrientation::FrontalXZ) => {
-                // Фасад/Стенка во фронтальном виде XZ: Ширина по X (горизонталь), Длина по Z (вертикаль).
-                // Д1 = левая вертикальная грань, Д2 = правая вертикальная грань
-                // Ш1 = нижний торец, Ш2 = верхний торец
+                // Front/Back panel in XZ front view: Width along X (horizontal), Length along Z (vertical).
+                // L1 = left vertical face, L2 = right vertical face
+                // W1 = bottom edge, W2 = top edge
                 if let Some(s) = edge_stroke(part.edges.l1) {
                     painter.line_segment([part_rect.left_top(), part_rect.left_bottom()], s);
                 }
@@ -1006,7 +1006,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Рисует 8 квадратных маркеров-ручек (как в Hammer Editor и CorelDRAW) вокруг выбранной детали
+    /// Draws 8 square resize handle markers (like in Hammer Editor and CorelDRAW) around the selected part
     fn draw_selection_handles_2d(
         &self,
         painter: &Painter,
@@ -1042,7 +1042,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Рисует размерную стрелку-выноску (расстояние в мм до соседней детали)
+    /// Draws a dimension callout arrow (distance in mm to the neighboring part)
     fn draw_distance_callout(
         &self,
         painter: &Painter,
@@ -1061,7 +1061,7 @@ impl QuadViewportController {
         painter.circle_filled(p2, 2.5, color);
 
         let mid = Pos2::new((p1.x + p2.x) * 0.5, (p1.y + p2.y) * 0.5);
-        let text = format!("{:.0} мм", distance_mm);
+        let text = format!("{:.0} {}", distance_mm, self.lang.dict().unit_mm);
         let bg_rect = Rect::from_center_size(mid, EguiVec2::new(48.0, 16.0));
         painter.rect_filled(bg_rect, 3.0, Color32::from_rgba_unmultiplied(10, 25, 35, 220));
         painter.rect_stroke(bg_rect, 3.0, Stroke::new(1.0, color));
@@ -1074,7 +1074,7 @@ impl QuadViewportController {
         );
     }
 
-    /// Обработка ЛКМ в 2D-окне: выбор детали, перетаскивание за ручки с магнитной привязкой, создание новой детали и рулетка
+    /// Handle LMB in 2D pane: part selection, dragging handles with snap, new part creation, and tape measure
     fn handle_ortho_lmb_interaction(
         &mut self,
         ui: &mut egui::Ui,
@@ -1089,7 +1089,7 @@ impl QuadViewportController {
     ) {
         let mouse_pos = ui.input(|i| i.pointer.interact_pos());
 
-        // --- РЕЖИМ 1: Рулетка (MeasureTape) ---
+        // --- MODE 1: Tape Measure (MeasureTape) ---
         if self.tool == EditorTool::MeasureTape {
             if resp.drag_started_by(egui::PointerButton::Primary) {
                 if let Some(mp) = mouse_pos {
@@ -1144,7 +1144,7 @@ impl QuadViewportController {
                     painter.text(
                         mid,
                         egui::Align2::CENTER_CENTER,
-                        format!("L = {:.1} мм (ΔU={:.1}, ΔV={:.1})", dist, dx, dy),
+                        format!("L = {:.1} {} (ΔU={:.1}, ΔV={:.1})", dist, self.lang.dict().unit_mm, dx, dy),
                         FontId::monospace(11.5),
                         col,
                     );
@@ -1153,7 +1153,7 @@ impl QuadViewportController {
             return;
         }
 
-        // --- РЕЖИМ 2: Создание новой детали рамкой (CreateBlock) ---
+        // --- MODE 2: Create new part via box (CreateBlock) ---
         if self.tool == EditorTool::CreateBlock {
             if resp.drag_started_by(egui::PointerButton::Primary) {
                 if let Some(mp) = mouse_pos {
@@ -1211,7 +1211,7 @@ impl QuadViewportController {
                 }
             }
 
-            // Отрисовка превью создаваемого блока
+            // Render preview of the created block
             if let Some((ax, p1, p2)) = self.creating_drag {
                 if ax == vp.axis {
                     let min_uv = p1.min(p2);
@@ -1226,14 +1226,29 @@ impl QuadViewportController {
                         Color32::from_rgba_unmultiplied(80, 240, 140, 45),
                     );
                     painter.rect_stroke(preview_rect, 0.0, Stroke::new(1.8, col));
-                    painter.text(
-                        preview_rect.center(),
-                        egui::Align2::CENTER_CENTER,
-                        format!(
+                    let preview_msg = match self.lang {
+                        crate::i18n::AppLanguage::Ru => format!(
                             "Новая деталь: {:.0} × {:.0} мм\n(Tab — сменить тип)",
                             max_uv.x - min_uv.x,
                             max_uv.y - min_uv.y
                         ),
+                        crate::i18n::AppLanguage::Uk => format!(
+                            "Нова деталь: {:.0} × {:.0} мм\n(Tab — змінити тип)",
+                            max_uv.x - min_uv.x,
+                            max_uv.y - min_uv.y
+                        ),
+                        _ => format!(
+                            "{}: {:.0} × {:.0} {}\n(Tab — switch type)",
+                            self.lang.tr("Новая деталь", "New part"),
+                            max_uv.x - min_uv.x,
+                            max_uv.y - min_uv.y,
+                            self.lang.dict().unit_mm
+                        ),
+                    };
+                    painter.text(
+                        preview_rect.center(),
+                        egui::Align2::CENTER_CENTER,
+                        preview_msg,
                         FontId::proportional(11.5),
                         col,
                     );
@@ -1264,11 +1279,11 @@ impl QuadViewportController {
             return;
         }
 
-        // --- РЕЖИМ 3: Выделение (одиночное и групповое рамкой), Перетаскивание группы и Ресайз за ручки (SelectAndMove) ---
+        // --- MODE 3: Selection (single and marquee box), Group Dragging and Handle Resizing (SelectAndMove) ---
         let modifiers = ui.input(|i| i.modifiers);
         let multi_mod = modifiers.shift || modifiers.ctrl || modifiers.command;
 
-        // Меняем курсор мыши при наведении на квадратики (маркеры ресайза) или внутрь выделенного блока/группы
+        // Update mouse cursor when hovering over resize handle squares or inside the selected block/group
         if let Some(drag) = &self.active_drag {
             if drag.axis == vp.axis {
                 ui.ctx().set_cursor_icon(drag.handle.cursor_icon());
@@ -1305,14 +1320,14 @@ impl QuadViewportController {
         }
 
         if resp.drag_started_by(egui::PointerButton::Primary) {
-            // Берем точку ИМЕННО начала нажатия кнопки мыши (press_origin), чтобы при рывке мыши не промахнуться мимо квадратика!
+            // Use the exact mouse press origin (press_origin) so fast mouse movements don't miss the handle square!
             let press_pos = ui.input(|i| i.pointer.press_origin()).or(mouse_pos);
             if let Some(mp) = press_pos {
                 let click_uv = vp.screen_to_world(rect, mp);
 
                 let mut picked_handle: Option<(PartId, DragHandle2D)> = None;
 
-                // 1. Если выделена ровно 1 деталь — сначала проверяем её 8 квадратиков ресайза и её внутреннюю область
+                // 1. If exactly 1 part is selected, check its 8 resize handles and its inner area first
                 if self.selected_parts.len() == 1 {
                     if let Some(sel_id) = *selected_part {
                         if let Some(sel_part) = project.parts.iter().find(|p| p.id == sel_id) {
@@ -1326,7 +1341,7 @@ impl QuadViewportController {
                         }
                     }
                 } else if self.selected_parts.len() > 1 && !multi_mod {
-                    // 2. Если выделена группа деталей и пользователь тянет за любую из выделенных деталей (или внутри габарита группы) — двигаем всю группу целиком!
+                    // 2. If a group of parts is selected and the user drags any selected part (or inside the group bounds), move the whole group!
                     let hit_selected = self.selected_parts.iter().copied().find(|&sid| {
                         project
                             .parts
@@ -1344,7 +1359,7 @@ impl QuadViewportController {
                     }
                 }
 
-                // 3. Если не попали в уже выделенную деталь/ручку — проверяем клик по другой детали или начало рамки группового выделения
+                // 3. If missed an already selected part/handle, test click on another part or begin marquee selection
                 if picked_handle.is_none() {
                     if let Some(hit_id) = self.hit_test_parts_2d(vp, project, click_uv) {
                         if multi_mod {
@@ -1361,7 +1376,7 @@ impl QuadViewportController {
                             }
                         }
                     } else {
-                        // Начали тянуть на пустом месте -> запускаем рамку группового выделения (Marquee Box Selection)!
+                        // Started dragging in empty space -> initiate marquee box selection!
                         let base_sel = if multi_mod {
                             self.selected_parts.clone()
                         } else {
@@ -1372,7 +1387,7 @@ impl QuadViewportController {
                     }
                 }
 
-                // Запускаем перетаскивание (одиночное или всей выделенной группы)
+                // Initiate drag operation (single part or whole selected group)
                 if let Some((pid, handle)) = picked_handle {
                     if handle == DragHandle2D::MoveWholeBlock && self.selected_parts.len() > 1 {
                         if let Some((gmin, gmax)) = self.compute_selected_bounds(project) {
@@ -1423,7 +1438,7 @@ impl QuadViewportController {
             }
         }
 
-        // Обычный клик без перетаскивания — выбор детали (с поддержкой Shift/Ctrl для группового выделения)
+        // Plain click without drag: select part (with Shift/Ctrl support for multi-selection)
         if resp.clicked_by(egui::PointerButton::Primary) {
             if let Some(mp) = mouse_pos {
                 let mut hit_handle = false;
@@ -1451,7 +1466,7 @@ impl QuadViewportController {
             }
         }
 
-        // Обновление рамки группового выделения (Marquee Box Selection)
+        // Update marquee box selection
         if let Some((ax, start_uv, ref mut cur_uv, _append, ref base_sel)) = self.box_select_drag {
             if ax == vp.axis {
                 if resp.dragged_by(egui::PointerButton::Primary) {
@@ -1465,7 +1480,7 @@ impl QuadViewportController {
                 let s2 = vp.world_to_screen(rect, Vec2::new(bmax.x, bmin.y));
                 let box_rect = Rect::from_min_max(s1, s2);
 
-                // Ищем все видимые незаблокированные детали, попадающие в рамку выделения
+                // Find all visible unlocked parts intersecting the selection box
                 let mut new_sel = base_sel.clone();
                 for p in &project.parts {
                     if !project.is_part_visible(p) || project.is_part_locked(p) {
@@ -1494,10 +1509,15 @@ impl QuadViewportController {
                 );
                 painter.rect_stroke(box_rect, 0.0, Stroke::new(1.5, col));
                 if box_rect.width() > 40.0 && box_rect.height() > 18.0 {
+                    let count_msg = match self.lang {
+                        crate::i18n::AppLanguage::Ru => format!("Выделено: {} шт.", self.selected_parts.len()),
+                        crate::i18n::AppLanguage::Uk => format!("Виділено: {} шт.", self.selected_parts.len()),
+                        _ => format!("Selected: {} {}", self.selected_parts.len(), self.lang.dict().unit_pcs),
+                    };
                     painter.text(
                         box_rect.center(),
                         egui::Align2::CENTER_CENTER,
-                        format!("Выделено: {} шт.", self.selected_parts.len()),
+                        count_msg,
                         FontId::proportional(11.0),
                         col,
                     );
@@ -1505,7 +1525,7 @@ impl QuadViewportController {
             }
         }
 
-        // Обновление активного перетаскивания (одиночного или группового) / ресайза
+        // Update active dragging (single or group) / resizing
         if resp.dragged_by(egui::PointerButton::Primary) {
             if let (Some(mp), Some(drag)) = (mouse_pos, self.active_drag.as_mut()) {
                 if drag.axis == vp.axis {
@@ -1567,7 +1587,7 @@ impl QuadViewportController {
                             }
                         }
                         _ => {
-                            // Ресайз отдельных сторон одиночной детали
+                            // Resize individual edges of a single part
                             let resize_left = matches!(
                                 drag.handle,
                                 DragHandle2D::ResizeLeft
@@ -1652,7 +1672,7 @@ impl QuadViewportController {
                         }
                     }
 
-                    // Применяем новые 2D-координаты к 3D-блоку (или группе блоков)
+                    // Apply new 2D coordinates to 3D block (or group of blocks)
                     let new_min_3d = vp.axis.unproject_into(new_min_uv, drag.orig_min_3d);
                     let new_max_3d = vp.axis.unproject_into(new_max_uv, drag.orig_max_3d);
 
@@ -1674,7 +1694,7 @@ impl QuadViewportController {
             }
         }
 
-        // Отрисовка магнитных направляющих линий привязки (Snap Guides)
+        // Render magnetic snap guide lines
         if let Some(drag) = &self.active_drag {
             if drag.axis == vp.axis {
                 let guide_col = Color32::from_rgb(255, 90, 220);
@@ -1701,7 +1721,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Отрисовка и интерактивность полос прокрутки (горизонтальной и вертикальной) в 2D-окнах в стиле Hammer Editor / J.A.C.K.
+    /// Rendering and interaction for scrollbars (horizontal and vertical) in 2D views in Hammer Editor / J.A.C.K. style
     fn draw_and_handle_ortho_scrollbars(
         &self,
         ui: &mut egui::Ui,
@@ -1743,10 +1763,10 @@ impl QuadViewportController {
         let border_stroke = Stroke::new(1.0, Color32::from_gray(42));
         let grip_stroke = Stroke::new(1.0, Color32::from_gray(170));
 
-        // Угловой квадратик между полосами прокрутки
+        // Corner square between scrollbars
         ui.painter_at(corner_rect).rect_filled(corner_rect, 0.0, btn_bg);
 
-        // --- 1. Горизонтальная полоса прокрутки ---
+        // --- 1. Horizontal scrollbar ---
         let h_painter = ui.painter_at(horiz_rect);
         h_painter.rect_filled(horiz_rect, 0.0, track_bg);
         let btn_sz = horiz_rect.height();
@@ -1801,7 +1821,7 @@ impl QuadViewportController {
             );
             h_painter.rect_stroke(h_thumb, 2.0, Stroke::new(1.0, Color32::from_gray(135)));
 
-            // 3 насечки посередине ползунка как в Hammer Editor (|||)
+            // 3 grip marks in the middle of the slider like in Hammer Editor (|||)
             let cx = h_thumb.center().x;
             for dx in [-3.0_f32, 0.0, 3.0] {
                 h_painter.line_segment(
@@ -1827,7 +1847,7 @@ impl QuadViewportController {
             }
         }
 
-        // --- 2. Вертикальная полоса прокрутки ---
+        // --- 2. Vertical scrollbar ---
         let v_painter = ui.painter_at(vert_rect);
         v_painter.rect_filled(vert_rect, 0.0, track_bg);
         let v_btn_sz = vert_rect.width();
@@ -1862,7 +1882,7 @@ impl QuadViewportController {
             let frac_h = (vis_h_mm / total_v).clamp(0.08, 1.0);
             let thumb_h = (v_track.height() * frac_h).max(22.0).min(v_track.height());
             let avail_slide = (v_track.height() - thumb_h).max(1.0);
-            // Вверх на экране — это +V (world_max_v), вниз на экране — это -V (world_min_v)
+            // Up on screen is +V (world_max_v), down on screen is -V (world_min_v)
             let norm_pos = ((world_max_v - view_max_v) / (total_v - vis_h_mm).max(1.0)).clamp(0.0, 1.0);
             let thumb_y = v_track.top() + norm_pos * (v_track.height() - thumb_h);
             let v_thumb = Rect::from_min_size(
@@ -1883,7 +1903,7 @@ impl QuadViewportController {
             );
             v_painter.rect_stroke(v_thumb, 2.0, Stroke::new(1.0, Color32::from_gray(135)));
 
-            // 3 горизонтальные насечки посередине ползунка (≡)
+            // 3 horizontal grip marks in the middle of the slider (≡)
             let cy = v_thumb.center().y;
             for dy in [-3.0_f32, 0.0, 3.0] {
                 v_painter.line_segment(
@@ -1969,7 +1989,7 @@ impl QuadViewportController {
         project: &Project,
         click_uv: Vec2,
     ) -> Option<PartId> {
-        // Ищем деталь с наименьшей площадью в проекции (чтобы тонкие торцы полок/стоек легко выбирались поверх задней стенки)
+        // Pick the part with the smallest projected area (so thin shelf/upright edges are easily selected over the back panel)
         let mut best_id = None;
         let mut best_area = f32::MAX;
 
@@ -1997,7 +2017,7 @@ impl QuadViewportController {
         best_id
     }
 
-    /// Создает новую деталь по нарисованной рамке в 2D проекции, автоматически подставляя толщину активного материала (напр. 18 мм)
+    /// Creates a new part from a drawn 2D rectangle, automatically applying active material thickness (e.g. 18 mm)
     fn spawn_part_from_2d_box(
         &self,
         project: &mut Project,
@@ -2011,7 +2031,7 @@ impl QuadViewportController {
         let thick = mat.map(|m| m.thickness_mm).unwrap_or(18.0);
         let grain_fixed = mat.map(|m| m.default_grain_fixed).unwrap_or(true);
 
-        // Берем базовую 3-ю координату от выделенной детали (или 0.0)
+        // Use reference part's 3rd coordinate (or 0.0)
         let ref_part = reference_part_id.and_then(|id| project.parts.iter().find(|p| p.id == id));
         let default_depth_y = ref_part.map(|p| p.width_mm).unwrap_or(500.0);
 
@@ -2020,11 +2040,11 @@ impl QuadViewportController {
                 OrthoAxis::TopXY => PartOrientation::HorizontalXY,
                 OrthoAxis::FrontXZ => {
                     if size_uv.x <= thick * 2.2 && size_uv.y > size_uv.x * 2.0 {
-                        PartOrientation::VerticalYZ // Узкая вертикальная рамка -> Боковая стойка
+                        PartOrientation::VerticalYZ // Narrow vertical box -> Side upright
                     } else if size_uv.y <= thick * 2.2 && size_uv.x > size_uv.y * 2.0 {
-                        PartOrientation::HorizontalXY // Узкая горизонтальная рамка -> Полка
+                        PartOrientation::HorizontalXY // Narrow horizontal box -> Shelf
                     } else {
-                        PartOrientation::FrontalXZ // Широкая рамка -> Фасад / Задняя стенка
+                        PartOrientation::FrontalXZ // Wide box -> Front panel / Backing
                     }
                 }
                 OrthoAxis::SideYZ => {
@@ -2037,62 +2057,54 @@ impl QuadViewportController {
             }
         });
 
-        let (pos_3d, length_mm, width_mm, name_prefix) = match (axis, orientation) {
+        let (pos_3d, length_mm, width_mm) = match (axis, orientation) {
             (OrthoAxis::TopXY, PartOrientation::HorizontalXY) => (
                 Vec3::new(min_uv.x, min_uv.y, 0.0),
                 size_uv.x,
                 size_uv.y,
-                "Полка",
             ),
             (OrthoAxis::TopXY, PartOrientation::VerticalYZ) => (
                 Vec3::new(min_uv.x, min_uv.y, 0.0),
                 720.0,
                 size_uv.y,
-                "Стойка",
             ),
             (OrthoAxis::TopXY, PartOrientation::FrontalXZ) => (
                 Vec3::new(min_uv.x, min_uv.y, 0.0),
                 720.0,
                 size_uv.x,
-                "Панель",
             ),
             (OrthoAxis::FrontXZ, PartOrientation::HorizontalXY) => (
                 Vec3::new(min_uv.x, 0.0, min_uv.y),
                 size_uv.x,
                 default_depth_y,
-                "Полка",
             ),
             (OrthoAxis::FrontXZ, PartOrientation::VerticalYZ) => (
                 Vec3::new(min_uv.x, 0.0, min_uv.y),
                 size_uv.y,
                 default_depth_y,
-                "Стойка",
             ),
             (OrthoAxis::FrontXZ, PartOrientation::FrontalXZ) => (
                 Vec3::new(min_uv.x, 0.0, min_uv.y),
                 size_uv.y,
                 size_uv.x,
-                "Фасад/Панель",
             ),
             (OrthoAxis::SideYZ, PartOrientation::VerticalYZ) => (
                 Vec3::new(0.0, min_uv.x, min_uv.y),
                 size_uv.y,
                 size_uv.x,
-                "Стойка",
             ),
             (OrthoAxis::SideYZ, PartOrientation::HorizontalXY) => (
                 Vec3::new(0.0, min_uv.x, min_uv.y),
                 600.0,
                 size_uv.x,
-                "Полка",
             ),
             (OrthoAxis::SideYZ, PartOrientation::FrontalXZ) => (
                 Vec3::new(0.0, min_uv.x, min_uv.y),
                 size_uv.y,
                 600.0,
-                "Панель",
             ),
         };
+        let name_prefix = orientation.short_label_i18n(self.lang);
 
         let new_id = project.alloc_id();
         let count = project.parts.len() + 1;
@@ -2147,7 +2159,7 @@ impl QuadViewportController {
             Color32::from_rgb(190, 215, 240),
         );
 
-        // Кнопка разворота окна на весь экран
+        // Window maximize button
         let btn_rect = Rect::from_min_size(
             Pos2::new(rect.right() - 78.0, rect.top() + 6.0),
             EguiVec2::new(72.0, 22.0),
@@ -2192,7 +2204,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Отрисовка интерактивного 3D-окна (Перспектива, перспективно-корректные текстуры/цвета, кромки, вращение Orbit и полет Hammer Editor Z-Noclip)
+    /// Interactive 3D viewport rendering (Perspective, perspective-correct textures/colors, edge banding, Orbit controls, and Hammer Editor Z-Noclip)
     fn render_3d_pane(
         &mut self,
         ui: &mut egui::Ui,
@@ -2207,10 +2219,10 @@ impl QuadViewportController {
         let resp = ui.interact(rect, id, Sense::click_and_drag());
         let painter = ui.painter_at(rect);
 
-        // Фон 3D сцены
+        // 3D scene background
         painter.rect_filled(rect, 0.0, Color32::from_rgb(22, 26, 32));
 
-        // Переключение режима Hammer Editor Noclip по нажатию чистой клавиши `Z` (БЕЗ Ctrl/Alt) только когда курсор над 3D-окном!
+        // Toggle Hammer Editor Noclip on unmodified `Z` key (WITHOUT Ctrl/Alt) only when cursor is over the 3D window!
         let text_input_busy = ui.ctx().wants_keyboard_input();
         let pointer_in_3d = ui
             .input(|i| i.pointer.hover_pos())
@@ -2241,16 +2253,16 @@ impl QuadViewportController {
             }
         }
 
-        // --- Управление 3D камерой ---
+        // --- 3D Camera Controls ---
         if self.cam_3d.noclip_active {
-            // Скрываем курсор и удерживаем его в центре 3D-окна, чтобы вид вращался бесконечно
+            // Hide cursor and lock it to the center of the 3D window for continuous look rotation
             ui.ctx().set_cursor_icon(egui::CursorIcon::None);
             ui.ctx()
                 .send_viewport_cmd(egui::ViewportCommand::CursorVisible(false));
             ui.ctx()
                 .send_viewport_cmd(egui::ViewportCommand::CursorPosition(rect.center()));
 
-            // Режим Hammer Editor Z-Noclip: берем сырое смещение мыши из DeviceEvent::MouseMotion (pointer.motion)
+            // Hammer Editor Z-Noclip mode: take raw mouse delta from DeviceEvent::MouseMotion (pointer.motion)
             let raw_motion = ui
                 .input(|i| i.pointer.motion())
                 .unwrap_or_else(|| ui.input(|i| i.pointer.delta()));
@@ -2261,7 +2273,7 @@ impl QuadViewportController {
                     (self.cam_3d.pitch_rad - raw_motion.y * sensitivity).clamp(-1.52, 1.52);
             }
 
-            // Колесико мыши регулирует скорость полета в Noclip
+            // Mouse wheel adjusts fly speed in Noclip
             let scroll_y = ui.input(|i| i.smooth_scroll_delta.y);
             if scroll_y.abs() > 0.1 {
                 self.cam_3d.fly_speed_mm_per_sec =
@@ -2304,11 +2316,11 @@ impl QuadViewportController {
                     move_vec.normalize() * self.cam_3d.fly_speed_mm_per_sec * boost * dt;
             }
 
-            // Запрашиваем перерисовку кадра для плавного полета WASD
+            // Request frame repaint for smooth WASD flight
             ui.ctx().request_repaint();
         } else {
-            // Обычный режим CAD Orbit:
-            // Вращение камеры зажатой ПКМ или ЛКМ по фону (или СКМ)
+            // Standard CAD Orbit mode:
+            // Camera rotation via dragging RMB, LMB on background, or MMB
             if resp.dragged_by(egui::PointerButton::Secondary)
                 || (resp.dragged_by(egui::PointerButton::Primary) && !ui.input(|i| i.modifiers.shift))
             {
@@ -2318,7 +2330,7 @@ impl QuadViewportController {
                 self.cam_3d.sync_eye_from_orbit();
             }
 
-            // Панорамирование камеры (СКМ или Shift + ПКМ/ЛКМ)
+            // Camera panning (MMB or Shift + RMB/LMB)
             if resp.dragged_by(egui::PointerButton::Middle)
                 || (resp.dragged() && ui.input(|i| i.modifiers.shift))
             {
@@ -2331,7 +2343,7 @@ impl QuadViewportController {
                 self.cam_3d.sync_eye_from_orbit();
             }
 
-            // Зум колесиком мыши в 3D
+            // Mouse wheel zoom in 3D
             if resp.hovered() {
                 let scroll_y = ui.input(|i| i.smooth_scroll_delta.y);
                 if scroll_y.abs() > 0.1 {
@@ -2346,12 +2358,12 @@ impl QuadViewportController {
         let aspect = rect.width() / rect.height().max(1.0);
         let vp_mat = self.cam_3d.view_proj_matrix(aspect);
 
-        // 1. Отрисовка базовой координатной сетки пола Z=0 в 3D
+        // 1. Render floor grid Z=0 in 3D
         self.draw_3d_floor_grid(&painter, rect, &vp_mat);
 
-        // 2. Сбор всех граней 3D-блоков с отсечением скрытых стыков (Internal Abutment Culling),
-        // адаптивным разбиением (Subdivision) и топологической сортировкой плоскостей (Newell's Visibility Sort)
-        // для полного устранения Z-fighting и ошибок перекрытия полок/стоек/задней стенки!
+        // 2. Collect all 3D block faces with internal abutment culling,
+        // adaptive subdivision, and Newell's separating plane visibility sort
+        // to completely eliminate Z-fighting and overlap artifacts between shelves, uprights, and back panels!
         #[derive(Clone)]
         struct Face3DToDraw {
             part_id: PartId,
@@ -2365,9 +2377,9 @@ impl QuadViewportController {
             fill_color: Color32,
             stroke_color: Color32,
             is_selected: bool,
-            /// Точные UV-координаты 4 углов тайла (с учетом ориентации волокон и физического масштаба торцов)
+            /// Exact UV coordinates of the 4 tile corners (taking grain orientation and physical edge scale into account)
             uv_corners: [Pos2; 4],
-            /// Какие из 4 ребер этого тайла лежат на внешней границе детали (для отрисовки контура и кромки)
+            /// Which of the 4 edges of this tile lie on the outer boundary of the part (for outline and edge banding)
             outer_edges: [bool; 4],
             edge_strokes: [Option<Stroke>; 4],
             grain_segment: Option<(Pos2, Pos2)>,
@@ -2377,7 +2389,7 @@ impl QuadViewportController {
         let light_dir = Vec3::new(-0.45, -0.65, 0.62).normalize();
         let eye = self.cam_3d.eye_mm;
 
-        // Предварительно собираем AABB всех видимых деталей для отсечения внутренних глухих стыков (например, торец полки, упертый в боковину)
+        // Pre-collect AABB bounds of all visible parts for internal abutment culling (e.g. shelf edge touching an upright)
         let part_aabbs: Vec<(PartId, Vec3, Vec3)> = project
             .parts
             .iter()
@@ -2389,17 +2401,17 @@ impl QuadViewportController {
             })
             .collect();
 
-        // Индексы 6 граней куба с единообразным обходом сторон прямоугольника:
-        // 0 (-Z) и 1 (+Z): ребро 0->1 вдоль +X, ребро 1->2 вдоль +Y
-        // 2 (-Y) и 3 (+Y): ребро 0->1 вдоль +X, ребро 1->2 вдоль +Z
-        // 4 (-X) и 5 (+X): ребро 0->1 вдоль +Y, ребро 1->2 вдоль +Z
+        // Indices of the 6 cube faces with uniform vertex winding:
+        // 0 (-Z) and 1 (+Z): edge 0->1 along +X, edge 1->2 along +Y
+        // 2 (-Y) and 3 (+Y): edge 0->1 along +X, edge 1->2 along +Z
+        // 4 (-X) and 5 (+X): edge 0->1 along +Y, edge 1->2 along +Z
         let cube_faces: [([usize; 4], Vec3); 6] = [
-            ([0, 1, 2, 3], Vec3::new(0.0, 0.0, -1.0)), // Нижняя (-Z)
-            ([4, 5, 6, 7], Vec3::new(0.0, 0.0, 1.0)),  // Верхняя (+Z)
-            ([0, 1, 5, 4], Vec3::new(0.0, -1.0, 0.0)), // Задняя (-Y)
-            ([3, 2, 6, 7], Vec3::new(0.0, 1.0, 0.0)),  // Передняя (+Y)
-            ([0, 3, 7, 4], Vec3::new(-1.0, 0.0, 0.0)), // Левая (-X)
-            ([1, 2, 6, 5], Vec3::new(1.0, 0.0, 0.0)),  // Правая (+X)
+            ([0, 1, 2, 3], Vec3::new(0.0, 0.0, -1.0)), // Bottom (-Z)
+            ([4, 5, 6, 7], Vec3::new(0.0, 0.0, 1.0)),  // Top (+Z)
+            ([0, 1, 5, 4], Vec3::new(0.0, -1.0, 0.0)), // Back (-Y)
+            ([3, 2, 6, 7], Vec3::new(0.0, 1.0, 0.0)),  // Front (+Y)
+            ([0, 3, 7, 4], Vec3::new(-1.0, 0.0, 0.0)), // Left (-X)
+            ([1, 2, 6, 5], Vec3::new(1.0, 0.0, 0.0)),  // Right (+X)
         ];
 
         for part in &project.parts {
@@ -2422,15 +2434,15 @@ impl QuadViewportController {
                 let q3 = verts[v_indices[3]];
                 let face_center = (q0 + q1 + q2 + q3) * 0.25;
 
-                // 1) Отсечение нелицевых граней (Backface Culling)
+                // 1) Backface Culling
                 let to_cam = eye - face_center;
                 if world_norm.dot(to_cam) <= 0.0 {
                     continue;
                 }
 
-                // 2) Отсечение скрытых торцов на глухих стыках (Internal Abutment Culling):
-                // Если эта грань полностью прижата вплотную к другой детали (и деталь не выделена),
-                // не рисуем этот внутренний торец, чтобы он никогда не давал Z-fighting сквозь боковину или крышку!
+                // 2) Internal Abutment Culling:
+                // If this face is flush against another part (and the part is not selected),
+                // skip rendering this internal edge to prevent Z-fighting through uprights or tops!
                 if !is_sel && part.yaw_deg.abs() < 0.05 {
                     let probe_pt = face_center + world_norm * 0.4;
                     let sample_pts = [
@@ -2499,15 +2511,15 @@ impl QuadViewportController {
                     }
                 }
 
-                // Адаптивное разбиение крупных граней на сетку (например, боковина/полка/задняя стенка),
-                // чтобы при Т-образных примыканиях (полка посередине стойки) каждый участок грани сортировался корректно!
+                // Adaptive grid subdivision of large faces (e.g. side panel / shelf / backing),
+                // so T-junctions (shelf meeting middle of an upright) sort correctly per tile!
                 let len_u = q0.distance(q1);
                 let len_v = q1.distance(q2);
                 let div_u = ((len_u / 260.0).ceil() as usize).clamp(1, 4);
                 let div_v = ((len_v / 260.0).ceil() as usize).clamp(1, 4);
 
-                // Вычисляем физический масштаб UV на этой грани (чтобы на узких торцах 18 мм текстура не сжималась в 40 раз)
-                // и ориентируем ось U текстуры строго вдоль направления волокон детали!
+                // Compute physical UV scale on this face (so textures on narrow 18 mm edges aren't compressed 40x)
+                // and orient texture U axis strictly along the part grain direction!
                 let ref_len = part.length_mm.max(120.0);
                 let ref_wid = part.width_mm.max(120.0);
                 let u_scale = if len_u <= thick * 1.5 {
@@ -2522,7 +2534,7 @@ impl QuadViewportController {
                 };
                 let _ = ref_len;
 
-                // Определяем, идет ли направление волокон вдоль оси V этой грани (тогда поворачиваем UV на 90°)
+                // Determine whether grain runs along the V axis of this face (if so, rotate UV by 90 degrees)
                 let grain_along_v = match part.orientation {
                     PartOrientation::HorizontalXY => part.grain_along_width,
                     PartOrientation::VerticalYZ | PartOrientation::FrontalXZ => !part.grain_along_width,
@@ -2580,13 +2592,13 @@ impl QuadViewportController {
                         let dist_to_cam = eye.distance(sub_center);
 
                         let outer_edges = [
-                            iv == 0,         // ребро 0..1 (верхнее по V)
-                            iu + 1 == div_u, // ребро 1..2 (правое по U)
-                            iv + 1 == div_v, // ребро 2..3 (нижнее по V)
-                            iu == 0,         // ребро 3..0 (левое по U)
+                            iv == 0,         // edge 0..1 (top along V)
+                            iu + 1 == div_u, // edge 1..2 (right along U)
+                            iv + 1 == div_v, // edge 2..3 (bottom along V)
+                            iu == 0,         // edge 3..0 (left along U)
                         ];
 
-                        // Рисуем стрелку волокон только на центральном тайле главной пласти
+                        // Draw grain direction arrow only on the center tile of the main face
                         let is_center_tile = iu == div_u / 2 && iv == div_v / 2;
                         let grain_segment = if is_center_tile
                             && part.grain_fixed
@@ -2674,15 +2686,15 @@ impl QuadViewportController {
             }
         }
 
-        // Сначала сортируем по убыванию расстояния до камеры (базовый порядок от дальних к ближним)
+        // Sort descending by distance to camera first (far to near)
         faces_to_draw.sort_by(|a, b| {
             b.avg_depth
                 .partial_cmp(&a.avg_depth)
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
 
-        // Затем уточняем порядок методом разделяющих плоскостей Ньюэлла (Newell's Separating Plane Visibility Sort):
-        // Для любых двух граней, чьи 2D-проекции перекрываются на экране, проверяем их взаимное положение относительно плоскостей друг друга и камеры!
+        // Refine order using Newell's Separating Plane Visibility Sort:
+        // For any two faces whose screen bounding boxes overlap, test relative positions against each other's planes and camera!
         let n_faces = faces_to_draw.len();
         for i in 0..n_faces {
             for j in (i + 1)..n_faces {
@@ -2696,7 +2708,7 @@ impl QuadViewportController {
                     continue;
                 }
 
-                // Проверяем: должна ли грань `i` рисоваться ПОЗЖЕ (т.е. ПОВЕРХ) грани `j`?
+                // Test if face `i` should be drawn AFTER (i.e. on top of) face `j`
                 let i_in_front_of_j = is_face_a_in_front_of_b(
                     &faces_to_draw[i].world_verts,
                     faces_to_draw[i].world_norm,
@@ -2712,7 +2724,7 @@ impl QuadViewportController {
             }
         }
 
-        // 3. Отрисовка граней (с перспективно-корректной 3D-разбивкой текстур PNG/JPG без искажений PS1, либо заливкой цветом материала)
+        // 3. Render faces (with perspective-correct 3D subdivision for textures without PS1 affine distortion, or solid material color)
         for face in &faces_to_draw {
             if let Some(tex) = loaded_textures.get(&face.material_id) {
                 self.draw_perspective_correct_textured_quad(
@@ -2729,13 +2741,13 @@ impl QuadViewportController {
                 painter.add(Shape::convex_polygon(
                     face.screen_pts.to_vec(),
                     face.fill_color,
-                    Stroke::new(0.4, face.fill_color), // Скрывает микро-щели сглаживания между соседними тайлами одной грани
+                    Stroke::new(0.4, face.fill_color), // Hides anti-aliasing seams between adjacent tiles of the same face
                 ));
             }
 
             if self.cam_3d.wireframe_overlay || face.is_selected {
                 for i in 0..4 {
-                    // Рисуем контурные линии и кромки только по внешним ребрам детали (не рисуем внутреннюю сетку разбиения тайлов)
+                    // Draw outlines and edge banding only on outer part boundaries (skip internal tile subdivision edges)
                     if !face.outer_edges[i] {
                         continue;
                     }
@@ -2758,9 +2770,9 @@ impl QuadViewportController {
             }
         }
 
-        // 4. Выделение детали левым кликом мыши (ЛКМ) в 3D-окне (с поддержкой Shift/Ctrl для группового выделения):
-        // - В режиме полета Z-Noclip: ЛКМ выделяет деталь прямо под центральным прицелом (Crosshair)!
-        // - В обычном режиме Orbit: ЛКМ выделяет деталь под курсором мыши
+        // 4. Select part with LMB in 3D viewport (with Shift/Ctrl support for multi-selection):
+        // - In Z-Noclip fly mode: LMB selects the part right under the central crosshair!
+        // - In standard Orbit mode: LMB selects the part under the mouse cursor
         let modifiers = ui.input(|i| i.modifiers);
         let multi_mod = modifiers.shift || modifiers.ctrl || modifiers.command;
 
@@ -2805,7 +2817,7 @@ impl QuadViewportController {
             }
         }
 
-        // Прицел в центре 3D-экрана в режиме Hammer Editor Z-Noclip
+        // Crosshair in the center of the 3D screen in Hammer Editor Z-Noclip mode
         if self.cam_3d.noclip_active {
             let c = rect.center();
             let ch_col = Color32::from_rgb(90, 255, 120);
@@ -2819,7 +2831,7 @@ impl QuadViewportController {
             );
         }
 
-        // 5. Рамка и информационный заголовок 3D-окна
+        // 5. Frame border and info header for 3D viewport
         let border_col = if self.cam_3d.noclip_active {
             Color32::from_rgb(80, 230, 110)
         } else {
@@ -2863,7 +2875,7 @@ impl QuadViewportController {
             },
         );
 
-        // Кнопка разворота 3D-окна на весь экран
+        // Fullscreen maximize button for 3D viewport
         let btn_rect = Rect::from_min_size(
             Pos2::new(rect.right() - 78.0, rect.top() + 6.0),
             EguiVec2::new(72.0, 22.0),
@@ -2899,8 +2911,8 @@ impl QuadViewportController {
         }
     }
 
-    /// Отрисовывает текстурированный 3D-четырехугольник с перспективно-корректной 3D-тесселяцией и симметричным X-разбиением через центр.
-    /// Полностью устраняет эффект «плавающей/ломаной текстуры PlayStation 1» (аффинного искажения в экранном пространстве `egui::Mesh`).
+    /// Renders a textured 3D quadrilateral with perspective-correct 3D tessellation and symmetric center X-split.
+    /// Completely eliminates PlayStation 1 affine texture warping in screen-space `egui::Mesh`.
     #[allow(clippy::too_many_arguments)]
     fn draw_perspective_correct_textured_quad(
         &self,
@@ -2913,7 +2925,7 @@ impl QuadViewportController {
         screen_bbox: Rect,
         tint_color: Color32,
     ) {
-        // Выбираем плотность перспективно-корректной сетки по экранному размеру тайла и перепаду глубины W
+        // Choose perspective-correct grid density based on screen size and depth range W
         let mut min_w = f32::MAX;
         let mut max_w = f32::MIN;
         for v in w_verts {
@@ -2955,7 +2967,7 @@ impl QuadViewportController {
             }
         }
 
-        // Добавляем узлы сетки в буфер вершин
+        // Add grid nodes to vertex buffer
         for &(pos, uv) in &grid_scr {
             mesh.vertices.push(egui::epaint::Vertex {
                 pos,
@@ -2964,8 +2976,8 @@ impl QuadViewportController {
             });
         }
 
-        // Для каждой микро-ячейки добавляем её истинный 3D-спроецированный центр и строим 4 симметричных треугольника (X-разбиение),
-        // чтобы убрать диагональный излом текстуры!
+        // For each micro-cell, add its true 3D-projected center and build 4 symmetric triangles (X-split)
+        // to eliminate diagonal texture creasing!
         for iv in 0..sub_v {
             let t_mid = (iv as f32 + 0.5) / sub_v as f32;
             for iu in 0..sub_u {
@@ -3025,7 +3037,7 @@ impl QuadViewportController {
             c += step;
         }
 
-        // Оси X (красная), Y (зеленая), Z (синяя) из точки (0,0,0) длиной 250 мм
+        // Axes X (red), Y (green), Z (blue) from (0,0,0) with length 250 mm
         if let Some((o, _)) = self.cam_3d.project_point(vp_mat, rect, Vec3::ZERO) {
             if let Some((px, _)) = self.cam_3d.project_point(vp_mat, rect, Vec3::new(250.0, 0.0, 0.0)) {
                 painter.line_segment([o, px], Stroke::new(2.2, Color32::from_rgb(230, 70, 70)));
@@ -3039,28 +3051,28 @@ impl QuadViewportController {
         }
     }
 
-    /// Проверяет, соответствует ли грань `f_idx` (0:-Z, 1:+Z, 2:-Y, 3:+Y, 4:-X, 5:+X) одному из 4 кромленных торцов детали
+    /// Checks if face `f_idx` (0:-Z, 1:+Z, 2:-Y, 3:+Y, 4:-X, 5:+X) matches one of the 4 edge-banded sides of the part
     fn face_edge_id_for_part(&self, part: &PartBlock, f_idx: usize) -> Option<EdgeId> {
         match part.orientation {
             PartOrientation::HorizontalXY => match f_idx {
-                3 => part.edges.l1, // Передняя грань (+Y) = Д1
-                2 => part.edges.l2, // Задняя грань (-Y) = Д2
-                4 => part.edges.w1, // Левый торец (-X) = Ш1
-                5 => part.edges.w2, // Правый торец (+X) = Ш2
+                3 => part.edges.l1, // Front (+Y) = L1
+                2 => part.edges.l2, // Back (-Y) = L2
+                4 => part.edges.w1, // Left (-X) = W1
+                5 => part.edges.w2, // Right (+X) = W2
                 _ => None,
             },
             PartOrientation::VerticalYZ => match f_idx {
-                3 => part.edges.l1, // Передняя грань (+Y) = Д1
-                2 => part.edges.l2, // Задняя грань (-Y) = Д2
-                0 => part.edges.w1, // Нижний торец (-Z) = Ш1
-                1 => part.edges.w2, // Верхний торец (+Z) = Ш2
+                3 => part.edges.l1, // Front (+Y) = L1
+                2 => part.edges.l2, // Back (-Y) = L2
+                0 => part.edges.w1, // Bottom (-Z) = W1
+                1 => part.edges.w2, // Top (+Z) = W2
                 _ => None,
             },
             PartOrientation::FrontalXZ => match f_idx {
-                4 => part.edges.l1, // Левая грань (-X) = Д1
-                5 => part.edges.l2, // Правая грань (+X) = Д2
-                0 => part.edges.w1, // Нижний торец (-Z) = Ш1
-                1 => part.edges.w2, // Верхний торец (+Z) = Ш2
+                4 => part.edges.l1, // Left (-X) = L1
+                5 => part.edges.l2, // Right (+X) = L2
+                0 => part.edges.w1, // Bottom (-Z) = W1
+                1 => part.edges.w2, // Top (+Z) = W2
                 _ => None,
             },
         }
@@ -3074,7 +3086,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Управляет захватом и видимостью системного курсора мыши в режиме Hammer Editor Z-Noclip
+    /// Manages grab and visibility of the system cursor in Hammer Editor Z-Noclip mode
     pub fn set_noclip_cursor_grab(ctx: &egui::Context, active: bool, center_pos: Pos2) {
         if active {
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorGrab(
@@ -3091,7 +3103,7 @@ impl QuadViewportController {
     }
 }
 
-/// Проверка попадания 2D-точки внутрь выпуклого четырехугольника
+/// Test if a 2D point is inside a convex quad
 fn point_in_quad(pt: Pos2, quad: &[Pos2; 4]) -> bool {
     let mut pos = 0;
     let mut neg = 0;
@@ -3108,8 +3120,8 @@ fn point_in_quad(pt: Pos2, quad: &[Pos2; 4]) -> bool {
     pos == 0 || neg == 0
 }
 
-/// Проверяет по критериям разделяющей плоскости Ньюэлла (Newell's Separating Plane Test):
-/// перекрывает ли грань `A` грань `B` относительно глаза камеры `eye` (то есть `A` должна быть нарисована ПОВЕРХ `B`).
+/// Evaluates Newell's Separating Plane Test criteria:
+/// whether face `A` is in front of face `B` relative to camera eye (meaning `A` should be drawn on top of `B`).
 fn is_face_a_in_front_of_b(
     verts_a: &[Vec3; 4],
     norm_a: Vec3,
@@ -3121,10 +3133,10 @@ fn is_face_a_in_front_of_b(
 ) -> bool {
     let eps = 0.25_f32;
 
-    // 1. Относительно плоскости грани B:
-    // Камера находится на лицевой стороне B: norm_b.dot(eye) - plane_d_b > 0.
-    // Если ВСЕ вершины A лежат по ту же сторону от плоскости B, что и камера (>= -eps), и хотя бы одна строго ближе к камере (> eps),
-    // значит A гарантированно перед B!
+    // 1. Relative to face B's plane:
+    // Camera is on front side of B: norm_b.dot(eye) - plane_d_b > 0.
+    // If ALL vertices of A lie on the same side of B's plane as camera (>= -eps), and at least one is strictly closer to camera (> eps),
+    // then A is guaranteed to be in front of B!
     let mut a_all_front_of_b = true;
     let mut a_all_behind_b = true;
     let mut a_strictly_front = false;
@@ -3145,15 +3157,15 @@ fn is_face_a_in_front_of_b(
     }
 
     if a_all_front_of_b && a_strictly_front {
-        return true; // A полностью спереди плоскости B -> A поверх B
+        return true; // A is entirely in front of plane B -> A on top of B
     }
     if a_all_behind_b && a_strictly_behind {
-        return false; // A полностью позади плоскости B -> B поверх A
+        return false; // A is entirely behind plane B -> B on top of A
     }
 
-    // 2. Относительно плоскости грани A:
-    // Камера находится на лицевой стороне A: norm_a.dot(eye) - plane_d_a > 0.
-    // Если ВСЕ вершины B лежат позади плоскости A (<= eps, противоположно от камеры), значит A перед B!
+    // 2. Relative to face A's plane:
+    // Camera is on front side of A: norm_a.dot(eye) - plane_d_a > 0.
+    // If ALL vertices of B lie behind plane A (<= eps, away from camera), then A is in front of B!
     let mut b_all_behind_a = true;
     let mut b_all_front_of_a = true;
     let mut b_strictly_behind = false;
@@ -3172,10 +3184,10 @@ fn is_face_a_in_front_of_b(
     }
 
     if b_all_behind_a && b_strictly_behind {
-        return true; // B полностью позади плоскости A -> A поверх B
+        return true; // B is entirely behind plane A -> A on top of B
     }
     if b_all_front_of_a && b_strictly_front {
-        return false; // B полностью спереди плоскости A -> B поверх A
+        return false; // B is entirely in front of plane A -> B on top of A
     }
 
     false

@@ -1,8 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-/// Поддерживаемые языки интерфейса и экспорта PDF в QuadFurn CAD.
-/// Включает все языки из классического списка локализаций (Total Commander),
-/// а также украинский, китайский упрощённый, японский, португальский и турецкий.
+/// Supported UI and PDF export languages in QuadFurn CAD.
+/// Includes all classic desktop CAD/file-manager localization languages,
+/// plus Ukrainian, Simplified Chinese, Japanese, Portuguese, and Turkish.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum AppLanguage {
     Cs,   // Čeština (Czech)
@@ -15,18 +15,18 @@ pub enum AppLanguage {
     Ko,   // Korean (한국어)
     Hu,   // Magyar (Hungarian)
     Nl,   // Nederlands (Dutch)
-    No,   // Norsk (Bokmål)
-    Pl,   // Polski (Polish)
-    Pt,   // Português (Portuguese)
-    Ro,   // Română (Romanian)
-    Ru,   // Russian (Русский)
-    Sl,   // Slovenski (Slovenian)
-    Sk,   // Slovenský (Slovak)
-    Sv,   // Svenska (Swedish)
-    Tr,   // Türkçe (Turkish)
-    Uk,   // Українська (Ukrainian)
-    ZhCn, // 简体中文 (Chinese Simplified)
-    Ja,   // 日本語 (Japanese)
+    No,   // Norwegian (Bokmål)
+    Pl,   // Polish
+    Pt,   // Portuguese
+    Ro,   // Romanian
+    Ru,   // Russian
+    Sl,   // Slovenian
+    Sk,   // Slovak
+    Sv,   // Swedish
+    Tr,   // Turkish
+    Uk,   // Ukrainian
+    ZhCn, // Chinese Simplified
+    Ja,   // Japanese
 }
 
 impl Default for AppLanguage {
@@ -61,8 +61,8 @@ impl AppLanguage {
         AppLanguage::Ja,
     ];
 
-    /// Определяет язык операционной системы при первом запуске программы.
-    /// Если язык системы не входит в список поддерживаемых, возвращает английский (`AppLanguage::En`).
+    /// Detects operating system language on first application launch.
+    /// If the OS language is not supported, defaults to English (`AppLanguage::En`).
     pub fn detect_system_or_en() -> Self {
         for tag in Self::collect_system_locale_tags() {
             if let Some(lang) = Self::from_locale_tag(&tag) {
@@ -72,7 +72,7 @@ impl AppLanguage {
         AppLanguage::En
     }
 
-    /// Преобразует строковый тег локали (например, `"ru-RU"`, `"uk_UA"`, `"zh-CN"`, `"de"`, `"en-US"`) в `AppLanguage`.
+    /// Converts a locale tag string (e.g., `"ru-RU"`, `"uk_UA"`, `"zh-CN"`, `"de"`, `"en-US"`) to `AppLanguage`.
     pub fn from_locale_tag(tag: &str) -> Option<Self> {
         let clean = tag.trim().to_ascii_lowercase();
         if clean.is_empty() || clean == "c" || clean == "posix" {
@@ -133,7 +133,7 @@ impl AppLanguage {
                 fn GetUserDefaultLocaleName(lp_locale_name: *mut u16, cch_locale_name: i32) -> i32;
             }
 
-            // 1. Язык интерфейса Windows (MUI_LANGUAGE_NAME = 0x8)
+            // 1. Windows UI language (MUI_LANGUAGE_NAME = 0x8)
             let mut num_langs = 0u32;
             let mut buf = [0u16; 256];
             let mut buf_len = buf.len() as u32;
@@ -149,7 +149,7 @@ impl AppLanguage {
                 }
             }
 
-            // 2. Региональная локаль пользователя Windows
+            // 2. Windows User Regional Locale
             let mut loc_buf = [0u16; 85];
             let len =
                 unsafe { GetUserDefaultLocaleName(loc_buf.as_mut_ptr(), loc_buf.len() as i32) };
@@ -161,7 +161,7 @@ impl AppLanguage {
         tags
     }
 
-    /// Короткий код языка для компактной кнопки в верхней панели
+    /// Short language code for compact button in the top menu bar.
     pub fn code(self) -> &'static str {
         match self {
             AppLanguage::Cs => "CS",
@@ -189,7 +189,7 @@ impl AppLanguage {
         }
     }
 
-    /// Полное название языка в выпадающем меню выбора локализации
+    /// Full language label for dropdown menu.
     pub fn label(self) -> &'static str {
         match self {
             AppLanguage::Cs => "Čeština (Czech)",
@@ -217,7 +217,7 @@ impl AppLanguage {
         }
     }
 
-    /// Подпись на кнопке-иконке переключения языка рядом с выбором темы
+    /// Label on language switcher button next to theme choice.
     pub fn switcher_button_text(self) -> &'static str {
         match self {
             AppLanguage::Cs => "🌐 CS",
@@ -245,36 +245,36 @@ impl AppLanguage {
         }
     }
 
-    /// Текст всплывающей подсказки (попапа) при наведении на иконку смены языка
+    /// Hover tooltip text for language switcher button.
     pub fn switcher_hover_tooltip(self) -> &'static str {
         match self {
-            AppLanguage::Ru => "Сменить язык / Change language",
-            AppLanguage::Uk => "Змінити мову / Change language",
-            AppLanguage::De => "Sprache wechseln / Change language",
-            AppLanguage::Fr => "Changer de langue / Change language",
-            AppLanguage::Es => "Cambiar idioma / Change language",
-            AppLanguage::It => "Cambia lingua / Change language",
-            AppLanguage::Pl => "Zmień język / Change language",
-            AppLanguage::Cs => "Změnit jazyk / Change language",
-            AppLanguage::Sk => "Zmeniť jazyk / Change language",
-            AppLanguage::Sl => "Spremeni jezik / Change language",
-            AppLanguage::Da => "Skift sprog / Change language",
-            AppLanguage::Nl => "Taal wijzigen / Change language",
-            AppLanguage::No => "Endre språk / Change language",
-            AppLanguage::Sv => "Byt språk / Change language",
-            AppLanguage::Hu => "Nyelv módosítása / Change language",
-            AppLanguage::Ro => "Schimbă limba / Change language",
-            AppLanguage::Pt => "Alterar idioma / Change language",
-            AppLanguage::Tr => "Dili değiştir / Change language",
-            AppLanguage::Ko => "언어 변경 / Change language",
-            AppLanguage::ZhCn => "更改语言 / Change language",
-            AppLanguage::Ja => "言語を変更 / Change language",
-            AppLanguage::En => "Change language / Сменить язык",
+            AppLanguage::Ru => "Сменить язык интерфейса",
+            AppLanguage::Uk => "Змінити мову інтерфейсу",
+            AppLanguage::De => "Sprache ändern",
+            AppLanguage::Fr => "Changer de langue",
+            AppLanguage::Es => "Cambiar idioma",
+            AppLanguage::It => "Cambia lingua",
+            AppLanguage::Pl => "Zmień język",
+            AppLanguage::Cs => "Změnit jazyk",
+            AppLanguage::Sk => "Zmeniť jazyk",
+            AppLanguage::Sl => "Spremeni jezik",
+            AppLanguage::Da => "Skift sprog",
+            AppLanguage::Nl => "Taal wijzigen",
+            AppLanguage::No => "Endre språk",
+            AppLanguage::Sv => "Ändra språk",
+            AppLanguage::Hu => "Nyelv módosítása",
+            AppLanguage::Ro => "Schimbă limba",
+            AppLanguage::Pt => "Alterar idioma",
+            AppLanguage::Tr => "Dili değiştir",
+            AppLanguage::Ko => "언어 변경",
+            AppLanguage::ZhCn => "更改界面语言",
+            AppLanguage::Ja => "インターフェース言語を変更",
+            AppLanguage::En => "Change interface language",
         }
     }
 
-    /// Быстрый выбор строки по текущему языку (поддерживает словарь частых UI-терминов для всех 22 языков,
-    /// с откатом на русский для `Ru` и на английский для остальных языков).
+    /// Fast string selection based on current language (supports common UI glossary for all 22 languages,
+    /// falling back to Russian for `Ru` and English for others).
     #[inline]
     pub fn tr<'a>(self, ru: &'a str, en: &'a str) -> &'a str {
         match self {
@@ -284,7 +284,7 @@ impl AppLanguage {
         }
     }
 
-    /// Возвращает ссылку на статический словарь интерфейса и PDF-экспорта для выбранного языка
+    /// Returns a reference to the static localization dictionary for this language.
     #[inline]
     pub fn dict(self) -> &'static L10n {
         match self {
@@ -314,7 +314,7 @@ impl AppLanguage {
     }
 }
 
-/// Перевод частых UI-надписей (кнопки, единицы измерения, заголовки панелей) на дополнительные языки
+/// Translation of common UI strings (buttons, units, panel headers) to additional languages.
 fn translate_common_phrase(lang: AppLanguage, ru: &str) -> Option<&'static str> {
     let d = lang.dict();
     match ru {
@@ -340,14 +340,21 @@ fn translate_common_phrase(lang: AppLanguage, ru: &str) -> Option<&'static str> 
         "Кромка Д2" => Some(d.pdf_col_edge_l2),
         "Кромка Ш1" => Some(d.pdf_col_edge_w1),
         "Кромка Ш2" => Some(d.pdf_col_edge_w2),
-        "Толщина (мм)" => Some(d.pdf_col_edge_thickness),
+        "Толщина (мм)" | "Толщина:" => Some(d.pdf_col_edge_thickness),
         "Наименование материала" => Some(d.pdf_col_material_name),
         "Наименование кромки" => Some(d.pdf_col_edge_name),
+        "Остаток" => Some(d.pdf_remnant),
+        "Лист" => Some(d.pdf_sheet_word),
+        "Всего листов:" => Some(d.pdf_total_sheets_to_cut),
+        "Длина реза:" => Some(d.pdf_total_cut_length),
+        "Площадь деталей:" => Some(d.pdf_net_parts_area),
+        "Фикс. волокна" | "Фикс. (По текстуре)" => Some(d.pdf_grain_locked),
+        "Вращ. свободно" | "Свободно" => Some(d.pdf_grain_free),
         _ => None,
     }
 }
 
-/// Статический типобезопасный словарь локализации интерфейса и генератора PDF (`Zero-cost` в рантайме)
+/// Static type-safe localization dictionary for UI and PDF generator (zero-cost at runtime).
 pub struct L10n {
     pub window_title: &'static str,
     pub open_in_new_tab: &'static str,
@@ -380,7 +387,7 @@ pub struct L10n {
     pub start_open_hover: &'static str,
     pub start_recent_empty: &'static str,
     pub start_footer_status: &'static str,
-    // Общие UI и единицы измерения
+    // General UI and measurement units
     pub unit_mm: &'static str,
     pub unit_mm_spaced: &'static str,
     pub unit_pcs: &'static str,
@@ -395,7 +402,7 @@ pub struct L10n {
     pub part_properties_heading: &'static str,
     pub spec_heading: &'static str,
     pub materials_heading: &'static str,
-    // Локализация PDF-документа (Спецификация, 4 проекции, Карта раскроя, Материалы и кромки)
+    // PDF document localization (Specification, 4 projections, cutting layout, materials and edges)
     pub pdf_sec1_title: &'static str,
     pub pdf_positions_label: &'static str,
     pub pdf_total_parts_label: &'static str,

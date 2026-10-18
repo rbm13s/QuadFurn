@@ -5,7 +5,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Генерирует 32-битный BGRA DIB блок для одной иконки заданного размера `sz × sz` внутри формата `.ico`
+/// Generates a 32-bit BGRA DIB block for a single icon entry of size `sz × sz` inside the `.ico` format
 fn encode_ico_dib_entry(img: &image::DynamicImage, sz: u32) -> Vec<u8> {
     let resized = img.resize_exact(sz, sz, FilterType::Lanczos3);
     let rgba = resized.to_rgba8();
@@ -15,10 +15,10 @@ fn encode_ico_dib_entry(img: &image::DynamicImage, sz: u32) -> Vec<u8> {
     let and_bytes = and_row_bytes * (sz as usize);
     let mut buf = Vec::with_capacity(40 + xor_bytes + and_bytes);
 
-    // BITMAPINFOHEADER (40 байт)
+    // BITMAPINFOHEADER (40 bytes)
     buf.extend_from_slice(&40u32.to_le_bytes()); // biSize
     buf.extend_from_slice(&(sz as i32).to_le_bytes()); // biWidth
-    buf.extend_from_slice(&((sz * 2) as i32).to_le_bytes()); // biHeight (удвоенная высота для XOR + AND масок)
+    buf.extend_from_slice(&((sz * 2) as i32).to_le_bytes()); // biHeight (doubled height for XOR + AND masks)
     buf.extend_from_slice(&1u16.to_le_bytes()); // biPlanes
     buf.extend_from_slice(&32u16.to_le_bytes()); // biBitCount
     buf.extend_from_slice(&0u32.to_le_bytes()); // biCompression (BI_RGB)
@@ -28,7 +28,7 @@ fn encode_ico_dib_entry(img: &image::DynamicImage, sz: u32) -> Vec<u8> {
     buf.extend_from_slice(&0u32.to_le_bytes()); // biClrUsed
     buf.extend_from_slice(&0u32.to_le_bytes()); // biClrImportant
 
-    // Пиксели BGRA снизу вверх (bottom-up)
+    // BGRA pixels bottom-up
     for y in (0..sz).rev() {
         for x in 0..sz {
             let p = rgba.get_pixel(x, y).0;
@@ -39,12 +39,12 @@ fn encode_ico_dib_entry(img: &image::DynamicImage, sz: u32) -> Vec<u8> {
         }
     }
 
-    // 1-битная маска прозрачности AND (заполняется нулями, так как альфа-канал в 32-битном BGRA)
+    // 1-bit transparency AND mask (zero-filled since alpha channel is in 32-bit BGRA)
     buf.resize(40 + xor_bytes + and_bytes, 0u8);
     buf
 }
 
-/// Записывает одну запись ресурса в бинарный 32-битный формат Windows `.res` (с выравниванием по 4 байта)
+/// Writes a single resource entry in 32-bit Windows binary `.res` format (aligned to 4 bytes)
 fn write_res_entry(
     out: &mut Vec<u8>,
     type_ordinal: u16,
@@ -53,15 +53,15 @@ fn write_res_entry(
     data: &[u8],
 ) {
     let mut header = Vec::with_capacity(64);
-    // DataSize (4 байта) и HeaderSize (4 байта — заполним позже)
+    // DataSize (4 bytes) and HeaderSize (4 bytes — will populate later)
     header.extend_from_slice(&(data.len() as u32).to_le_bytes());
     header.extend_from_slice(&0u32.to_le_bytes());
 
-    // Type (Ordinal: 0xFFFF, затем u16)
+    // Type (Ordinal: 0xFFFF, then u16)
     header.extend_from_slice(&0xFFFFu16.to_le_bytes());
     header.extend_from_slice(&type_ordinal.to_le_bytes());
 
-    // Name (Ordinal или UTF-16LE строка с нулевым терминатором)
+    // Name (Ordinal or null-terminated UTF-16LE string)
     if let Some(ord) = name_ordinal {
         header.extend_from_slice(&0xFFFFu16.to_le_bytes());
         header.extend_from_slice(&ord.to_le_bytes());
@@ -72,7 +72,7 @@ fn write_res_entry(
         header.extend_from_slice(&0u16.to_le_bytes());
     }
 
-    // Выравнивание заголовка до границы DWORD (4 байта) перед DataVersion
+    // Align header to DWORD boundary (4 bytes) before DataVersion
     while header.len() % 4 != 0 {
         header.push(0);
     }
@@ -93,7 +93,7 @@ fn write_res_entry(
     }
 }
 
-/// Создаёт мультиразмерный файл `.ico` и бинарный ресурсный файл `.res` (16, 32, 48, 64, 128, 256 px) из `assets/icon.jpeg`
+/// Creates multi-size `.ico` file and binary resource file `.res` (16, 32, 48, 64, 128, 256 px) from `assets/icon.jpeg`
 fn build_multi_size_ico_and_res(
     jpeg_path: &Path,
     ico_path: &Path,
@@ -116,7 +116,7 @@ fn build_multi_size_ico_and_res(
     let total_payload_size: usize = payloads.iter().map(|(_, b)| b.len()).sum();
     let mut ico = Vec::with_capacity(header_and_dir_size + total_payload_size);
 
-    // ICONDIR (6 байт)
+    // ICONDIR (6 bytes)
     ico.extend_from_slice(&0u16.to_le_bytes()); // Reserved = 0
     ico.extend_from_slice(&1u16.to_le_bytes()); // Type = 1 (ICO)
     ico.extend_from_slice(&count.to_le_bytes()); // Count
@@ -142,20 +142,20 @@ fn build_multi_size_ico_and_res(
     fs::write(ico_path, ico)
         .map_err(|e| format!("Failed to write {}: {}", ico_path.display(), e))?;
 
-    // Генерируем стандартный 32-bit Windows Resource (.res) напрямую на Rust (не требует наличия rc.exe в PATH)
+    // Generate standard 32-bit Windows Resource (.res) directly in pure Rust (does not require rc.exe in PATH)
     let mut res = Vec::with_capacity(64 + total_payload_size);
-    // 1. Заголовок пустой 32-битной сигнатуры .res (32 байта)
+    // 1. Empty 32-bit .res header signature (32 bytes)
     write_res_entry(&mut res, 0, Some(0), None, &[]);
-    // В заголовке-сигнатуре MemoryFlags и LanguageId должны быть нулями
+    // In header signature, MemoryFlags and LanguageId must be zeros
     res[20..24].copy_from_slice(&0u32.to_le_bytes());
 
-    // 2. Записи RT_ICON (Type = 3) с ID 1..=count
+    // 2. RT_ICON entries (Type = 3) with ID 1..=count
     for (idx, (_, data)) in payloads.iter().enumerate() {
         let icon_id = (idx + 1) as u16;
         write_res_entry(&mut res, 3, Some(icon_id), None, data);
     }
 
-    // 3. Структура GRPICONDIR для RT_GROUP_ICON (Type = 14)
+    // 3. GRPICONDIR structure for RT_GROUP_ICON (Type = 14)
     let mut grp = Vec::with_capacity(6 + (count as usize) * 14);
     grp.extend_from_slice(&0u16.to_le_bytes()); // idReserved = 0
     grp.extend_from_slice(&1u16.to_le_bytes()); // idType = 1 (ICON)
@@ -173,14 +173,14 @@ fn build_multi_size_ico_and_res(
         grp.extend_from_slice(&icon_id.to_le_bytes()); // nID (u16)
     }
 
-    // Записываем RT_GROUP_ICON под номером 1 (главная иконка EXE в Проводнике Windows) и под именем GLFW_ICON
+    // Write RT_GROUP_ICON with ordinal 1 (main EXE icon in Windows Explorer) and name GLFW_ICON
     write_res_entry(&mut res, 14, Some(1), None, &grp);
     write_res_entry(&mut res, 14, None, Some("GLFW_ICON"), &grp);
 
     fs::write(res_path, res).map_err(|e| format!("Failed to write {}: {}", res_path.display(), e))
 }
 
-/// Ищет `rc.exe` в `PATH` или в стандартных каталогах Windows Kits (`C:\Program Files (x86)\Windows Kits\10\bin\*\x64\rc.exe`)
+/// Searches for `rc.exe` in `PATH` or standard Windows Kits directories
 fn find_rc_exe() -> Option<PathBuf> {
     if Command::new("rc")
         .arg("/?")
@@ -263,8 +263,8 @@ fn main() {
             }
         }
     } else {
-        // Если доступен rc.exe (в PATH или в Windows Kits), компилируем через него;
-        // иначе используем уже сгенерированный чистым Rust бинарный файл app_icon.res
+        // If rc.exe is available (in PATH or in Windows Kits), compile through it;
+        // otherwise use the pure-Rust generated binary app_icon.res
         if let Some(rc_bin) = find_rc_exe() {
             let _ = Command::new(rc_bin)
                 .current_dir(&out_dir)

@@ -50,7 +50,7 @@ impl ThemeChoice {
     }
 }
 
-/// Настройки программы (сохраняются на диске в `%APPDATA%\QuadFurn\settings.json`)
+/// Program settings (saved on disk in `%APPDATA%\QuadFurn\settings.json`)
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct AppSettings {
     pub theme_choice: ThemeChoice,
@@ -71,10 +71,10 @@ impl Default for AppSettings {
 }
 
 impl AppSettings {
-    /// Возвращает кроссплатформенный путь к файлу настроек программы:
+    /// Returns cross-platform path to the program settings file:
     /// - Windows: `%APPDATA%\QuadFurn\settings.json`
     /// - macOS: `~/Library/Application Support/QuadFurn/settings.json`
-    /// - Linux: `$XDG_CONFIG_HOME/QuadFurn/settings.json` или `~/.config/QuadFurn/settings.json`
+    /// - Linux: `$XDG_CONFIG_HOME/QuadFurn/settings.json` or `~/.config/QuadFurn/settings.json`
     pub fn settings_file_path() -> std::path::PathBuf {
         if let Ok(appdata) = std::env::var("APPDATA") {
             return std::path::PathBuf::from(appdata)
@@ -117,7 +117,7 @@ impl AppSettings {
         if let Ok(txt) = std::fs::read_to_string(&path) {
             if let Ok(mut cfg) = serde_json::from_str::<Self>(&txt) {
                 cfg.recent_projects.truncate(10);
-                // Если файл настроек был создан до появления поля `language`, определяем системный язык и сохраняем
+                // If settings file was created before language field existed, detect system language and save
                 if !txt.contains("\"language\"") {
                     cfg.language = AppLanguage::detect_system_or_en();
                     let _ = cfg.save();
@@ -125,8 +125,8 @@ impl AppSettings {
                 return cfg;
             }
         }
-        // Первый запуск приложения: определяем текущий язык ОС (или English, если язык не поддерживается)
-        // и сразу сохраняем в тот же файл settings.json, где хранится цветовая схема.
+        // First launch: detect current OS language (or fallback to English if unsupported)
+        // and immediately save to settings.json alongside the color theme.
         let cfg = Self::default();
         let _ = cfg.save();
         cfg
@@ -138,14 +138,14 @@ impl AppSettings {
             let _ = std::fs::create_dir_all(parent);
         }
         let json = serde_json::to_string_pretty(self)
-            .map_err(|e| format!("Ошибка сериализации настроек: {}", e))?;
+            .map_err(|e| format!("Failed to serialize settings: {}", e))?;
         std::fs::write(&path, json)
-            .map_err(|e| format!("Ошибка записи настроек ({}): {}", path.display(), e))?;
+            .map_err(|e| format!("Failed to write settings ({}): {}", path.display(), e))?;
         Ok(path)
     }
 }
 
-/// Отдельная вкладка с объектом мебели (позволяет работать сразу с несколькими изделиями и копировать детали между ними)
+/// Individual tab with a furniture product (allows working with multiple products and copying parts between them)
 pub struct FurnitureDocument {
     pub project: Project,
     pub saved_json: String,
@@ -191,12 +191,12 @@ impl FurnitureDocument {
         }
     }
 
-    /// Проверяет, есть ли несохранённые изменения в проекте
+    /// Checks if project has unsaved changes
     pub fn is_dirty(&self) -> bool {
         serde_json::to_string(&self.project).ok().as_deref() != Some(self.saved_json.as_str())
     }
 
-    /// Помечает текущее состояние проекта как сохранённое
+    /// Marks current project state as saved
     pub fn mark_saved(&mut self, path: Option<std::path::PathBuf>) {
         self.saved_json = serde_json::to_string(&self.project).unwrap_or_default();
         if path.is_some() {
@@ -204,15 +204,15 @@ impl FurnitureDocument {
         }
     }
 
-    /// Подготавливает пути и данные текстур перед сохранением:
-    /// - Вариант A: вычисляет относительные пути к файлам текстур относительно каталога сохранения проекта
-    /// - Вариант B: если включен embed_textures, упаковывает байты текстур в Base64 для портативности
+    /// Prepares texture paths and data before saving:
+    /// - Option A: computes relative paths to texture files relative to project save directory
+    /// - Option B: if embed_textures is enabled, packs texture bytes into Base64 for portability
     pub fn prepare_textures_for_saving(&mut self, target_save_path: &std::path::Path) {
         let save_dir = target_save_path
             .parent()
             .unwrap_or(std::path::Path::new("."));
         for m in &mut self.project.materials {
-            // Вариант A: вычисляем относительный путь
+            // Option A: compute relative path
             if let Some(ref p) = m.texture_path {
                 if let Ok(rel) = p.strip_prefix(save_dir) {
                     m.texture_relative_path = Some(rel.to_string_lossy().replace('\\', "/"));
@@ -221,7 +221,7 @@ impl FurnitureDocument {
                 }
             }
 
-            // Вариант B: упаковка в Base64
+            // Option B: pack into Base64
             if self.project.embed_textures {
                 if m.texture_base64.is_none() {
                     if let Some(ref p) = m.texture_path {
@@ -240,8 +240,12 @@ impl FurnitureDocument {
         }
     }
 
-    /// Сохраняет проект через диалог выбора файла (или в текущий файл). Возвращает путь при успешном сохранении.
-    pub fn save_interactive(&mut self, status_msg: &mut String) -> Option<std::path::PathBuf> {
+    /// Saves project via file dialog (or to current file). Returns path on successful save.
+    pub fn save_interactive(
+        &mut self,
+        status_msg: &mut String,
+        lang: AppLanguage,
+    ) -> Option<std::path::PathBuf> {
         let default_name = self
             .file_path
             .as_ref()
@@ -265,15 +269,40 @@ impl FurnitureDocument {
                     Ok(()) => {
                         let is_embedded = self.project.embed_textures;
                         *status_msg = if is_embedded {
-                            format!("Изделие сохранено (с упакованными текстурами) / Saved (embedded textures): {}", path.display())
+                            match lang {
+                                AppLanguage::Ru => format!(
+                                    "Изделие сохранено (с упакованными текстурами): {}",
+                                    path.display()
+                                ),
+                                AppLanguage::Uk => format!(
+                                    "Виріб збережено (із запакованими текстурами): {}",
+                                    path.display()
+                                ),
+                                _ => format!(
+                                    "Saved product (with embedded textures): {}",
+                                    path.display()
+                                ),
+                            }
                         } else {
-                            format!("Изделие сохранено / Saved: {}", path.display())
+                            match lang {
+                                AppLanguage::Ru => {
+                                    format!("Изделие сохранено: {}", path.display())
+                                }
+                                AppLanguage::Uk => {
+                                    format!("Виріб збережено: {}", path.display())
+                                }
+                                _ => format!("Saved product: {}", path.display()),
+                            }
                         };
                         self.mark_saved(Some(path.clone()));
                         return Some(path);
                     }
                     Err(e) => {
-                        *status_msg = format!("Ошибка сохранения / Save error: {}", e);
+                        *status_msg = match lang {
+                            AppLanguage::Ru => format!("Ошибка сохранения: {}", e),
+                            AppLanguage::Uk => format!("Помилка збереження: {}", e),
+                            _ => format!("Save error: {}", e),
+                        };
                     }
                 }
             }
@@ -283,30 +312,30 @@ impl FurnitureDocument {
 }
 
 pub struct QuadFurnApp {
-    /// Список открытых вкладок объектов мебели (если пуст — отображается Стартовая страница)
+    /// Open tabs of furniture products (if empty, Start Page is shown)
     pub documents: Vec<FurnitureDocument>,
-    /// Индекс активной вкладки мебели
+    /// Index of active furniture tab
     pub active_doc_idx: usize,
-    /// Поле ввода имени нового изделия на стартовой странице
+    /// Input field for new product name on start page
     pub new_product_name_buf: String,
-    /// Список последних открытых проектов (до 10 штук), сохраняемый в настройках
+    /// Recent projects list (up to 10 entries), persisted in settings
     pub recent_projects: Vec<std::path::PathBuf>,
-    /// Модальное подтверждение закрытия вкладки мебели: Option<usize>
+    /// Modal confirmation for closing furniture tab: Option<usize>
     pub pending_close_doc_idx: Option<usize>,
-    /// Показывать ли модальное окно сохранения перед выходом из программы
+    /// Whether to show save confirmation modal before exiting application
     pub show_exit_confirm_dialog: bool,
-    /// Флаг разрешения закрытия окна после выбора пользователя в диалоге выхода
+    /// Flag allowing window close after user choice in exit dialog
     pub allow_exit: bool,
-    /// Общий буфер обмена для копирования одной или нескольких выделенных деталей (Ctrl+C / Ctrl+V) между разными вкладками мебели
+    /// Shared clipboard for copying one or more selected parts (Ctrl+C / Ctrl+V) between different furniture tabs
     pub clipboard_parts: Vec<ClipboardPart>,
-    /// Текстура иконки приложения (из `assets/icon.jpeg`)
+    /// App icon texture (from `assets/icon.jpeg`)
     pub app_icon_tex: Option<TextureHandle>,
-    /// Режим просмотра (Конструктор / Спецификация / Карта раскроя / Материалы)
+    /// View mode (Designer / Specification / Cutting layout / Materials)
     pub active_tab: AppTab,
     pub theme_choice: ThemeChoice,
     pub language: AppLanguage,
     pub status_msg: String,
-    /// Счётчик стартовых кадров для гарантированного разворачивания окна на весь экран в Windows
+    /// Startup frame counter to guarantee window maximization in Windows
     pub startup_maximize_frames: u8,
     pub screenshot_target: Option<std::path::PathBuf>,
     pub screenshot_frame_delay: u8,
@@ -354,7 +383,7 @@ impl QuadFurnApp {
         undo_stack.push(current.clone());
     }
 
-    /// Сохраняет текущие настройки (тему оформления, язык и список последних 10 проектов) в `settings.json`
+    /// Saves current settings (color theme, language, and recent 10 projects) to `settings.json`
     pub fn save_settings(&self) -> Result<std::path::PathBuf, String> {
         let cfg = AppSettings {
             theme_choice: self.theme_choice,
@@ -364,7 +393,7 @@ impl QuadFurnApp {
         cfg.save()
     }
 
-    /// Добавляет путь проекта в начало списка последних открытых проектов (максимум 10 штук) и сохраняет настройки
+    /// Adds project path to top of recent projects list (max 10 items) and saves settings
     pub fn record_recent_project(&mut self, path: std::path::PathBuf) {
         self.recent_projects.retain(|p| p != &path);
         self.recent_projects.insert(0, path);
@@ -372,7 +401,7 @@ impl QuadFurnApp {
         let _ = self.save_settings();
     }
 
-    /// Открывает проект по указанному пути и добавляет его в список последних открытых проектов (до 10 шт.)
+    /// Opens project at specified path and adds it to recent projects list (up to 10)
     pub fn open_project_from_path(&mut self, ctx: &egui::Context, path: &std::path::Path) {
         match std::fs::read_to_string(path) {
             Ok(txt) => match serde_json::from_str::<Project>(&txt) {
@@ -428,7 +457,7 @@ impl QuadFurnApp {
         }
     }
 
-    /// Открывает сохранённое изделие (.qfurn / .json) через системный диалог выбора файла
+    /// Opens saved product (.qfurn / .json) via system file picker dialog
     pub fn open_project_interactive(&mut self, ctx: &egui::Context) {
         if let Some(path) = rfd::FileDialog::new()
             .add_filter(
@@ -527,7 +556,7 @@ impl QuadFurnApp {
                                     .on_hover_text(d.start_create_empty_hover)
                                     .clicked()
                                 {
-                                    let proj = Project::new_empty(prod_name.clone());
+                                    let proj = Project::new_empty_i18n(prod_name.clone(), lang);
                                     self.documents.push(FurnitureDocument::new(proj));
                                     self.active_doc_idx = self.documents.len() - 1;
                                     self.active_tab = AppTab::Designer4View;
@@ -539,6 +568,9 @@ impl QuadFurnApp {
                                     self.status_msg = match lang {
                                         AppLanguage::Ru => {
                                             format!("Создано новое изделие «{}»", prod_name)
+                                        }
+                                        AppLanguage::Uk => {
+                                            format!("Створено новий виріб «{}»", prod_name)
                                         }
                                         _ => {
                                             format!("Created new product \"{}\"", prod_name)
@@ -558,17 +590,25 @@ impl QuadFurnApp {
                                     .on_hover_text(d.start_create_template_hover)
                                     .clicked()
                                 {
-                                    let mut proj = Project::new_demo_cabinet();
+                                    let mut proj = Project::new_demo_cabinet_i18n(lang);
                                     let trimmed = self.new_product_name_buf.trim();
-                                    if !trimmed.is_empty()
-                                        && trimmed != "Новое изделие 1"
-                                        && trimmed != "New Product 1"
-                                    {
+                                    let is_default_placeholder = trimmed.is_empty()
+                                        || trimmed == "Новое изделие 1"
+                                        || trimmed == "Новий виріб 1"
+                                        || trimmed == "New Product 1"
+                                        || trimmed.starts_with("Новое изделие")
+                                        || trimmed.starts_with("Новий виріб")
+                                        || trimmed.starts_with("New Product");
+                                    if !is_default_placeholder {
                                         proj.name = prod_name;
                                     } else {
-                                        proj.name = lang
-                                            .tr("Тумба 800х500х720", "Cabinet 800x500x720")
-                                            .to_string();
+                                        proj.name = match lang {
+                                            AppLanguage::Ru => "Тумба 800х500х720".to_string(),
+                                            AppLanguage::Uk => "Тумба 800х500х720".to_string(),
+                                            AppLanguage::De => "Schrank 800x500x720".to_string(),
+                                            AppLanguage::Pl => "Szafka 800x500x720".to_string(),
+                                            _ => "Cabinet 800x500x720".to_string(),
+                                        };
                                     }
                                     let created_name = proj.name.clone();
                                     self.documents.push(FurnitureDocument::new(proj));
@@ -577,6 +617,10 @@ impl QuadFurnApp {
                                     self.status_msg = match lang {
                                         AppLanguage::Ru => format!(
                                             "Создано изделие по шаблону «{}»",
+                                            created_name
+                                        ),
+                                        AppLanguage::Uk => format!(
+                                            "Створено виріб за шаблоном «{}»",
                                             created_name
                                         ),
                                         _ => format!(
@@ -744,10 +788,10 @@ impl QuadFurnApp {
             return;
         }
 
-        // Ctrl+S / Cmd+S -> Быстрое сохранение текущего проекта
+        // Ctrl+S / Cmd+S -> Quick save current project
         if ctx.input(|i| (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::S)) {
             let saved_path =
-                self.documents[self.active_doc_idx].save_interactive(&mut self.status_msg);
+                self.documents[self.active_doc_idx].save_interactive(&mut self.status_msg, self.language);
             if let Some(path) = saved_path {
                 self.record_recent_project(path);
             }
@@ -757,7 +801,7 @@ impl QuadFurnApp {
         let lang = self.language;
         let doc = &mut self.documents[self.active_doc_idx];
 
-        // Ctrl+Z / Cmd+Z -> Отмена (Undo) в текущей вкладке мебели
+        // Ctrl+Z / Cmd+Z -> Undo in current furniture tab
         if ctx.input(|i| (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::Z)) {
             if let Some(prev) = doc.undo_stack.pop() {
                 doc.project = prev;
@@ -771,7 +815,7 @@ impl QuadFurnApp {
             return;
         }
 
-        // Ctrl+C / Cmd+C -> Скопировать выделенную деталь или группу выделенных деталей в общий буфер обмена (для вставки в любую вкладку или окно мебели)
+        // Ctrl+C / Cmd+C -> Copy selected part or parts to shared clipboard (to paste into any furniture tab or window)
         if ctx.input(|i| {
             ((i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::C))
                 || i.events.iter().any(|e| matches!(e, egui::Event::Copy))
@@ -813,7 +857,7 @@ impl QuadFurnApp {
             return;
         }
 
-        // Ctrl+V / Cmd+V -> Вставить деталь или группу деталей из буфера обмена в текущую вкладку мебели
+        // Ctrl+V / Cmd+V -> Paste part or parts from clipboard into current furniture tab
         let mut paste_requested = false;
         let mut pasted_from_os: Option<Vec<ClipboardPart>> = None;
         ctx.input(|i| {
@@ -873,7 +917,7 @@ impl QuadFurnApp {
             return;
         }
 
-        // Ctrl+D / Cmd+D -> Дублировать выбранную деталь или группу деталей внутри текущей вкладки
+        // Ctrl+D / Cmd+D -> Duplicate selected part or parts within current tab
         if ctx.input(|i| (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::D)) {
             let ids_to_dup: Vec<PartId> = if !doc.viewport_ctrl.selected_parts.is_empty() {
                 doc.viewport_ctrl.selected_parts.clone()
@@ -905,7 +949,7 @@ impl QuadFurnApp {
             }
         }
 
-        // Delete / Backspace -> Удалить выбранную деталь или группу деталей
+        // Delete / Backspace -> Delete selected part or parts
         if ctx.input(|i| i.key_pressed(Key::Delete) || i.key_pressed(Key::Backspace)) {
             let ids_to_del: Vec<PartId> = if !doc.viewport_ctrl.selected_parts.is_empty() {
                 doc.viewport_ctrl.selected_parts.clone()
@@ -923,7 +967,7 @@ impl QuadFurnApp {
             }
         }
 
-        // Горячие клавиши переключения инструментов (V, B, M — только без Ctrl!)
+        // Tool switching hotkeys (V, B, M — only without Ctrl!)
         if ctx.input(|i| !i.modifiers.ctrl && i.key_pressed(Key::V)) {
             doc.viewport_ctrl.tool = EditorTool::SelectAndMove;
         }
@@ -961,7 +1005,7 @@ impl eframe::App for QuadFurnApp {
             self.active_doc_idx = self.documents.len() - 1;
         }
 
-        // Автоматическое снятие скриншота окна через egui::ViewportCommand::Screenshot
+        // Automated window screenshot via egui::ViewportCommand::Screenshot
         for event in ctx.input(|i| i.raw.events.clone()) {
             if let egui::Event::Screenshot { image, .. } = event {
                 if let Some(path) = self.screenshot_target.take() {
@@ -989,9 +1033,9 @@ impl eframe::App for QuadFurnApp {
             }
         }
 
-        // Перехват закрытия окна приложения: проверяем, есть ли несохранённые изменения
+        // Intercept window close: check for unsaved changes
         if ctx.input(|i| i.viewport().close_requested()) {
-            // Всегда освобождаем курсор мыши, если он был захвачен в 3D Noclip
+            // Always release mouse cursor if captured in 3D Noclip
             for d in &mut self.documents {
                 d.viewport_ctrl.cam_3d.noclip_active = false;
             }
@@ -1009,7 +1053,7 @@ impl eframe::App for QuadFurnApp {
         let lang = self.language;
         let d = lang.dict();
 
-        // 1. Верхняя полоса меню и переключения главных режимов
+        // 1. Top menu bar and main mode switcher
         egui::TopBottomPanel::top("main_menu_bar").show(ctx, |ui| {
             ui.horizontal_wrapped(|ui| {
                 if let Some(tex) = &self.app_icon_tex {
@@ -1037,7 +1081,7 @@ impl eframe::App for QuadFurnApp {
                 {
                     let saved_path = if let Some(doc) = self.documents.get_mut(self.active_doc_idx)
                     {
-                        doc.save_interactive(&mut self.status_msg)
+                        doc.save_interactive(&mut self.status_msg, self.language)
                     } else {
                         None
                     };
@@ -1078,7 +1122,7 @@ impl eframe::App for QuadFurnApp {
                 if has_open_docs {
                     ui.separator();
 
-                    // Переключатель вкладок режимов (без лишних подписей в скобках)
+                    // Mode tab switcher (clean labels without redundant parentheses)
                     ui.selectable_value(
                         &mut self.active_tab,
                         AppTab::Designer4View,
@@ -1103,7 +1147,7 @@ impl eframe::App for QuadFurnApp {
 
                 ui.separator();
 
-                // Переключатель темы оформления: Тёмная, Светлая, Как в системе (с автосохранением в AppSettings)
+                // Color theme switcher: Dark, Light, System (with autosave to AppSettings)
                 ui.label(d.theme_label);
                 egui::ComboBox::from_id_salt("theme_selector_combo")
                     .selected_text(self.theme_choice.label_i18n(lang))
@@ -1123,6 +1167,11 @@ impl eframe::App for QuadFurnApp {
                                     self.status_msg = match lang {
                                         AppLanguage::Ru => format!(
                                             "Цветовая схема «{}» сохранена в {}",
+                                            self.theme_choice.label_i18n(lang),
+                                            saved_path.display()
+                                        ),
+                                        AppLanguage::Uk => format!(
+                                            "Колірна схема «{}» збережена в {}",
                                             self.theme_choice.label_i18n(lang),
                                             saved_path.display()
                                         ),
@@ -1146,7 +1195,7 @@ impl eframe::App for QuadFurnApp {
                         AppSettings::settings_file_path().display()
                     ));
 
-                // Иконка смены языка рядом с кнопкой выбора темы
+                // Language switcher icon next to theme selector
                 let lang_menu = ui.menu_button(
                     RichText::new(self.language.switcher_button_text()).strong(),
                     |ui| {
@@ -1191,6 +1240,11 @@ impl eframe::App for QuadFurnApp {
                                                     self.language.label(),
                                                     saved_path.display()
                                                 ),
+                                                AppLanguage::Uk => format!(
+                                                    "Мову інтерфейсу змінено на «{}» (збережено в {})",
+                                                    self.language.label(),
+                                                    saved_path.display()
+                                                ),
                                                 _ => format!(
                                                     "Interface language changed to \"{}\" (saved in {})",
                                                     self.language.label(),
@@ -1213,7 +1267,7 @@ impl eframe::App for QuadFurnApp {
         let lang = self.language;
         let d = lang.dict();
 
-        // 2. Панель вкладок объектов мебели (отображается, когда открыто хотя бы одно изделие)
+        // 2. Furniture product tabs bar (displayed when at least one product is open)
         if has_open_docs {
             egui::TopBottomPanel::top("furniture_objects_tab_bar").show(ctx, |ui| {
                 ui.horizontal_wrapped(|ui| {
@@ -1283,7 +1337,7 @@ impl eframe::App for QuadFurnApp {
 
                     if let Some(target_idx) = switch_to {
                         if target_idx != self.active_doc_idx {
-                            // При переключении вкладки отключаем захват мыши Noclip в старой вкладке
+                            // When switching tabs, disable Noclip mouse capture in old tab
                             self.documents[self.active_doc_idx]
                                 .viewport_ctrl
                                 .cam_3d
@@ -1304,11 +1358,14 @@ impl eframe::App for QuadFurnApp {
                         .on_hover_text(d.empty_object_hover)
                         .clicked()
                     {
-                        let p = Project::new_empty(format!(
-                            "{} {}",
-                            lang.tr("Изделие", "Product"),
-                            self.documents.len() + 1
-                        ));
+                        let p = Project::new_empty_i18n(
+                            format!(
+                                "{} {}",
+                                lang.tr("Изделие", "Product"),
+                                self.documents.len() + 1
+                            ),
+                            lang,
+                        );
                         self.documents.push(FurnitureDocument::new(p));
                         self.active_doc_idx = self.documents.len() - 1;
                         self.status_msg = lang
@@ -1321,7 +1378,7 @@ impl eframe::App for QuadFurnApp {
                         .on_hover_text(d.cabinet_template_hover)
                         .clicked()
                     {
-                        let mut p = Project::new_demo_cabinet();
+                        let mut p = Project::new_demo_cabinet_i18n(lang);
                         p.name = format!(
                             "{} {}",
                             lang.tr("Шкаф", "Cabinet"),
@@ -1340,7 +1397,7 @@ impl eframe::App for QuadFurnApp {
             });
         }
 
-        // Диалог подтверждения закрытия вкладки мебели
+        // Dialog confirming closure of furniture tab
         if let Some(close_idx) = self.pending_close_doc_idx {
             if close_idx < self.documents.len() {
                 let doc_name = self.documents[close_idx].project.name.clone();
@@ -1361,6 +1418,10 @@ impl eframe::App for QuadFurnApp {
                                         "Сохранить изменения в изделии «{}» перед закрытием вкладки?",
                                         doc_name
                                     ),
+                                    AppLanguage::Uk => format!(
+                                        "Зберегти зміни у виробі «{}» перед закриттям вкладки?",
+                                        doc_name
+                                    ),
                                     _ => format!(
                                         "Save changes to product \"{}\" before closing the tab?",
                                         doc_name
@@ -1377,6 +1438,7 @@ impl eframe::App for QuadFurnApp {
                             ui.label(
                                 RichText::new(match lang {
                                     AppLanguage::Ru => format!("Закрыть вкладку «{}»?", doc_name),
+                                    AppLanguage::Uk => format!("Закрити вкладку «{}»?", doc_name),
                                     _ => format!("Close tab \"{}\"?", doc_name),
                                 })
                                 .strong()
@@ -1425,7 +1487,7 @@ impl eframe::App for QuadFurnApp {
 
                 if save_and_close {
                     let saved_path =
-                        self.documents[close_idx].save_interactive(&mut self.status_msg);
+                        self.documents[close_idx].save_interactive(&mut self.status_msg, self.language);
                     if let Some(path) = saved_path {
                         self.record_recent_project(path);
                         self.documents.remove(close_idx);
@@ -1453,7 +1515,7 @@ impl eframe::App for QuadFurnApp {
             }
         }
 
-        // Диалог подтверждения сохранения несохранённого проекта при выходе из программы
+        // Save project confirmation dialog before exiting program
         if self.show_exit_confirm_dialog {
             let dirty_names: Vec<String> = self
                 .documents
@@ -1534,7 +1596,7 @@ impl eframe::App for QuadFurnApp {
                     let mut saved_paths = Vec::new();
                     for d in &mut self.documents {
                         if d.is_dirty() {
-                            if let Some(p) = d.save_interactive(&mut self.status_msg) {
+                            if let Some(p) = d.save_interactive(&mut self.status_msg, self.language) {
                                 saved_paths.push(p);
                             } else {
                                 all_saved = false;
@@ -1560,7 +1622,7 @@ impl eframe::App for QuadFurnApp {
             }
         }
 
-        // Если ни одно изделие ещё не открыто — показываем нижнюю строку состояния и Стартовую страницу
+        // If no products are open yet — show bottom status bar and Start Page
         if self.documents.is_empty() {
             egui::TopBottomPanel::bottom("status_footer").show(ctx, |ui| {
                 ui.horizontal(|ui| {
@@ -1583,13 +1645,13 @@ impl eframe::App for QuadFurnApp {
         let doc = &mut self.documents[self.active_doc_idx];
         doc.viewport_ctrl.lang = lang;
 
-        // Если мы ушли с вкладки Конструктора, гарантированно выключаем захват мыши Noclip
+        // If we leave Designer tab, reliably disable Noclip mouse capture
         if self.active_tab != AppTab::Designer4View && doc.viewport_ctrl.cam_3d.noclip_active {
             doc.viewport_ctrl.cam_3d.noclip_active = false;
             QuadViewportController::set_noclip_cursor_grab(ctx, false, egui::Pos2::ZERO);
         }
 
-        // Нижняя строка состояния
+        // Bottom status bar
         egui::TopBottomPanel::bottom("status_footer").show(ctx, |ui| {
             ui.horizontal(|ui| {
                 ui.label(&self.status_msg);
@@ -1597,6 +1659,11 @@ impl eframe::App for QuadFurnApp {
                     let right_footer = match lang {
                         AppLanguage::Ru => format!(
                             "Изделие: «{}» | Деталей: {} шт. | Все размеры в мм",
+                            doc.project.name,
+                            doc.project.parts.len()
+                        ),
+                        AppLanguage::Uk => format!(
+                            "Виріб: «{}» | Деталей: {} шт. | Усі розміри в мм",
                             doc.project.name,
                             doc.project.parts.len()
                         ),
@@ -1613,7 +1680,7 @@ impl eframe::App for QuadFurnApp {
 
         match self.active_tab {
             AppTab::Designer4View => {
-                // Верхняя панель точного ввода размеров и координат CorelDRAW-style
+                // Top CorelDRAW-style toolbar for precise dimensions and coordinates
                 egui::TopBottomPanel::top("coreldraw_transform_bar").show(ctx, |ui| {
                     let undo_ref = &mut doc.undo_stack;
                     ui_top_coreldraw_toolbar(
@@ -1626,7 +1693,7 @@ impl eframe::App for QuadFurnApp {
                     );
                 });
 
-                // Правый инспектор блоков, групп, материалов и кромок
+                // Right inspector for blocks, groups, materials, and edge banding
                 egui::SidePanel::right("right_block_inspector")
                     .default_width(330.0)
                     .min_width(275.0)
@@ -1648,7 +1715,7 @@ impl eframe::App for QuadFurnApp {
                         );
                     });
 
-                // Центральная область: 4 экрана (Top XY, 3D Orbit/Z-Noclip, Front XZ, Side YZ)
+                // Central viewports: 4 views (Top XY, 3D Orbit/Z-Noclip, Front XZ, Side YZ)
                 egui::CentralPanel::default()
                     .frame(egui::Frame::none().fill(Color32::from_rgb(14, 17, 21)))
                     .show(ctx, |ui| {
@@ -1692,12 +1759,12 @@ impl eframe::App for QuadFurnApp {
     }
 }
 
-/// Настраивает шрифты интерфейса: подключает системные шрифты Windows, Linux и macOS
-/// для отображения иконок, технических символов (Δ, ×, ∠, ↺), кириллицы и CJK (简体中文, 日本語, 한국어).
+/// Configures UI fonts: attaches system fonts of Windows, Linux and macOS
+/// to display icons, technical symbols (Δ, ×, ∠, ↺), Cyrillic and CJK.
 pub fn configure_fonts(ctx: &egui::Context) {
     let mut fonts = egui::FontDefinitions::default();
 
-    // 1. Шрифт эмодзи Windows (Segoe UI Emoji — содержит монохромные glyf-контуры для всех современных иконок, включая 🪚 и 🌐)
+    // 1. Windows emoji font (Segoe UI Emoji — monochromatic outlines for modern icons, including 🪚 and 🌐)
     if let Ok(bytes) = std::fs::read("C:\\Windows\\Fonts\\seguiemj.ttf") {
         fonts.font_data.insert(
             "seguiemj".to_owned(),
@@ -1711,7 +1778,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
         }
     }
 
-    // 2. Шрифт технических символов Windows (Segoe UI Symbol — векторные значки 🗄, 🗑, 👁, 🖥, 📁, 💾, 🔍, 🔒 и стрелки в едином стиле)
+    // 2. Windows technical symbols font (Segoe UI Symbol — vector icons 🗄, 🗑, 👁, 🖥, 📁, 💾, 🔍, 🔒 and arrows)
     if let Ok(bytes) = std::fs::read("C:\\Windows\\Fonts\\seguisym.ttf") {
         fonts.font_data.insert(
             "seguisym".to_owned(),
@@ -1725,7 +1792,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
         }
     }
 
-    // 3. Основной пропорциональный шрифт интерфейса (Windows: Segoe UI, macOS: SF / Helvetica / Arial, Linux: DejaVu Sans / Liberation Sans / Noto Sans)
+    // 3. Main proportional UI font (Windows: Segoe UI, macOS: SF / Helvetica / Arial, Linux: DejaVu Sans / Liberation Sans / Noto Sans)
     for (font_key, path) in [
         ("sys_sans_win", "C:\\Windows\\Fonts\\segoeui.ttf"),
         (
@@ -1760,7 +1827,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
         }
     }
 
-    // 4. Моноширинный шрифт (Windows: Consolas, macOS: Menlo / Courier New, Linux: DejaVu Sans Mono)
+    // 4. Monospace font (Windows: Consolas, macOS: Menlo / Courier New, Linux: DejaVu Sans Mono)
     for (font_key, path) in [
         ("sys_mono_win", "C:\\Windows\\Fonts\\consola.ttf"),
         (
@@ -1784,7 +1851,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
         }
     }
 
-    // 5. Fallback-шрифты символов для Linux / macOS (Apple Symbols, Noto Sans Symbols2, Symbola)
+    // 5. Symbol fallback fonts for Linux / macOS (Apple Symbols, Noto Sans Symbols2, Symbola)
     for (font_key, path) in [
         ("sym_mac", "/System/Library/Fonts/Apple Symbols.ttf"),
         (
@@ -1814,7 +1881,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
         }
     }
 
-    // 6. Поддержка CJK (корейский 한국어, китайский упрощённый 简体中文, японский 日本語) на Windows, macOS и Linux
+    // 6. CJK support (Korean 한국어, Simplified Chinese 简体中文, Japanese 日本語) on Windows, macOS, and Linux
     for (font_key, path) in [
         ("cjk_msyh", "C:\\Windows\\Fonts\\msyh.ttc"),
         ("cjk_malgun", "C:\\Windows\\Fonts\\malgun.ttf"),
@@ -1851,7 +1918,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
 
 const APP_ICON_JPEG: &[u8] = include_bytes!("../assets/icon.jpeg");
 
-/// Загружает иконку приложения из `assets/icon.jpeg` для заголовка окна и панели задач
+/// Loads application icon from `assets/icon.jpeg` for window titlebar and taskbar
 pub fn load_app_icon_data() -> Option<std::sync::Arc<egui::IconData>> {
     let dyn_img = image::load_from_memory(APP_ICON_JPEG).ok()?;
     let resized = dyn_img.resize_exact(256, 256, image::imageops::FilterType::Lanczos3);
@@ -1864,7 +1931,7 @@ pub fn load_app_icon_data() -> Option<std::sync::Arc<egui::IconData>> {
     }))
 }
 
-/// Загружает текстуру иконки приложения для отображения на стартовой странице и в верхней панели
+/// Loads application icon texture for start page and top bar display
 pub fn load_app_icon_texture(ctx: &egui::Context) -> Option<TextureHandle> {
     let dyn_img = image::load_from_memory(APP_ICON_JPEG).ok()?;
     let resized = dyn_img.resize_exact(256, 256, image::imageops::FilterType::Lanczos3);
@@ -1877,10 +1944,10 @@ pub fn load_app_icon_texture(ctx: &egui::Context) -> Option<TextureHandle> {
 
 fn main() -> eframe::Result<()> {
     let initial_settings = AppSettings::load();
-    // Задаём базовый (restored) размер окна 1520×920 без одновременного .with_maximized(true),
-    // так как в winit на Windows одновременная передача with_maximized(true) + with_inner_size(...)
-    // вызывает SetWindowPos поверх уже установленного WS_MAXIMIZE (окно остаётся 1520×920 со значком ❐).
-    // Настоящее разворачивание SW_MAXIMIZE на весь экран выполняется сразу при старте первого кадра.
+    // Set base (restored) window size 1520×920 without .with_maximized(true),
+    // because winit on Windows with simultaneous with_maximized(true) + with_inner_size(...)
+    // issues SetWindowPos over WS_MAXIMIZE (leaving window 1520×920 with restore icon ❐).
+    // Actual SW_MAXIMIZE maximization is executed on first frame render.
     let mut viewport = egui::ViewportBuilder::default()
         .with_title(initial_settings.language.dict().window_title)
         .with_inner_size([1520.0, 920.0])
@@ -1906,14 +1973,39 @@ fn main() -> eframe::Result<()> {
             app.app_icon_tex = load_app_icon_texture(&cc.egui_ctx);
             app.theme_choice.apply(&cc.egui_ctx);
 
-            let mut args = std::env::args().skip(1);
-            while let Some(arg) = args.next() {
+            let raw_args: Vec<String> = std::env::args().skip(1).collect();
+
+            // First pass: extract --lang to set app language before creating documents
+            let mut i = 0;
+            while i < raw_args.len() {
+                if raw_args[i] == "--lang" && i + 1 < raw_args.len() {
+                    let l = &raw_args[i + 1];
+                    if l.eq_ignore_ascii_case("ru") {
+                        app.language = AppLanguage::Ru;
+                    } else if l.eq_ignore_ascii_case("en") {
+                        app.language = AppLanguage::En;
+                    } else if l.eq_ignore_ascii_case("uk") {
+                        app.language = AppLanguage::Uk;
+                    } else if l.eq_ignore_ascii_case("de") {
+                        app.language = AppLanguage::De;
+                    } else if l.eq_ignore_ascii_case("pl") {
+                        app.language = AppLanguage::Pl;
+                    }
+                    i += 2;
+                } else {
+                    i += 1;
+                }
+            }
+
+            // Second pass: process document creation and execution flags
+            let mut iter = raw_args.into_iter();
+            while let Some(arg) = iter.next() {
                 if arg == "--demo" {
-                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet()));
+                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(app.language)));
                     app.active_doc_idx = app.documents.len() - 1;
                     app.active_tab = AppTab::Designer4View;
                 } else if arg == "--materials" {
-                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet()));
+                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(app.language)));
                     app.active_doc_idx = app.documents.len() - 1;
                     app.active_tab = AppTab::MaterialsManager;
                 } else if arg == "--embed" {
@@ -1921,15 +2013,9 @@ fn main() -> eframe::Result<()> {
                         doc.project.embed_textures = true;
                     }
                 } else if arg == "--lang" {
-                    if let Some(l) = args.next() {
-                        if l.eq_ignore_ascii_case("ru") {
-                            app.language = AppLanguage::Ru;
-                        } else if l.eq_ignore_ascii_case("en") {
-                            app.language = AppLanguage::En;
-                        }
-                    }
+                    let _ = iter.next();
                 } else if arg == "--screenshot" {
-                    if let Some(target) = args.next() {
+                    if let Some(target) = iter.next() {
                         app.screenshot_target = Some(std::path::PathBuf::from(target));
                     }
                 } else {

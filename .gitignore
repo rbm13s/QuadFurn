@@ -9,9 +9,10 @@
 # Local fallback settings file (if run without APPDATA)
 quadfurn_settings.json
 
-# IDE & Editor directories
+# IDE, Editor & Tooling directories
 .idea/
 .vscode/
+.gemini/
 *.swp
 *.swo
 *~

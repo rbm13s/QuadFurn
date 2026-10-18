@@ -8,37 +8,72 @@ use std::fs::File;
 use std::io::Write;
 use std::path::Path;
 
-/// Экспортирует спецификацию деталей в CSV с UTF-8 BOM и разделителем `;` (для русского Excel)
+/// Exports parts specification to CSV with UTF-8 BOM and ';' delimiter using default language.
+#[allow(dead_code)]
 pub fn export_spec_to_csv_file(project: &Project, path: &Path) -> Result<(), String> {
-    let mut file = File::create(path).map_err(|e| format!("Ошибка создания файла: {}", e))?;
+    export_spec_to_csv_file_i18n(project, path, AppLanguage::Ru)
+}
 
-    // UTF-8 BOM чтобы Microsoft Excel корректно открывал кириллицу
-    file.write_all(&[0xEF, 0xBB, 0xBF])
-        .map_err(|e| format!("Ошибка записи BOM: {}", e))?;
+/// Exports parts specification to CSV localized to `lang`.
+pub fn export_spec_to_csv_file_i18n(
+    project: &Project,
+    path: &Path,
+    lang: AppLanguage,
+) -> Result<(), String> {
+    let mut file = File::create(path).map_err(|e| {
+        format!("{}: {}", lang.tr("Ошибка создания файла", "Error creating file"), e)
+    })?;
 
-    let content = generate_csv_string(project);
-    file.write_all(content.as_bytes())
-        .map_err(|e| format!("Ошибка записи CSV: {}", e))?;
+    // UTF-8 BOM so Microsoft Excel correctly displays Unicode characters
+    file.write_all(&[0xEF, 0xBB, 0xBF]).map_err(|e| {
+        format!("{}: {}", lang.tr("Ошибка записи BOM", "Error writing BOM"), e)
+    })?;
+
+    let content = generate_csv_string_i18n(project, lang);
+    file.write_all(content.as_bytes()).map_err(|e| {
+        format!("{}: {}", lang.tr("Ошибка записи CSV", "Error writing CSV"), e)
+    })?;
 
     Ok(())
 }
 
-/// Генерирует CSV-строку спецификации (разделитель `;`)
+/// Generates CSV string of parts specification (';' delimiter) with default language.
+#[allow(dead_code)]
 pub fn generate_csv_string(project: &Project) -> String {
+    generate_csv_string_i18n(project, AppLanguage::Ru)
+}
+
+/// Generates CSV string of parts specification localized to `lang`.
+pub fn generate_csv_string_i18n(project: &Project, lang: AppLanguage) -> String {
     let rows = build_specification(project);
     let mut out = String::new();
-    out.push_str("№;Группа;Наименование;Материал;Толщина (мм);Габарит Длина (мм);Габарит Ширина (мм);Пил Длина (мм);Пил Ширина (мм);Кол-во (шт);Текстура (Вращение);Кромка Д1;Кромка Д2;Кромка Ш1;Кромка Ш2\r\n");
+
+    if lang == AppLanguage::Ru {
+        out.push_str("№;Группа;Наименование;Материал;Толщина (мм);Габарит Длина (мм);Габарит Ширина (мм);Пил Длина (мм);Пил Ширина (мм);Кол-во (шт);Текстура (Вращение);Кромка Д1;Кромка Д2;Кромка Ш1;Кромка Ш2\r\n");
+    } else if lang == AppLanguage::Uk {
+        out.push_str("№;Група;Найменування;Матеріал;Товщина (мм);Габарит Довжина (мм);Габарит Ширина (мм);Пил Довжина (мм);Пил Ширина (мм);Кіл-ть (шт);Текстура (Обертання);Крайка Д1;Крайка Д2;Крайка Ш1;Крайка Ш2\r\n");
+    } else {
+        out.push_str("#;Group;Name;Material;Thickness (mm);Full Length (mm);Full Width (mm);Cut Length (mm);Cut Width (mm);Qty (pcs);Grain (Rotation);Edge L1;Edge L2;Edge W1;Edge W2\r\n");
+    }
 
     for r in rows {
         let grain_str = if r.grain_fixed {
-            "Фикс. (По текстуре)"
+            match lang {
+                AppLanguage::Ru => "Фикс. (По текстуре)",
+                AppLanguage::Uk => "Фікс. (За текстурою)",
+                _ => "Locked (With grain)",
+            }
         } else {
-            "Свободно (Вращ. Да)"
+            match lang {
+                AppLanguage::Ru => "Свободно (Вращ. Да)",
+                AppLanguage::Uk => "Вільно (Оберт. Так)",
+                _ => "Free (Can rotate)",
+            }
         };
-        let l1 = SpecRow::edge_label(r.edges.l1, &project.edge_bandings);
-        let l2 = SpecRow::edge_label(r.edges.l2, &project.edge_bandings);
-        let w1 = SpecRow::edge_label(r.edges.w1, &project.edge_bandings);
-        let w2 = SpecRow::edge_label(r.edges.w2, &project.edge_bandings);
+        let l1 = SpecRow::edge_label_i18n(r.edges.l1, &project.edge_bandings, lang);
+        let l2 = SpecRow::edge_label_i18n(r.edges.l2, &project.edge_bandings, lang);
+        let w1 = SpecRow::edge_label_i18n(r.edges.w1, &project.edge_bandings, lang);
+        let w2 = SpecRow::edge_label_i18n(r.edges.w2, &project.edge_bandings, lang);
 
         out.push_str(&format!(
             "{};\"{}\";\"{}\";\"{}\";{:.1};{:.1};{:.1};{:.1};{:.1};{};{};\"{}\";\"{}\";\"{}\";\"{}\"\r\n",
@@ -63,11 +98,21 @@ pub fn generate_csv_string(project: &Project) -> String {
     out
 }
 
-/// Генерирует текстовую таблицу для прямой вставки в Cutting 3 (Tab-separated: Длина, Ширина, Кол-во, Вращение, Кромки, Примечание)
-pub fn generate_cutting3_clipboard_text(project: &Project) -> String {
+/// Generates tab-separated text table for direct clipboard pasting into Cutting 3 (Length, Width, Qty, Grain, Edges, Note), localized to `lang`.
+pub fn generate_cutting3_clipboard_text_i18n(project: &Project, lang: AppLanguage) -> String {
     let rows = build_specification(project);
     let mut out = String::new();
-    out.push_str("# Материал\tПил Длина (мм)\tПил Ширина (мм)\tКол-во\tТекстура\tД1\tД2\tШ1\tШ2\tНаименование (Габарит)\r\n");
+    match lang {
+        AppLanguage::Ru => {
+            out.push_str("# Материал\tПил Длина (мм)\tПил Ширина (мм)\tКол-во\tТекстура\tД1\tД2\tШ1\tШ2\tНаименование (Габарит)\r\n");
+        }
+        AppLanguage::Uk => {
+            out.push_str("# Матеріал\tПил Довжина (мм)\tПил Ширина (мм)\tКіл-ть\tТекстура\tД1\tД2\tШ1\tШ2\tНайменування (Габарит)\r\n");
+        }
+        _ => {
+            out.push_str("# Material\tCut Length (mm)\tCut Width (mm)\tQty\tGrain\tL1\tL2\tW1\tW2\tName (Bounds)\r\n");
+        }
+    }
     for r in rows {
         let tex = if r.grain_fixed { "1" } else { "0" };
         let l1 = SpecRow::edge_short_mm(r.edges.l1, &project.edge_bandings);
@@ -93,8 +138,14 @@ pub fn generate_cutting3_clipboard_text(project: &Project) -> String {
     out
 }
 
-/// Если передан файл TrueType Collection (`.ttc`, заголовок `ttcf`), извлекает первое начертание (face 0)
-/// в автономный буфер TrueType (`.ttf`), пригодный для `ab_glyph::FontArc`, `egui::FontData` и `/FontFile2` в PDF.
+/// Generates tab-separated text table for direct clipboard pasting into Cutting 3 (default Russian headers).
+#[allow(dead_code)]
+pub fn generate_cutting3_clipboard_text(project: &Project) -> String {
+    generate_cutting3_clipboard_text_i18n(project, AppLanguage::Ru)
+}
+
+/// If given a TrueType Collection (`.ttc`, header `ttcf`), extracts the first face (face 0)
+/// into a standalone TrueType (`.ttf`) buffer suitable for `ab_glyph::FontArc`, `egui::FontData`, and `/FontFile2` in PDF.
 pub fn ensure_ttf_bytes(bytes: Vec<u8>) -> Vec<u8> {
     if bytes.len() < 16 || &bytes[0..4] != b"ttcf" {
         return bytes;
@@ -154,7 +205,7 @@ pub fn ensure_ttf_bytes(bytes: Vec<u8>) -> Vec<u8> {
     out
 }
 
-/// Вспомогательная структура шрифта TrueType для генерации векторного PDF с полной поддержкой латиницы, кириллицы и CJK
+/// Helper structure for TrueType font handling in vector PDF generation with full Latin, Cyrillic, and CJK support.
 struct PdfTrueTypeFont {
     raw_bytes: Vec<u8>,
     font: FontArc,
@@ -163,7 +214,7 @@ struct PdfTrueTypeFont {
 }
 
 impl PdfTrueTypeFont {
-    fn load(candidates: &[&str]) -> Result<Self, String> {
+    fn load(candidates: &[&str], lang: AppLanguage) -> Result<Self, String> {
         for path in candidates {
             if let Ok(raw) = std::fs::read(path) {
                 let bytes = ensure_ttf_bytes(raw);
@@ -178,7 +229,17 @@ impl PdfTrueTypeFont {
                 }
             }
         }
-        Err("Не удалось найти системный шрифт TrueType (Segoe UI / Arial) для экспорта в PDF".to_string())
+        Err(match lang {
+            AppLanguage::Ru => {
+                "Не удалось найти системный шрифт TrueType (Segoe UI / Arial) для экспорта в PDF".to_string()
+            }
+            AppLanguage::Uk => {
+                "Не вдалося знайти системний шрифт TrueType (Segoe UI / Arial) для експорту в PDF".to_string()
+            }
+            _ => {
+                "Failed to find a system TrueType font (Segoe UI / Arial / Noto) for PDF export".to_string()
+            }
+        })
     }
 
     fn load_for_lang(lang: AppLanguage, bold: bool) -> Result<Self, String> {
@@ -299,14 +360,14 @@ impl PdfTrueTypeFont {
                 "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
             ],
         };
-        Self::load(candidates)
+        Self::load(candidates, lang)
     }
 
     fn glyph_width_1000(&self, gid: GlyphId) -> i32 {
         ((self.font.h_advance_unscaled(gid) * 1000.0) / self.upm).round() as i32
     }
 
-    /// Измеряет ширину строки в пунктах (pt) для заданного кегля
+    /// Measures string width in points (pt) for a given font size.
     fn measure_text_pt(&self, text: &str, font_size_pt: f32) -> f32 {
         let mut total_1000 = 0i32;
         for ch in text.chars() {
@@ -316,7 +377,7 @@ impl PdfTrueTypeFont {
         (total_1000 as f32) * (font_size_pt / 1000.0)
     }
 
-    /// Обрезает строку с добавлением `…`, если она не помещается в заданную ширину колонки (в pt)
+    /// Truncates string with ellipsis (`…`) if it exceeds max allowed column width in pt.
     fn fit_text_to_width(&self, text: &str, font_size_pt: f32, max_width_pt: f32) -> String {
         if self.measure_text_pt(text, font_size_pt) <= max_width_pt {
             return text.to_string();
@@ -337,8 +398,8 @@ impl PdfTrueTypeFont {
         acc
     }
 
-    /// Кодирует строку в 16-битные шестнадцатеричные Glyph ID (`<001A002B...>`) для оператора `Tj` в PDF
-    /// и регистрирует использованные глифы для таблиц `/W` и `/ToUnicode`
+    /// Encodes string into 16-bit hexadecimal Glyph IDs (`<001A002B...>`) for the `Tj` PDF operator
+    /// and registers used glyphs for the `/W` widths and `/ToUnicode` mapping tables.
     fn encode_hex_gids(&mut self, text: &str) -> String {
         let mut hex = String::with_capacity(text.len() * 4 + 2);
         hex.push('<');
@@ -352,7 +413,7 @@ impl PdfTrueTypeFont {
         hex
     }
 
-    /// Формирует массив ширин глифов `/W [ gid [w] ... ]` для словаря `/CIDFontType2`
+    /// Builds glyph widths array `/W [ gid [w] ... ]` for `/CIDFontType2` dictionary.
     fn build_widths_array(&self) -> String {
         let mut out = String::from("[");
         for (&gid, &(_, w)) in &self.used_glyphs {
@@ -362,7 +423,7 @@ impl PdfTrueTypeFont {
         out
     }
 
-    /// Формирует поток `/ToUnicode` CMap для корректного копирования и поиска текста в PDF
+    /// Builds `/ToUnicode` CMap stream for correct Unicode copy-paste and text searching in PDF.
     fn build_tounicode_cmap(&self) -> Vec<u8> {
         let mut cmap = String::new();
         cmap.push_str("/CIDInit /ProcSet findresource begin\n");
@@ -408,25 +469,28 @@ impl PdfTrueTypeFont {
     }
 }
 
-/// Экспортирует полный производственный паспорт изделия в PDF-файл (формат A4, альбомная ориентация)
-/// на выбранном языке интерфейса `lang`:
-/// 1. Ведомость деталей (Спецификация)
-/// 2. Превью всех 4 плоскостей из конструктора (Top XY, 3D Вид, Front XZ, Side YZ)
-/// 3. Карта раскроя по каждому листу
-/// 4. Описание материалов и кромок со сводным расходом
+/// Exports complete manufacturing passport to a PDF document (A4 Landscape)
+/// localized to `lang`:
+/// 1. Parts specification table
+/// 2. Designer 4-view projection preview (Top XY, 3D View, Front XZ, Side YZ)
+/// 3. Cutting layout sheets
+/// 4. Materials and edge banding summary
 pub fn export_spec_to_pdf_file(
     project: &Project,
     path: &Path,
     lang: AppLanguage,
 ) -> Result<(), String> {
     let pdf_bytes = generate_spec_pdf_bytes(project, lang)?;
-    let mut file = File::create(path).map_err(|e| format!("Ошибка создания PDF-файла: {}", e))?;
-    file.write_all(&pdf_bytes)
-        .map_err(|e| format!("Ошибка записи PDF-файла: {}", e))?;
+    let mut file = File::create(path).map_err(|e| {
+        format!("{}: {}", lang.tr("Ошибка создания PDF-файла", "Error creating PDF file"), e)
+    })?;
+    file.write_all(&pdf_bytes).map_err(|e| {
+        format!("{}: {}", lang.tr("Ошибка записи PDF-файла", "Error writing PDF file"), e)
+    })?;
     Ok(())
 }
 
-/// Генерирует страницу(ы) таблицы спецификации деталей на языке `d`
+/// Renders parts specification table page(s) in language `d`.
 fn render_spec_table_pages(
     project: &Project,
     rows: &[SpecRow],
@@ -649,7 +713,7 @@ fn render_spec_table_pages(
     }
 }
 
-/// Вычисляет общий габаритный бокс (min_mm, max_mm) всех видимых деталей проекта
+/// Computes overall bounding box (min_mm, max_mm) of all visible project parts.
 fn compute_project_bounds(project: &Project) -> (Vec3, Vec3) {
     let mut min_v = Vec3::splat(f32::INFINITY);
     let mut max_v = Vec3::splat(f32::NEG_INFINITY);
@@ -676,11 +740,11 @@ fn compute_project_bounds(project: &Project) -> (Vec3, Vec3) {
     }
 }
 
-/// Генерирует отдельную страницу PDF с превью всех 4 плоскостей из конструктора:
-/// 1) Вид сверху (Top XY — План)
-/// 2) 3D Вид (Аксонометрия изделия)
-/// 3) Вид спереди (Front XZ — Фасад)
-/// 4) Вид сбоку (Side YZ — Разрез)
+/// Generates a dedicated PDF page with previews of all 4 views from designer:
+/// 1) Top view (Top XY — Plan)
+/// 2) 3D View (Isometric projection)
+/// 3) Front view (Front XZ — Elevation)
+/// 4) Side view (Side YZ — Section)
 fn render_designer_views_page(
     project: &Project,
     d: &L10n,
@@ -695,7 +759,7 @@ fn render_designer_views_page(
     let (bmin, bmax) = compute_project_bounds(project);
     let bsize = (bmax - bmin).max(Vec3::splat(10.0));
 
-    // Заголовок страницы
+    // Page header
     let title_y = page_h - 34.0;
     let title_str = format!("{} — {}", d.pdf_sec2_title, project.name);
     let title_hex = font_bold.encode_hex_gids(&title_str);
@@ -722,7 +786,7 @@ fn render_designer_views_page(
         margin_x, sub_y, sub_hex
     ));
 
-    // Область под 4 квадранта: от y = 34 до y = sub_y - 10
+    // Quadrants area: from y = 34 to y = sub_y - 10
     let area_top = sub_y - 10.0;
     let area_bottom = 36.0;
     let gap = 10.0;
@@ -734,7 +798,7 @@ fn render_designer_views_page(
     let top_row_y = area_bottom + pane_h + gap;
     let bot_row_y = area_bottom;
 
-    // Вспомогательная отрисовка ортогональной 2D проекции в заданном прямоугольнике PDF (pane_x, pane_y, pane_w, pane_h)
+    // Helper closure for drawing orthogonal 2D projection in given PDF rectangle (pane_x, pane_y, pane_w, pane_h)
     // mode: 0 = Top XY (u=X, v=Y, depth=Z), 1 = Front XZ (u=X, v=Z, depth=-Y), 2 = Side YZ (u=Y, v=Z, depth=X)
     let mut draw_ortho_quadrant =
         |s: &mut String,
@@ -747,12 +811,12 @@ fn render_designer_views_page(
          axis_v_label: &str,
          mode: u8| {
             let hdr_h = 18.0;
-            // Фон и рамка окна проекции
+            // Background and frame of viewport
             s.push_str(&format!(
                 "0.97 0.98 0.99 rg 0.30 0.36 0.45 RG 0.7 w {:.2} {:.2} {:.2} {:.2} re B\n",
                 px, py, pw, ph
             ));
-            // Плашка заголовка квадранта
+            // Header badge of quadrant
             s.push_str(&format!(
                 "0.18 0.23 0.31 rg {:.2} {:.2} {:.2} {:.2} re f\n",
                 px,
@@ -788,7 +852,7 @@ fn render_designer_views_page(
             let orig_x = draw_x + (draw_w - used_w) * 0.5;
             let orig_y = draw_y + (draw_h - used_h) * 0.5;
 
-            // Фоновая масштабная сетка (шаг 100 мм)
+            // Background scale grid (100 mm step)
             s.push_str("0.88 0.90 0.93 RG 0.3 w\n");
             let step_mm = if span_u.max(span_v) > 1500.0 {
                 200.0
@@ -830,7 +894,7 @@ fn render_designer_views_page(
                 gv += step_mm;
             }
 
-            // Сортируем детали по глубине взгляда, чтобы передние перекрывали задние
+            // Sort parts by depth so front parts occlude rear parts
             let mut sorted_parts: Vec<&crate::model::PartBlock> =
                 project.parts.iter().filter(|p| p.visible).collect();
             sorted_parts.sort_by(|a, b| {
@@ -861,13 +925,13 @@ fn render_designer_views_page(
                 let mat = project.get_material(part.material_id);
                 let thick = mat.map(|m| m.thickness_mm).unwrap_or(18.0);
                 let rgb = mat.map(|m| m.color_rgb).unwrap_or([200, 185, 160]);
-                // Слегка осветляем цвет материала для читаемости чертежа
+                // Lighten material color slightly for drawing clarity
                 let fr = (rgb[0] as f32 / 255.0) * 0.65 + 0.32;
                 let fg = (rgb[1] as f32 / 255.0) * 0.65 + 0.32;
                 let fb = (rgb[2] as f32 / 255.0) * 0.65 + 0.32;
 
                 if mode == 0 && part.yaw_deg.abs() > 1e-2 {
-                    // В плане XY деталь может быть повернута на угол yaw_deg: рисуем точный 4-угольник верхней грани
+                    // In Top XY view, part may be rotated by yaw_deg: draw exact 4-vertex polygon of top face
                     let verts = part.world_vertices(thick);
                     let pts: [(f32, f32); 4] = [0, 1, 2, 3].map(|vi| {
                         let v = verts[vi];
@@ -900,7 +964,7 @@ fn render_designer_views_page(
                         fr, fg, fb, rx, ry, rw, rh
                     ));
 
-                    // Подпись имени/размера внутри крупных деталей
+                    // Part name and size label inside large parts
                     if rw > 42.0 && rh > 13.0 {
                         let lbl = format!("{} ({:.0}×{:.0})", part.name, part.length_mm, part.width_mm);
                         let fitted = font_reg.fit_text_to_width(&lbl, 6.8, rw - 4.0);
@@ -916,7 +980,7 @@ fn render_designer_views_page(
                 }
             }
 
-            // Габаритные размерные подписи вдоль осей проекции
+            // Overall dimension labels along projection axes
             let u_dim_str = format!("{}: {:.0} {}", axis_u_label, u_max - u_min, d.unit_mm);
             let u_dim_w = font_bold.measure_text_pt(&u_dim_str, 7.5);
             let u_dim_hex = font_bold.encode_hex_gids(&u_dim_str);
@@ -937,7 +1001,7 @@ fn render_designer_views_page(
             ));
         };
 
-    // 1. Верхний левый: Вид сверху (Top XY)
+    // 1. Top left: Top View (Top XY)
     draw_ortho_quadrant(
         &mut s,
         left_x,
@@ -950,7 +1014,7 @@ fn render_designer_views_page(
         0,
     );
 
-    // 2. Нижний левый: Вид спереди (Front XZ)
+    // 2. Bottom left: Front View (Front XZ)
     draw_ortho_quadrant(
         &mut s,
         left_x,
@@ -963,7 +1027,7 @@ fn render_designer_views_page(
         1,
     );
 
-    // 3. Нижний правый: Вид сбоку (Side YZ)
+    // 3. Bottom right: Side View (Side YZ)
     draw_ortho_quadrant(
         &mut s,
         right_x,
@@ -976,7 +1040,7 @@ fn render_designer_views_page(
         2,
     );
 
-    // 4. Верхний правый: 3D Вид (Аксонометрия изделия с затенением граней)
+    // 4. Top right: 3D View (Isometric projection with shaded faces)
     {
         let px = right_x;
         let py = top_row_y;
@@ -1004,7 +1068,7 @@ fn render_designer_views_page(
         ));
 
         let center3 = (bmin + bmax) * 0.5;
-        // Камера смотрит спереди-справа-сверху (yaw = -38°, pitch = 24°)
+        // Camera looks from front-right-above (yaw = -38°, pitch = 24°)
         let yaw = (-38.0_f32).to_radians();
         let pitch = (24.0_f32).to_radians();
         let cam_right = Vec3::new(yaw.cos(), yaw.sin(), 0.0);
@@ -1019,7 +1083,7 @@ fn render_designer_views_page(
             (u, v, depth)
         };
 
-        // Определяем 2D-границы изометрической проекции всех вершин
+        // Determine 2D bounds of isometric projection of all vertices
         let mut min_u = f32::INFINITY;
         let mut max_u = f32::NEG_INFINITY;
         let mut min_v = f32::INFINITY;
@@ -1027,12 +1091,12 @@ fn render_designer_views_page(
 
         let mut faces_to_draw: Vec<(f32, [(f32, f32); 4], [f32; 3])> = Vec::new();
         let face_indices: [[usize; 4]; 6] = [
-            [0, 1, 2, 3], // Нижняя (-Z)
-            [4, 5, 6, 7], // Верхняя (+Z)
-            [0, 1, 5, 4], // Передняя (-Y)
-            [3, 2, 6, 7], // Задняя (+Y)
-            [0, 3, 7, 4], // Левая (-X)
-            [1, 2, 6, 5], // Правая (+X)
+            [0, 1, 2, 3], // Bottom (-Z)
+            [4, 5, 6, 7], // Top (+Z)
+            [0, 1, 5, 4], // Front (-Y)
+            [3, 2, 6, 7], // Back (+Y)
+            [0, 3, 7, 4], // Left (-X)
+            [1, 2, 6, 5], // Right (+X)
         ];
         let face_light_factors: [f32; 6] = [0.68, 1.02, 0.92, 0.74, 0.80, 0.86];
 
@@ -1076,7 +1140,7 @@ fn render_designer_views_page(
         }
 
         if !faces_to_draw.is_empty() {
-            // Сортируем от дальних граней к ближним (большая глубина depth = дальше от камеры)
+            // Sort from back faces to front faces (larger depth = farther from camera)
             faces_to_draw.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
 
             let pad = 16.0;
@@ -1106,7 +1170,7 @@ fn render_designer_views_page(
     s
 }
 
-/// Генерирует отдельные страницы PDF для каждого раскроенного листа материала (Карта раскроя) на языке `d`
+/// Generates separate PDF pages for each cut sheet of material (Cutting Layout) in language `d`.
 fn render_cutting_layout_pages(
     project: &Project,
     report: &CuttingReport,
@@ -1190,7 +1254,7 @@ fn render_cutting_layout_pages(
             margin_x, sub_y, sub_hex
         ));
 
-        // Рабочее поле под схему раскроя листа
+        // Working area for sheet cutting layout
         let box_top = sub_y - 14.0;
         let box_bottom = 38.0;
         let box_w = page_w - margin_x * 2.0;
@@ -1205,7 +1269,7 @@ fn render_cutting_layout_pages(
         let orig_top_y = box_bottom + (box_h + draw_h) * 0.5;
         let orig_bot_y = orig_top_y - draw_h;
 
-        // Вспомогательный перевод координаты Y листа (в мм сверху вниз) в координату Y PDF (снизу вверх)
+        // Helper conversion from sheet Y coordinate (mm top-down) to PDF Y coordinate (bottom-up)
         let map_rect = |x_mm: f32, y_mm: f32, w_mm: f32, h_mm: f32| -> (f32, f32, f32, f32) {
             let rx = orig_x + x_mm * scale;
             let rw = w_mm * scale;
@@ -1214,13 +1278,13 @@ fn render_cutting_layout_pages(
             (rx, ry, rw, rh)
         };
 
-        // 1. Контур исходного листа
+        // 1. Sheet outline
         s.push_str(&format!(
             "0.93 0.94 0.96 rg 0.22 0.26 0.32 RG 1.1 w {:.2} {:.2} {:.2} {:.2} re B\n",
             orig_x, orig_bot_y, draw_w, draw_h
         ));
 
-        // Габаритная подпись листа сверху
+        // Sheet overall dimension label on top
         let top_dim = format!("{}: {:.0} {}", d.pdf_sheet_length, sheet.sheet_length_mm, d.unit_mm);
         let top_dim_w = font_bold.measure_text_pt(&top_dim, 8.5);
         let top_dim_hex = font_bold.encode_hex_gids(&top_dim);
@@ -1231,7 +1295,7 @@ fn render_cutting_layout_pages(
             top_dim_hex
         ));
 
-        // 2. Свободные остатки (обрезки)
+        // 2. Offcuts / remnants
         for rem in &sheet.remnants {
             let (rx, ry, rw, rh) = map_rect(rem.x_mm, rem.y_mm, rem.w_mm, rem.h_mm);
             s.push_str(&format!(
@@ -1252,7 +1316,7 @@ fn render_cutting_layout_pages(
             }
         }
 
-        // 3. Размещённые детали на листе
+        // 3. Placed parts on sheet
         let mat_rgb = project
             .get_material(sheet.material_id)
             .map(|m| m.color_rgb)
@@ -1268,7 +1332,7 @@ fn render_cutting_layout_pages(
                 pr, pg, pb, rx, ry, rw, rh
             ));
 
-            // Отметки кромки по 4 сторонам детали
+            // Edge banding markings on 4 sides of part
             let (top_e, bot_e, left_e, right_e) = if !p.rotated_90 {
                 (p.edges.l1, p.edges.l2, p.edges.w1, p.edges.w2)
             } else {
@@ -1323,7 +1387,7 @@ fn render_cutting_layout_pages(
                 ry + rh - inset,
             );
 
-            // Подпись номера детали, имени и пилильного размера
+            // Part index, name, and saw cut dimensions label
             if rw > 26.0 && rh > 11.0 {
                 let line1 = format!("#{} {}", p.spec_index, p.name);
                 let line2 = format!("{:.1}×{:.1}", p.w_on_sheet_mm, p.h_on_sheet_mm);
@@ -1362,7 +1426,7 @@ fn render_cutting_layout_pages(
             }
         }
 
-        // 4. Красные линии сквозного гильотинного реза фрезы/пилы
+        // 4. Red guillotine through-cut blade lines
         s.push_str("0.92 0.22 0.22 RG 0.65 w\n");
         for cl in &sheet.cut_lines {
             let x1 = orig_x + cl.x1 * scale;
@@ -1376,7 +1440,7 @@ fn render_cutting_layout_pages(
     }
 }
 
-/// Генерирует отдельную страницу PDF с подробным описанием листовых материалов, кромок и сводным расходом по проекту на языке `d`
+/// Generates dedicated PDF page with detailed description of sheet materials, edge bandings, and consumption summary in language `d`.
 fn render_materials_and_edges_page(
     project: &Project,
     rows: &[SpecRow],
@@ -1422,7 +1486,7 @@ fn render_materials_and_edges_page(
         margin_x, sub_y, sub_hex
     ));
 
-    // --- Раздел 1: Таблица листовых материалов ---
+    // --- Section 1: Sheet materials table ---
     let sec1_y = sub_y - 24.0;
     let sec1_hex = font_bold.encode_hex_gids(d.pdf_materials_table_heading);
     s.push_str(&format!(
@@ -1490,7 +1554,7 @@ fn render_materials_and_edges_page(
             .filter(|sh| sh.material_id == m.id)
             .count();
 
-        // Цветной прямоугольник-образец в колонке «Цвет / Декор»
+        // Colored swatch rectangle in "Color / Decor" column
         let swatch_col_x = margin_x + mat_cols[0..3].iter().map(|(_, w)| *w).sum::<f32>();
         let sr = m.color_rgb[0] as f32 / 255.0;
         let sg = m.color_rgb[1] as f32 / 255.0;
@@ -1576,7 +1640,7 @@ fn render_materials_and_edges_page(
         mat_top_y - mat_bot_y
     ));
 
-    // --- Раздел 2: Таблица кромочных материалов и расхода погонажа ---
+    // --- Section 2: Edge bandings and linear run table ---
     let sec2_y = mat_bot_y - 26.0;
     let sec2_hex = font_bold.encode_hex_gids(d.pdf_edges_table_heading);
     s.push_str(&format!(
@@ -1726,12 +1790,12 @@ fn render_materials_and_edges_page(
     s
 }
 
-/// Генерирует бинарное содержимое многостраничного PDF-паспорта изделия (A4 Landscape)
-/// на выбранном языке `lang`:
-/// - Страница(ы) 1: Ведомость деталей (Спецификация)
-/// - Отдельная страница: Превью всех 4 плоскостей из конструктора (Top XY, 3D, Front XZ, Side YZ)
-/// - Отдельная страница (по листам): Карта раскроя
-/// - Отдельная страница: Описание материалов и кромок со сводным расходом
+/// Generates binary content of multi-page PDF product passport (A4 Landscape)
+/// in the selected language `lang`:
+/// - Page(s) 1: Parts specification table
+/// - Page 2: Designer 4-view projection preview (Top XY, 3D, Front XZ, Side YZ)
+/// - Page(s) 3+: Cutting layout per sheet
+/// - Final Page: Materials and edge banding summary
 pub fn generate_spec_pdf_bytes(project: &Project, lang: AppLanguage) -> Result<Vec<u8>, String> {
     let d = lang.dict();
     let mut font_reg = PdfTrueTypeFont::load_for_lang(lang, false)?;
@@ -1746,7 +1810,7 @@ pub fn generate_spec_pdf_bytes(project: &Project, lang: AppLanguage) -> Result<V
 
     let mut page_strings: Vec<String> = Vec::new();
 
-    // 1. Страницы таблицы спецификации деталей
+    // 1. Specification table pages
     render_spec_table_pages(
         project,
         &rows,
@@ -1756,11 +1820,11 @@ pub fn generate_spec_pdf_bytes(project: &Project, lang: AppLanguage) -> Result<V
         &mut page_strings,
     );
 
-    // 2. Отдельная страница: Превью всех плоскостей из конструктора (4 вида: Top XY, 3D, Front XZ, Side YZ)
+    // 2. Separate page: 4 Designer projections (Top XY, 3D, Front XZ, Side YZ)
     let designer_page = render_designer_views_page(project, d, &mut font_reg, &mut font_bold);
     page_strings.push(designer_page);
 
-    // 3. Отдельная страница (или страницы): Карта раскроя
+    // 3. Separate page(s): Cutting layout
     render_cutting_layout_pages(
         project,
         &report,
@@ -1770,7 +1834,7 @@ pub fn generate_spec_pdf_bytes(project: &Project, lang: AppLanguage) -> Result<V
         &mut page_strings,
     );
 
-    // 4. Отдельная страница: Описание материалов и кромки
+    // 4. Separate page: Materials and edge bandings summary
     let materials_page = render_materials_and_edges_page(
         project,
         &rows,

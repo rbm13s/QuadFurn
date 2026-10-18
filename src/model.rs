@@ -1,68 +1,65 @@
 use glam::{Mat3, Vec2, Vec3};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use crate::i18n::AppLanguage;
 
-/// Уникальные идентификаторы сущностей
+/// Unique entity identifiers
 pub type MaterialId = u64;
 pub type EdgeId = u64;
 pub type GroupId = u64;
 pub type PartId = u64;
 
-/// Справочник листового материала (ЛДСП, МДФ, ХДФ/ДВП)
+/// Sheet material specification (Particleboard, MDF, HDF / Hardboard).
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Material {
     pub id: MaterialId,
     pub name: String,
-    /// Толщина листа в миллиметрах (по умолчанию 18.0 мм)
+    /// Sheet thickness in millimeters (default 18.0 mm).
     pub thickness_mm: f32,
-    /// Цвет отображения в 2D/3D [R, G, B]
+    /// Display color in 2D/3D [R, G, B].
     pub color_rgb: [u8; 3],
-    /// Опциональный путь к файлу текстуры (PNG/JPG)
+    /// Optional path to texture image file (PNG/JPG).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub texture_path: Option<PathBuf>,
-    /// Относительный путь к текстуре относительно папки проекта (Вариант A)
+    /// Relative path to texture relative to project directory (Option A).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub texture_relative_path: Option<String>,
-    /// Упакованные сжатые байты текстуры (PNG/JPG/WEBP) в формате Base64 (Вариант B)
+    /// Packed compressed texture bytes (PNG/JPG/WEBP) in Base64 format (Option B).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub texture_base64: Option<String>,
-    /// Стандартная длина листа для раскроя (мм), например 2800.0
+    /// Standard sheet length for cutting (mm), e.g. 2800.0.
     pub sheet_length_mm: f32,
-    /// Стандартная ширина листа для раскроя (мм), например 2070.0
+    /// Standard sheet width for cutting (mm), e.g. 2070.0.
     pub sheet_width_mm: f32,
-    /// По умолчанию фиксировать направление волокон (текстуры) для новых деталей из этого материала
+    /// Default fixed grain direction for new parts made from this material.
     pub default_grain_fixed: bool,
 }
 
-/// Справочник кромочного материала (ПВХ, АБС, Меламин)
+/// Edge banding material specification (PVC, ABS, Melamine).
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EdgeBanding {
     pub id: EdgeId,
     pub name: String,
-    /// Толщина кромки в миллиметрах (например 0.4, 0.8, 1.0, 2.0)
+    /// Edge thickness in millimeters (e.g. 0.4, 0.8, 1.0, 2.0).
     pub thickness_mm: f32,
-    /// Цвет индикации кромки на чертежах и в 3D [R, G, B]
+    /// Edge marker color in drawings and 3D [R, G, B].
     pub color_rgb: [u8; 3],
 }
 
-/// Базовая ориентация детали в пространстве шкафа
+/// Base spatial orientation of the part within the cabinet.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PartOrientation {
-    /// Горизонтальная панель (Полка, Крышка, Дно): плоскость в XY, толщина по Z
+    /// Horizontal panel (Shelf, Top, Bottom): XY plane, thickness along Z.
     HorizontalXY,
-    /// Профильная вертикальная панель (Боковая стойка, Перегородка): плоскость в YZ, толщина по X
+    /// Profile vertical panel (Side panel, Partition): YZ plane, thickness along X.
     VerticalYZ,
-    /// Фронтальная вертикальная панель (Фасад, Задняя стенка, Царга): плоскость в XZ, толщина по Y
+    /// Frontal vertical panel (Door, Back panel, Plinth): XZ plane, thickness along Y.
     FrontalXZ,
 }
 
 impl PartOrientation {
     pub fn label(&self) -> &'static str {
-        match self {
-            PartOrientation::HorizontalXY => "Горизонтальная (Полка/Дно XY)",
-            PartOrientation::VerticalYZ => "Боковая стойка (Профиль YZ)",
-            PartOrientation::FrontalXZ => "Фронтальная (Фасад/Стенка XZ)",
-        }
+        self.label_i18n(crate::i18n::AppLanguage::Ru)
     }
 
     pub fn label_i18n(&self, lang: crate::i18n::AppLanguage) -> &'static str {
@@ -92,30 +89,40 @@ impl PartOrientation {
     }
 
     pub fn short_label(&self) -> &'static str {
-        match self {
-            PartOrientation::HorizontalXY => "Полка (XY)",
-            PartOrientation::VerticalYZ => "Стойка (YZ)",
-            PartOrientation::FrontalXZ => "Фасад (XZ)",
+        self.short_label_i18n(crate::i18n::AppLanguage::Ru)
+    }
+
+    pub fn short_label_i18n(&self, lang: crate::i18n::AppLanguage) -> &'static str {
+        match (self, lang) {
+            (PartOrientation::HorizontalXY, crate::i18n::AppLanguage::Ru) => "Полка (XY)",
+            (PartOrientation::VerticalYZ, crate::i18n::AppLanguage::Ru) => "Стойка (YZ)",
+            (PartOrientation::FrontalXZ, crate::i18n::AppLanguage::Ru) => "Фасад (XZ)",
+            (PartOrientation::HorizontalXY, crate::i18n::AppLanguage::Uk) => "Полиця (XY)",
+            (PartOrientation::VerticalYZ, crate::i18n::AppLanguage::Uk) => "Стійка (YZ)",
+            (PartOrientation::FrontalXZ, crate::i18n::AppLanguage::Uk) => "Фасад (XZ)",
+            (PartOrientation::HorizontalXY, _) => "Shelf (XY)",
+            (PartOrientation::VerticalYZ, _) => "Side (YZ)",
+            (PartOrientation::FrontalXZ, _) => "Door (XZ)",
         }
     }
 }
 
-/// Кромки по 4 сторонам детали:
-/// Д1 и Д2 — вдоль длины детали (Length)
-/// Ш1 и Ш2 — вдоль ширины детали (Width)
+/// Edge banding on 4 sides of the part:
+/// L1 and L2 — along part length
+/// W1 and W2 — along part width
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PartEdges {
-    /// Д1 (первая длинная сторона, напр. Перед / Фронт)
+    /// L1 (first long side, e.g. Front)
     pub l1: Option<EdgeId>,
-    /// Д2 (вторая длинная сторона, напр. Зад / Тыл)
+    /// L2 (second long side, e.g. Back)
     pub l2: Option<EdgeId>,
-    /// Ш1 (первая короткая сторона / торец 1)
+    /// W1 (first short edge / butt 1)
     pub w1: Option<EdgeId>,
-    /// Ш2 (вторая короткая сторона / торец 2)
+    /// W2 (second short edge / butt 2)
     pub w2: Option<EdgeId>,
 }
 
-/// Задел второго этапа: тип крепежа / отверстия карты присадки
+/// Fastener / hardware type for drilling map.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FastenerType {
     Confirmate5x50,
@@ -125,7 +132,7 @@ pub enum FastenerType {
     ShelfPin5,
 }
 
-/// Задел второго этапа: отверстие присадки в локальных координатах детали
+/// Drill hole in part local coordinates.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DrillHole {
     pub fastener: FastenerType,
@@ -135,7 +142,7 @@ pub struct DrillHole {
     pub on_edge: bool,
 }
 
-/// Группа деталей (папка в правом инспекторе)
+/// Part group (folder in inspector).
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PartGroup {
     pub id: GroupId,
@@ -145,7 +152,7 @@ pub struct PartGroup {
     pub expanded: bool,
 }
 
-/// Основной строительный блок — деталь корпусной мебели
+/// Main building block — furniture part block.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PartBlock {
     pub id: PartId,
@@ -153,33 +160,33 @@ pub struct PartBlock {
     pub group_id: Option<GroupId>,
     pub material_id: MaterialId,
     pub orientation: PartOrientation,
-    /// Позиция базового угла детали (X, Y, Z) в миллиметрах от нуля сцены (0,0,0)
-    /// При yaw_deg == 0 это минимальный угол (min_x, min_y, min_z)
+    /// Position of base corner (X, Y, Z) in millimeters from world origin (0,0,0).
+    /// When yaw_deg == 0, this is the minimum corner (min_x, min_y, min_z).
     pub position_mm: Vec3,
-    /// Чистовая (габаритная) Длина детали ВМЕСТЕ с кромкой (мм)
-    /// Для Полки(XY): вдоль X; для Стойки(YZ): вдоль Z (высота); для Фасада(XZ): вдоль Z (высота)
+    /// Finished (overall) length of part including edge banding (mm).
+    /// For Shelf(XY): along X; for Side(YZ): along Z (height); for Door(XZ): along Z (height).
     pub length_mm: f32,
-    /// Чистовая (габаритная) Ширина детали ВМЕСТЕ с кромкой (мм)
-    /// Для Полки(XY): вдоль Y (глубина); для Стойки(YZ): вдоль Y (глубина); для Фасада(XZ): вдоль X (ширина)
+    /// Finished (overall) width of part including edge banding (mm).
+    /// For Shelf(XY): along Y (depth); for Side(YZ): along Y (depth); for Door(XZ): along X (width).
     pub width_mm: f32,
-    /// Поворот детали вокруг вертикальной оси Z (в градусах, для угловых шкафов и скошенных полок)
+    /// Rotation around vertical axis Z (in degrees, for corner cabinets and angled parts).
     pub yaw_deg: f32,
-    /// Фиксировать ли направление волокон (текстуры) при раскрое (не вращать на 90°)
+    /// Whether grain direction is fixed during cutting (do not rotate 90 degrees).
     pub grain_fixed: bool,
-    /// Если true, волокна идут вдоль Ширины вместо Длины (или можно просто поменять Д и Ш местами)
+    /// If true, grain runs along Width instead of Length.
     pub grain_along_width: bool,
-    /// Оклеивание кромкой по 4 граням (Д1, Д2, Ш1, Ш2)
+    /// Edge banding on 4 edges (L1, L2, W1, W2).
     pub edges: PartEdges,
-    /// Индивидуальная видимость и блокировка
+    /// Individual visibility and lock state.
     pub visible: bool,
     pub locked: bool,
-    /// Задел под карту присадки (отверстия)
+    /// Drill holes list.
     #[serde(default)]
     pub drill_holes: Vec<DrillHole>,
 }
 
 impl PartBlock {
-    /// Возвращает локальные габариты параллелепипеда (dX, dY, dZ) в мм до поворота yaw_deg
+    /// Returns local cuboid dimensions (dX, dY, dZ) in mm before yaw_deg rotation.
     pub fn local_box_size(&self, thickness_mm: f32) -> Vec3 {
         match self.orientation {
             PartOrientation::HorizontalXY => Vec3::new(self.length_mm, self.width_mm, thickness_mm),
@@ -188,7 +195,7 @@ impl PartBlock {
         }
     }
 
-    /// Устанавливает габариты детали из локального размера (dX, dY, dZ)
+    /// Sets part dimensions from local cuboid size (dX, dY, dZ).
     pub fn set_from_local_box_size(&mut self, size: Vec3) {
         match self.orientation {
             PartOrientation::HorizontalXY => {
@@ -206,28 +213,28 @@ impl PartBlock {
         }
     }
 
-    /// Центр детали в мировых координатах (мм)
-    /// Вращение yaw_deg происходит вокруг вертикальной оси, проходящей через центр детали в XY
+    /// Center of part in world coordinates (mm).
+    /// Rotation yaw_deg occurs around the vertical axis passing through the part XY center.
     pub fn world_center(&self, thickness_mm: f32) -> Vec3 {
         let size = self.local_box_size(thickness_mm);
         self.position_mm + size * 0.5
     }
 
-    /// Переместить деталь так, чтобы ее мировой центр оказался в `new_center`
+    /// Moves the part so its world center matches `new_center`.
     pub fn set_world_center(&mut self, new_center: Vec3, thickness_mm: f32) {
         let size = self.local_box_size(thickness_mm);
         self.position_mm = new_center - size * 0.5;
     }
 
-    /// Матрица вращения вокруг оси Z на угол yaw_deg
+    /// Rotation matrix around Z axis by yaw_deg.
     pub fn rotation_matrix(&self) -> Mat3 {
         Mat3::from_rotation_z(self.yaw_deg.to_radians())
     }
 
-    /// Возвращает 8 вершин параллелепипеда детали в мировых координатах (мм)
-    /// Индексы:
-    /// 0: (0,0,0), 1: (dx,0,0), 2: (dx,dy,0), 3: (0,dy,0) — нижняя грань (Z min)
-    /// 4: (0,0,dz), 5: (dx,0,dz), 6: (dx,dy,dz), 7: (0,dy,dz) — верхняя грань (Z max)
+    /// Returns 8 vertices of the part cuboid in world coordinates (mm).
+    /// Indices:
+    /// 0: (0,0,0), 1: (dx,0,0), 2: (dx,dy,0), 3: (0,dy,0) — bottom face (Z min)
+    /// 4: (0,0,dz), 5: (dx,0,dz), 6: (dx,dy,dz), 7: (0,dy,dz) — top face (Z max)
     pub fn world_vertices(&self, thickness_mm: f32) -> [Vec3; 8] {
         let size = self.local_box_size(thickness_mm);
         let center = self.position_mm + size * 0.5;
@@ -252,7 +259,7 @@ impl PartBlock {
         out
     }
 
-    /// Осевой ограничивающий параллелепипед (AABB) детали в мировых координатах: (min, max)
+    /// Axis-aligned bounding box (AABB) in world coordinates: (min, max).
     pub fn world_aabb(&self, thickness_mm: f32) -> (Vec3, Vec3) {
         if self.yaw_deg.abs() < 1e-3 {
             let size = self.local_box_size(thickness_mm);
@@ -268,7 +275,7 @@ impl PartBlock {
         (min_v, max_v)
     }
 
-    /// Толщины кромок по 4 сторонам (Д1, Д2, Ш1, Ш2) в миллиметрах
+    /// Edge banding thicknesses on 4 sides (L1, L2, W1, W2) in millimeters.
     pub fn edge_thicknesses(&self, edges_lib: &[EdgeBanding]) -> (f32, f32, f32, f32) {
         let find_t = |eid: Option<EdgeId>| -> f32 {
             eid.and_then(|id| edges_lib.iter().find(|e| e.id == id))
@@ -283,14 +290,10 @@ impl PartBlock {
         )
     }
 
-    /// Пилильный размер детали (Длина пила, Ширина пила) в миллиметрах
-    /// Вычитает толщину кромок из габаритного размера детали:
-    /// L_cut = L_full - t(Д1) - t(Д2) (кромки вдоль длинных сторон вычитаются из Ширины, а торцевые Ш1/Ш2 — из Длины,
-    /// ЛИБО по стандарту Cutting 3: кромка по Д1/Д2 наклеивается вдоль стороны Длины, значит уменьшает Ширину детали,
-    /// а кромка по Ш1/Ш2 наклеивается на сторону Ширины, значит уменьшает Длину детали).
-    /// Давайте сделаем прозрачно и однозначно:
-    /// - Стороны Д1 и Д2 имеют длину `Length` (верхняя/нижняя длинные грани на чертеже детали) -> их толщина вычитается из `Width`!
-    /// - Стороны Ш1 и Ш2 имеют длину `Width` (левый/правый торцы на чертеже детали) -> их толщина вычитается из `Length`!
+    /// Saw cutting dimensions (Length cut, Width cut) in millimeters.
+    /// Subtracts edge banding thickness from overall dimensions:
+    /// - L1 and L2 run along Length -> their thickness is subtracted from Width.
+    /// - W1 and W2 run along Width -> their thickness is subtracted from Length.
     pub fn cut_dimensions_mm(&self, edges_lib: &[EdgeBanding]) -> (f32, f32) {
         let (t_l1, t_l2, t_w1, t_w2) = self.edge_thicknesses(edges_lib);
         let cut_length = (self.length_mm - t_w1 - t_w2).max(1.0);
@@ -299,20 +302,20 @@ impl PartBlock {
     }
 }
 
-/// Настройки раскроя в стиле Cutting 3
+/// Cutting settings (Cutting 3 style).
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CuttingSettings {
-    /// Ширина реза фрезы / пильного диска (мм)
+    /// Blade / router cutter kerf width (mm).
     pub kerf_mm: f32,
-    /// Отступ (обпил) от левого края листа (мм)
+    /// Left trim margin of sheet (mm).
     pub trim_left_mm: f32,
-    /// Отступ (обпил) от правого края листа (мм)
+    /// Right trim margin of sheet (mm).
     pub trim_right_mm: f32,
-    /// Отступ (обпил) от верхнего края листа (мм)
+    /// Top trim margin of sheet (mm).
     pub trim_top_mm: f32,
-    /// Отступ (обпил) от нижнего края листа (мм)
+    /// Bottom trim margin of sheet (mm).
     pub trim_bottom_mm: f32,
-    /// Группировать ли одинаковые детали в спецификации и отчете раскроя
+    /// Whether to group identical parts in specification and cutting report.
     pub group_identical_parts: bool,
 }
 
@@ -329,7 +332,7 @@ impl Default for CuttingSettings {
     }
 }
 
-/// Полный проект мебели QuadFurn
+/// Complete QuadFurn furniture project.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Project {
     pub name: String,
@@ -338,7 +341,7 @@ pub struct Project {
     pub groups: Vec<PartGroup>,
     pub parts: Vec<PartBlock>,
     pub cutting_settings: CuttingSettings,
-    /// Флаг: упаковывать ли текстуры в Base64 внутрь файла .qfurn при сохранении (Вариант B)
+    /// Flag: whether to embed textures as Base64 inside .qfurn file when saving (Option B).
     #[serde(default)]
     pub embed_textures: bool,
     pub next_id: u64,
@@ -393,11 +396,13 @@ impl Project {
         false
     }
 
-    /// Создает демонстрационный проект тумбы/шкафа из ЛДСП 18 мм с фасадами и задней стенкой ХДФ 3 мм
-    pub fn new_demo_cabinet() -> Self {
+    /// Creates a demo cabinet project in 18 mm particleboard with doors and 3 mm HDF back,
+    /// localized to the specified language.
+    pub fn new_demo_cabinet_i18n(lang: AppLanguage) -> Self {
+        let l10n = default_project_l10n(lang);
         let mat_white_18 = Material {
             id: 1,
-            name: "ЛДСП 18мм Белый Альпийский".to_string(),
+            name: l10n.mat_white_18.to_string(),
             thickness_mm: 18.0,
             color_rgb: [235, 238, 242],
             texture_path: None,
@@ -409,7 +414,7 @@ impl Project {
         };
         let mat_oak_18 = Material {
             id: 2,
-            name: "ЛДСП 18мм Дуб Вотан".to_string(),
+            name: l10n.mat_oak_18.to_string(),
             thickness_mm: 18.0,
             color_rgb: [196, 148, 98],
             texture_path: None,
@@ -421,7 +426,7 @@ impl Project {
         };
         let mat_hdf_3 = Material {
             id: 3,
-            name: "ХДФ 3мм Белый (Задняя стенка)".to_string(),
+            name: l10n.mat_hdf_3.to_string(),
             thickness_mm: 3.0,
             color_rgb: [210, 205, 195],
             texture_path: None,
@@ -434,44 +439,44 @@ impl Project {
 
         let edge_pvc_2 = EdgeBanding {
             id: 10,
-            name: "ПВХ 2.0 мм".to_string(),
+            name: l10n.edge_pvc_2.to_string(),
             thickness_mm: 2.0,
-            color_rgb: [235, 85, 45], // Ярко-оранжевый/красный маркер для 2 мм
+            color_rgb: [235, 85, 45], // Bright orange/red marker for 2 mm
         };
         let edge_pvc_08 = EdgeBanding {
             id: 11,
-            name: "ПВХ 0.8 мм".to_string(),
+            name: l10n.edge_pvc_08.to_string(),
             thickness_mm: 0.8,
-            color_rgb: [50, 195, 95], // Зеленый маркер для 0.8 мм
+            color_rgb: [50, 195, 95], // Green marker for 0.8 mm
         };
         let edge_pvc_04 = EdgeBanding {
             id: 12,
-            name: "ПВХ 0.4 мм".to_string(),
+            name: l10n.edge_pvc_04.to_string(),
             thickness_mm: 0.4,
-            color_rgb: [65, 150, 245], // Синий маркер для 0.4 мм
+            color_rgb: [65, 150, 245], // Blue marker for 0.4 mm
         };
 
         let grp_carcass = PartGroup {
             id: 100,
-            name: "Корпус шкафа (800x500x720)".to_string(),
+            name: l10n.grp_carcass.to_string(),
             visible: true,
             locked: false,
             expanded: true,
         };
         let grp_fronts = PartGroup {
             id: 101,
-            name: "Фасады и наполнение".to_string(),
+            name: l10n.grp_fronts.to_string(),
             visible: true,
             locked: false,
             expanded: true,
         };
 
-        // Габариты корпуса: Ширина X = 800 мм, Глубина Y = 500 мм, Высота Z = 720 мм, ЛДСП 18 мм
-        // Боковины: 720 x 500 x 18 (вкладное дно и крышка между боковинами: 800 - 36 = 764 мм)
+        // Carcass dimensions: Width X = 800 mm, Depth Y = 500 mm, Height Z = 720 mm, 18 mm board
+        // Sides: 720 x 500 x 18 (inset bottom and top between sides: 800 - 36 = 764 mm)
         let parts = vec![
             PartBlock {
                 id: 1001,
-                name: "Боковина левая".to_string(),
+                name: l10n.part_left_side.to_string(),
                 group_id: Some(100),
                 material_id: 1,
                 orientation: PartOrientation::VerticalYZ,
@@ -482,10 +487,10 @@ impl Project {
                 grain_fixed: true,
                 grain_along_width: false,
                 edges: PartEdges {
-                    l1: Some(10), // Передняя грань ПВХ 2.0 мм
+                    l1: Some(10), // Front edge PVC 2.0 mm
                     l2: None,
-                    w1: Some(12), // Нижний торец 0.4 мм
-                    w2: Some(12), // Верхний торец 0.4 мм
+                    w1: Some(12), // Bottom edge 0.4 mm
+                    w2: Some(12), // Top edge 0.4 mm
                 },
                 visible: true,
                 locked: false,
@@ -493,7 +498,7 @@ impl Project {
             },
             PartBlock {
                 id: 1002,
-                name: "Боковина правая".to_string(),
+                name: l10n.part_right_side.to_string(),
                 group_id: Some(100),
                 material_id: 1,
                 orientation: PartOrientation::VerticalYZ,
@@ -504,7 +509,7 @@ impl Project {
                 grain_fixed: true,
                 grain_along_width: false,
                 edges: PartEdges {
-                    l1: Some(10), // Передняя грань ПВХ 2.0 мм
+                    l1: Some(10), // Front edge PVC 2.0 mm
                     l2: None,
                     w1: Some(12),
                     w2: Some(12),
@@ -515,7 +520,7 @@ impl Project {
             },
             PartBlock {
                 id: 1003,
-                name: "Дно вкладное".to_string(),
+                name: l10n.part_bottom.to_string(),
                 group_id: Some(100),
                 material_id: 1,
                 orientation: PartOrientation::HorizontalXY,
@@ -526,7 +531,7 @@ impl Project {
                 grain_fixed: true,
                 grain_along_width: false,
                 edges: PartEdges {
-                    l1: Some(10), // Перед ПВХ 2.0 мм
+                    l1: Some(10), // Front PVC 2.0 mm
                     l2: None,
                     w1: None,
                     w2: None,
@@ -537,7 +542,7 @@ impl Project {
             },
             PartBlock {
                 id: 1004,
-                name: "Крышка вкладная".to_string(),
+                name: l10n.part_top.to_string(),
                 group_id: Some(100),
                 material_id: 1,
                 orientation: PartOrientation::HorizontalXY,
@@ -548,7 +553,7 @@ impl Project {
                 grain_fixed: true,
                 grain_along_width: false,
                 edges: PartEdges {
-                    l1: Some(10), // Перед ПВХ 2.0 мм
+                    l1: Some(10), // Front PVC 2.0 mm
                     l2: None,
                     w1: None,
                     w2: None,
@@ -559,7 +564,7 @@ impl Project {
             },
             PartBlock {
                 id: 1005,
-                name: "Полка съемная".to_string(),
+                name: l10n.part_shelf.to_string(),
                 group_id: Some(101),
                 material_id: 1,
                 orientation: PartOrientation::HorizontalXY,
@@ -570,7 +575,7 @@ impl Project {
                 grain_fixed: true,
                 grain_along_width: false,
                 edges: PartEdges {
-                    l1: Some(10), // Перед ПВХ 2.0 мм
+                    l1: Some(10), // Front PVC 2.0 mm
                     l2: Some(12),
                     w1: Some(12),
                     w2: Some(12),
@@ -581,7 +586,7 @@ impl Project {
             },
             PartBlock {
                 id: 1006,
-                name: "Задняя стенка ХДФ".to_string(),
+                name: l10n.part_back.to_string(),
                 group_id: Some(100),
                 material_id: 3,
                 orientation: PartOrientation::FrontalXZ,
@@ -598,7 +603,7 @@ impl Project {
             },
             PartBlock {
                 id: 1007,
-                name: "Фасад левый (Дуб)".to_string(),
+                name: l10n.part_door_left.to_string(),
                 group_id: Some(101),
                 material_id: 2,
                 orientation: PartOrientation::FrontalXZ,
@@ -620,7 +625,7 @@ impl Project {
             },
             PartBlock {
                 id: 1008,
-                name: "Фасад правый (Дуб)".to_string(),
+                name: l10n.part_door_right.to_string(),
                 group_id: Some(101),
                 material_id: 2,
                 orientation: PartOrientation::FrontalXZ,
@@ -643,7 +648,7 @@ impl Project {
         ];
 
         Self {
-            name: "Тумба распашная 800х500х720 (ЛДСП 18мм)".to_string(),
+            name: l10n.proj_name.to_string(),
             materials: vec![mat_white_18, mat_oak_18, mat_hdf_3],
             edge_bandings: vec![edge_pvc_2, edge_pvc_08, edge_pvc_04],
             groups: vec![grp_carcass, grp_fronts],
@@ -654,20 +659,158 @@ impl Project {
         }
     }
 
-    /// Создает новое пустое изделие с базовым справочником материалов ЛДСП 18 мм, ХДФ 3 мм и кромок ПВХ
-    pub fn new_empty(name: impl Into<String>) -> Self {
-        let mut p = Self::new_demo_cabinet();
+    /// Creates a demo cabinet project in 18 mm particleboard with default Russian localization.
+    pub fn new_demo_cabinet() -> Self {
+        Self::new_demo_cabinet_i18n(AppLanguage::Ru)
+    }
+
+    /// Creates a new empty project with base material library localized to the specified language.
+    pub fn new_empty_i18n(name: impl Into<String>, lang: AppLanguage) -> Self {
+        let mut p = Self::new_demo_cabinet_i18n(lang);
         p.name = name.into();
         p.parts.clear();
         p.groups.clear();
+        let l10n = default_project_l10n(lang);
         p.groups.push(PartGroup {
             id: 100,
-            name: "Основной корпус".to_string(),
+            name: l10n.grp_main.to_string(),
             visible: true,
             locked: false,
             expanded: true,
         });
         p
+    }
+
+    /// Creates a new empty project with base material library (default Russian localization).
+    pub fn new_empty(name: impl Into<String>) -> Self {
+        Self::new_empty_i18n(name, AppLanguage::Ru)
+    }
+}
+
+/// Localized names of default materials, edges, groups, and parts for new projects.
+struct DefaultProjectL10n {
+    mat_white_18: &'static str,
+    mat_oak_18: &'static str,
+    mat_hdf_3: &'static str,
+    edge_pvc_2: &'static str,
+    edge_pvc_08: &'static str,
+    edge_pvc_04: &'static str,
+    grp_carcass: &'static str,
+    grp_fronts: &'static str,
+    grp_main: &'static str,
+    proj_name: &'static str,
+    part_left_side: &'static str,
+    part_right_side: &'static str,
+    part_bottom: &'static str,
+    part_top: &'static str,
+    part_shelf: &'static str,
+    part_back: &'static str,
+    part_door_left: &'static str,
+    part_door_right: &'static str,
+}
+
+fn default_project_l10n(lang: AppLanguage) -> DefaultProjectL10n {
+    match lang {
+        AppLanguage::Ru => DefaultProjectL10n {
+            mat_white_18: "ЛДСП 18мм Белый Альпийский",
+            mat_oak_18: "ЛДСП 18мм Дуб Вотан",
+            mat_hdf_3: "ХДФ 3мм Белый (Задняя стенка)",
+            edge_pvc_2: "ПВХ 2.0 мм",
+            edge_pvc_08: "ПВХ 0.8 мм",
+            edge_pvc_04: "ПВХ 0.4 мм",
+            grp_carcass: "Корпус шкафа (800x500x720)",
+            grp_fronts: "Фасады и наполнение",
+            grp_main: "Основной корпус",
+            proj_name: "Тумба распашная 800х500х720 (ЛДСП 18мм)",
+            part_left_side: "Боковина левая",
+            part_right_side: "Боковина правая",
+            part_bottom: "Дно вкладное",
+            part_top: "Крышка вкладная",
+            part_shelf: "Полка съемная",
+            part_back: "Задняя стенка ХДФ",
+            part_door_left: "Фасад левый (Дуб)",
+            part_door_right: "Фасад правый (Дуб)",
+        },
+        AppLanguage::Uk => DefaultProjectL10n {
+            mat_white_18: "ЛДСП 18мм Білий Альпійський",
+            mat_oak_18: "ЛДСП 18мм Дуб Вотан",
+            mat_hdf_3: "ХДФ 3мм Білий (Задня стінка)",
+            edge_pvc_2: "ПВХ 2.0 мм",
+            edge_pvc_08: "ПВХ 0.8 мм",
+            edge_pvc_04: "ПВХ 0.4 мм",
+            grp_carcass: "Корпус шафи (800x500x720)",
+            grp_fronts: "Фасади та наповнення",
+            grp_main: "Основний корпус",
+            proj_name: "Тумба розпашна 800х500х720 (ЛДСП 18мм)",
+            part_left_side: "Боковина ліва",
+            part_right_side: "Боковина права",
+            part_bottom: "Дно вкладене",
+            part_top: "Кришка вкладена",
+            part_shelf: "Полиця знімна",
+            part_back: "Задня стінка ХДФ",
+            part_door_left: "Фасад лівий (Дуб)",
+            part_door_right: "Фасад правий (Дуб)",
+        },
+        AppLanguage::De => DefaultProjectL10n {
+            mat_white_18: "18mm Spanplatte Alpinweiß",
+            mat_oak_18: "18mm Spanplatte Wotaneiche",
+            mat_hdf_3: "3mm HDF Weiß (Rückwand)",
+            edge_pvc_2: "PVC 2.0 mm",
+            edge_pvc_08: "PVC 0.8 mm",
+            edge_pvc_04: "PVC 0.4 mm",
+            grp_carcass: "Schrankkorpus (800x500x720)",
+            grp_fronts: "Fronten & Fächer",
+            grp_main: "Hauptkorpus",
+            proj_name: "Drehtürenschrank 800x500x720 (18mm)",
+            part_left_side: "Linke Seitenwand",
+            part_right_side: "Rechte Seitenwand",
+            part_bottom: "Unterboden",
+            part_top: "Oberboden",
+            part_shelf: "Einlegeboden",
+            part_back: "Rückwand HDF",
+            part_door_left: "Front links (Eiche)",
+            part_door_right: "Front rechts (Eiche)",
+        },
+        AppLanguage::Pl => DefaultProjectL10n {
+            mat_white_18: "Płyta wiórowa 18mm Biały Alpejski",
+            mat_oak_18: "Płyta wiórowa 18mm Dąb Wotan",
+            mat_hdf_3: "HDF 3mm Biały (Ściana tylna)",
+            edge_pvc_2: "PCV 2.0 mm",
+            edge_pvc_08: "PCV 0.8 mm",
+            edge_pvc_04: "PCV 0.4 mm",
+            grp_carcass: "Korpus szafy (800x500x720)",
+            grp_fronts: "Fronty i wypełnienie",
+            grp_main: "Główny korpus",
+            proj_name: "Szafka uchylna 800x500x720 (18mm)",
+            part_left_side: "Bok lewy",
+            part_right_side: "Bok prawy",
+            part_bottom: "Wieniec dolny",
+            part_top: "Wieniec górny",
+            part_shelf: "Półka wyjmowana",
+            part_back: "Ściana tylna HDF",
+            part_door_left: "Front lewy (Dąb)",
+            part_door_right: "Front prawy (Dąb)",
+        },
+        _ => DefaultProjectL10n {
+            mat_white_18: "18mm Chipboard Alpine White",
+            mat_oak_18: "18mm Chipboard Wotan Oak",
+            mat_hdf_3: "3mm HDF White (Back panel)",
+            edge_pvc_2: "PVC 2.0 mm",
+            edge_pvc_08: "PVC 0.8 mm",
+            edge_pvc_04: "PVC 0.4 mm",
+            grp_carcass: "Cabinet Carcass (800x500x720)",
+            grp_fronts: "Fronts & Infill",
+            grp_main: "Main Carcass",
+            proj_name: "Cabinet 800x500x720 (18mm Chipboard)",
+            part_left_side: "Left Side",
+            part_right_side: "Right Side",
+            part_bottom: "Bottom Panel",
+            part_top: "Top Panel",
+            part_shelf: "Removable Shelf",
+            part_back: "Back Panel HDF",
+            part_door_left: "Left Door (Oak)",
+            part_door_right: "Right Door (Oak)",
+        },
     }
 }
 
@@ -677,7 +820,7 @@ mod tests {
 
     #[test]
     fn test_project_texture_backward_compatibility() {
-        // Старый формат JSON без embed_textures, texture_base64 и texture_relative_path
+        // Legacy JSON format without embed_textures, texture_base64, and texture_relative_path
         let legacy_json = r#"{
             "name": "Тестовый шкаф",
             "materials": [
@@ -740,5 +883,41 @@ mod tests {
             restored.materials[0].texture_relative_path.as_deref(),
             Some("textures/oak.png")
         );
+    }
+
+    #[test]
+    fn test_project_default_materials_localization() {
+        // Russian localization
+        let proj_ru = Project::new_demo_cabinet_i18n(AppLanguage::Ru);
+        assert_eq!(proj_ru.materials[0].name, "ЛДСП 18мм Белый Альпийский");
+        assert_eq!(proj_ru.materials[1].name, "ЛДСП 18мм Дуб Вотан");
+        assert_eq!(proj_ru.edge_bandings[0].name, "ПВХ 2.0 мм");
+        assert_eq!(proj_ru.groups[0].name, "Корпус шкафа (800x500x720)");
+        assert_eq!(proj_ru.parts[0].name, "Боковина левая");
+
+        // English localization
+        let proj_en = Project::new_demo_cabinet_i18n(AppLanguage::En);
+        assert_eq!(proj_en.materials[0].name, "18mm Chipboard Alpine White");
+        assert_eq!(proj_en.materials[1].name, "18mm Chipboard Wotan Oak");
+        assert_eq!(proj_en.edge_bandings[0].name, "PVC 2.0 mm");
+        assert_eq!(proj_en.groups[0].name, "Cabinet Carcass (800x500x720)");
+        assert_eq!(proj_en.parts[0].name, "Left Side");
+
+        // Ukrainian localization
+        let proj_uk = Project::new_demo_cabinet_i18n(AppLanguage::Uk);
+        assert_eq!(proj_uk.materials[0].name, "ЛДСП 18мм Білий Альпійський");
+        assert_eq!(proj_uk.groups[0].name, "Корпус шафи (800x500x720)");
+        assert_eq!(proj_uk.parts[0].name, "Боковина ліва");
+
+        // German localization
+        let proj_de = Project::new_demo_cabinet_i18n(AppLanguage::De);
+        assert_eq!(proj_de.materials[0].name, "18mm Spanplatte Alpinweiß");
+        assert_eq!(proj_de.groups[0].name, "Schrankkorpus (800x500x720)");
+
+        // Empty project localization
+        let empty_en = Project::new_empty_i18n("Custom Desk", AppLanguage::En);
+        assert_eq!(empty_en.name, "Custom Desk");
+        assert_eq!(empty_en.groups[0].name, "Main Carcass");
+        assert_eq!(empty_en.materials[0].name, "18mm Chipboard Alpine White");
     }
 }

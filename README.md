@@ -14,6 +14,32 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#getting-started)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
+<br/>
+
+**Languages / Языки / Мови / Sprachen:**<br/>
+**English** •
+[Русский](docs/README-ru.md) •
+[Українська](docs/README-uk.md) •
+[Deutsch](docs/README-de.md) •
+[Polski](docs/README-pl.md) •
+[Español](docs/README-es.md) •
+[Français](docs/README-fr.md) •
+[Italiano](docs/README-it.md) •
+[Português](docs/README-pt.md) •
+[Čeština](docs/README-cs.md) •
+[Slovenčina](docs/README-sk.md) •
+[Slovenščina](docs/README-sl.md) •
+[Nederlands](docs/README-nl.md) •
+[Dansk](docs/README-da.md) •
+[Norsk](docs/README-no.md) •
+[Svenska](docs/README-sv.md) •
+[Magyar](docs/README-hu.md) •
+[Română](docs/README-ro.md) •
+[Türkçe](docs/README-tr.md) •
+[简体中文](docs/README-zh-cn.md) •
+[日本語](docs/README-ja.md) •
+[한국어](docs/README-ko.md)
+
 </div>
 
 ---
@@ -244,7 +270,7 @@ Every push and release automatically builds ready-to-run packages via [GitHub Ac
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu installer package (installs binary, desktop menu entry, and application icon):
     ```bash
-    sudo apt install ./quadfurn_0.1.0_amd64.deb
+    sudo apt install ./quadfurn_0.2.0_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portable standalone Linux archive.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` bundle with Retina `.icns` icon.
@@ -307,6 +333,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Application logo & source image for Windows/Linux/macOS icons
 │   └── screenshots/           # UI screenshots for documentation
+├── docs/                      # Localized documentation (22 languages)
 ├── src/
 │   ├── main.rs                # App entry point, multi-tab workspace, Start Page, settings & shortcuts
 │   ├── model.rs               # Core data structures (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)

@@ -1,6 +1,8 @@
-use crate::cutter::{build_specification, compute_cutting_layout, CuttingReport, SheetLayout, SpecRow};
+use crate::cutter::{
+    build_specification_i18n, compute_cutting_layout, CuttingReport, SheetLayout, SpecRow,
+};
 use crate::export::{
-    export_spec_to_csv_file, export_spec_to_pdf_file, generate_cutting3_clipboard_text,
+    export_spec_to_csv_file_i18n, export_spec_to_pdf_file, generate_cutting3_clipboard_text_i18n,
 };
 use crate::i18n::AppLanguage;
 use crate::model::{
@@ -12,22 +14,22 @@ use egui::{Color32, FontId, Pos2, Rect, RichText, Sense, Stroke, TextureHandle, 
 use glam::Vec3;
 use std::collections::HashMap;
 
-/// Активная вкладка программы
+/// Active application tab
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum AppTab {
-    /// 4-экранный конструктор (Hammer Editor + CorelDRAW)
+    /// 4-viewport designer (Hammer Editor + CorelDRAW)
     Designer4View,
-    /// Таблица спецификации деталей и экспорт
+    /// Parts specification table and export
     Specification,
-    /// Утилита раскроя листа в стиле Cutting 3
+    /// Cutting layout utility in Cutting 3 style
     CuttingLayout,
-    /// Справочник материалов (толщина 18 мм, цвета, текстуры) и кромок
+    /// Materials catalog (18 mm thickness, colors, textures) and edge bandings
     MaterialsManager,
 }
 
-/// Вычисляет математическое выражение в числовом поле ввода (поддерживает `+`, `-`, `*`, `/`, скобки `(...)`,
-/// точку и запятую в качестве десятичного разделителя, а также пробелы и суффиксы единиц измерения).
-/// Примеры: `"600+100"` -> `700.0`, `"600-4"` -> `596.0`, `"800-18-18"` -> `764.0`, `"(800-36)/2"` -> `382.0`.
+/// Evaluates a math expression in a numeric input field (supports `+`, `-`, `*`, `/`, parentheses `(...)`,
+/// dot and comma as decimal separator, spaces, and unit suffixes).
+/// Examples: `"600+100"` -> `700.0`, `"600-4"` -> `596.0`, `"800-18-18"` -> `764.0`, `"(800-36)/2"` -> `382.0`.
 pub fn eval_math_expression(input: &str) -> Option<f64> {
     let cleaned: String = input
         .chars()
@@ -153,12 +155,12 @@ pub fn eval_math_expression(input: &str) -> Option<f64> {
     }
 }
 
-/// Создает `egui::DragValue` с поддержкой ввода математических выражений (`600+100`, `600-4`, `800-36` и т.п.)
+/// Creates an `egui::DragValue` supporting math expressions (`600+100`, `600-4`, `800-36`, etc.)
 pub fn math_drag_value(value: &mut f32) -> egui::DragValue<'_> {
     egui::DragValue::new(value).custom_parser(eval_math_expression)
 }
 
-/// Отрисовка верхней панели CorelDRAW-style (точный ввод координат X/Y/Z, размеров Длина/Ширина/Толщина, поворота, сетки и инструментов)
+/// Renders CorelDRAW-style top toolbar (precise coordinate inputs X/Y/Z, dimensions L/W/T, rotation, grid, and tools)
 pub fn ui_top_coreldraw_toolbar(
     ui: &mut egui::Ui,
     project: &mut Project,
@@ -173,7 +175,7 @@ pub fn ui_top_coreldraw_toolbar(
     ui.horizontal_wrapped(|ui| {
         ui.spacing_mut().item_spacing.x = 6.0;
 
-        // 1. Инструменты редактора
+        // 1. Editor tools
         ui.label(RichText::new(lang.tr("Инструмент:", "Tool:")).strong());
         if ui
             .selectable_label(
@@ -217,7 +219,7 @@ pub fn ui_top_coreldraw_toolbar(
 
         ui.separator();
 
-        // 2. Быстрое добавление типовой детали (Стойка / Полка / Фасад)
+        // 2. Quick add standard part (Side / Shelf / Front)
         ui.label(lang.tr("Быстро:", "Quick:"));
         if ui
             .button(lang.tr("+ Полка (XY)", "+ Shelf (XY)"))
@@ -276,7 +278,7 @@ pub fn ui_top_coreldraw_toolbar(
 
         ui.separator();
 
-        // 3. Выбор активного материала (для новых деталей)
+        // 3. Active material selection (for new parts)
         ui.label(lang.tr("Материал:", "Material:"));
         let active_mat_name = project
             .get_material(*active_material_id)
@@ -294,7 +296,7 @@ pub fn ui_top_coreldraw_toolbar(
 
         ui.separator();
 
-        // 4. Привязки и шаг сетки (мм)
+        // 4. Snapping and grid step (mm)
         ui.checkbox(
             &mut viewport_ctrl.grid_snap_enabled,
             lang.tr("Сетка", "Grid"),
@@ -315,6 +317,7 @@ pub fn ui_top_coreldraw_toolbar(
                 .small_button(format!("{:.0}", preset))
                 .on_hover_text(match lang {
                     AppLanguage::Ru => format!("Установить шаг сетки {:.0} мм", preset),
+                    AppLanguage::Uk => format!("Встановити крок сітки {:.0} мм", preset),
                     _ => format!("Set grid step to {:.0} mm", preset),
                 })
                 .clicked()
@@ -365,12 +368,12 @@ pub fn ui_top_coreldraw_toolbar(
 
     ui.separator();
 
-    // Вторая строка панели CorelDRAW: числовой ввод координат X, Y, Z и габаритов Длина / Ширина / Толщина / Поворот для выбранного блока или группы
+    // Second row of CorelDRAW panel: numeric input of coordinates X, Y, Z and dimensions Length / Width / Thickness / Rotation for selected part or group
     ui.horizontal_wrapped(|ui| {
         ui.spacing_mut().item_spacing.x = 6.0;
 
         if viewport_ctrl.selected_parts.len() > 1 {
-            // Групповое выделение нескольких деталей: показываем общий габарит и позволяем синхронно сдвигать всю группу по X, Y, Z
+            // Multi-part selection: show combined bounding box and allow synchronized shifting along X, Y, Z
             let mut bmin = Vec3::splat(f32::INFINITY);
             let mut bmax = Vec3::splat(f32::NEG_INFINITY);
             let mut valid_count = 0usize;
@@ -387,6 +390,7 @@ pub fn ui_top_coreldraw_toolbar(
             if valid_count > 1 {
                 let grp_text = match lang {
                     AppLanguage::Ru => format!("Группа: {} дет.", valid_count),
+                    AppLanguage::Uk => format!("Група: {} дет.", valid_count),
                     _ => format!("Group: {} pcs", valid_count),
                 };
                 ui.label(
@@ -475,7 +479,7 @@ pub fn ui_top_coreldraw_toolbar(
                 );
                 ui.separator();
 
-                // Координаты X, Y, Z (мм от нуля сцены)
+                // Coordinates X, Y, Z (mm from scene origin)
                 ui.label(RichText::new(lang.tr("Позиция (мм):", "Position (mm):")).strong());
                 let mut pos = project.parts[idx].position_mm;
                 let mut pos_changed = false;
@@ -514,7 +518,7 @@ pub fn ui_top_coreldraw_toolbar(
 
                 ui.separator();
 
-                // Габаритные размеры детали (Длина x Ширина x Толщина) в миллиметрах, как в CorelDRAW
+                // Part dimensions (Length x Width x Thickness) in millimeters, CorelDRAW-style
                 ui.label(RichText::new(lang.tr("Габарит с кромкой:", "Full size w/ edge:")).strong());
                 let mut len = project.parts[idx].length_mm;
                 let mut wid = project.parts[idx].width_mm;
@@ -545,7 +549,7 @@ pub fn ui_top_coreldraw_toolbar(
                     project.parts[idx].width_mm = wid;
                 }
 
-                // Поле толщины (редактирует толщину материала детали или показывает 18 мм)
+                // Thickness field (edits material thickness of part or shows 18 mm)
                 let mut cur_thick = thick;
                 ui.label(lang.tr("Толщ (T):", "Thick (T):"));
                 if ui
@@ -568,6 +572,7 @@ pub fn ui_top_coreldraw_toolbar(
 
                 let cut_badge = match lang {
                     AppLanguage::Ru => format!("[Пил: {:.1}×{:.1} мм]", cut_l, cut_w),
+                    AppLanguage::Uk => format!("[Пил: {:.1}×{:.1} мм]", cut_l, cut_w),
                     _ => format!("[Cut: {:.1}×{:.1} mm]", cut_l, cut_w),
                 };
                 ui.label(RichText::new(cut_badge).color(Color32::from_rgb(120, 225, 150)))
@@ -578,7 +583,7 @@ pub fn ui_top_coreldraw_toolbar(
 
                 ui.separator();
 
-                // Поворот вокруг оси Z
+                // Rotation around Z axis
                 ui.label("∠Z:");
                 ui.add(
                     math_drag_value(&mut project.parts[idx].yaw_deg)
@@ -660,10 +665,10 @@ fn add_quick_part(
     id
 }
 
-/// Префикс системного буфера обмена для копирования деталей между вкладками и окнами QuadFurn
+/// System clipboard prefix for copying parts between QuadFurn tabs and windows
 pub const CLIPBOARD_PREFIX: &str = "QUADFURN_CLIPBOARD_V1:";
 
-/// Буфер обмена для копирования детали между разными вкладками (и окнами) объектов мебели
+/// Clipboard payload for copying parts between different tabs (and windows) of furniture products
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct ClipboardPart {
     pub part: PartBlock,
@@ -673,7 +678,7 @@ pub struct ClipboardPart {
     pub source_group_name: Option<String>,
 }
 
-/// Собирает все выделенные детали (одиночную или группу деталей) в список `ClipboardPart`
+/// Collects all selected parts (single or group) into a list of `ClipboardPart`
 pub fn copy_selected_parts_to_clipboard(
     project: &Project,
     selected_part: Option<PartId>,
@@ -715,15 +720,15 @@ pub fn copy_selected_parts_to_clipboard(
     result
 }
 
-/// Вставляет список скопированных деталей из буфера обмена в целевой объект мебели
-/// (автоматически сопоставляя или добавляя материалы, кромки и группы, а также сохраняя взаимное расположение деталей)
+/// Pastes a list of copied parts from clipboard into the target furniture product
+/// (automatically matching or adding materials, edge bandings, and groups, preserving relative layout)
 pub fn paste_parts_into_project(project: &mut Project, clips: &[ClipboardPart]) -> Vec<PartId> {
     if clips.is_empty() {
         return Vec::new();
     }
 
-    // Вычисляем единый сдвиг для всей вставляемой группы деталей, если хотя бы одна деталь
-    // совпадает по координатам с уже существующей деталью в целевом проекте
+    // Calculate uniform offset for the entire pasted group if at least one part
+    // overlaps in coordinates with an existing part in the target project
     let mut group_offset = Vec3::ZERO;
     for step in 0..20 {
         let candidate_offset = Vec3::new(18.0 * step as f32, 0.0, 18.0 * step as f32);
@@ -743,7 +748,7 @@ pub fn paste_parts_into_project(project: &mut Project, clips: &[ClipboardPart]) 
     let mut pasted_ids = Vec::with_capacity(clips.len());
 
     for clip in clips {
-        // 1. Сопоставляем материал (по имени и толщине, либо создаем его в целевом проекте)
+        // 1. Match material (by name and thickness, or create in target project)
         let target_mat_id = if let Some(src_mat) = &clip.source_material {
             if let Some(existing) = project.materials.iter().find(|m| {
                 m.name == src_mat.name && (m.thickness_mm - src_mat.thickness_mm).abs() < 0.05
@@ -760,7 +765,7 @@ pub fn paste_parts_into_project(project: &mut Project, clips: &[ClipboardPart]) 
             project.materials.first().map(|m| m.id).unwrap_or(1)
         };
 
-        // 2. Сопоставляем кромки по 4 сторонам
+        // 2. Match edge bandings on 4 sides
         let mut map_edge = |opt_edge: &Option<crate::model::EdgeBanding>| -> Option<EdgeId> {
             let src_e = opt_edge.as_ref()?;
             if let Some(existing) = project.edge_bandings.iter().find(|e| {
@@ -783,7 +788,7 @@ pub fn paste_parts_into_project(project: &mut Project, clips: &[ClipboardPart]) 
             w2: map_edge(&clip.source_edges[3]),
         };
 
-        // 3. Сопоставляем группу по имени (либо берем первую группу проекта)
+        // 3. Match group by name (or assign to first group of project)
         let target_group_id = if let Some(gname) = &clip.source_group_name {
             if let Some(existing_grp) = project.groups.iter().find(|g| &g.name == gname) {
                 Some(existing_grp.id)
@@ -816,7 +821,7 @@ pub fn paste_parts_into_project(project: &mut Project, clips: &[ClipboardPart]) 
     pasted_ids
 }
 
-/// Правый инспектор блоков, групп, материалов и интерактивной схемы кромления детали
+/// Right inspector for parts, groups, materials, and interactive edge banding diagram
 #[allow(clippy::too_many_arguments)]
 pub fn ui_right_inspector(
     ui: &mut egui::Ui,
@@ -833,7 +838,7 @@ pub fn ui_right_inspector(
     let mm_suffix = lang.tr(" мм", " mm");
     ui.heading(lang.tr("Инспектор блоков", "Part Inspector"));
 
-    // Панель управления группами и блоками
+    // Group and part management panel
     ui.horizontal(|ui| {
         ui.add(
             egui::TextEdit::singleline(new_group_name_buf)
@@ -883,6 +888,10 @@ pub fn ui_right_inspector(
                             "Деталь «{}» скопирована в буфер обмена (перейдите в любую вкладку мебели и нажмите Ctrl+V)",
                             copied[0].part.name
                         ),
+                        AppLanguage::Uk => format!(
+                            "Деталь «{}» скопійована в буфер обміну (перейдіть у будь-яку вкладку меблів та натисніть Ctrl+V)",
+                            copied[0].part.name
+                        ),
                         _ => format!(
                             "Part \"{}\" copied to clipboard (switch to any product tab and press Ctrl+V)",
                             copied[0].part.name
@@ -892,6 +901,10 @@ pub fn ui_right_inspector(
                     *status_msg = match lang {
                         AppLanguage::Ru => format!(
                             "Скопировано деталей: {} шт. (перейдите в любую вкладку мебели и нажмите Ctrl+V)",
+                            copied.len()
+                        ),
+                        AppLanguage::Uk => format!(
+                            "Скопійовано деталей: {} шт. (перейдіть у будь-яку вкладку меблів та натисніть Ctrl+V)",
                             copied.len()
                         ),
                         _ => format!(
@@ -926,6 +939,10 @@ pub fn ui_right_inspector(
                             "Деталь «{}» вставлена в «{}»",
                             clipboard[0].part.name, project.name
                         ),
+                        AppLanguage::Uk => format!(
+                            "Деталь «{}» вставлена в «{}»",
+                            clipboard[0].part.name, project.name
+                        ),
                         _ => format!(
                             "Part \"{}\" pasted into \"{}\"",
                             clipboard[0].part.name, project.name
@@ -935,6 +952,11 @@ pub fn ui_right_inspector(
                     *status_msg = match lang {
                         AppLanguage::Ru => format!(
                             "Вставлено деталей: {} шт. в изделие «{}»",
+                            new_ids.len(),
+                            project.name
+                        ),
+                        AppLanguage::Uk => format!(
+                            "Вставлено деталей: {} шт. у виріб «{}»",
                             new_ids.len(),
                             project.name
                         ),
@@ -1008,7 +1030,7 @@ pub fn ui_right_inspector(
 
     ui.separator();
 
-    // Дерево групп и деталей (с прокруткой, прижатой к правой границе панели)
+    // Tree of groups and parts (with scroll pinned to right edge)
     egui::ScrollArea::vertical()
         .id_salt("hierarchy_scroll")
         .auto_shrink([false, false])
@@ -1104,7 +1126,7 @@ pub fn ui_right_inspector(
                 }
             }
 
-            // Детали без группы
+            // Ungrouped parts
             let ungrouped_indices: Vec<usize> = project
                 .parts
                 .iter()
@@ -1133,7 +1155,7 @@ pub fn ui_right_inspector(
 
     ui.separator();
 
-    // Нижняя часть Правого Инспектора: детальные свойства выбранного блока, материал, текстура и интерактивная схема кромления
+    // Lower part of Right Inspector: detailed properties of selected part, material, texture, and edge diagram
     egui::ScrollArea::vertical()
         .id_salt("part_props_scroll")
         .auto_shrink([false, false])
@@ -1285,7 +1307,7 @@ pub fn ui_right_inspector(
                         .strong(),
                     );
 
-                    // Кнопки быстрого кромления в один клик
+                    // Quick one-click edge banding buttons
                     ui.horizontal_wrapped(|ui| {
                         ui.label(lang.tr("Быстро:", "Quick:"));
                         if let Some(first_edge) = project.edge_bandings.first().map(|e| e.id) {
@@ -1309,10 +1331,10 @@ pub fn ui_right_inspector(
                         }
                     });
 
-                    // Интерактивная графическая схема детали с 4 гранями (Д1, Д2, Ш1, Ш2)
+                    // Interactive graphic diagram of part with 4 edges (L1, L2, W1, W2)
                     draw_interactive_edge_diagram(ui, project, idx, lang);
 
-                    // Выпадающие списки по каждой из 4 граней
+                    // Dropdown combos for each of the 4 edges
                     let edges_clone = project.edge_bandings.clone();
                     egui::Grid::new("edges_select_grid")
                         .num_columns(2)
@@ -1389,7 +1411,7 @@ fn render_part_tree_row(
             project.parts[p_idx].visible = !project.parts[p_idx].visible;
         }
 
-        // Цветной квадратик материала детали
+        // Colored swatch of part material
         let (swatch_rect, _) = ui.allocate_exact_size(EguiVec2::splat(11.0), Sense::hover());
         ui.painter().rect_filled(
             swatch_rect,
@@ -1461,8 +1483,8 @@ fn edge_combo_row(
     ui.end_row();
 }
 
-/// Рисует наглядную интерактивную схему прямоугольника детали в правом инспекторе:
-/// клик по стороне Д1 / Д2 / Ш1 / Ш2 циклически переключает кромку (Нет -> 2.0 мм -> 0.8 мм -> 0.4 мм)
+/// Draws an interactive diagram of a part rectangle in the right inspector:
+/// clicking on edge L1 / L2 / W1 / W2 cycles through available edge bandings (None -> 2.0 mm -> 0.8 mm -> 0.4 mm)
 fn draw_interactive_edge_diagram(
     ui: &mut egui::Ui,
     project: &mut Project,
@@ -1480,7 +1502,7 @@ fn draw_interactive_edge_diagram(
     let part = &project.parts[part_idx];
     let (cut_l, cut_w) = part.cut_dimensions_mm(&project.edge_bandings);
 
-    // Стрелка направления волокон внутри прямоугольника
+    // Grain direction arrow inside rectangle
     if part.grain_fixed {
         let c = inner.center();
         if !part.grain_along_width {
@@ -1540,7 +1562,7 @@ fn draw_interactive_edge_diagram(
         );
     };
 
-    // Верхняя сторона = Д1, Нижняя = Д2, Левая = Ш1, Правая = Ш2
+    // Top edge = L1, Bottom = L2, Left = W1, Right = W2
     draw_edge_bar(
         inner.left_top(),
         inner.right_top(),
@@ -1570,7 +1592,7 @@ fn draw_interactive_edge_diagram(
         part.edges.w2,
     );
 
-    // Клик по области стороны на мини-схеме циклически меняет кромку
+    // Clicking edge area on mini-diagram cycles edge banding
     if resp.clicked() {
         if let Some(mp) = resp.interact_pointer_pos() {
             let cycle_edge = |cur: Option<EdgeId>, lib: &[crate::model::EdgeBanding]| -> Option<EdgeId> {
@@ -1608,7 +1630,7 @@ fn draw_interactive_edge_diagram(
     }
 }
 
-/// Вкладка «Справочник материалов и кромок» (настройка толщины 18 мм, RGB-цвета, размеров листа, загрузка текстуры PNG/JPG/WEBP и удаление материалов и кромок с подтверждением)
+/// "Sheet Materials & Edge Banding Catalog" tab (configure 18 mm thickness, RGB color, sheet dimensions, load PNG/JPG/WEBP texture, and delete with confirmation)
 pub fn ui_materials_manager_tab(
     ui: &mut egui::Ui,
     project: &mut Project,
@@ -1642,8 +1664,17 @@ pub fn ui_materials_manager_tab(
                     AppLanguage::Ru => {
                         format!("ЛДСП 18мм Новый декор {}", project.materials.len() + 1)
                     }
+                    AppLanguage::Uk => {
+                        format!("ЛДСП 18мм Новий декор {}", project.materials.len() + 1)
+                    }
+                    AppLanguage::De => {
+                        format!("18mm Spanplatte Neues Dekor {}", project.materials.len() + 1)
+                    }
+                    AppLanguage::Pl => {
+                        format!("Płyta 18mm Nowy dekor {}", project.materials.len() + 1)
+                    }
                     _ => {
-                        format!("Chipboard 18mm New Decor {}", project.materials.len() + 1)
+                        format!("18mm Chipboard New Decor {}", project.materials.len() + 1)
                     }
                 },
                 thickness_mm: 18.0,
@@ -1665,7 +1696,8 @@ pub fn ui_materials_manager_tab(
             project.edge_bandings.push(crate::model::EdgeBanding {
                 id,
                 name: match lang {
-                    AppLanguage::Ru => format!("ПВХ {:.1} мм", 1.0),
+                    AppLanguage::Ru | AppLanguage::Uk => format!("ПВХ {:.1} мм", 1.0),
+                    AppLanguage::Pl => format!("PCV {:.1} mm", 1.0),
                     _ => format!("PVC {:.1} mm", 1.0),
                 },
                 thickness_mm: 1.0,
@@ -1875,7 +1907,7 @@ pub fn ui_materials_manager_tab(
             }
         });
 
-    // Модальное окно подтверждения удаления материала: «Точно удалить?»
+    // Modal confirmation dialog for material deletion: "Are you sure?"
     if let Some(del_id) = *pending_delete_material {
         let mat_name = project
             .get_material(del_id)
@@ -1901,6 +1933,7 @@ pub fn ui_materials_manager_tab(
             ui.add_space(4.0);
             let q_txt = match lang {
                 AppLanguage::Ru => format!("Точно удалить материал «{}»?", mat_name),
+                AppLanguage::Uk => format!("Точно видалити матеріал «{}»?", mat_name),
                 _ => format!("Are you sure you want to delete material \"{}\"?", mat_name),
             };
             ui.label(RichText::new(q_txt).strong().size(15.0));
@@ -1909,6 +1942,10 @@ pub fn ui_materials_manager_tab(
                 let warn_txt = match lang {
                     AppLanguage::Ru => format!(
                         "Внимание: этот материал используется у {} деталей (им будет назначен первый доступный материал проекта).",
+                        used_parts_count
+                    ),
+                    AppLanguage::Uk => format!(
+                        "Увага: цей матеріал використовується у {} деталей (їм буде призначено перший доступний матеріал проєкту).",
                         used_parts_count
                     ),
                     _ => format!(
@@ -1952,6 +1989,7 @@ pub fn ui_materials_manager_tab(
             }
             *status_msg = match lang {
                 AppLanguage::Ru => format!("Материал «{}» удален.", mat_name),
+                AppLanguage::Uk => format!("Матеріал «{}» видалено.", mat_name),
                 _ => format!("Material \"{}\" deleted.", mat_name),
             };
         }
@@ -2010,7 +2048,7 @@ pub fn ui_materials_manager_tab(
             }
         });
 
-    // Модальное окно подтверждения удаления кромки
+    // Modal confirmation dialog for edge banding deletion
     if let Some(del_edge_id) = *pending_delete_edge {
         let edge_name = project
             .get_edge(del_edge_id)
@@ -2041,6 +2079,7 @@ pub fn ui_materials_manager_tab(
             ui.add_space(4.0);
             let q_txt = match lang {
                 AppLanguage::Ru => format!("Точно удалить кромку «{}»?", edge_name),
+                AppLanguage::Uk => format!("Точно видалити крайку «{}»?", edge_name),
                 _ => {
                     format!("Are you sure you want to delete edge banding \"{}\"?", edge_name)
                 }
@@ -2051,6 +2090,10 @@ pub fn ui_materials_manager_tab(
                 let warn_txt = match lang {
                     AppLanguage::Ru => format!(
                         "Внимание: эта кромка назначена на {} гранях деталей (при удалении эти грани станут без кромки).",
+                        used_sides_count
+                    ),
+                    AppLanguage::Uk => format!(
+                        "Увага: ця крайка призначена на {} гранях деталей (при видаленні ці грані стануть без крайки).",
                         used_sides_count
                     ),
                     _ => format!(
@@ -2098,6 +2141,7 @@ pub fn ui_materials_manager_tab(
             }
             *status_msg = match lang {
                 AppLanguage::Ru => format!("Кромка «{}» удалена.", edge_name),
+                AppLanguage::Uk => format!("Крайка «{}» видалена.", edge_name),
                 _ => format!("Edge banding \"{}\" deleted.", edge_name),
             };
         }
@@ -2123,6 +2167,7 @@ pub fn load_texture_from_memory(
 ) -> Result<LoadedTextureInfo, String> {
     let dyn_img = image::load_from_memory(img_bytes).map_err(|e| match lang {
         AppLanguage::Ru => format!("Ошибка декодирования изображения текстуры: {}", e),
+        AppLanguage::Uk => format!("Помилка декодування зображення текстури: {}", e),
         _ => format!("Failed to decode texture image: {}", e),
     })?;
 
@@ -2140,6 +2185,10 @@ pub fn load_texture_from_memory(
         let warn_msg = match lang {
             AppLanguage::Ru => format!(
                 "Разрешение изображения {}×{} px превышает лимит ({} px). Текстура автоматически уменьшена до {}×{} px для предотвращения перегрузки видеокарты.",
+                orig_w, orig_h, max_allowed, nw, nh
+            ),
+            AppLanguage::Uk => format!(
+                "Роздільна здатність зображення {}×{} px перевищує ліміт ({} px). Текстуру автоматично зменшено до {}×{} px для запобігання перевантаженню відеокарти.",
                 orig_w, orig_h, max_allowed, nw, nh
             ),
             _ => format!(
@@ -2176,6 +2225,10 @@ pub fn load_texture_from_path(
                     "Файл текстуры слишком большой ({:.1} МБ). Максимальный размер файла: 60 МБ.",
                     meta.len() as f64 / (1024.0 * 1024.0)
                 ),
+                AppLanguage::Uk => format!(
+                    "Файл текстури занадто великий ({:.1} МБ). Максимальний розмір файлу: 60 МБ.",
+                    meta.len() as f64 / (1024.0 * 1024.0)
+                ),
                 _ => format!(
                     "Texture file is too large ({:.1} MB). Maximum supported file size is 60 MB.",
                     meta.len() as f64 / (1024.0 * 1024.0)
@@ -2186,22 +2239,23 @@ pub fn load_texture_from_path(
 
     let img_bytes = std::fs::read(path).map_err(|e| match lang {
         AppLanguage::Ru => format!("Не удалось прочитать файл текстуры: {}", e),
+        AppLanguage::Uk => format!("Не вдалося прочитати файл текстури: {}", e),
         _ => format!("Failed to read texture file: {}", e),
     })?;
 
     load_texture_from_memory(ctx, &img_bytes, name, lang)
 }
 
-/// Находит и загружает текстуру материала, проверяя встроенный Base64 (Вариант B),
-/// затем относительные пути от файла проекта (Вариант A: рядом с .qfurn или в подпапке textures/),
-/// и исходный абсолютный путь
+/// Finds and loads material texture, checking embedded Base64 (Option B),
+/// then relative paths from project file (Option A: next to .qfurn or in textures/ subfolder),
+/// and original absolute path
 pub fn resolve_and_load_material_texture(
     ctx: &egui::Context,
     m: &mut Material,
     project_path: Option<&std::path::Path>,
     lang: AppLanguage,
 ) -> Result<LoadedTextureInfo, String> {
-    // 1. Приоритет №1 (Вариант B): Встроенная в файл проекта Base64-текстура
+    // 1. Priority #1 (Option B): Base64 texture embedded in project file
     if let Some(ref b64) = m.texture_base64 {
         if !b64.trim().is_empty() {
             use base64::Engine;
@@ -2211,7 +2265,7 @@ pub fn resolve_and_load_material_texture(
         }
     }
 
-    // 2. Приоритет №2 (Вариант A): Поиск по относительному пути от каталога проекта
+    // 2. Priority #2 (Option A): Search relative to project directory
     let project_dir = project_path
         .and_then(|p| p.parent())
         .unwrap_or(std::path::Path::new("."));
@@ -2241,11 +2295,12 @@ pub fn resolve_and_load_material_texture(
 
     Err(match lang {
         AppLanguage::Ru => format!("Файл текстуры для «{}» не найден", m.name),
+        AppLanguage::Uk => format!("Файл текстури для «{}» не знайдено", m.name),
         _ => format!("Texture file for \"{}\" not found", m.name),
     })
 }
 
-/// Вкладка «Спецификация и Экспорт»
+/// "Specification and Export" tab
 pub fn ui_specification_tab(
     ui: &mut egui::Ui,
     project: &mut Project,
@@ -2281,11 +2336,15 @@ pub fn ui_specification_tab(
                 .add_filter(lang.tr("Таблица CSV (Excel)", "CSV Spreadsheet"), &["csv"])
                 .save_file()
             {
-                match export_spec_to_csv_file(project, &path) {
+                match export_spec_to_csv_file_i18n(project, &path, lang) {
                     Ok(()) => {
                         *status_msg = match lang {
                             AppLanguage::Ru => format!(
                                 "Спецификация успешно экспортирована в {}",
+                                path.display()
+                            ),
+                            AppLanguage::Uk => format!(
+                                "Специфікація успішно експортована до {}",
                                 path.display()
                             ),
                             _ => format!(
@@ -2320,6 +2379,10 @@ pub fn ui_specification_tab(
                                 "Паспорт изделия (спецификация, проекции, раскрой и материалы) экспортирован в PDF: {}",
                                 path.display()
                             ),
+                            AppLanguage::Uk => format!(
+                                "Паспорт виробу (специфікація, проекції, розкрій та матеріали) експортовано до PDF: {}",
+                                path.display()
+                            ),
                             _ => format!(
                                 "Product passport (specification, views, cutting layouts & materials) exported to PDF: {}",
                                 path.display()
@@ -2342,7 +2405,7 @@ pub fn ui_specification_tab(
             ))
             .clicked()
         {
-            let text = generate_cutting3_clipboard_text(project);
+            let text = generate_cutting3_clipboard_text_i18n(project, lang);
             ui.ctx().copy_text(text);
             *status_msg = lang
                 .tr(
@@ -2355,7 +2418,7 @@ pub fn ui_specification_tab(
 
     ui.separator();
 
-    let rows = build_specification(project);
+    let rows = build_specification_i18n(project, lang);
 
     egui::ScrollArea::both()
         .auto_shrink([false, false])
@@ -2394,27 +2457,24 @@ pub fn ui_specification_tab(
                             .strong()
                             .color(Color32::from_rgb(110, 235, 145)),
                     );
-                    let qty_lbl = match lang {
-                        AppLanguage::Ru => format!("{} шт.", r.quantity),
-                        _ => format!("{} pcs", r.quantity),
-                    };
+                    let qty_lbl = format!("{} {}", r.quantity, lang.dict().unit_pcs);
                     ui.label(RichText::new(qty_lbl).strong());
                     ui.label(if r.grain_fixed {
                         lang.tr("🌲 Фикс. (По текстуре)", "🌲 Locked (Along grain)")
                     } else {
                         lang.tr("🔄 Вращ. свободно", "🔄 Free rotation")
                     });
-                    ui.label(SpecRow::edge_label(r.edges.l1, &project.edge_bandings));
-                    ui.label(SpecRow::edge_label(r.edges.l2, &project.edge_bandings));
-                    ui.label(SpecRow::edge_label(r.edges.w1, &project.edge_bandings));
-                    ui.label(SpecRow::edge_label(r.edges.w2, &project.edge_bandings));
+                    ui.label(SpecRow::edge_label_i18n(r.edges.l1, &project.edge_bandings, lang));
+                    ui.label(SpecRow::edge_label_i18n(r.edges.l2, &project.edge_bandings, lang));
+                    ui.label(SpecRow::edge_label_i18n(r.edges.w1, &project.edge_bandings, lang));
+                    ui.label(SpecRow::edge_label_i18n(r.edges.w2, &project.edge_bandings, lang));
                     ui.end_row();
                 }
             });
     });
 }
 
-/// Вкладка «Карта раскроя»
+/// "Cutting Layout" tab
 pub fn ui_cutting_layout_tab(
     ui: &mut egui::Ui,
     project: &mut Project,
@@ -2422,7 +2482,7 @@ pub fn ui_cutting_layout_tab(
     lang: AppLanguage,
 ) {
     let mm_suffix = lang.tr(" мм", " mm");
-    // Верхняя панель настроек раскроя (размер листа, отступы обпила от краев, ширина реза фрезы/пилы)
+    // Top cutting settings toolbar (sheet dimensions, edge trim margins, saw kerf width)
     ui.horizontal_wrapped(|ui| {
         ui.heading(lang.tr("Карта раскроя", "Cutting Layout"));
         ui.separator();
@@ -2476,7 +2536,7 @@ pub fn ui_cutting_layout_tab(
         );
     });
 
-    // Быстрое редактирование размеров листа для каждого материала прямо из окна раскроя
+    // Quick editing of sheet dimensions for each material directly from cutting layout view
     ui.horizontal_wrapped(|ui| {
         ui.label(
             RichText::new(lang.tr("Формат листов материалов:", "Material sheet sizes:")).strong(),
@@ -2508,19 +2568,22 @@ pub fn ui_cutting_layout_tab(
     if !report.unplaced_parts.is_empty() {
         for err in &report.unplaced_parts {
             let err_msg = match lang {
-                AppLanguage::Ru => format!("⚠ Деталь не помещается на лист: {}", err),
-                _ => format!("⚠ Part does not fit on sheet: {}", err),
+                AppLanguage::Ru => format!("⚠ Деталь не помещается на лист: {}", err.format_message(lang)),
+                AppLanguage::Uk => format!("⚠ Деталь не вміщується на лист: {}", err.format_message(lang)),
+                _ => format!("⚠ Part does not fit on sheet: {}", err.format_message(lang)),
             };
             ui.colored_label(Color32::from_rgb(255, 95, 95), err_msg);
         }
         ui.separator();
     }
 
-    // Сводная статистика раскроя и погонажа кромок
+    // Summary statistics of cutting layout and edge banding lengths
     ui.horizontal_wrapped(|ui| {
+        let d = lang.dict();
         let sheets_txt = match lang {
-            AppLanguage::Ru => format!("Всего листов: {} шт.", report.total_sheets_count),
-            _ => format!("Total sheets: {} pcs", report.total_sheets_count),
+            AppLanguage::Ru => format!("Всего листов: {} {}", report.total_sheets_count, d.unit_pcs),
+            AppLanguage::Uk => format!("Всього листів: {} {}", report.total_sheets_count, d.unit_pcs),
+            _ => format!("Total sheets: {} {}", report.total_sheets_count, d.unit_pcs),
         };
         ui.label(
             RichText::new(sheets_txt)
@@ -2530,31 +2593,45 @@ pub fn ui_cutting_layout_tab(
         ui.separator();
         let area_txt = match lang {
             AppLanguage::Ru => format!(
-                "Площадь деталей: {:.2} м² из {:.2} м² (КПИ: {:.1}%)",
+                "Площадь деталей: {:.2} {} из {:.2} {} (КПИ: {:.1}%)",
                 report.total_parts_area_m2,
+                d.unit_m2,
                 report.total_sheets_area_m2,
+                d.unit_m2,
+                report.overall_utilization_percent
+            ),
+            AppLanguage::Uk => format!(
+                "Площа деталей: {:.2} {} з {:.2} {} (КВМ: {:.1}%)",
+                report.total_parts_area_m2,
+                d.unit_m2,
+                report.total_sheets_area_m2,
+                d.unit_m2,
                 report.overall_utilization_percent
             ),
             _ => format!(
-                "Parts area: {:.2} m² of {:.2} m² (Yield: {:.1}%)",
+                "Parts area: {:.2} {} of {:.2} {} (Yield: {:.1}%)",
                 report.total_parts_area_m2,
+                d.unit_m2,
                 report.total_sheets_area_m2,
+                d.unit_m2,
                 report.overall_utilization_percent
             ),
         };
         ui.label(area_txt);
         ui.separator();
         let cut_len_txt = match lang {
-            AppLanguage::Ru => format!("Длина реза: {:.1} м.п.", report.total_cut_length_m),
-            _ => format!("Cut length: {:.1} m", report.total_cut_length_m),
+            AppLanguage::Ru => format!("Длина реза: {:.1} {}", report.total_cut_length_m, d.unit_mp),
+            AppLanguage::Uk => format!("Довжина різу: {:.1} {}", report.total_cut_length_m, d.unit_mp),
+            _ => format!("Cut length: {:.1} {}", report.total_cut_length_m, d.unit_mp),
         };
         ui.label(cut_len_txt);
 
         for (ename, meters, rgb) in &report.edge_banding_totals_m {
             ui.separator();
             let edge_tot_txt = match lang {
-                AppLanguage::Ru => format!("Кромка {}: {:.2} м.п.", ename, meters),
-                _ => format!("Edge {}: {:.2} m", ename, meters),
+                AppLanguage::Ru => format!("Кромка {}: {:.2} {}", ename, meters, d.unit_mp),
+                AppLanguage::Uk => format!("Крайка {}: {:.2} {}", ename, meters, d.unit_mp),
+                _ => format!("Edge {}: {:.2} {}", ename, meters, d.unit_mp),
             };
             ui.colored_label(Color32::from_rgb(rgb[0], rgb[1], rgb[2]), edge_tot_txt);
         }
@@ -2574,27 +2651,40 @@ pub fn ui_cutting_layout_tab(
         *selected_sheet_idx = 0;
     }
 
-    // Выбор листа для просмотра
+    // Sheet selection for preview
     ui.horizontal_wrapped(|ui| {
         ui.label(RichText::new(lang.tr("Листы раскроя:", "Cutting sheets:")).strong());
         for (idx, sh) in report.sheets.iter().enumerate() {
+            let d = lang.dict();
             let title = match lang {
                 AppLanguage::Ru => format!(
-                    "Лист #{} (Мат. лист №{}) — {} ({:.0}×{:.0} мм, КПИ {:.1}%)",
+                    "Лист #{} (Мат. лист №{}) — {} ({:.0}×{:.0} {}, КПИ {:.1}%)",
                     idx + 1,
                     sh.sheet_number,
                     sh.material_name,
                     sh.sheet_length_mm,
                     sh.sheet_width_mm,
+                    d.unit_mm,
+                    sh.utilization_percent
+                ),
+                AppLanguage::Uk => format!(
+                    "Лист #{} (Мат. лист №{}) — {} ({:.0}×{:.0} {}, КВМ {:.1}%)",
+                    idx + 1,
+                    sh.sheet_number,
+                    sh.material_name,
+                    sh.sheet_length_mm,
+                    sh.sheet_width_mm,
+                    d.unit_mm,
                     sh.utilization_percent
                 ),
                 _ => format!(
-                    "Sheet #{} (Mat. sheet #{}) — {} ({:.0}×{:.0} mm, Yield {:.1}%)",
+                    "Sheet #{} (Mat. sheet #{}) — {} ({:.0}×{:.0} {}, Yield {:.1}%)",
                     idx + 1,
                     sh.sheet_number,
                     sh.material_name,
                     sh.sheet_length_mm,
                     sh.sheet_width_mm,
+                    d.unit_mm,
                     sh.utilization_percent
                 ),
             };
@@ -2606,7 +2696,7 @@ pub fn ui_cutting_layout_tab(
 
     ui.add_space(4.0);
 
-    // Отрисовка выбранного листа раскроя и таблицы деталей на этом листе
+    // Rendering selected cutting sheet diagram and parts table on this sheet
     let active_sheet = &report.sheets[*selected_sheet_idx];
     let avail = ui.available_rect_before_wrap();
     let diagram_width = (avail.width() * 0.68).max(300.0);
@@ -2624,6 +2714,12 @@ pub fn ui_cutting_layout_tab(
                     "Детали на листе #{} ({} шт.)",
                     *selected_sheet_idx + 1,
                     active_sheet.placed_parts.len()
+                ),
+                AppLanguage::Uk => format!(
+                    "Деталі на листі #{} ({} {})",
+                    *selected_sheet_idx + 1,
+                    active_sheet.placed_parts.len(),
+                    lang.dict().unit_pcs
                 ),
                 _ => format!(
                     "Parts on Sheet #{} ({} pcs)",
@@ -2694,6 +2790,12 @@ pub fn ui_cutting_layout_tab(
                                     rem.w_mm,
                                     rem.h_mm
                                 ),
+                                AppLanguage::Uk => format!(
+                                    "• Залишок {}: {:.0} × {:.0} мм",
+                                    ri + 1,
+                                    rem.w_mm,
+                                    rem.h_mm
+                                ),
                                 _ => format!(
                                     "• Offcut {}: {:.0} × {:.0} mm",
                                     ri + 1,
@@ -2709,7 +2811,7 @@ pub fn ui_cutting_layout_tab(
     });
 }
 
-/// Отрисовка графической карты раскроя листа в стиле Cutting 3
+/// Renders graphical cutting sheet layout diagram in Cutting 3 style
 fn draw_cutting_sheet_diagram(
     ui: &egui::Ui,
     canvas_rect: Rect,
@@ -2734,14 +2836,18 @@ fn draw_cutting_sheet_diagram(
     );
     let sheet_rect = Rect::from_min_size(origin, EguiVec2::new(sheet_px_w, sheet_px_h));
 
-    // Фон сырого листа (зона обпила краев)
+    // Raw sheet background (trim margins zone)
     painter.rect_filled(sheet_rect, 0.0, Color32::from_rgb(62, 48, 42));
     painter.rect_stroke(sheet_rect, 0.0, Stroke::new(2.0, Color32::WHITE));
 
-    // Подпись габаритов листа и направления волокон листа
+    // Caption for sheet dimensions and grain direction
     let top_caption = match lang {
         AppLanguage::Ru => format!(
             "Длина листа: {:.0} мм (Направление текстуры / волокон ───►) | Ширина реза фрезы: {:.1} мм",
+            sheet.sheet_length_mm, project.cutting_settings.kerf_mm
+        ),
+        AppLanguage::Uk => format!(
+            "Довжина листа: {:.0} мм (Напрямок текстури / волокон ───►) | Ширина різу фрези: {:.1} мм",
             sheet.sheet_length_mm, project.cutting_settings.kerf_mm
         ),
         _ => format!(
@@ -2757,7 +2863,7 @@ fn draw_cutting_sheet_diagram(
         Color32::from_rgb(220, 225, 235),
     );
 
-    // 1. Отрисовка свободных остатков (обрезков) со штриховкой и размерами, как в Cutting 3
+    // 1. Render free offcuts (remnants) with hatching and dimensions, Cutting 3 style
     for rem in &sheet.remnants {
         let r_min = Pos2::new(origin.x + rem.x_mm * scale, origin.y + rem.y_mm * scale);
         let r_rect = Rect::from_min_size(
@@ -2778,7 +2884,7 @@ fn draw_cutting_sheet_diagram(
         }
     }
 
-    // 2. Отрисовка размещенных деталей на листе
+    // 2. Render placed parts on sheet
     let mat_rgb = project
         .get_material(sheet.material_id)
         .map(|m| m.color_rgb)
@@ -2798,7 +2904,7 @@ fn draw_cutting_sheet_diagram(
         );
         painter.rect_stroke(p_rect, 0.0, Stroke::new(1.2, Color32::from_rgb(20, 20, 20)));
 
-        // Отрисовка маркеров кромки внутри детали на карте раскроя (как в Cutting 3)
+        // Render edge banding markers inside part on cutting layout (Cutting 3 style)
         let inset = 3.0;
         let edge_stroke = |eid: Option<EdgeId>| -> Option<Stroke> {
             let e = project.get_edge(eid?)?;
@@ -2850,7 +2956,7 @@ fn draw_cutting_sheet_diagram(
             );
         }
 
-        // Подпись номера детали, имени и пилильного размера на карте раскроя
+        // Part index, name, and saw cut dimensions label on cutting layout
         if p_rect.width() > 36.0 && p_rect.height() > 16.0 {
             let label = if p_rect.width() > 85.0 && p_rect.height() > 34.0 {
                 format!(
@@ -2870,7 +2976,7 @@ fn draw_cutting_sheet_diagram(
         }
     }
 
-    // 3. Отрисовка сквозных линий гильотинного реза фрезы/пилы
+    // 3. Render through-cut guillotine saw/blade lines
     for cl in &sheet.cut_lines {
         let p1 = Pos2::new(origin.x + cl.x1 * scale, origin.y + cl.y1 * scale);
         let p2 = Pos2::new(origin.x + cl.x2 * scale, origin.y + cl.y2 * scale);
@@ -2913,7 +3019,7 @@ mod tests {
         assert_eq!(new_ids.len(), 4);
         assert_eq!(dst_proj.parts.len(), 4);
 
-        // Проверяем, что взаимное расположение скопированных деталей полностью сохранилось
+        // Verify that relative positions of copied parts are fully preserved
         let orig_delta = src_proj.parts[1].position_mm - src_proj.parts[0].position_mm;
         let pasted_delta = dst_proj.parts[1].position_mm - dst_proj.parts[0].position_mm;
         assert!((orig_delta - pasted_delta).length() < 1e-4);

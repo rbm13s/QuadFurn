@@ -2,24 +2,20 @@ use crate::i18n::AppLanguage;
 use crate::model::{PartBlock, PartId, Project};
 use glam::{Vec2, Vec3};
 
-/// Двумерные ортогональные проекции в стиле Hammer Editor
+/// 2D orthogonal projections in Hammer Editor style
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum OrthoAxis {
-    /// Вид сверху (План XY): Горизонталь = X, Вертикаль = Y (вверх на экране = +Y)
+    /// Top view (Plan XY): Horizontal = X, Vertical = Y (+Y points up on screen)
     TopXY,
-    /// Вид спереди (Фасад XZ): Горизонталь = X, Вертикаль = Z (вверх на экране = +Z)
+    /// Front view (Elevation XZ): Horizontal = X, Vertical = Z (+Z points up on screen)
     FrontXZ,
-    /// Вид сбоку (Профиль YZ): Горизонталь = Y, Вертикаль = Z (вверх на экране = +Z)
+    /// Side view (Section YZ): Horizontal = Y, Vertical = Z (+Z points up on screen)
     SideYZ,
 }
 
 impl OrthoAxis {
     pub fn title(&self) -> &'static str {
-        match self {
-            OrthoAxis::TopXY => "Вид сверху (Top XY — План)",
-            OrthoAxis::FrontXZ => "Вид спереди (Front XZ — Фасад)",
-            OrthoAxis::SideYZ => "Вид сбоку (Side YZ — Разрез)",
-        }
+        self.title_i18n(AppLanguage::Ru)
     }
 
     pub fn title_i18n(&self, lang: AppLanguage) -> &'static str {
@@ -38,11 +34,7 @@ impl OrthoAxis {
     }
 
     pub fn axis_labels(&self) -> (&'static str, &'static str) {
-        match self {
-            OrthoAxis::TopXY => ("X (Ширина)", "Y (Глубина)"),
-            OrthoAxis::FrontXZ => ("X (Ширина)", "Z (Высота)"),
-            OrthoAxis::SideYZ => ("Y (Глубина)", "Z (Высота)"),
-        }
+        self.axis_labels_i18n(AppLanguage::Ru)
     }
 
     pub fn axis_labels_i18n(&self, lang: AppLanguage) -> (&'static str, &'static str) {
@@ -54,7 +46,7 @@ impl OrthoAxis {
         }
     }
 
-    /// Проецирует 3D-точку (X, Y, Z) в 2D-координаты плоскости вида (U, V)
+    /// Projects a 3D point (X, Y, Z) into 2D view-plane coordinates (U, V)
     pub fn project(&self, p: Vec3) -> Vec2 {
         match self {
             OrthoAxis::TopXY => Vec2::new(p.x, p.y),
@@ -63,7 +55,7 @@ impl OrthoAxis {
         }
     }
 
-    /// Применяет 2D-координаты (U, V) обратно к существующему 3D-вектору (сохраняя третью координату)
+    /// Applies 2D coordinates (U, V) back to an existing 3D vector (preserving the third coordinate)
     pub fn unproject_into(&self, uv: Vec2, base: Vec3) -> Vec3 {
         match self {
             OrthoAxis::TopXY => Vec3::new(uv.x, uv.y, base.z),
@@ -73,14 +65,14 @@ impl OrthoAxis {
     }
 }
 
-/// Результат привязки (Snapping) при перетаскивании или ресайзе
+/// Snapping result when dragging or resizing
 #[derive(Clone, Debug, Default)]
 pub struct SnapResult {
     pub snapped_pos: f32,
     pub guide_line_pos: Option<f32>,
 }
 
-/// Округляет значение до шага сетки `grid_step_mm`
+/// Rounds value to grid step `grid_step_mm`
 pub fn snap_to_grid(val: f32, grid_step_mm: f32) -> f32 {
     if grid_step_mm <= 0.001 {
         val
@@ -89,7 +81,7 @@ pub fn snap_to_grid(val: f32, grid_step_mm: f32) -> f32 {
     }
 }
 
-/// Привязка координаты `val` (или пары краев `[min_val, max_val]`) к краям других деталей и к сетке
+/// Snaps coordinate `val` (or edge pair `[min_val, max_val]`) to edges of other parts and to the grid
 pub fn snap_1d_edge(
     val: f32,
     candidates: &[f32],
@@ -129,7 +121,7 @@ pub fn snap_1d_edge(
     }
 }
 
-/// Привязка перемещаемого отрезка `[min_val, min_val + length]` к кандидатам краев других блоков (магнитится либо левый, либо правый край)
+/// Snaps moving segment `[min_val, min_val + length]` to edge candidates of other blocks (magnetizes either left/bottom or right/top edge)
 pub fn snap_interval_move(
     min_val: f32,
     length: f32,
@@ -146,14 +138,14 @@ pub fn snap_interval_move(
         let max_val = min_val + length;
 
         for &c in candidates {
-            // Проверка привязки левого/нижнего края (min_val -> c)
+            // Check snap for left/bottom edge (min_val -> c)
             let d_min = (min_val - c).abs();
             if d_min <= best_dist {
                 best_dist = d_min;
                 best_min = Some(c);
                 best_guide = Some(c);
             }
-            // Проверка привязки правого/верхнего края (max_val -> c)
+            // Check snap for right/top edge (max_val -> c)
             let d_max = (max_val - c).abs();
             if d_max <= best_dist {
                 best_dist = d_max;
@@ -183,7 +175,7 @@ pub fn snap_interval_move(
     }
 }
 
-/// Собирает все характерные координаты краев (U и V) всех видимых деталей кроме `exclude_id` в заданной проекции
+/// Collects all characteristic edge coordinates (U and V) of all visible parts except `exclude_id` in the specified projection
 pub fn collect_snap_candidates_2d(
     project: &Project,
     axis: OrthoAxis,
@@ -193,13 +185,13 @@ pub fn collect_snap_candidates_2d(
     collect_snap_candidates_2d_excluding(project, axis, slice)
 }
 
-/// Собирает все характерные координаты краев (U и V) всех видимых деталей кроме списка `exclude_ids` (для группового перемещения)
+/// Collects all characteristic edge coordinates (U and V) of all visible parts except `exclude_ids` (for group movement)
 pub fn collect_snap_candidates_2d_excluding(
     project: &Project,
     axis: OrthoAxis,
     exclude_ids: &[PartId],
 ) -> (Vec<f32>, Vec<f32>) {
-    let mut u_cands = vec![0.0]; // Всегда включаем ось нуля сцены
+    let mut u_cands = vec![0.0]; // Always include the scene zero axis
     let mut v_cands = vec![0.0];
 
     for part in &project.parts {
@@ -220,7 +212,7 @@ pub fn collect_snap_candidates_2d_excluding(
     (u_cands, v_cands)
 }
 
-/// Размерная выноска (расстояние от выбранной детали до ближайшего соседа в 2D проекции)
+/// Dimension callout (distance from selected part to nearest neighbor in 2D projection)
 #[derive(Clone, Debug)]
 pub struct DistanceCallout2D {
     pub start_uv: Vec2,
@@ -230,8 +222,8 @@ pub struct DistanceCallout2D {
     pub is_horizontal: bool,
 }
 
-/// Вычисляет размерные выноски (расстояния в мм) от выбранной детали до ближайших соседних деталей
-/// слева, справа, снизу и сверху в проекции `axis`
+/// Calculates dimension callouts (distances in mm) from selected part to nearest neighbor parts
+/// on left, right, bottom, and top in the specified `axis` projection
 pub fn compute_neighbor_distances_2d(
     project: &Project,
     axis: OrthoAxis,
@@ -258,7 +250,7 @@ pub fn compute_neighbor_distances_2d(
         let o_min = axis.project(o_min3);
         let o_max = axis.project(o_max3);
 
-        // Перекрытие по вертикали V -> ищем соседей слева/справа по U
+        // Vertical overlap along V -> look for neighbors on left/right along U
         let v_overlap = sel_min.y.max(o_min.y) < sel_max.y.min(o_max.y) + 1.0;
         if v_overlap {
             if o_max.x <= sel_min.x + 0.05 {
@@ -269,7 +261,7 @@ pub fn compute_neighbor_distances_2d(
             }
         }
 
-        // Перекрытие по горизонтали U -> ищем соседей снизу/сверху по V
+        // Horizontal overlap along U -> look for neighbors below/above along V
         let u_overlap = sel_min.x.max(o_min.x) < sel_max.x.min(o_max.x) + 1.0;
         if u_overlap {
             if o_max.y <= sel_min.y + 0.05 {

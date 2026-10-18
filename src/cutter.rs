@@ -1,6 +1,7 @@
+use crate::i18n::AppLanguage;
 use crate::model::{EdgeBanding, MaterialId, PartEdges, PartId, Project};
 
-/// Позиция в сводной спецификации (с учетом опциональной группировки одинаковых деталей)
+/// Row in summary parts specification (accounting for optional grouping of identical parts).
 #[derive(Clone, Debug)]
 pub struct SpecRow {
     pub index: usize,
@@ -10,10 +11,10 @@ pub struct SpecRow {
     pub material_id: MaterialId,
     pub material_name: String,
     pub thickness_mm: f32,
-    /// Чистовые (габаритные) размеры вместе с кромкой
+    /// Finished (overall) dimensions including edge banding.
     pub full_length_mm: f32,
     pub full_width_mm: f32,
-    /// Пилильные размеры заготовки на форматно-раскроечный станок (без толщины кромок)
+    /// Saw cutting dimensions for panel saw / CNC (excluding edge banding thickness).
     pub cut_length_mm: f32,
     pub cut_width_mm: f32,
     pub quantity: usize,
@@ -22,10 +23,22 @@ pub struct SpecRow {
 }
 
 impl SpecRow {
+    /// Formats edge banding description using the default language.
+    #[allow(dead_code)]
     pub fn edge_label(edge_id: Option<u64>, edges_lib: &[EdgeBanding]) -> String {
+        Self::edge_label_i18n(edge_id, edges_lib, AppLanguage::Ru)
+    }
+
+    /// Formats edge banding description localized to `lang`.
+    pub fn edge_label_i18n(
+        edge_id: Option<u64>,
+        edges_lib: &[EdgeBanding],
+        lang: AppLanguage,
+    ) -> String {
+        let mm = lang.dict().unit_mm;
         edge_id
             .and_then(|id| edges_lib.iter().find(|e| e.id == id))
-            .map(|e| format!("{:.1} мм ({})", e.thickness_mm, e.name))
+            .map(|e| format!("{:.1} {} ({})", e.thickness_mm, mm, e.name))
             .unwrap_or_else(|| "-".to_string())
     }
 
@@ -37,8 +50,13 @@ impl SpecRow {
     }
 }
 
-/// Строит сводную таблицу спецификации деталей проекта
+/// Builds specification table using the default Russian language fallback.
 pub fn build_specification(project: &Project) -> Vec<SpecRow> {
+    build_specification_i18n(project, AppLanguage::Ru)
+}
+
+/// Builds specification table of project parts localized to `lang`.
+pub fn build_specification_i18n(project: &Project, lang: AppLanguage) -> Vec<SpecRow> {
     let mut rows: Vec<SpecRow> = Vec::new();
     let group_identical = project.cutting_settings.group_identical_parts;
 
@@ -46,15 +64,15 @@ pub fn build_specification(project: &Project) -> Vec<SpecRow> {
         let mat = project.get_material(part.material_id);
         let mat_name = mat
             .map(|m| m.name.clone())
-            .unwrap_or_else(|| "Неизвестный".to_string());
+            .unwrap_or_else(|| lang.tr("Неизвестный", "Unknown").to_string());
         let thick = mat.map(|m| m.thickness_mm).unwrap_or(18.0);
         let grp_name = part
             .group_id
             .and_then(|gid| project.groups.iter().find(|g| g.id == gid))
             .map(|g| g.name.clone())
-            .unwrap_or_else(|| "Без группы".to_string());
+            .unwrap_or_else(|| lang.tr("Без группы", "Ungrouped").to_string());
 
-        // Если grain_along_width == true, меняем местами эффективную длину и ширину вдоль текстуры
+        // If grain_along_width == true, swap effective length and width along texture
         let (full_l, full_w, edges) = if part.grain_along_width {
             (
                 part.width_mm,
@@ -118,34 +136,34 @@ pub fn build_specification(project: &Project) -> Vec<SpecRow> {
     rows
 }
 
-/// Размещенная на листе деталь в карте раскроя
+/// A part placed on a sheet in the cutting layout.
 #[derive(Clone, Debug)]
 pub struct PlacedPart {
     pub spec_index: usize,
     #[allow(dead_code)]
     pub part_id: PartId,
     pub name: String,
-    /// Координата X на листе (вдоль длины листа, мм)
+    /// X coordinate on sheet (along sheet length, mm).
     pub x_mm: f32,
-    /// Координата Y на листе (вдоль ширины листа, мм)
+    /// Y coordinate on sheet (along sheet width, mm).
     pub y_mm: f32,
-    /// Размер вдоль длины листа (мм)
+    /// Dimension along sheet length (mm).
     pub w_on_sheet_mm: f32,
-    /// Размер вдоль ширины листа (мм)
+    /// Dimension along sheet width (mm).
     pub h_on_sheet_mm: f32,
-    /// Пилильные размеры (Длина x Ширина)
+    /// Saw cutting dimensions (Length x Width).
     pub cut_length_mm: f32,
     pub cut_width_mm: f32,
-    /// Габаритные размеры (Длина x Ширина)
+    /// Overall dimensions (Length x Width).
     pub full_length_mm: f32,
     pub full_width_mm: f32,
-    /// Повернута ли деталь на 90 градусов относительно направления волокон листа
+    /// Whether the part is rotated 90 degrees relative to sheet grain direction.
     pub rotated_90: bool,
     pub grain_fixed: bool,
     pub edges: PartEdges,
 }
 
-/// Свободный остаток (обрезок) на листе
+/// Free offcut / remnant on the sheet.
 #[derive(Clone, Debug)]
 pub struct SheetRemnant {
     pub x_mm: f32,
@@ -154,7 +172,7 @@ pub struct SheetRemnant {
     pub h_mm: f32,
 }
 
-/// Сквозная линия гильотинного реза фрезы/пилы на листе
+/// Guillotine through-cut line of blade/router on the sheet.
 #[derive(Clone, Debug)]
 pub struct CutLine {
     pub x1: f32,
@@ -163,7 +181,7 @@ pub struct CutLine {
     pub y2: f32,
 }
 
-/// Один раскроенный лист материала
+/// One cut sheet of material.
 #[derive(Clone, Debug)]
 pub struct SheetLayout {
     pub sheet_number: usize,
@@ -177,21 +195,84 @@ pub struct SheetLayout {
     pub utilization_percent: f32,
 }
 
-/// Сводный результат раскроя по всему проекту
+/// Information about a part that physically cannot fit onto the sheet usable area.
+#[derive(Clone, Debug, PartialEq)]
+pub struct UnplacedPart {
+    pub name: String,
+    pub cut_length_mm: f32,
+    pub cut_width_mm: f32,
+    pub work_width_mm: f32,
+    pub work_height_mm: f32,
+}
+
+impl UnplacedPart {
+    /// Formats localized diagnostic message explaining why the part could not be placed.
+    pub fn format_message(&self, lang: AppLanguage) -> String {
+        let mm = lang.dict().unit_mm;
+        match lang {
+            AppLanguage::Ru => format!(
+                "{} ({:.1} x {:.1} {} > рабочего поля листа {:.0} x {:.0} {})",
+                self.name,
+                self.cut_length_mm,
+                self.cut_width_mm,
+                mm,
+                self.work_width_mm,
+                self.work_height_mm,
+                mm
+            ),
+            AppLanguage::Uk => format!(
+                "{} ({:.1} x {:.1} {} > робочого поля листа {:.0} x {:.0} {})",
+                self.name,
+                self.cut_length_mm,
+                self.cut_width_mm,
+                mm,
+                self.work_width_mm,
+                self.work_height_mm,
+                mm
+            ),
+            _ => format!(
+                "{} ({:.1} x {:.1} {} > sheet usable area {:.0} x {:.0} {})",
+                self.name,
+                self.cut_length_mm,
+                self.cut_width_mm,
+                mm,
+                self.work_width_mm,
+                self.work_height_mm,
+                mm
+            ),
+        }
+    }
+}
+
+impl std::fmt::Display for UnplacedPart {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} ({:.1} x {:.1} mm > sheet usable area {:.0} x {:.0} mm)",
+            self.name,
+            self.cut_length_mm,
+            self.cut_width_mm,
+            self.work_width_mm,
+            self.work_height_mm
+        )
+    }
+}
+
+/// Summary cutting report for the entire project.
 #[derive(Clone, Debug, Default)]
 pub struct CuttingReport {
     pub sheets: Vec<SheetLayout>,
-    pub unplaced_parts: Vec<String>,
+    pub unplaced_parts: Vec<UnplacedPart>,
     pub total_sheets_count: usize,
     pub total_parts_area_m2: f32,
     pub total_sheets_area_m2: f32,
     pub overall_utilization_percent: f32,
     pub total_cut_length_m: f32,
-    /// Погонаж кромки по каждому виду кромки: (Название кромки, погонные метры без запаса)
+    /// Total edge banding run per type: (Edge name, linear meters without waste).
     pub edge_banding_totals_m: Vec<(String, f32, [u8; 3])>,
 }
 
-/// Выполняет гильотинный раскрой (в стиле Cutting 3) для всех материалов проекта
+/// Executes guillotine cutting optimization (Cutting 3 style) for all project materials.
 pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
     let spec_rows = build_specification(project);
     let settings = &project.cutting_settings;
@@ -199,7 +280,7 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
 
     let mut report = CuttingReport::default();
 
-    // Подсчет погонажа кромки по всем деталям
+    // Calculate total edge banding linear meters across all parts
     for edge_def in &project.edge_bandings {
         let mut total_mm = 0.0_f32;
         for row in &spec_rows {
@@ -226,7 +307,7 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
         }
     }
 
-    // Группируем задачи раскроя по материалам
+    // Group cutting tasks by material
     for mat in &project.materials {
         let mut items_to_pack: Vec<PlacedPart> = Vec::new();
         for row in spec_rows.iter().filter(|r| r.material_id == mat.id) {
@@ -254,7 +335,7 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
             continue;
         }
 
-        // Сортируем детали по убыванию площади и максимальной стороны (стандартная эвристика раскроя)
+        // Sort parts descending by area and longer dimension (standard cutting heuristic)
         items_to_pack.sort_by(|a, b| {
             let max_a = a.cut_length_mm.max(a.cut_width_mm);
             let max_b = b.cut_length_mm.max(b.cut_width_mm);
@@ -268,8 +349,10 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
 
         let work_x0 = settings.trim_left_mm;
         let work_y0 = settings.trim_top_mm;
-        let work_w = (mat.sheet_length_mm - settings.trim_left_mm - settings.trim_right_mm).max(10.0);
-        let work_h = (mat.sheet_width_mm - settings.trim_top_mm - settings.trim_bottom_mm).max(10.0);
+        let work_w =
+            (mat.sheet_length_mm - settings.trim_left_mm - settings.trim_right_mm).max(10.0);
+        let work_h =
+            (mat.sheet_width_mm - settings.trim_top_mm - settings.trim_bottom_mm).max(10.0);
 
         let mut remaining = items_to_pack;
         let mut mat_sheet_idx = 1;
@@ -284,7 +367,7 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
             let mut placed_on_sheet = Vec::new();
             let mut cut_lines = Vec::new();
 
-            // Линии обпила по периметру листа (торцовка)
+            // Perimeter trimming cuts
             if settings.trim_left_mm > 0.1 {
                 cut_lines.push(CutLine {
                     x1: work_x0,
@@ -322,14 +405,15 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
             let mut next_remaining = Vec::new();
 
             for mut item in remaining {
-                // Ищем лучший свободный прямоугольник (Best Short Side Fit / Guillotine Split)
+                // Find best free rectangle (Best Short Side Fit / Guillotine Split)
                 let mut best_rect_idx: Option<usize> = None;
                 let mut best_rot = false;
                 let mut best_score = f32::MAX;
 
                 for (r_idx, rect) in free_rects.iter().enumerate() {
-                    // Вариант 1: без поворота (Длина детали вдоль Длины листа X)
-                    if item.cut_length_mm <= rect.w_mm + 0.01 && item.cut_width_mm <= rect.h_mm + 0.01
+                    // Option 1: without rotation (part length along sheet length X)
+                    if item.cut_length_mm <= rect.w_mm + 0.01
+                        && item.cut_width_mm <= rect.h_mm + 0.01
                     {
                         let leftover_w = (rect.w_mm - item.cut_length_mm).abs();
                         let leftover_h = (rect.h_mm - item.cut_width_mm).abs();
@@ -341,7 +425,7 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
                         }
                     }
 
-                    // Вариант 2: поворот на 90 градусов (только если текстура НЕ зафиксирована!)
+                    // Option 2: 90 degree rotation (only if grain is NOT fixed!)
                     if !item.grain_fixed
                         && item.cut_width_mm <= rect.w_mm + 0.01
                         && item.cut_length_mm <= rect.h_mm + 0.01
@@ -373,13 +457,13 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
                     placed_on_sheet.push(item);
                     any_placed = true;
 
-                    // Гильотинное разбиение свободного прямоугольника с учетом реза фрезы `kerf`
+                    // Guillotine split of remaining free space accounting for cutter kerf
                     let right_w = rect.w_mm - pw - kerf;
                     let bottom_h = rect.h_mm - ph - kerf;
 
-                    // Выбираем направление сквозного гильотинного реза (по более длинному остатку, как на форматно-раскроечном станке)
+                    // Choose guillotine cut direction (along longer offcut, typical for panel saws)
                     if right_w * rect.h_mm > bottom_h * rect.w_mm {
-                        // Сначала продольный/поперечный рез на всю высоту полосы `rect.h_mm`
+                        // First vertical cut across entire strip height rect.h_mm
                         if right_w > 1.0 {
                             cut_lines.push(CutLine {
                                 x1: rect.x_mm + pw + kerf * 0.5,
@@ -409,7 +493,7 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
                             });
                         }
                     } else {
-                        // Сначала горизонтальный рез вдоль ширины полосы `rect.w_mm`
+                        // First horizontal cut along strip width rect.w_mm
                         if bottom_h > 1.0 {
                             cut_lines.push(CutLine {
                                 x1: rect.x_mm,
@@ -445,12 +529,15 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
             }
 
             if !any_placed {
-                // Остались детали, которые физически больше рабочего поля листа
+                // Parts that physically exceed the usable sheet dimensions
                 for bad in next_remaining {
-                    report.unplaced_parts.push(format!(
-                        "{} ({:.1} x {:.1} мм > рабочего поля листа {:.0} x {:.0} мм)",
-                        bad.name, bad.cut_length_mm, bad.cut_width_mm, work_w, work_h
-                    ));
+                    report.unplaced_parts.push(UnplacedPart {
+                        name: bad.name,
+                        cut_length_mm: bad.cut_length_mm,
+                        cut_width_mm: bad.cut_width_mm,
+                        work_width_mm: work_w,
+                        work_height_mm: work_h,
+                    });
                 }
                 break;
             }
@@ -471,7 +558,7 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
             report.total_parts_area_m2 += parts_area / 1_000_000.0;
             report.total_sheets_area_m2 += sheet_area / 1_000_000.0;
 
-            // Оставляем в списке остатков только заметные обрезки (>= 50 мм по каждой стороне)
+            // Retain only noticeable remnants in the list (>= 50 mm on each side)
             let useful_remnants = free_rects
                 .into_iter()
                 .filter(|r| r.w_mm >= 50.0 && r.h_mm >= 50.0)
@@ -511,11 +598,11 @@ mod tests {
     #[test]
     fn test_cut_dimensions_subtract_edge_banding() {
         let proj = Project::new_demo_cabinet();
-        // Проверим левую боковину (720 x 500, Д1 = 2.0 мм, Ш1 = 0.4 мм, Ш2 = 0.4 мм)
+        // Check left side panel (720 x 500, L1 = 2.0 mm, W1 = 0.4 mm, W2 = 0.4 mm)
         let side = proj.parts.iter().find(|p| p.id == 1001).unwrap();
         let (cut_l, cut_w) = side.cut_dimensions_mm(&proj.edge_bandings);
-        // Длина уменьшается на Ш1 + Ш2 (0.4 + 0.4 = 0.8 мм) -> 719.2 мм
-        // Ширина уменьшается на Д1 + Д2 (2.0 + 0.0 = 2.0 мм) -> 498.0 мм
+        // Length decreases by W1 + W2 (0.4 + 0.4 = 0.8 mm) -> 719.2 mm
+        // Width decreases by L1 + L2 (2.0 + 0.0 = 2.0 mm) -> 498.0 mm
         assert!((cut_l - 719.2).abs() < 0.01);
         assert!((cut_w - 498.0).abs() < 0.01);
     }
@@ -525,14 +612,14 @@ mod tests {
         let mut proj = Project::new_demo_cabinet();
         proj.cutting_settings.group_identical_parts = true;
         let spec = build_specification(&proj);
-        // Две одинаковые боковины и два одинаковых фасада должны объединиться по 2 шт.
+        // Two identical sides and two identical doors should be grouped by 2 pcs
         assert!(spec.iter().any(|r| r.quantity == 2 && r.full_length_mm == 720.0));
         assert!(spec.iter().any(|r| r.quantity == 2 && r.full_length_mm == 716.0));
 
         let report = compute_cutting_layout(&proj);
         assert!(report.unplaced_parts.is_empty());
-        assert_eq!(report.total_sheets_count, 3); // 3 разных материала -> по 1 листу на каждый
-        // Все детали с фиксированным направлением волокон не должны поворачиваться на 90 градусов
+        assert_eq!(report.total_sheets_count, 3); // 3 different materials -> 1 sheet for each
+        // Parts with fixed grain direction must not be rotated 90 degrees
         for sh in &report.sheets {
             for p in &sh.placed_parts {
                 if p.grain_fixed {
@@ -542,4 +629,3 @@ mod tests {
         }
     }
 }
-
