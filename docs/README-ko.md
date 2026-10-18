@@ -7,6 +7,7 @@
 **패널 및 PB 가구 전용 CAD — 4-뷰포트 공간 디자이너 + 길로틴 방식 판재 재단 최적화 엔진**
 
 [![Build & Release](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml/badge.svg)](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml)
+[![Downloads](https://img.shields.io/github/downloads/rbm13s/QuadFurn/total?logo=github&color=blue)](https://github.com/rbm13s/QuadFurn/releases)
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
