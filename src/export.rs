@@ -2100,6 +2100,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_os = "windows")]
     fn test_windows_fonts_dir_resolution() {
         let dir = get_windows_fonts_dir();
         assert!(!dir.as_os_str().is_empty());

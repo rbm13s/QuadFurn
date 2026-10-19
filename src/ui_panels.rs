@@ -2288,9 +2288,10 @@ pub fn resolve_and_load_material_texture(
     }
 
     if let Some(ref p) = m.texture_path {
-        if let Some(fname) = p.file_name() {
-            candidate_paths.push(project_dir.join(fname));
-            candidate_paths.push(project_dir.join("textures").join(fname));
+        let fname = crate::model::extract_cross_platform_filename(&p.to_string_lossy());
+        if !fname.is_empty() {
+            candidate_paths.push(project_dir.join(&fname));
+            candidate_paths.push(project_dir.join("textures").join(&fname));
         }
         candidate_paths.push(p.clone());
     }

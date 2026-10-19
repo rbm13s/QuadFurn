@@ -52,6 +52,17 @@ impl Default for Material {
     }
 }
 
+/// Extracts the base filename from a path string, properly handling both '/' and '\'
+/// cross-platform on Windows, Linux, macOS, and WebAssembly.
+pub fn extract_cross_platform_filename(path_str: &str) -> String {
+    path_str
+        .rsplit(['/', '\\'])
+        .next()
+        .filter(|part| !part.is_empty())
+        .unwrap_or(path_str)
+        .to_string()
+}
+
 /// Edge banding material specification (PVC, ABS, Melamine).
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EdgeBanding {
@@ -936,5 +947,30 @@ mod tests {
         assert_eq!(empty_en.name, "Custom Desk");
         assert_eq!(empty_en.groups[0].name, "Main Carcass");
         assert_eq!(empty_en.materials[0].name, "18mm Chipboard Alpine White");
+    }
+
+    #[test]
+    fn test_extract_cross_platform_filename() {
+        assert_eq!(
+            extract_cross_platform_filename("C:\\NonExistent\\dark_walnut.jpg"),
+            "dark_walnut.jpg"
+        );
+        assert_eq!(
+            extract_cross_platform_filename("/home/user/textures/oak.png"),
+            "oak.png"
+        );
+        assert_eq!(
+            extract_cross_platform_filename("textures/sub/pine.bmp"),
+            "pine.bmp"
+        );
+        assert_eq!(
+            extract_cross_platform_filename("textures\\sub\\pine.bmp"),
+            "pine.bmp"
+        );
+        assert_eq!(
+            extract_cross_platform_filename("single_file.jpg"),
+            "single_file.jpg"
+        );
+        assert_eq!(extract_cross_platform_filename(""), "");
     }
 }

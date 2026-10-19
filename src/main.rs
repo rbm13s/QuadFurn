@@ -239,16 +239,11 @@ impl FurnitureDocument {
                     let expected_fname = m
                         .texture_relative_path
                         .as_ref()
-                        .map(|s| {
-                            std::path::Path::new(s)
-                                .file_name()
-                                .map(|f| f.to_string_lossy().to_string())
-                                .unwrap_or_else(|| s.clone())
-                        })
+                        .map(|s| crate::model::extract_cross_platform_filename(s))
                         .or_else(|| {
-                            m.texture_path.as_ref().and_then(|p| {
-                                p.file_name().map(|f| f.to_string_lossy().to_string())
-                            })
+                            m.texture_path
+                                .as_ref()
+                                .map(|p| crate::model::extract_cross_platform_filename(&p.to_string_lossy()))
                         })
                         .unwrap_or_else(|| format!("{}.png", m.name));
 
@@ -287,8 +282,11 @@ impl FurnitureDocument {
             if let Some(ref p) = m.texture_path {
                 if let Ok(rel) = p.strip_prefix(save_dir) {
                     m.texture_relative_path = Some(rel.to_string_lossy().replace('\\', "/"));
-                } else if let Some(file_name) = p.file_name() {
-                    m.texture_relative_path = Some(file_name.to_string_lossy().to_string());
+                } else {
+                    let fname = crate::model::extract_cross_platform_filename(&p.to_string_lossy());
+                    if !fname.is_empty() {
+                        m.texture_relative_path = Some(fname);
+                    }
                 }
             }
 
@@ -1213,12 +1211,8 @@ impl eframe::App for QuadFurnApp {
                         let target_mat_id = if !doc.missing_textures_queue.is_empty() {
                             let matched_idx = doc.missing_textures_queue.iter().position(|prompt| {
                                 let exp_lower = prompt.expected_filename.to_lowercase();
-                                exp_lower == lower_name
-                                    || std::path::Path::new(&exp_lower)
-                                        .file_name()
-                                        .map(|f| f.to_string_lossy().to_string())
-                                        .as_deref()
-                                        == Some(&lower_name)
+                                let exp_base = crate::model::extract_cross_platform_filename(&exp_lower);
+                                exp_lower == lower_name || exp_base == lower_name
                             });
                             let idx = matched_idx.or_else(|| {
                                 if doc.missing_textures_queue.len() == 1 {
@@ -2104,8 +2098,9 @@ impl eframe::App for QuadFurnApp {
                                     doc.loaded_textures.insert(mat_id, tex_info.handle);
                                     if let Some(m) = doc.project.materials.iter_mut().find(|m| m.id == mat_id) {
                                         m.texture_path = Some(path.clone());
-                                        if let Some(fname) = path.file_name() {
-                                            m.texture_relative_path = Some(fname.to_string_lossy().to_string());
+                                        let fname = crate::model::extract_cross_platform_filename(&path.to_string_lossy());
+                                        if !fname.is_empty() {
+                                            m.texture_relative_path = Some(fname);
                                         }
                                         if doc.project.embed_textures {
                                             if let Ok(bytes) = std::fs::read(&path) {
