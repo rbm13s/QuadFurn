@@ -64,12 +64,23 @@ impl AppLanguage {
     /// Detects operating system language on first application launch.
     /// If the OS language is not supported, defaults to English (`AppLanguage::En`).
     pub fn detect_system_or_en() -> Self {
-        for tag in Self::collect_system_locale_tags() {
-            if let Some(lang) = Self::from_locale_tag(&tag) {
+        #[cfg(target_arch = "wasm32")]
+        {
+            if let Some(lang) = crate::web::detect_browser_language() {
                 return lang;
             }
+            return AppLanguage::En;
         }
-        AppLanguage::En
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            for tag in Self::collect_system_locale_tags() {
+                if let Some(lang) = Self::from_locale_tag(&tag) {
+                    return lang;
+                }
+            }
+            AppLanguage::En
+        }
     }
 
     /// Converts a locale tag string (e.g., `"ru-RU"`, `"uk_UA"`, `"zh-CN"`, `"de"`, `"en-US"`) to `AppLanguage`.
@@ -109,6 +120,7 @@ impl AppLanguage {
         }
     }
 
+    #[cfg(not(target_arch = "wasm32"))]
     fn collect_system_locale_tags() -> Vec<String> {
         let mut tags = Vec::new();
 

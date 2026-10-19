@@ -7,8 +7,8 @@
     <link rel="icon" type="image/x-icon" href="icon.ico">
     
 <script type="module">
-import init, * as bindings from './quadfurn-84a9348f0ab29b6.js';
-const wasm = await init({ module_or_path: './quadfurn-84a9348f0ab29b6_bg.wasm' });
+import init, * as bindings from './quadfurn-510712fc2ac12f38.js';
+const wasm = await init({ module_or_path: './quadfurn-510712fc2ac12f38_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -72,7 +72,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
             color: #64748b;
         }
     </style>
-<link rel="modulepreload" href="./quadfurn-84a9348f0ab29b6.js" crossorigin="anonymous" integrity="sha384-W9NcS/PVjXaEPYX4diASqKY6AOLMhBxVdvisROcMIGwYmvODK1GW8mbqMc89NBnN"><link rel="preload" href="./quadfurn-84a9348f0ab29b6_bg.wasm" crossorigin="anonymous" integrity="sha384-mgiqC6LgU/I5eJIJcKT/9xzVNRwn8fYtHOBYLlBh/nPlhxeuc1l29G1x/EH+TSzs" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="./quadfurn-510712fc2ac12f38.js" crossorigin="anonymous" integrity="sha384-/yhhhhMMOGhtzCTCiv6wE3ezIt1+5EAUoWxt5XVFkq7DY15HxWUxBDbSS4A8QExQ"><link rel="preload" href="./quadfurn-510712fc2ac12f38_bg.wasm" crossorigin="anonymous" integrity="sha384-IrA9QMVo2vdah9PwjxU4lPCwfhKZ7ivaO55ePeewM45EXF7xl2jZELj6vKui7Zro" as="fetch" type="application/wasm"></head>
 <body>
     <div id="loading_text" class="loading-wrap">
         <div class="spinner"></div>
@@ -81,5 +81,41 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
     </div>
 
     <canvas id="the_canvas_id"></canvas>
+    <script>
+        (function() {
+            try {
+                var params = new URLSearchParams(window.location.search);
+                var lang = params.get('lang') || (navigator.language || (navigator.languages && navigator.languages[0]) || 'en');
+                lang = lang.toLowerCase().split('-')[0].split('_')[0];
+                var dict = {
+                    ru: "Загрузка 3D движка WebAssembly & WebGL...",
+                    uk: "Завантаження 3D рушія WebAssembly & WebGL...",
+                    de: "Laden der WebAssembly & WebGL CAD-Engine...",
+                    pl: "Ładowanie silnika CAD WebAssembly i WebGL...",
+                    es: "Cargando el motor CAD WebAssembly y WebGL...",
+                    fr: "Chargement du moteur CAO WebAssembly & WebGL...",
+                    it: "Caricamento del motore CAD WebAssembly & WebGL...",
+                    pt: "Carregando o motor CAD WebAssembly & WebGL...",
+                    cs: "Načítání CAD jádra WebAssembly & WebGL...",
+                    sk: "Načítanie CAD jadra WebAssembly & WebGL...",
+                    tr: "WebAssembly ve WebGL CAD motoru yükleniyor...",
+                    nl: "WebAssembly & WebGL CAD-engine laden...",
+                    da: "Indlæser WebAssembly & WebGL CAD-motor...",
+                    no: "Laster inn WebAssembly & WebGL CAD-motor...",
+                    sv: "Laddar WebAssembly & WebGL CAD-motor...",
+                    hu: "WebAssembly és WebGL CAD motor betöltése...",
+                    ro: "Se încarcă motorul CAD WebAssembly & WebGL...",
+                    sl: "Nalaganje CAD pogona WebAssembly in WebGL...",
+                    zh: "正在加载 WebAssembly 和 WebGL CAD 引擎...",
+                    ja: "WebAssembly および WebGL CAD エンジンを読み込み中...",
+                    ko: "WebAssembly 및 WebGL CAD 엔진 로드 중..."
+                };
+                if (dict[lang]) {
+                    var el = document.querySelector('.loading-desc');
+                    if (el) el.textContent = dict[lang];
+                }
+            } catch (e) {}
+        })();
+    </script>
 </body>
 </html>

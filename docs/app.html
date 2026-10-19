@@ -4,9 +4,13 @@
   <meta charset="utf-8">
   <meta http-equiv="refresh" content="0; url=app/">
   <title>QuadFurn CAD Online</title>
-  <script>window.location.replace("app/");</script>
+  <script>
+    var target = "app/" + (window.location.search || "");
+    window.location.replace(target);
+  </script>
 </head>
 <body style="background:#0f172a; color:#94a3b8; font-family:sans-serif; text-align:center; padding:100px;">
-  <p>Launching QuadFurn CAD Online... <a href="app/" style="color:#38bdf8;">Click here if not redirected</a>.</p>
+  <p>Launching QuadFurn CAD Online... <a id="link" href="app/" style="color:#38bdf8;">Click here if not redirected</a>.</p>
+  <script>document.getElementById("link").href = "app/" + (window.location.search || "");</script>
 </body>
 </html>

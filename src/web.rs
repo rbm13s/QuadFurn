@@ -71,3 +71,43 @@ pub fn pick_texture_file_web(mat_id: MaterialId) {
         }
     });
 }
+
+/// Detects language from URL query string `?lang=...` or from `navigator.languages`/`navigator.language`.
+pub fn detect_browser_language() -> Option<crate::i18n::AppLanguage> {
+    let window = web_sys::window()?;
+
+    // 1. Check URL query parameters, e.g. "?lang=ru" or "?lang=de"
+    if let Ok(search) = window.location().search() {
+        let search = search.trim_start_matches('?');
+        for pair in search.split('&') {
+            let mut parts = pair.split('=');
+            if let (Some(k), Some(v)) = (parts.next(), parts.next()) {
+                if k.eq_ignore_ascii_case("lang") {
+                    if let Some(lang) = crate::i18n::AppLanguage::from_locale_tag(v) {
+                        return Some(lang);
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Check navigator.languages (Array of strings, in order of user preference)
+    let nav = window.navigator();
+    let languages = nav.languages();
+    for i in 0..languages.length() {
+        if let Some(tag) = languages.get(i).as_string() {
+            if let Some(lang) = crate::i18n::AppLanguage::from_locale_tag(&tag) {
+                return Some(lang);
+            }
+        }
+    }
+
+    // 3. Check navigator.language
+    if let Some(tag) = nav.language() {
+        if let Some(lang) = crate::i18n::AppLanguage::from_locale_tag(&tag) {
+            return Some(lang);
+        }
+    }
+
+    None
+}
