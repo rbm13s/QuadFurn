@@ -252,7 +252,7 @@ struct PdfTrueTypeFont {
 }
 
 impl PdfTrueTypeFont {
-    fn load(candidates: &[&str], lang: AppLanguage) -> Result<Self, String> {
+    fn load(candidates: &[&str], lang: AppLanguage, bold: bool) -> Result<Self, String> {
         for path in candidates {
             if let Some(raw) = read_system_font_bytes(path) {
                 let bytes = ensure_ttf_bytes(raw);
@@ -267,15 +267,40 @@ impl PdfTrueTypeFont {
                 }
             }
         }
+
+        // Embedded fallback: When no system fonts can be read from disk
+        // (critical for WebAssembly in browsers where local filesystem is absent,
+        // as well as containerized / minimal Linux environments),
+        // fallback to the embedded TrueType fonts provided by egui (Ubuntu-Light / Hack).
+        let def = egui::FontDefinitions::default();
+        let fallback_key = if bold { "Hack" } else { "Ubuntu-Light" };
+        if let Some(font_data) = def
+            .font_data
+            .get(fallback_key)
+            .or_else(|| def.font_data.get("Ubuntu-Light"))
+            .or_else(|| def.font_data.get("Hack"))
+        {
+            let bytes = font_data.font.to_vec();
+            if let Ok(font) = FontArc::try_from_vec(bytes.clone()) {
+                let upm = font.units_per_em().unwrap_or(2048.0).max(1.0);
+                return Ok(Self {
+                    raw_bytes: bytes,
+                    font,
+                    upm,
+                    used_glyphs: BTreeMap::new(),
+                });
+            }
+        }
+
         Err(match lang {
             AppLanguage::Ru => {
-                "Не удалось найти системный шрифт TrueType (Segoe UI / Arial) для экспорта в PDF".to_string()
+                "Не удалось найти шрифт TrueType для экспорта в PDF".to_string()
             }
             AppLanguage::Uk => {
-                "Не вдалося знайти системний шрифт TrueType (Segoe UI / Arial) для експорту в PDF".to_string()
+                "Не вдалося знайти шрифт TrueType для експорту в PDF".to_string()
             }
             _ => {
-                "Failed to find a system TrueType font (Segoe UI / Arial / Noto) for PDF export".to_string()
+                "Failed to find a TrueType font for PDF export".to_string()
             }
         })
     }
@@ -398,7 +423,7 @@ impl PdfTrueTypeFont {
                 "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
             ],
         };
-        Self::load(candidates, lang)
+        Self::load(candidates, lang, bold)
     }
 
     fn glyph_width_1000(&self, gid: GlyphId) -> i32 {
@@ -2042,6 +2067,16 @@ pub fn generate_spec_pdf_bytes(project: &Project, lang: AppLanguage) -> Result<V
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_embedded_font_fallback_for_wasm() {
+        // Test loading font with NO system fonts (empty candidate list), exactly as in WebAssembly
+        let reg = PdfTrueTypeFont::load(&[], AppLanguage::Ru, false).expect("Regular font fallback must succeed");
+        let bold = PdfTrueTypeFont::load(&[], AppLanguage::Ru, true).expect("Bold font fallback must succeed");
+
+        assert!(reg.measure_text_pt("Шкаф 800×720 мм", 10.0) > 0.0);
+        assert!(bold.measure_text_pt("Спецификация деталей", 12.0) > 0.0);
+    }
 
     #[test]
     fn test_generate_spec_pdf_bytes_multilang() {
