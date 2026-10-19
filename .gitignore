@@ -3,11 +3,25 @@
 **/*.rs.bk
 *.pdb
 
+# WebAssembly & Trunk artifacts
+/dist/
+/.trunk/
+
+# Linux packaging artifacts
+/deb_pkg/
+
 # Generated Windows ICO (rebuilt automatically from assets/icon.jpeg by build.rs)
 /assets/icon.ico
 
 # Local fallback settings file (if run without APPDATA)
 quadfurn_settings.json
+
+# Environment files, secrets & logs
+.env
+.env.*
+*.log
+*.pem
+*.key
 
 # IDE, Editor & Tooling directories
 .idea/

@@ -1214,13 +1214,7 @@ impl eframe::App for QuadFurnApp {
                                 let exp_base = crate::model::extract_cross_platform_filename(&exp_lower);
                                 exp_lower == lower_name || exp_base == lower_name
                             });
-                            let idx = matched_idx.or_else(|| {
-                                if doc.missing_textures_queue.len() == 1 {
-                                    Some(0)
-                                } else {
-                                    None
-                                }
-                            });
+                            let idx = matched_idx.or((doc.missing_textures_queue.len() == 1).then_some(0));
                             if let Some(i) = idx {
                                 let prompt = doc.missing_textures_queue.remove(i);
                                 Some(prompt.material_id)
@@ -2302,7 +2296,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
     if let Some(bytes) = crate::export::read_system_font_bytes("C:\\Windows\\Fonts\\seguiemj.ttf") {
         fonts.font_data.insert(
             "seguiemj".to_owned(),
-            egui::FontData::from_owned(bytes).into(),
+            egui::FontData::from_owned(bytes),
         );
         if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
             vec.insert(0, "seguiemj".to_owned());
@@ -2316,7 +2310,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
     if let Some(bytes) = crate::export::read_system_font_bytes("C:\\Windows\\Fonts\\seguisym.ttf") {
         fonts.font_data.insert(
             "seguisym".to_owned(),
-            egui::FontData::from_owned(bytes).into(),
+            egui::FontData::from_owned(bytes),
         );
         if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
             vec.insert(0, "seguisym".to_owned());
@@ -2350,7 +2344,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
-                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf));
             if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
                 vec.insert(0, font_key.to_owned());
             }
@@ -2377,7 +2371,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
-                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf));
             if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
                 vec.insert(0, font_key.to_owned());
             }
@@ -2405,7 +2399,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
-                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf));
             if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
                 vec.push(font_key.to_owned());
             }
@@ -2437,7 +2431,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
-                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf));
             if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
                 vec.push(font_key.to_owned());
             }
@@ -2504,8 +2498,10 @@ fn main() -> eframe::Result<()> {
         Box::new(|cc| {
             configure_fonts(&cc.egui_ctx);
             egui_extras::install_image_loaders(&cc.egui_ctx);
-            let mut app = QuadFurnApp::default();
-            app.app_icon_tex = load_app_icon_texture(&cc.egui_ctx);
+            let mut app = QuadFurnApp {
+                app_icon_tex: load_app_icon_texture(&cc.egui_ctx),
+                ..Default::default()
+            };
             app.theme_choice.apply(&cc.egui_ctx);
 
             let raw_args: Vec<String> = std::env::args().skip(1).collect();
