@@ -232,6 +232,8 @@ In the **Materials** tab (`🎨 4. Materials`):
   3. In a `./textures/` subfolder next to the project file
   4. By relative path or original absolute path
 - **Project Texture Packaging (`📦 Embed textures into project file`)**: Toggle the `📦 Embed textures` checkbox (accessible both next to the `Save` button in the top menu and in the Materials Manager toolbar) to store active texture images directly inside the `.qfurn` JSON file as Base64. This produces a completely self-contained project file that can be transferred anywhere without missing textures.
+- **Interactive Missing Textures Resolver (`🔍 Locate Missing Textures`)**: If a project references external textures that cannot be found when opening, QuadFurn presents a sequential modal dialog displaying each missing texture by material name and expected filename with options to `📂 Browse for file...`, `⏭ Skip`, or `✖ Skip all`.
+- **Drag & Drop Support**: Drag and drop `.qfurn` project files or texture images (`PNG`, `JPG`, `WEBP`) directly onto the application window to open projects or immediately attach and resolve missing textures.
 - **GPU Safety & Auto-Downscaling**: Files exceeding 60 MB are blocked with a clear warning, while ultra-high resolution images (> 4096 px or hardware limit) are automatically downscaled to preserve GPU performance.
 - Add, edit, or delete **Edge Banding Types** with custom thicknesses (`mm`) and drawing marker colors. Deleting a material or edge banding that is in use shows a safety confirmation dialog and cleanly reassigns/clears affected parts.
 
@@ -277,7 +279,7 @@ Every push and release automatically builds ready-to-run packages via [GitHub Ac
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu installer package (installs binary, desktop menu entry, and application icon):
     ```bash
-    sudo apt install ./quadfurn_0.2.2_amd64.deb
+    sudo apt install ./quadfurn_0.2.3_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portable standalone Linux archive.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` bundle with Retina `.icns` icon.

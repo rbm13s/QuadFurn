@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -272,7 +272,7 @@ Vsaka nova različica samodejno ustvari pakete prek storitve [GitHub Actions](ht
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<različica>_amd64.deb` — uradni paket za Debian/Ubuntu (namesti program, vnos v meni ter ikone):
     ```bash
-    sudo apt install ./quadfurn_0.2.2_amd64.deb
+    sudo apt install ./quadfurn_0.2.3_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — prenosni arhiv za Linux.
 - **macOS (`Univerzalno: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — nativna aplikacija `QuadFurn.app` z ikono Retina.

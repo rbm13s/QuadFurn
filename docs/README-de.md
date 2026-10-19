@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -260,7 +260,7 @@ Automatisierte Builds bei jedem Commit über [GitHub Actions](https://github.com
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu-Installationspaket:
     ```bash
-    sudo apt install ./quadfurn_0.2.2_amd64.deb
+    sudo apt install ./quadfurn_0.2.3_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portables Standalone-Archiv.
 - **macOS (`Universal: Apple Silicon + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` mit Retina-Icon.
