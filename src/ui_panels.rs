@@ -1835,7 +1835,7 @@ pub fn ui_materials_manager_tab(
                             crate::web::pick_texture_file_web(m.id);
                         }
                     }
-                    if m.texture_path.is_some() || m.texture_base64.is_some() {
+                    if m.texture_path.is_some() || m.texture_base64.is_some() || m.texture_relative_path.is_some() {
                         if ui
                             .small_button(lang.tr("✖ Сброс", "✖ Reset"))
                             .clicked()
@@ -1845,6 +1845,9 @@ pub fn ui_materials_manager_tab(
                             m.texture_base64 = None;
                             loaded_textures.remove(&m.id);
                             texture_warnings.remove(&m.id);
+                        }
+                        if let Some(tex) = loaded_textures.get(&m.id) {
+                            ui.image((tex.id(), egui::vec2(18.0, 18.0)));
                         }
                         let active_label = if m.texture_base64.is_some() {
                             lang.tr("✔ Текстура (упакована)", "✔ Texture (embedded)")

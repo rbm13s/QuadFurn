@@ -14,10 +14,13 @@ mod web;
 use crate::i18n::AppLanguage;
 use crate::model::{EdgeId, MaterialId, PartId, Project};
 use crate::ui_panels::{
-    copy_selected_parts_to_clipboard, paste_parts_into_project, resolve_and_load_material_texture,
-    ui_cutting_layout_tab, ui_materials_manager_tab, ui_right_inspector, ui_specification_tab,
-    ui_top_transform_toolbar, AppTab, ClipboardPart, CLIPBOARD_PREFIX,
+    copy_selected_parts_to_clipboard, load_texture_from_memory, paste_parts_into_project,
+    resolve_and_load_material_texture, ui_cutting_layout_tab, ui_materials_manager_tab,
+    ui_right_inspector, ui_specification_tab, ui_top_transform_toolbar, AppTab, ClipboardPart,
+    CLIPBOARD_PREFIX,
 };
+#[cfg(not(target_arch = "wasm32"))]
+use crate::ui_panels::load_texture_from_path;
 use crate::viewport::{EditorTool, QuadViewportController};
 use egui::{Color32, Key, RichText, TextureHandle};
 use glam::Vec3;
@@ -148,6 +151,14 @@ impl AppSettings {
     }
 }
 
+/// Prompt for locating a missing texture file upon opening a project
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MissingTexturePrompt {
+    pub material_id: MaterialId,
+    pub material_name: String,
+    pub expected_filename: String,
+}
+
 /// Individual tab with a furniture product (allows working with multiple products and copying parts between them)
 pub struct FurnitureDocument {
     pub project: Project,
@@ -159,6 +170,7 @@ pub struct FurnitureDocument {
     pub viewport_ctrl: QuadViewportController,
     pub loaded_textures: HashMap<MaterialId, TextureHandle>,
     pub texture_warnings: HashMap<MaterialId, String>,
+    pub missing_textures_queue: Vec<MissingTexturePrompt>,
     pub new_group_name_buf: String,
     pub selected_sheet_idx: usize,
     pub pending_delete_material: Option<MaterialId>,
@@ -186,11 +198,67 @@ impl FurnitureDocument {
             viewport_ctrl,
             loaded_textures: HashMap::new(),
             texture_warnings: HashMap::new(),
+            missing_textures_queue: Vec::new(),
             new_group_name_buf: String::new(),
             selected_sheet_idx: 0,
             pending_delete_material: None,
             pending_delete_edge: None,
             renaming_tab: false,
+        }
+    }
+
+    /// Loads textures for all materials in the project.
+    /// Any texture that cannot be resolved (embedded base64 or relative/absolute path)
+    /// is added to `self.missing_textures_queue`.
+    pub fn load_project_textures(
+        &mut self,
+        ctx: &egui::Context,
+        project_path: Option<&std::path::Path>,
+        lang: AppLanguage,
+    ) {
+        self.missing_textures_queue.clear();
+        for m in &mut self.project.materials {
+            let has_texture_ref = m.texture_path.is_some()
+                || m.texture_base64.is_some()
+                || m.texture_relative_path.is_some();
+
+            if !has_texture_ref {
+                continue;
+            }
+
+            match resolve_and_load_material_texture(ctx, m, project_path, lang) {
+                Ok(info) => {
+                    self.loaded_textures.insert(m.id, info.handle);
+                    if let Some(w) = info.warning {
+                        self.texture_warnings.insert(m.id, w);
+                    } else {
+                        self.texture_warnings.remove(&m.id);
+                    }
+                }
+                Err(_) => {
+                    let expected_fname = m
+                        .texture_relative_path
+                        .as_ref()
+                        .map(|s| {
+                            std::path::Path::new(s)
+                                .file_name()
+                                .map(|f| f.to_string_lossy().to_string())
+                                .unwrap_or_else(|| s.clone())
+                        })
+                        .or_else(|| {
+                            m.texture_path.as_ref().and_then(|p| {
+                                p.file_name().map(|f| f.to_string_lossy().to_string())
+                            })
+                        })
+                        .unwrap_or_else(|| format!("{}.png", m.name));
+
+                    self.missing_textures_queue.push(MissingTexturePrompt {
+                        material_id: m.id,
+                        material_name: m.name.clone(),
+                        expected_filename: expected_fname,
+                    });
+                }
+            }
         }
     }
 
@@ -444,24 +512,7 @@ impl QuadFurnApp {
                 Ok(proj) => {
                     let mut new_doc = FurnitureDocument::new(proj);
                     new_doc.mark_saved(Some(path.to_path_buf()));
-                    for m in &mut new_doc.project.materials {
-                        if m.texture_path.is_some()
-                            || m.texture_base64.is_some()
-                            || m.texture_relative_path.is_some()
-                        {
-                            if let Ok(info) = resolve_and_load_material_texture(
-                                ctx,
-                                m,
-                                Some(path),
-                                self.language,
-                            ) {
-                                new_doc.loaded_textures.insert(m.id, info.handle);
-                                if let Some(w) = info.warning {
-                                    new_doc.texture_warnings.insert(m.id, w);
-                                }
-                            }
-                        }
-                    }
+                    new_doc.load_project_textures(ctx, Some(path), self.language);
                     self.documents.push(new_doc);
                     self.active_doc_idx = self.documents.len() - 1;
                     self.active_tab = AppTab::Designer4View;
@@ -1059,38 +1110,176 @@ impl eframe::App for QuadFurnApp {
                         }
                         let mut doc = FurnitureDocument::new(proj);
                         doc.mark_saved(None);
+                        doc.load_project_textures(ctx, None, self.language);
                         self.documents.push(doc);
                         self.active_doc_idx = self.documents.len() - 1;
                         self.active_tab = AppTab::Designer4View;
+                        ctx.request_repaint();
                     }
                 }
             }
 
             if let Ok(mut tex_uploads) = crate::web::PENDING_TEXTURE_UPLOADS.lock() {
                 if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
-                    for (mat_id, b64) in tex_uploads.drain(..) {
-                        let _ = doc.loaded_textures.remove(&mat_id);
+                    for upload in tex_uploads.drain(..) {
+                        let mat_id = upload.material_id;
+                        use base64::Engine;
+                        let b64 = base64::engine::general_purpose::STANDARD.encode(&upload.bytes);
                         if let Some(m) = doc.project.materials.iter_mut().find(|m| m.id == mat_id) {
                             m.texture_base64 = Some(b64);
+                            m.texture_relative_path = Some(upload.filename.clone());
                             m.texture_path = None;
-                            m.texture_relative_path = None;
+                            match load_texture_from_memory(
+                                ctx,
+                                &upload.bytes,
+                                &m.name,
+                                self.language,
+                            ) {
+                                Ok(tex_info) => {
+                                    doc.loaded_textures.insert(mat_id, tex_info.handle);
+                                    if let Some(w) = tex_info.warning {
+                                        doc.texture_warnings.insert(mat_id, w);
+                                    } else {
+                                        doc.texture_warnings.remove(&mat_id);
+                                    }
+                                    self.status_msg = match self.language {
+                                        AppLanguage::Ru => format!("Загружена текстура для «{}»: {}", m.name, upload.filename),
+                                        AppLanguage::Uk => format!("Завантажена текстура для «{}»: {}", m.name, upload.filename),
+                                        _ => format!("Loaded texture for \"{}\": {}", m.name, upload.filename),
+                                    };
+                                }
+                                Err(e) => {
+                                    self.status_msg = e;
+                                }
+                            }
                         }
+                        doc.missing_textures_queue.retain(|q| q.material_id != mat_id);
+                        ctx.request_repaint();
+                    }
+                }
+            }
+        }
+
+        // Drag & Drop files handler (supported on both Desktop and Web)
+        for file in ctx.input(|i| i.raw.dropped_files.clone()) {
+            let lower_name = file.name.to_lowercase();
+            // 1. Project file (.qfurn / .json)
+            if lower_name.ends_with(".qfurn") || lower_name.ends_with(".json") {
+                #[cfg(not(target_arch = "wasm32"))]
+                if let Some(ref p) = file.path {
+                    self.open_project_from_path(ctx, p);
+                    continue;
+                }
+
+                if let Some(ref bytes) = file.bytes {
+                    if let Ok(mut proj) = serde_json::from_slice::<Project>(bytes) {
+                        if proj.name.is_empty() {
+                            proj.name = file.name.trim_end_matches(".qfurn").trim_end_matches(".json").to_string();
+                        }
+                        let mut doc = FurnitureDocument::new(proj);
+                        doc.mark_saved(None);
+                        doc.load_project_textures(ctx, None, self.language);
+                        self.documents.push(doc);
+                        self.active_doc_idx = self.documents.len() - 1;
+                        self.active_tab = AppTab::Designer4View;
+                        ctx.request_repaint();
+                        continue;
                     }
                 }
             }
 
-            for file in ctx.input(|i| i.raw.dropped_files.clone()) {
-                if let Some(bytes) = file.bytes {
-                    if file.name.ends_with(".qfurn") || file.name.ends_with(".json") {
-                        if let Ok(mut proj) = serde_json::from_slice::<Project>(&bytes) {
-                            if proj.name.is_empty() {
-                                proj.name = file.name.trim_end_matches(".qfurn").trim_end_matches(".json").to_string();
+            // 2. Texture image file (.png / .jpg / .jpeg / .webp)
+            let is_img = lower_name.ends_with(".png")
+                || lower_name.ends_with(".jpg")
+                || lower_name.ends_with(".jpeg")
+                || lower_name.ends_with(".webp");
+
+            if is_img {
+                let img_bytes: Option<Vec<u8>> = if let Some(ref b) = file.bytes {
+                    Some(b.to_vec())
+                } else {
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        file.path.as_ref().and_then(|p| std::fs::read(p).ok())
+                    }
+                    #[cfg(target_arch = "wasm32")]
+                    {
+                        None
+                    }
+                };
+
+                if let Some(bytes) = img_bytes {
+                    if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                        let target_mat_id = if !doc.missing_textures_queue.is_empty() {
+                            let matched_idx = doc.missing_textures_queue.iter().position(|prompt| {
+                                let exp_lower = prompt.expected_filename.to_lowercase();
+                                exp_lower == lower_name
+                                    || std::path::Path::new(&exp_lower)
+                                        .file_name()
+                                        .map(|f| f.to_string_lossy().to_string())
+                                        .as_deref()
+                                        == Some(&lower_name)
+                            });
+                            let idx = matched_idx.or_else(|| {
+                                if doc.missing_textures_queue.len() == 1 {
+                                    Some(0)
+                                } else {
+                                    None
+                                }
+                            });
+                            if let Some(i) = idx {
+                                let prompt = doc.missing_textures_queue.remove(i);
+                                Some(prompt.material_id)
+                            } else {
+                                None
                             }
-                            let mut doc = FurnitureDocument::new(proj);
-                            doc.mark_saved(None);
-                            self.documents.push(doc);
-                            self.active_doc_idx = self.documents.len() - 1;
-                            self.active_tab = AppTab::Designer4View;
+                        } else if self.active_tab == AppTab::MaterialsManager {
+                            Some(doc.active_material_id)
+                        } else {
+                            None
+                        };
+
+                        if let Some(mat_id) = target_mat_id {
+                            use base64::Engine;
+                            let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
+                            if let Some(m) = doc.project.materials.iter_mut().find(|m| m.id == mat_id) {
+                                #[cfg(not(target_arch = "wasm32"))]
+                                {
+                                    if let Some(ref p) = file.path {
+                                        m.texture_path = Some(p.clone());
+                                    }
+                                    m.texture_relative_path = Some(file.name.clone());
+                                    if doc.project.embed_textures {
+                                        m.texture_base64 = Some(b64);
+                                    }
+                                }
+                                #[cfg(target_arch = "wasm32")]
+                                {
+                                    m.texture_base64 = Some(b64);
+                                    m.texture_relative_path = Some(file.name.clone());
+                                    m.texture_path = None;
+                                }
+
+                                match load_texture_from_memory(ctx, &bytes, &m.name, self.language) {
+                                    Ok(tex_info) => {
+                                        doc.loaded_textures.insert(mat_id, tex_info.handle);
+                                        if let Some(w) = tex_info.warning {
+                                            doc.texture_warnings.insert(mat_id, w);
+                                        } else {
+                                            doc.texture_warnings.remove(&mat_id);
+                                        }
+                                        self.status_msg = match self.language {
+                                            AppLanguage::Ru => format!("Загружена текстура для «{}»: {}", m.name, file.name),
+                                            AppLanguage::Uk => format!("Завантажена текстура для «{}»: {}", m.name, file.name),
+                                            _ => format!("Loaded texture for \"{}\": {}", m.name, file.name),
+                                        };
+                                    }
+                                    Err(e) => {
+                                        self.status_msg = e;
+                                    }
+                                }
+                            }
+                            ctx.request_repaint();
                         }
                     }
                 }
@@ -1775,6 +1964,203 @@ impl eframe::App for QuadFurnApp {
             }
         }
 
+        // Missing textures sequential prompt modal dialog
+        #[allow(unused_mut)]
+        let mut missing_status_update = None;
+        if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+            if !doc.missing_textures_queue.is_empty() {
+                let current = doc.missing_textures_queue[0].clone();
+                let queue_len = doc.missing_textures_queue.len();
+                let mut action_browse = false;
+                let mut action_skip = false;
+                let mut action_skip_all = false;
+
+                egui::Window::new(lang.tr("🔍 Поиск отсутствующих текстур", "🔍 Locate Missing Textures"))
+                    .collapsible(false)
+                    .resizable(false)
+                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                    .show(ctx, |ui| {
+                        ui.set_min_width(380.0);
+                        ui.label(
+                            RichText::new(lang.tr(
+                                "Не найден файл текстуры для материала:",
+                                "Texture file not found for material:",
+                            ))
+                            .strong()
+                            .size(15.0),
+                        );
+
+                        ui.add_space(4.0);
+
+                        let progress_text = match lang {
+                            AppLanguage::Ru => format!("Осталось найти текстур: {}", queue_len),
+                            AppLanguage::Uk => format!("Залишилося знайти текстур: {}", queue_len),
+                            _ => format!("Missing textures remaining: {}", queue_len),
+                        };
+                        ui.label(RichText::new(progress_text).color(Color32::from_rgb(240, 180, 50)).strong());
+
+                        ui.add_space(8.0);
+
+                        egui::Frame::group(ui.style())
+                            .fill(ui.visuals().faint_bg_color)
+                            .show(ui, |ui| {
+                                egui::Grid::new("missing_tex_grid")
+                                    .num_columns(2)
+                                    .spacing([12.0, 6.0])
+                                    .show(ui, |ui| {
+                                        ui.label(RichText::new(lang.tr("Материал:", "Material:")).strong());
+                                        ui.label(RichText::new(&current.material_name).strong());
+                                        ui.end_row();
+
+                                        ui.label(RichText::new(lang.tr("Ожидаемый файл:", "Expected file:")).strong());
+                                        ui.label(
+                                            RichText::new(&current.expected_filename)
+                                                .monospace()
+                                                .color(Color32::from_rgb(100, 180, 240)),
+                                        );
+                                        ui.end_row();
+                                    });
+                            });
+
+                        ui.add_space(8.0);
+                        ui.label(
+                            RichText::new(lang.tr(
+                                "💡 Выберите файл на диске или перетащите его мышью в окно программы.",
+                                "💡 Choose file from disk or drag & drop it into the application window.",
+                            ))
+                            .small()
+                            .color(Color32::GRAY),
+                        );
+
+                        ui.add_space(12.0);
+
+                        ui.horizontal(|ui| {
+                            if ui
+                                .button(
+                                    RichText::new(lang.tr("📂 Указать файл...", "📂 Browse File..."))
+                                        .strong()
+                                        .color(Color32::from_rgb(90, 210, 120)),
+                                )
+                                .clicked()
+                            {
+                                action_browse = true;
+                            }
+
+                            ui.add_space(8.0);
+
+                            if ui
+                                .button(lang.tr("⏭ Пропустить", "⏭ Skip"))
+                                .on_hover_text(lang.tr(
+                                    "Пропустить эту текстуру и перейти к следующей",
+                                    "Skip this texture and proceed to the next",
+                                ))
+                                .clicked()
+                            {
+                                action_skip = true;
+                            }
+
+                            ui.add_space(8.0);
+
+                            if ui
+                                .button(lang.tr("✖ Пропустить все", "✖ Skip All"))
+                                .on_hover_text(lang.tr(
+                                    "Пропустить все оставшиеся отсутствующие текстуры",
+                                    "Skip all remaining missing textures",
+                                ))
+                                .clicked()
+                            {
+                                action_skip_all = true;
+                            }
+                        });
+                    });
+
+                if action_skip_all {
+                    doc.missing_textures_queue.clear();
+                } else if action_skip {
+                    doc.missing_textures_queue.remove(0);
+                } else if action_browse {
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        let mut dialog = rfd::FileDialog::new()
+                            .add_filter(
+                                lang.tr(
+                                    "Изображения текстур (PNG, JPG, WEBP)",
+                                    "Texture Images (PNG, JPG, WEBP)",
+                                ),
+                                &["png", "jpg", "jpeg", "webp"],
+                            )
+                            .set_file_name(&current.expected_filename);
+
+                        if let Some(ref proj_path) = doc.file_path {
+                            if let Some(parent) = proj_path.parent() {
+                                dialog = dialog.set_directory(parent);
+                            }
+                        }
+
+                        if let Some(path) = dialog.pick_file() {
+                            match load_texture_from_path(ctx, &path, &current.material_name, lang) {
+                                Ok(tex_info) => {
+                                    let mat_id = current.material_id;
+                                    doc.loaded_textures.insert(mat_id, tex_info.handle);
+                                    if let Some(m) = doc.project.materials.iter_mut().find(|m| m.id == mat_id) {
+                                        m.texture_path = Some(path.clone());
+                                        if let Some(fname) = path.file_name() {
+                                            m.texture_relative_path = Some(fname.to_string_lossy().to_string());
+                                        }
+                                        if doc.project.embed_textures {
+                                            if let Ok(bytes) = std::fs::read(&path) {
+                                                if bytes.len() <= 60 * 1024 * 1024 {
+                                                    use base64::Engine;
+                                                    m.texture_base64 = Some(
+                                                        base64::engine::general_purpose::STANDARD.encode(&bytes),
+                                                    );
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if let Some(w) = tex_info.warning {
+                                        doc.texture_warnings.insert(mat_id, w);
+                                    } else {
+                                        doc.texture_warnings.remove(&mat_id);
+                                    }
+                                    doc.missing_textures_queue.remove(0);
+                                    missing_status_update = Some(match lang {
+                                        AppLanguage::Ru => format!(
+                                            "Загружена текстура для «{}»: {}",
+                                            current.material_name,
+                                            path.display()
+                                        ),
+                                        AppLanguage::Uk => format!(
+                                            "Завантажена текстура для «{}»: {}",
+                                            current.material_name,
+                                            path.display()
+                                        ),
+                                        _ => format!(
+                                            "Loaded texture for \"{}\": {}",
+                                            current.material_name,
+                                            path.display()
+                                        ),
+                                    });
+                                    ctx.request_repaint();
+                                }
+                                Err(e) => {
+                                    missing_status_update = Some(e);
+                                }
+                            }
+                        }
+                    }
+
+                    #[cfg(target_arch = "wasm32")]
+                    {
+                        crate::web::pick_texture_file_web(current.material_id);
+                    }
+                }
+            }
+        }
+        if let Some(msg) = missing_status_update {
+            self.status_msg = msg;
+        }
+
         // If no products are open yet — show bottom status bar and Start Page
         if self.documents.is_empty() {
             egui::TopBottomPanel::bottom("status_footer").show(ctx, |ui| {
@@ -2290,6 +2676,93 @@ mod icon_tests {
         });
     }
 }
+
+#[cfg(test)]
+mod texture_missing_tests {
+    use super::*;
+    use crate::model::Material;
+
+    #[test]
+    fn test_missing_textures_queue_and_sequential_prompt() {
+        let ctx = egui::Context::default();
+        let mut proj = Project::default();
+        proj.materials.clear();
+
+        // Material 1: Missing texture with relative path
+        let mut m1 = Material::default();
+        m1.id = 1;
+        m1.name = "Oak Sonoma".to_string();
+        m1.texture_relative_path = Some("oak_sonoma.png".to_string());
+        proj.materials.push(m1);
+
+        // Material 2: Solid color (no texture)
+        let mut m2 = Material::default();
+        m2.id = 2;
+        m2.name = "White Matte".to_string();
+        proj.materials.push(m2);
+
+        // Material 3: Missing texture with absolute path
+        let mut m3 = Material::default();
+        m3.id = 3;
+        m3.name = "Dark Walnut".to_string();
+        m3.texture_path = Some(std::path::PathBuf::from("C:\\NonExistent\\dark_walnut.jpg"));
+        proj.materials.push(m3);
+
+        let mut doc = FurnitureDocument::new(proj);
+        doc.load_project_textures(&ctx, None, AppLanguage::En);
+
+        // Both missing materials must be in the queue
+        assert_eq!(doc.missing_textures_queue.len(), 2);
+        assert_eq!(doc.missing_textures_queue[0].material_id, 1);
+        assert_eq!(doc.missing_textures_queue[0].material_name, "Oak Sonoma");
+        assert_eq!(doc.missing_textures_queue[0].expected_filename, "oak_sonoma.png");
+
+        assert_eq!(doc.missing_textures_queue[1].material_id, 3);
+        assert_eq!(doc.missing_textures_queue[1].material_name, "Dark Walnut");
+        assert_eq!(doc.missing_textures_queue[1].expected_filename, "dark_walnut.jpg");
+
+        // Simulate user skipping first texture:
+        let skipped = doc.missing_textures_queue.remove(0);
+        assert_eq!(skipped.material_id, 1);
+        assert_eq!(doc.missing_textures_queue.len(), 1);
+        assert_eq!(doc.missing_textures_queue[0].material_id, 3);
+
+        // Simulate user clicking "Skip All":
+        doc.missing_textures_queue.clear();
+        assert!(doc.missing_textures_queue.is_empty());
+    }
+
+    #[test]
+    fn test_embedded_texture_loads_without_queueing_missing() {
+        let ctx = egui::Context::default();
+        let mut proj = Project::default();
+        proj.materials.clear();
+
+        // Create a 2x2 solid PNG image
+        let img = image::RgbaImage::new(2, 2);
+        let mut png_bytes = Vec::new();
+        let mut cursor = std::io::Cursor::new(&mut png_bytes);
+        img.write_to(&mut cursor, image::ImageFormat::Png).unwrap();
+
+        use base64::Engine;
+        let b64 = base64::engine::general_purpose::STANDARD.encode(&png_bytes);
+
+        let mut m = Material::default();
+        m.id = 10;
+        m.name = "Embedded Wood".to_string();
+        m.texture_base64 = Some(b64);
+        proj.materials.push(m);
+
+        let mut doc = FurnitureDocument::new(proj);
+        doc.load_project_textures(&ctx, None, AppLanguage::En);
+
+        // Should NOT be queued as missing because embedded base64 succeeded
+        assert!(doc.missing_textures_queue.is_empty());
+        // Should be loaded in loaded_textures
+        assert!(doc.loaded_textures.contains_key(&10));
+    }
+}
+
 
 
 

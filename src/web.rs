@@ -3,13 +3,19 @@
 use std::sync::{LazyLock, Mutex};
 use wasm_bindgen::JsCast;
 use web_sys::{Blob, BlobPropertyBag, HtmlAnchorElement, Url};
-use base64::Engine;
 use crate::model::MaterialId;
 
 pub static PENDING_PROJECT_UPLOADS: LazyLock<Mutex<Vec<(String, Vec<u8>)>>> =
     LazyLock::new(|| Mutex::new(Vec::new()));
 
-pub static PENDING_TEXTURE_UPLOADS: LazyLock<Mutex<Vec<(MaterialId, String)>>> =
+#[derive(Clone, Debug)]
+pub struct PendingTextureUpload {
+    pub material_id: MaterialId,
+    pub filename: String,
+    pub bytes: Vec<u8>,
+}
+
+pub static PENDING_TEXTURE_UPLOADS: LazyLock<Mutex<Vec<PendingTextureUpload>>> =
     LazyLock::new(|| Mutex::new(Vec::new()));
 
 /// Triggers a browser file download in WebAssembly.
@@ -64,9 +70,13 @@ pub fn pick_texture_file_web(mat_id: MaterialId) {
             .await
         {
             let bytes = handle.read().await;
-            let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
+            let filename = handle.file_name();
             if let Ok(mut lock) = PENDING_TEXTURE_UPLOADS.lock() {
-                lock.push((mat_id, b64));
+                lock.push(PendingTextureUpload {
+                    material_id: mat_id,
+                    filename,
+                    bytes,
+                });
             }
         }
     });

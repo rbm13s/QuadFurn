@@ -35,6 +35,23 @@ pub struct Material {
     pub default_grain_fixed: bool,
 }
 
+impl Default for Material {
+    fn default() -> Self {
+        Self {
+            id: 1,
+            name: "Default Material".to_string(),
+            thickness_mm: 18.0,
+            color_rgb: [210, 180, 140],
+            texture_path: None,
+            texture_relative_path: None,
+            texture_base64: None,
+            sheet_length_mm: 2800.0,
+            sheet_width_mm: 2070.0,
+            default_grain_fixed: false,
+        }
+    }
+}
+
 /// Edge banding material specification (PVC, ABS, Melamine).
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EdgeBanding {
