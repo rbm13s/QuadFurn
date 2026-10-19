@@ -1,4 +1,4 @@
-#![cfg_attr(not(test), windows_subsystem = "windows")]
+#![cfg_attr(all(not(test), target_os = "windows"), windows_subsystem = "windows")]
 
 mod cutter;
 mod export;
@@ -8,6 +8,8 @@ mod snapping;
 mod ui_panels;
 mod viewport;
 mod batch_screenshot;
+#[cfg(target_arch = "wasm32")]
+mod web;
 
 use crate::i18n::AppLanguage;
 use crate::model::{EdgeId, MaterialId, PartId, Project};
@@ -242,6 +244,7 @@ impl FurnitureDocument {
     }
 
     /// Saves project via file dialog (or to current file). Returns path on successful save.
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn save_interactive(
         &mut self,
         status_msg: &mut String,
@@ -307,6 +310,26 @@ impl FurnitureDocument {
                     }
                 }
             }
+        }
+        None
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    pub fn save_interactive(
+        &mut self,
+        status_msg: &mut String,
+        lang: AppLanguage,
+    ) -> Option<std::path::PathBuf> {
+        let clean_name = self.project.name.replace(['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'], "_");
+        let filename = format!("{}.qfurn", clean_name);
+        if let Ok(json) = serde_json::to_string_pretty(&self.project) {
+            crate::web::download_file(&filename, "application/json", json.as_bytes());
+            self.mark_saved(None);
+            *status_msg = match lang {
+                AppLanguage::Ru => format!("Проект скачан: {}", filename),
+                AppLanguage::Uk => format!("Проєкт завантажено: {}", filename),
+                _ => format!("Project downloaded: {}", filename),
+            };
         }
         None
     }
@@ -472,14 +495,22 @@ impl QuadFurnApp {
 
     /// Opens saved product (.qfurn / .json) via system file picker dialog
     pub fn open_project_interactive(&mut self, ctx: &egui::Context) {
-        if let Some(path) = rfd::FileDialog::new()
-            .add_filter(
-                self.language.tr("Проект QuadFurn", "QuadFurn Project"),
-                &["qfurn", "json"],
-            )
-            .pick_file()
+        #[cfg(not(target_arch = "wasm32"))]
         {
-            self.open_project_from_path(ctx, &path);
+            if let Some(path) = rfd::FileDialog::new()
+                .add_filter(
+                    self.language.tr("Проект QuadFurn", "QuadFurn Project"),
+                    &["qfurn", "json"],
+                )
+                .pick_file()
+            {
+                self.open_project_from_path(ctx, &path);
+            }
+        }
+        #[cfg(target_arch = "wasm32")]
+        {
+            let _ = ctx;
+            crate::web::pick_project_file_web();
         }
     }
 
@@ -1016,6 +1047,54 @@ impl eframe::App for QuadFurnApp {
 
         if !self.documents.is_empty() && self.active_doc_idx >= self.documents.len() {
             self.active_doc_idx = self.documents.len() - 1;
+        }
+
+        #[cfg(target_arch = "wasm32")]
+        {
+            if let Ok(mut uploads) = crate::web::PENDING_PROJECT_UPLOADS.lock() {
+                for (name, bytes) in uploads.drain(..) {
+                    if let Ok(mut proj) = serde_json::from_slice::<Project>(&bytes) {
+                        if proj.name.is_empty() {
+                            proj.name = name.trim_end_matches(".qfurn").trim_end_matches(".json").to_string();
+                        }
+                        let mut doc = FurnitureDocument::new(proj);
+                        doc.mark_saved(None);
+                        self.documents.push(doc);
+                        self.active_doc_idx = self.documents.len() - 1;
+                        self.active_tab = AppTab::Designer4View;
+                    }
+                }
+            }
+
+            if let Ok(mut tex_uploads) = crate::web::PENDING_TEXTURE_UPLOADS.lock() {
+                if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                    for (mat_id, b64) in tex_uploads.drain(..) {
+                        let _ = doc.loaded_textures.remove(&mat_id);
+                        if let Some(m) = doc.project.materials.iter_mut().find(|m| m.id == mat_id) {
+                            m.texture_base64 = Some(b64);
+                            m.texture_path = None;
+                            m.texture_relative_path = None;
+                        }
+                    }
+                }
+            }
+
+            for file in ctx.input(|i| i.raw.dropped_files.clone()) {
+                if let Some(bytes) = file.bytes {
+                    if file.name.ends_with(".qfurn") || file.name.ends_with(".json") {
+                        if let Ok(mut proj) = serde_json::from_slice::<Project>(&bytes) {
+                            if proj.name.is_empty() {
+                                proj.name = file.name.trim_end_matches(".qfurn").trim_end_matches(".json").to_string();
+                            }
+                            let mut doc = FurnitureDocument::new(proj);
+                            doc.mark_saved(None);
+                            self.documents.push(doc);
+                            self.active_doc_idx = self.documents.len() - 1;
+                            self.active_tab = AppTab::Designer4View;
+                        }
+                    }
+                }
+            }
         }
 
         // Automated window screenshot via egui::ViewportCommand::Screenshot
@@ -2016,6 +2095,7 @@ pub fn load_app_icon_texture(ctx: &egui::Context) -> Option<TextureHandle> {
     Some(ctx.load_texture("quadfurn_app_icon", color_img, egui::TextureOptions::LINEAR))
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result<()> {
     let initial_settings = AppSettings::load();
     // Set base (restored) window size 1520×920 without .with_maximized(true),
@@ -2103,6 +2183,63 @@ fn main() -> eframe::Result<()> {
             Ok(Box::new(app))
         }),
     )
+}
+
+#[cfg(target_arch = "wasm32")]
+fn main() {
+    use eframe::wasm_bindgen::JsCast as _;
+
+    eframe::WebLogger::init(log::LevelFilter::Debug).ok();
+
+    let web_options = eframe::WebOptions::default();
+
+    wasm_bindgen_futures::spawn_local(async {
+        let document = web_sys::window()
+            .expect("No window")
+            .document()
+            .expect("No document");
+
+        let canvas = document
+            .get_element_by_id("the_canvas_id")
+            .expect("Failed to find the_canvas_id")
+            .dyn_into::<web_sys::HtmlCanvasElement>()
+            .expect("the_canvas_id was not a HtmlCanvasElement");
+
+        let start_result = eframe::WebRunner::new()
+            .start(
+                canvas,
+                web_options,
+                Box::new(|cc| {
+                    configure_fonts(&cc.egui_ctx);
+                    egui_extras::install_image_loaders(&cc.egui_ctx);
+                    let mut app = QuadFurnApp::default();
+                    app.app_icon_tex = load_app_icon_texture(&cc.egui_ctx);
+                    app.theme_choice.apply(&cc.egui_ctx);
+
+                    // Preload a demo cabinet so online user immediately has a 3D model to inspect
+                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(app.language)));
+                    app.active_doc_idx = 0;
+                    app.active_tab = AppTab::Designer4View;
+
+                    Ok(Box::new(app))
+                }),
+            )
+            .await;
+
+        if let Some(loading_text) = document.get_element_by_id("loading_text") {
+            match start_result {
+                Ok(_) => {
+                    loading_text.remove();
+                }
+                Err(e) => {
+                    loading_text.set_inner_html(
+                        "<p style=\"color:#f87171;font-family:sans-serif;text-align:center;padding:40px;\">⚠️ Failed to start WebAssembly graphics context.</p>",
+                    );
+                    log::error!("Failed to start eframe: {:?}", e);
+                }
+            }
+        }
+    });
 }
 
 #[cfg(all(test, target_os = "windows"))]

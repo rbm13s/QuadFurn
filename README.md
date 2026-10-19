@@ -12,8 +12,13 @@
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
 [![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-themes--22-language-localization)
-[![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#getting-started)
+[![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS_%7C_Web-0078D6)](#getting-started)
+[![Web Demo](https://img.shields.io/badge/Online_CAD-Try_in_Browser-success?logo=webassembly)](https://rbm13s.github.io/QuadFurn/app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+<br/>
+
+👉 **[🚀 Try QuadFurn CAD in Browser (WebAssembly)](https://rbm13s.github.io/QuadFurn/app/)** • **[🌐 Official Website](https://rbm13s.github.io/QuadFurn/)**
 
 <br/>
 

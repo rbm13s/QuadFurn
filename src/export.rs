@@ -206,6 +206,7 @@ pub fn ensure_ttf_bytes(bytes: Vec<u8>) -> Vec<u8> {
 }
 
 /// Returns the Windows Fonts directory, checking `%WINDIR%` or `%SystemRoot%` before falling back to `C:\Windows\Fonts`.
+#[allow(dead_code)]
 pub fn get_windows_fonts_dir() -> std::path::PathBuf {
     #[cfg(target_os = "windows")]
     {
@@ -512,6 +513,7 @@ impl PdfTrueTypeFont {
 /// 2. Designer 4-view projection preview (Top XY, 3D View, Front XZ, Side YZ)
 /// 3. Cutting layout sheets
 /// 4. Materials and edge banding summary
+#[allow(dead_code)]
 pub fn export_spec_to_pdf_file(
     project: &Project,
     path: &Path,

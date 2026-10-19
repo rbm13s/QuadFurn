@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -12,8 +12,13 @@
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
 [![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-темы-оформления-и-локализация-на-22-языка)
-[![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#быстрый-старт)
+[![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS_%7C_Web-0078D6)](#быстрый-старт)
+[![Web Demo](https://img.shields.io/badge/Онлайн_САПР-Запустить_в_браузере-success?logo=webassembly)](https://rbm13s.github.io/QuadFurn/app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
+
+<br/>
+
+👉 **[🚀 Запустить QuadFurn CAD прямо в браузере (WebAssembly)](https://rbm13s.github.io/QuadFurn/app/)** • **[🌐 Официальный сайт](https://rbm13s.github.io/QuadFurn/ru.html)**
 
 <br/>
 

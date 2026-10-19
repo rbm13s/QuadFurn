@@ -1,9 +1,9 @@
 use crate::cutter::{
     build_specification_i18n, compute_cutting_layout, CuttingReport, SheetLayout, SpecRow,
 };
-use crate::export::{
-    export_spec_to_csv_file_i18n, export_spec_to_pdf_file, generate_cutting_clipboard_text_i18n,
-};
+#[cfg(not(target_arch = "wasm32"))]
+use crate::export::{export_spec_to_csv_file_i18n, export_spec_to_pdf_file};
+use crate::export::generate_cutting_clipboard_text_i18n;
 use crate::i18n::AppLanguage;
 use crate::model::{
     EdgeId, GroupId, Material, MaterialId, PartBlock, PartEdges, PartGroup, PartId,
@@ -1762,70 +1762,77 @@ pub fn ui_materials_manager_tab(
                         .button(lang.tr("📂 Загрузить...", "📂 Load..."))
                         .clicked()
                     {
-                        if let Some(path) = rfd::FileDialog::new()
-                            .add_filter(
-                                lang.tr(
-                                    "Изображения текстур (PNG, JPG, WEBP)",
-                                    "Texture Images (PNG, JPG, WEBP)",
-                                ),
-                                &["png", "jpg", "jpeg", "webp"],
-                            )
-                            .pick_file()
+                        #[cfg(not(target_arch = "wasm32"))]
                         {
-                            match load_texture_from_path(ui.ctx(), &path, &m.name, lang) {
-                                Ok(tex_info) => {
-                                    loaded_textures.insert(m.id, tex_info.handle);
-                                    m.texture_path = Some(path.clone());
-                                    if let Some(fname) = path.file_name() {
-                                        m.texture_relative_path = Some(fname.to_string_lossy().to_string());
-                                    }
-                                    if project.embed_textures {
-                                        if let Ok(bytes) = std::fs::read(&path) {
-                                            if bytes.len() <= 60 * 1024 * 1024 {
-                                                use base64::Engine;
-                                                m.texture_base64 = Some(base64::engine::general_purpose::STANDARD.encode(&bytes));
-                                            }
+                            if let Some(path) = rfd::FileDialog::new()
+                                .add_filter(
+                                    lang.tr(
+                                        "Изображения текстур (PNG, JPG, WEBP)",
+                                        "Texture Images (PNG, JPG, WEBP)",
+                                    ),
+                                    &["png", "jpg", "jpeg", "webp"],
+                                )
+                                .pick_file()
+                            {
+                                match load_texture_from_path(ui.ctx(), &path, &m.name, lang) {
+                                    Ok(tex_info) => {
+                                        loaded_textures.insert(m.id, tex_info.handle);
+                                        m.texture_path = Some(path.clone());
+                                        if let Some(fname) = path.file_name() {
+                                            m.texture_relative_path = Some(fname.to_string_lossy().to_string());
                                         }
-                                    } else {
-                                        m.texture_base64 = None;
-                                    }
+                                        if project.embed_textures {
+                                            if let Ok(bytes) = std::fs::read(&path) {
+                                                if bytes.len() <= 60 * 1024 * 1024 {
+                                                    use base64::Engine;
+                                                    m.texture_base64 = Some(base64::engine::general_purpose::STANDARD.encode(&bytes));
+                                                }
+                                            }
+                                        } else {
+                                            m.texture_base64 = None;
+                                        }
 
-                                    if let Some(ref w) = tex_info.warning {
-                                        texture_warnings.insert(m.id, w.clone());
-                                        *status_msg = match lang {
-                                            AppLanguage::Ru => format!(
-                                                "⚠️ Текстура для «{}» загружена: {}. {}",
-                                                m.name,
-                                                path.display(),
-                                                w
-                                            ),
-                                            _ => format!(
-                                                "⚠️ Texture for \"{}\" loaded: {}. {}",
-                                                m.name,
-                                                path.display(),
-                                                w
-                                            ),
-                                        };
-                                    } else {
-                                        texture_warnings.remove(&m.id);
-                                        *status_msg = match lang {
-                                            AppLanguage::Ru => format!(
-                                                "Загружена текстура для «{}»: {}",
-                                                m.name,
-                                                path.display()
-                                            ),
-                                            _ => format!(
-                                                "Loaded texture for \"{}\": {}",
-                                                m.name,
-                                                path.display()
-                                            ),
-                                        };
+                                        if let Some(ref w) = tex_info.warning {
+                                            texture_warnings.insert(m.id, w.clone());
+                                            *status_msg = match lang {
+                                                AppLanguage::Ru => format!(
+                                                    "⚠️ Текстура для «{}» загружена: {}. {}",
+                                                    m.name,
+                                                    path.display(),
+                                                    w
+                                                ),
+                                                _ => format!(
+                                                    "⚠️ Texture for \"{}\" loaded: {}. {}",
+                                                    m.name,
+                                                    path.display(),
+                                                    w
+                                                ),
+                                            };
+                                        } else {
+                                            texture_warnings.remove(&m.id);
+                                            *status_msg = match lang {
+                                                AppLanguage::Ru => format!(
+                                                    "Загружена текстура для «{}»: {}",
+                                                    m.name,
+                                                    path.display()
+                                                ),
+                                                _ => format!(
+                                                    "Loaded texture for \"{}\": {}",
+                                                    m.name,
+                                                    path.display()
+                                                ),
+                                            };
+                                        }
                                     }
-                                }
-                                Err(e) => {
-                                    *status_msg = e;
+                                    Err(e) => {
+                                        *status_msg = e;
+                                    }
                                 }
                             }
+                        }
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            crate::web::pick_texture_file_web(m.id);
                         }
                     }
                     if m.texture_path.is_some() || m.texture_base64.is_some() {
@@ -2331,30 +2338,47 @@ pub fn ui_specification_tab(
             ))
             .clicked()
         {
-            if let Some(path) = rfd::FileDialog::new()
-                .set_file_name("spec_quadfurn.csv")
-                .add_filter(lang.tr("Таблица CSV (Excel)", "CSV Spreadsheet"), &["csv"])
-                .save_file()
+            #[cfg(not(target_arch = "wasm32"))]
             {
-                match export_spec_to_csv_file_i18n(project, &path, lang) {
-                    Ok(()) => {
-                        *status_msg = match lang {
-                            AppLanguage::Ru => format!(
-                                "Спецификация успешно экспортирована в {}",
-                                path.display()
-                            ),
-                            AppLanguage::Uk => format!(
-                                "Специфікація успішно експортована до {}",
-                                path.display()
-                            ),
-                            _ => format!(
-                                "Specification exported to {}",
-                                path.display()
-                            ),
-                        };
+                if let Some(path) = rfd::FileDialog::new()
+                    .set_file_name("spec_quadfurn.csv")
+                    .add_filter(lang.tr("Таблица CSV (Excel)", "CSV Spreadsheet"), &["csv"])
+                    .save_file()
+                {
+                    match export_spec_to_csv_file_i18n(project, &path, lang) {
+                        Ok(()) => {
+                            *status_msg = match lang {
+                                AppLanguage::Ru => format!(
+                                    "Спецификация успешно экспортирована в {}",
+                                    path.display()
+                                ),
+                                AppLanguage::Uk => format!(
+                                    "Специфікація успішно експортована до {}",
+                                    path.display()
+                                ),
+                                _ => format!(
+                                    "Specification exported to {}",
+                                    path.display()
+                                ),
+                            };
+                        }
+                        Err(e) => *status_msg = e,
                     }
-                    Err(e) => *status_msg = e,
                 }
+            }
+            #[cfg(target_arch = "wasm32")]
+            {
+                let clean_name = project.name.replace(['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'], "_");
+                let def_name = format!("{}_specification.csv", clean_name);
+                let csv = crate::export::generate_csv_string_i18n(project, lang);
+                let mut data = vec![0xEF, 0xBB, 0xBF];
+                data.extend_from_slice(csv.as_bytes());
+                crate::web::download_file(&def_name, "text/csv;charset=utf-8", &data);
+                *status_msg = match lang {
+                    AppLanguage::Ru => format!("Спецификация скачана: {}", def_name),
+                    AppLanguage::Uk => format!("Специфікацію завантажено: {}", def_name),
+                    _ => format!("Specification downloaded: {}", def_name),
+                };
             }
         }
 
@@ -2366,27 +2390,46 @@ pub fn ui_specification_tab(
             ))
             .clicked()
         {
-            let default_pdf_name = format!("spec_{}.pdf", project.name.replace(' ', "_"));
-            if let Some(path) = rfd::FileDialog::new()
-                .set_file_name(&default_pdf_name)
-                .add_filter(lang.tr("Документ PDF", "PDF Document"), &["pdf"])
-                .save_file()
+            #[cfg(not(target_arch = "wasm32"))]
             {
-                match export_spec_to_pdf_file(project, &path, lang) {
-                    Ok(()) => {
+                let default_pdf_name = format!("spec_{}.pdf", project.name.replace(' ', "_"));
+                if let Some(path) = rfd::FileDialog::new()
+                    .set_file_name(&default_pdf_name)
+                    .add_filter(lang.tr("Документ PDF", "PDF Document"), &["pdf"])
+                    .save_file()
+                {
+                    match export_spec_to_pdf_file(project, &path, lang) {
+                        Ok(()) => {
+                            *status_msg = match lang {
+                                AppLanguage::Ru => format!(
+                                    "Паспорт изделия (спецификация, проекции, раскрой и материалы) экспортирован в PDF: {}",
+                                    path.display()
+                                ),
+                                AppLanguage::Uk => format!(
+                                    "Паспорт виробу (специфікація, проекції, розкрій та матеріали) експортовано до PDF: {}",
+                                    path.display()
+                                ),
+                                _ => format!(
+                                    "Product passport (specification, views, cutting layouts & materials) exported to PDF: {}",
+                                    path.display()
+                                ),
+                            };
+                        }
+                        Err(e) => *status_msg = e,
+                    }
+                }
+            }
+            #[cfg(target_arch = "wasm32")]
+            {
+                let clean_name = project.name.replace(['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'], "_");
+                let def_name = format!("{}_drawings.pdf", clean_name);
+                match crate::export::generate_spec_pdf_bytes(project, lang) {
+                    Ok(bytes) => {
+                        crate::web::download_file(&def_name, "application/pdf", &bytes);
                         *status_msg = match lang {
-                            AppLanguage::Ru => format!(
-                                "Паспорт изделия (спецификация, проекции, раскрой и материалы) экспортирован в PDF: {}",
-                                path.display()
-                            ),
-                            AppLanguage::Uk => format!(
-                                "Паспорт виробу (специфікація, проекції, розкрій та матеріали) експортовано до PDF: {}",
-                                path.display()
-                            ),
-                            _ => format!(
-                                "Product passport (specification, views, cutting layouts & materials) exported to PDF: {}",
-                                path.display()
-                            ),
+                            AppLanguage::Ru => format!("PDF-документ скачан: {}", def_name),
+                            AppLanguage::Uk => format!("PDF-документ завантажено: {}", def_name),
+                            _ => format!("PDF document downloaded: {}", def_name),
                         };
                     }
                     Err(e) => *status_msg = e,
