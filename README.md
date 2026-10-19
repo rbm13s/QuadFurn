@@ -82,32 +82,32 @@ QuadFurn combines three essential furniture manufacturing capabilities into one 
 ### 1. 4-Viewport Designer (Dark Theme)
 Simultaneous 2D orthographic plans (**Top XY**, **Front XZ**, **Side YZ**) and textured **3D View** with perspective-correct UV mapping, depth-buffered painter's sorting, interactive 8-handle resize gizmos, and the right-hand **Part Inspector**.
 
-![4-Viewport CAD Designer](assets/screenshots/1designer.png)
+![4-Viewport CAD Designer](docs/screenshots/en/1designer.png)
 
 ### 2. Parts List (Specification) & Export
 Grouped bill of materials displaying both **Full Dimensions (`L × W`)** and **Net Saw Cutting Dimensions (`CUT L × W`)** after subtracting edge banding thickness on all four sides (`L1`, `L2`, `W1`, `W2`).
 
-![Parts Specification Table](assets/screenshots/2specs.png)
+![Parts Specification Table](docs/screenshots/en/2specs.png)
 
 ### 3. Guillotine Sheet Cutting Layout
 2D nesting of parts onto standard sheets (`2800 × 2070 mm`, etc.) with guillotine through-cuts, kerf allowance, edge trim margins, visual edge-banding markers, and a list of usable offcuts (remnants).
 
-![Sheet Cutting Layout](assets/screenshots/3cutting.png)
+![Sheet Cutting Layout](docs/screenshots/en/3cutting.png)
 
 ### 4. Sheet Materials & Edge Banding Catalog
 Manage chipboard/MDF/HDF sheet thicknesses, 3D colors, custom surface textures (`PNG`, `JPG`, `WEBP`), sheet dimensions, default grain locks, and PVC/ABS edge banding types.
 
-![Materials and Edge Banding Catalog](assets/screenshots/4materials.png)
+![Materials and Edge Banding Catalog](docs/screenshots/en/4materials.png)
 
 ### 5. Light Theme Support
 Clean high-contrast Light Theme alongside Dark Theme and automatic Windows System Theme synchronization.
 
-![Light Theme Interface](assets/screenshots/5lighttheme.png)
+![Light Theme Interface](docs/screenshots/en/5lighttheme.png)
 
 ### 6. 22 Built-in Languages (UI & PDF Export)
 Instant runtime language switching via the **`🌐`** selector in the top toolbar, with automatic OS language detection on first launch and localized multi-page PDF exports.
 
-![22 Interface Languages](assets/screenshots/6languages.png)
+![22 Interface Languages](docs/screenshots/en/6languages.png)
 
 ---
 
@@ -334,8 +334,9 @@ QuadFurn/
 │       └── build.yml          # GitHub Actions CI/CD (Linux .deb/.tar.gz, macOS Universal .app, Windows .zip)
 ├── assets/
 │   ├── icon.jpeg              # Application logo & source image for Windows/Linux/macOS icons
-│   └── screenshots/           # UI screenshots for documentation
-├── docs/                      # Localized documentation (22 languages)
+│   └── icon.ico               # Windows application icon
+├── docs/                      # Localized documentation & GitHub Pages (22 languages)
+│   └── screenshots/           # UI screenshots for all 22 supported languages
 ├── src/
 │   ├── main.rs                # App entry point, multi-tab workspace, Start Page, settings & shortcuts
 │   ├── model.rs               # Core data structures (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)

@@ -83,32 +83,32 @@ QuadFurn spojuje to nejlepší z ergonomie tří osvědčených nástrojů:
 ### 1. 4pohledový CAD konstruktér (Tmavý motiv)
 Synchronní pravoúhlé průměty (**Půdorys XY**, **Nárys XZ**, **Bokorys YZ**) a perspektivní **3D pohled** s texturováním, 8bodovými manipulačními body změny rozměrů a pravým **Inspektorem dílců**.
 
-![4pohledový CAD konstruktér](../assets/screenshots/1designer.png)
+![4pohledový CAD konstruktér](screenshots/cs/1designer.png)
 
 ### 2. Kusovník dílců a specifikace
 Přehledná tabulka zobrazující jak **Hotové rozměry dílce (`L × W`)**, tak **Čisté řezné rozměry na pilu (`CUT L × W`)** po odečtení tloušťky hran na jednotlivých stranách (`L1`, `L2`, `W1`, `W2`).
 
-![Kusovník dílců](../assets/screenshots/2specs.png)
+![Kusovník dílců](screenshots/cs/2specs.png)
 
 ### 3. Gilotinový nářezový plán velkoplošných desek
 Optimalizované rozvržení dílců na standardní formáty desek (`2800 × 2070 mm` apod.) s průchozími gilotinovými řezy, prořezem kotouče, ořezem okrajů, označením hran a evidencí využitelných zbytků.
 
-![Nářezový plán](../assets/screenshots/3cutting.png)
+![Nářezový plán](screenshots/cs/3cutting.png)
 
 ### 4. Katalog materiálů a hran
 Správa tlouštěk plošných materiálů, 3D barev, vlastních textur povrchů (`PNG`, `JPG`, `WEBP`), zámků struktury dřeva a typů ABS/PVC hran.
 
-![Katalog materiálů a hran](../assets/screenshots/4materials.png)
+![Katalog materiálů a hran](screenshots/cs/4materials.png)
 
 ### 5. Podpora světlého motivu
 Moderní světlý motiv s vysokým kontrastem vedle tmavého motivu s možností automatické synchronizace se systémovým nastavením Windows/macOS/Linux.
 
-![Světlý motiv](../assets/screenshots/5lighttheme.png)
+![Světlý motiv](screenshots/cs/5lighttheme.png)
 
 ### 6. 22 integrovaných jazyků (Rozhraní i PDF export)
 Okamžité přepínání jazyků bez restartu tlačítkem **`🌐`** v horní liště, automatická detekce jazyka operačního systému při prvním spuštění a lokalizované vícejazyčné PDF výstupy.
 
-![22 jazyků rozhraní](../assets/screenshots/6languages.png)
+![22 jazyků rozhraní](screenshots/cs/6languages.png)
 
 ---
 

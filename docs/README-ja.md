@@ -83,32 +83,32 @@
 ### 1. 4画面 CAD デザイナー（ダークテーマ）
 同期された 2D 正投影ビュー（**上面図 XY**、**正面図 XZ**、**側面図 YZ**）と、パースペクティブ補正 UV マッピングを施した **3D ビュー**、8 点の拡大縮小ハンドル、および右側の**部品プロパティインスペクタ**。
 
-![4画面 CAD デザイナー](../assets/screenshots/1designer.png)
+![4画面 CAD デザイナー](screenshots/ja/1designer.png)
 
 ### 2. 部品一覧（仕様表）と切断寸法
 **仕上がり完成寸法（`L × W`）**と、4 辺（`L1`, `L2`, `W1`, `W2`）のエッジ厚を控除した**正味切断寸法（`CUT L × W`）**を一覧表示する詳細なパーツリスト。
 
-![部品仕様表](../assets/screenshots/2specs.png)
+![部品仕様表](screenshots/ja/2specs.png)
 
 ### 3. ギロチン式原板木取り図（板割りレイアウト）
 定尺板（`2800 × 2070 mm` など）上での貫通切断ライン、刃物幅、外周余白、エッジカラー表示、および寸法付きの再利用可能端材（残材）の自動算出。
 
-![木取りレイアウト](../assets/screenshots/3cutting.png)
+![木取りレイアウト](screenshots/ja/3cutting.png)
 
 ### 4. 原板材料および木口テープカタログ
 板材の厚み、3D カラー、表面テクスチャ画像（`PNG`, `JPG`, `WEBP`）、木目方向ロック、各種 ABS/PVC 木口テープの自由な登録と管理。
 
-![材料カタログ](../assets/screenshots/4materials.png)
+![材料カタログ](screenshots/ja/4materials.png)
 
 ### 5. ライトテーマ（明色モード）対応
 視認性に優れたモダンなライトテーマを搭載し、OS の外観モードと自動同期することも可能です。
 
-![ライトテーマ](../assets/screenshots/5lighttheme.png)
+![ライトテーマ](screenshots/ja/5lighttheme.png)
 
 ### 6. 22 言語のインターフェースと PDF 出力
 上部ツールバーの **`🌐`** アイコンから再起動なしで即座に言語を変更可能。初回起動時に OS の言語を自動検出し、多言語ベクター PDF を出力できます。
 
-![22 言語対応](../assets/screenshots/6languages.png)
+![22 言語対応](screenshots/ja/6languages.png)
 
 ---
 

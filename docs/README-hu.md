@@ -83,32 +83,32 @@ A QuadFurn három elismert szoftver ergonomikus előnyeit ötvözi egyetlen munk
 ### 1. 4-nézetes CAD szerkesztő (Sötét téma)
 Összehangolt ortogonális vetületek (**Felülnézet XY**, **Elölnézet XZ**, **Oldalnézet YZ**) és textúrázott **3D nézet** perspektivikusan helyes UV-leképezéssel, 8-pontos méretező fogantyúkkal és a jobb oldali **Alkatrész-felügyelővel**.
 
-![4-nézetes CAD szerkesztő](../assets/screenshots/1designer.png)
+![4-nézetes CAD szerkesztő](screenshots/hu/1designer.png)
 
 ### 2. Alkatrészjegyzék (Specifikáció) és szabásméretek
 Áttekinthető táblázat, amely bemutatja mind a **Készméreteket (`L × W`)**, mind a **Nettó szabásméreteket (`CUT L × W`)** az élzárók levonása után az egyes oldalakon (`L1`, `L2`, `W1`, `W2`).
 
-![Alkatrészjegyzék](../assets/screenshots/2specs.png)
+![Alkatrészjegyzék](screenshots/hu/2specs.png)
 
 ### 3. Guillotine lapszabászati terv
 Optimalizált lapelrendezés szabványméretű lapokra (`2800 × 2070 mm` stb.) átmenő guillotine vágásokkal, fűrészlapvastagsággal, szélezéssel, színes élzárás-jelölőkkel és a hasznos hulladékok méretezett nyilvántartásával.
 
-![Szabásterv](../assets/screenshots/3cutting.png)
+![Szabásterv](screenshots/hu/3cutting.png)
 
 ### 4. Lapanyag- és élzárókatalógus
 Lapvastagságok, 3D színek, egyéni felületi textúrák (`PNG`, `JPG`, `WEBP`), szálirány-zárak és ABS/PVC élzáró típusok kezelése.
 
-![Anyagkatalógus](../assets/screenshots/4materials.png)
+![Anyagkatalógus](screenshots/hu/4materials.png)
 
 ### 5. Világos téma támogatása
 Modern, kontrasztos világos téma a sötét téma mellett, valamint az operativ rendszer témabeállításának automatikus követése.
 
-![Világos téma](../assets/screenshots/5lighttheme.png)
+![Világos téma](screenshots/hu/5lighttheme.png)
 
 ### 6. 22 beépített nyelv (Felület és PDF export)
 Azonnali nyelvváltás újraindítás nélkül a felső eszköztár **`🌐`** gombjával, az operációs rendszer nyelvének automatikus észlelése és többnyelvű PDF dokumentáció.
 
-![22 nyelv](../assets/screenshots/6languages.png)
+![22 nyelv](screenshots/hu/6languages.png)
 
 ---
 

@@ -83,32 +83,32 @@ QuadFurn forener ergonomien fra tre velkjente verktøy i én sømløs arbeidsfly
 ### 1. 4-visnings CAD-designer (Mørkt tema)
 Synkroniserte ortogonale projeksjoner (**Plan XY**, **Front XZ**, **Side YZ**) og teksturert **3D-visning** med perspektivkorrigert UV-kartlegging, 8-punkts størrelseshåndtak og høyre **Elementinspektør**.
 
-![4-visnings CAD-designer](../assets/screenshots/1designer.png)
+![4-visnings CAD-designer](screenshots/no/1designer.png)
 
 ### 2. Komponentliste (Stykkliste) og spesifikasjoner
 Oversiktlig tabell som viser både **Ferdigmål (`L × W`)** og **Netto kuttmål for sag (`CUT L × W`)** etter fradrag for kantlister på hver side (`L1`, `L2`, `W1`, `W2`).
 
-![Stykkliste over komponenter](../assets/screenshots/2specs.png)
+![Stykkliste over komponenter](screenshots/no/2specs.png)
 
 ### 3. Giljotin kappeoptimalisering av plater
 Nesting på standard platestørrelser (`2800 × 2070 mm` osv.) med gjennomgående giljotinkutt, sagbladbredde, renskjæringsmarginer, fargede kantlistmarkeringer og oversikt over nyttbart kapp.
 
-![Kappeoptimalisering](../assets/screenshots/3cutting.png)
+![Kappeoptimalisering](screenshots/no/3cutting.png)
 
 ### 4. Plate- og kantlistkatalog
 Administrasjon av platetykkelser, 3D-farger, egendefinerte overflateteksturer (`PNG`, `JPG`, `WEBP`), treretningslås og typer av ABS/PVC-kantlister.
 
-![Materialkatalog](../assets/screenshots/4materials.png)
+![Materialkatalog](screenshots/no/4materials.png)
 
 ### 5. Støtte for Lyst tema
 Moderne lyst tema med høy kontrast side om side med det mørke temaet, inkludert automatisk synkronisering med operativsystemets utseende.
 
-![Lyst tema](../assets/screenshots/5lighttheme.png)
+![Lyst tema](screenshots/no/5lighttheme.png)
 
 ### 6. 22 innebygde språk (Brukergrensesnitt og PDF-eksport)
 Umiddelbart språkbytte uten omstart via **`🌐`**-knappen i verktøylinjen, automatisk gjenkjenning av systemspråk ved første oppstart og flerspråklige PDF-rapporter.
 
-![22 språk](../assets/screenshots/6languages.png)
+![22 språk](screenshots/no/6languages.png)
 
 ---
 

@@ -83,32 +83,32 @@ QuadFurn brengt de ergonomie van drie beproefde gereedschappen samen:
 ### 1. 4-weergaven CAD-ontwerper (Donker thema)
 Gesynchroniseerde orthogonale projecties (**Bovenaanzicht XY**, **Vooraanzicht XZ**, **Zijaanzicht YZ**) en getextureerde **3D-weergave** met perspectiefcorrecte UV-mapping, 8-punts formaatgrepen en de rechter **Onderdeleninspecteur**.
 
-![4-weergaven CAD-ontwerper](../assets/screenshots/1designer.png)
+![4-weergaven CAD-ontwerper](screenshots/nl/1designer.png)
 
 ### 2. Onderdelenlijst (Stuklijst) en specificaties
 Overzichtelijke tabel met zowel de **Eindmaten van het paneel (`L × W`)** als de **Netto zaagmaten (`CUT L × W`)** na aftrek van de kantenband aan elke zijde (`L1`, `L2`, `W1`, `W2`).
 
-![Stuklijst van onderdelen](../assets/screenshots/2specs.png)
+![Stuklijst van onderdelen](screenshots/nl/2specs.png)
 
 ### 3. Guillotine zaagoptimalisatie van platen
 Nesting op standaard plaatformaten (`2800 × 2070 mm`, etc.) met doorlopende guillotinezaagsneden, zaagbreedte, kantafrandingen, visuele kantenbandmarkeringen en overzicht van bruikbare reststukken.
 
-![Zaagoptimalisatie](../assets/screenshots/3cutting.png)
+![Zaagoptimalisatie](screenshots/nl/3cutting.png)
 
 ### 4. Platen- en kantenbandcatalogus
 Beheer van plaatdiktes, 3D-kleuren, aangepaste oppervlaktetexturen (`PNG`, `JPG`, `WEBP`), nerfvergrendelingen en ABS/PVC-kantenbandtypes.
 
-![Materialencatalogus](../assets/screenshots/4materials.png)
+![Materialencatalogus](screenshots/nl/4materials.png)
 
 ### 5. Ondersteuning voor Licht thema
 Modern licht thema met hoog contrast naast het donkere thema, inclusief automatische synchronisatie met het besturingssysteem.
 
-![Licht thema](../assets/screenshots/5lighttheme.png)
+![Licht thema](screenshots/nl/5lighttheme.png)
 
 ### 6. 22 ingebouwde talen (Interface & PDF-export)
 Direct wisselen van taal zonder herstart via de knop **`🌐`** in de bovenbalk, automatische taaldetectie van het besturingssysteem bij de eerste start en gelokaliseerde PDF-exports.
 
-![22 talen](../assets/screenshots/6languages.png)
+![22 talen](screenshots/nl/6languages.png)
 
 ---
 

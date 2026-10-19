@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — Bútortervező CAD és 2D Lapszabászati Optimalizálás</title>
+  <meta name="description" content="Gyors asztali CAD bútorlap, MDF és rétegelt lemez bútorok tervezéséhez automatikus élzárólevonással és 2D lapszabászati optimalizálással.">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="hu.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">Funkciók</a>
+        <a href="#showcase">Galéria</a>
+        <a href="#downloads">Letöltés</a>
+        <a href="#shortcuts">Billentyűk</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html">🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html">🇩🇪 Deutsch</option>
+<option value="pl.html">🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html">🇨🇳 简体中文</option>
+<option value="ja.html">🇯🇵 日本語</option>
+<option value="ko.html">🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html">🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html">🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html" selected>🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html">🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">Letöltés</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>v0.2.2 Verzió • MIT Nyílt Forráskód • Natív Asztali</span>
+      </div>
+
+      <h1 class="hero-title">
+        4 Nézetes Térbeli CAD Bútortervezéshez & Lapszabászathoz
+      </h1>
+
+      <p class="hero-subtitle">
+        Gyors CAD asztalosoknak és bútorgyártóknak. 4 nézetes szinkronizált modellezés, képletbeviteli méretezés, élzárás-levonás és lapszabászat.
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Letöltés Windowsra (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Minden platform
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/hu/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Képességek</span>
+        <h2 class="section-title">Mérnöki pontosság bútorkészítő műhelyeknek</h2>
+        <p class="section-desc">Összekapcsolja a 4 nézetes rajzolást, a numerikus vezérlést és a szabásterv-optimalizálást.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4 nézetes térbeli modellezés</h3>
+          <p>Egyidejű szerkesztés Felülnézetben (XY), Elölnézetben (XZ), Oldalnézetben (YZ) és 3D-ben mágneses illesztéssel.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Precíziós transzformációs sáv</h3>
+          <p>Koordináták (X, Y, Z), méretek (H × SZ × V) és szög közvetlen megadása beépített számológéppel (pl. 600-4).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>Automatikus élzárás-levonás</h3>
+          <p>PVC/ABS élzárók (0,4–2,0 mm) rendelése a 4 élhez a lapszabász fűrész pontos vágásméreteinek kiszámításához.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>2D guillotine lapszabászat</h3>
+          <p>Szálirányt, fűrészlap-vastagságot (4,0 mm), szélezést és hasznos hulladékot kezelő szabászgép-optimalizáló.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>Termékfülek & projektek közötti másolás</h3>
+          <p>Párhuzamos munka több bútoron fülekben. Elemek másolása és beillesztése anyagátvitellel.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>Vektoros PDF gyártási dokumentáció</h3>
+          <p>Nyomtatásra kész A4 Fekvő formátum: alkatrészlista, 4 nézetes rajzok, szabástervek és anyagkimutatás +15 % ráhagyással.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Bemutató</span>
+        <h2 class="section-title">Kezelőfelület & munkafolyamat</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4 nézetes CAD</button>
+        <button class="tab-btn" onclick="switchTab(1)">Alkatrészlista</button>
+        <button class="tab-btn" onclick="switchTab(2)">Szabástervek</button>
+        <button class="tab-btn" onclick="switchTab(3)">Anyagok & textúrák</button>
+        <button class="tab-btn" onclick="switchTab(4)">Világos téma</button>
+        <button class="tab-btn" onclick="switchTab(5)">22 nyelv</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/hu/1designer.png" alt="4 nézetes CAD">
+          <div class="shot-caption">
+            <span>Szinkronizált 2D vetületek és 3D nézet alkatrész-felügyelővel.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/hu/2specs.png" alt="Alkatrészlista">
+          <div class="shot-caption">
+            <span>Alkatrészlista kész és nettó vágásméretekkel éllevonás után.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/hu/3cutting.png" alt="Szabástervek">
+          <div class="shot-caption">
+            <span>Guillotine szabásterv hulladékkövetéssel és száliránnyal.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/hu/4materials.png" alt="Anyagok & textúrák">
+          <div class="shot-caption">
+            <span>Lapvastagságok, színek, felületi textúrák (PNG/JPG/WEBP) és élek.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/hu/5lighttheme.png" alt="Világos téma">
+          <div class="shot-caption">
+            <span>Nagy kontrasztú világos téma a rendszerrel szinkronizálva.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/hu/6languages.png" alt="22 nyelv">
+          <div class="shot-caption">
+            <span>Azonnali váltás 22 nyelv között és fordított PDF-export.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Letöltések</span>
+        <h2 class="section-title">QuadFurn CAD v0.2.2 letöltése</h2>
+        <p class="section-desc">Önálló futtatható fájlok külső függőségek nélkül.</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64 bites)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Hordozható fájl ikonnal, nem igényel telepítést.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Telepítés Debian / Ubuntu rendszeren:</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (Universal Binary)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Univerzális alkalmazáscsomag Apple Silicon és Intel x86_64 gépekre.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Hatékonyság</span>
+        <h2 class="section-title">Gyorsbillentyűk és navigáció</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">Billentyű</th>
+              <th>Művelet</th>
+              <th style="width: 180px;">Hatókör</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>Kijelölő / Mozgató eszköz (8 fogantyú, keretes kijelölés)</td>
+              <td>2D nézetek</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>Elem létrehozása kerettel az aktív síkban</td>
+              <td>2D nézetek</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>Mérőszalag (pontos távolságmérés milliméterben)</td>
+              <td>2D nézetek</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>Belső nézetes repülés (WASD)</td>
+              <td>3D ablak</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>Elemek mozgatása rács-lépésközzel (Shift: dupla lépés)</td>
+              <td>2D nézetek</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>Elemek másolása / beillesztése (fülek között)</td>
+              <td>Minden fül</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>Kijelölt elemek duplázása eltolással</td>
+              <td>Aktív projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>Projekt mentése .qfurn / .json fájlba</td>
+              <td>Aktív projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>Visszavonás (akár 40 előzmény-lépés)</td>
+              <td>Aktív projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>Kijelölt elemek törlése</td>
+              <td>Aktív projekt</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Nyílt forráskódú CAD szoftver asztalosoknak és bútorgyártóknak.</span>
+        <span>Terjesztve az MIT licenc alatt.</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html">Deutsch</a>
+<a href="pl.html">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html">简体中文</a>
+<a href="ja.html">日本語</a>
+<a href="ko.html">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html" class="active">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

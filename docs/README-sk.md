@@ -83,32 +83,32 @@ QuadFurn spája najlepšiu ergonómiu troch osvedčených nástrojov:
 ### 1. 4-pohľadový CAD konštruktér (Tmavý motív)
 Synchrónne pravouhlé priemety (**Pôdorys XY**, **Nárys XZ**, **Bokorys YZ**) a perspektívny **3D pohľad** s textúrovaním, 8-bodovými manipulačnými bodmi zmeny rozmerov a pravým **Inšpektorom dielcov**.
 
-![4-pohľadový CAD konštruktér](../assets/screenshots/1designer.png)
+![4-pohľadový CAD konštruktér](screenshots/sk/1designer.png)
 
 ### 2. Kusovník dielcov a špecifikácia
 Prehľadná tabuľka zobrazujúca ako **Hotové rozmery dielca (`L × W`)**, tak **Čisté rezné rozmery na pílu (`CUT L × W`)** po odpočítaní hrúbky hrán na jednotlivých stranách (`L1`, `L2`, `W1`, `W2`).
 
-![Kusovník dielcov](../assets/screenshots/2specs.png)
+![Kusovník dielcov](screenshots/sk/2specs.png)
 
 ### 3. Gilotínový nárezový plán veľkoplošných dosiek
 Optimalizované rozvrhnutie dielcov na štandardné formáty dosiek (`2800 × 2070 mm` a pod.) s priebežnými gilotínovými rezmi, prerezom kotúča, orezom okrajov, označením hrán a evidenciou využiteľných zvyškov.
 
-![Nárezový plán](../assets/screenshots/3cutting.png)
+![Nárezový plán](screenshots/sk/3cutting.png)
 
 ### 4. Katalóg materiálov a hrán
 Správa hrúbok plošných materiálov, 3D farieb, vlastných textúr povrchov (`PNG`, `JPG`, `WEBP`), zámkov štruktúry dreva a typov ABS/PVC hrán.
 
-![Katalóg materiálov a hrán](../assets/screenshots/4materials.png)
+![Katalóg materiálov a hrán](screenshots/sk/4materials.png)
 
 ### 5. Podpora svetlého motívu
 Moderný svetlý motív s vysokým kontrastom popri tmavom motíve s možnosťou automatickej synchronizácie so systémovým nastavením Windows/macOS/Linux.
 
-![Svetlý motív](../assets/screenshots/5lighttheme.png)
+![Svetlý motív](screenshots/sk/5lighttheme.png)
 
 ### 6. 22 integrovaných jazykov (Rozhranie aj PDF export)
 Okamžité prepínanie jazykov bez reštartu tlačidlom **`🌐`** v hornej lište, automatická detekcia jazyka operačného systému pri prvom spustení a lokalizované viacstranové PDF výstupy.
 
-![22 jazykov rozhrania](../assets/screenshots/6languages.png)
+![22 jazykov rozhrania](screenshots/sk/6languages.png)
 
 ---
 

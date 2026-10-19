@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — 箱物家具設計 CAD ＆ ギロチン式 2D 木取り最適化</title>
+  <meta name="description" content="Rust 製の高速・ネイティブ家具設計 CAD。4 画面モデリング、エッジテープ厚自動控除、パネルソー用正味切断寸法算出、板割り最適化。">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="ja.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">機能</a>
+        <a href="#showcase">インターフェース</a>
+        <a href="#downloads">ダウンロード</a>
+        <a href="#shortcuts">ショートカット</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html">🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html">🇩🇪 Deutsch</option>
+<option value="pl.html">🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html">🇨🇳 简体中文</option>
+<option value="ja.html" selected>🇯🇵 日本語</option>
+<option value="ko.html">🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html">🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html">🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html">🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html">🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">ダウンロード</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>v0.2.2 リリース • MIT オープンソース • ネイティブデスクトップ</span>
+      </div>
+
+      <h1 class="hero-title">
+        家具パネル設計 4 画面 CAD ＆ ギロチン式木取り最適化
+      </h1>
+
+      <p class="hero-subtitle">
+        木工所・家具職人のための高速デスクトップ CAD。3D/2D 正射影図の同期編集、計算式直接入力、エッジテープ厚自動控除、板材切断最適化。
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Windows 版をダウンロード (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          すべてのプラットフォーム
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/ja/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">主な特徴</span>
+        <h2 class="section-title">家具工場・木工ワークショップのための高精度設計</h2>
+        <p class="section-desc">4 画面の連動作図、正確な数値入力、貫通切断（ギロチンカット）木取り計算を 1 つに統合。</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4 画面空間モデリング</h3>
+          <p>上面図（XY）、正面図（XZ）、側面図（YZ）、3D パース図の 4 画面で同時編集。マグネット吸着と寸法測定。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>高精度トランスフォームバー</h3>
+          <p>3次元座標（X, Y, Z）、仕上がり寸法（L × W × T）、回転角（∠Z）を直接入力。入力欄に 600-4 などの四則演算式を直接入力可能。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>エッジ厚自動控除と正味寸法</h3>
+          <p>部材の 4 辺に PVC/ABS エッジテープ厚（0.4〜2.0 mm）を割り当て、パネルソー用の正味切断寸法を自動算出。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>ギロチン式 2D 木取り最適化</h3>
+          <p>木目方向、鋸刃のアサリ幅（例: 4.0 mm）、外周トリミング幅を考慮した最適板割り計算。残材の自動計測。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>複数製品タブ＆プロジェクト間コピー</h3>
+          <p>複数の家具製品をタブで同時に編集。部材をコピー＆ペースト（Ctrl+C / Ctrl+V）して別製品へ転送可能。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>ベクター PDF 生産図面エクスポート</h3>
+          <p>印刷用 A4 横向き PDF を出力：木取り表、4 画面図面、板割り配置図、材料・テープ集計（+15% 余白）。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">外観</span>
+        <h2 class="section-title">インターフェースと設計の流れ</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4 画面 CAD</button>
+        <button class="tab-btn" onclick="switchTab(1)">部材明細表</button>
+        <button class="tab-btn" onclick="switchTab(2)">木取り図</button>
+        <button class="tab-btn" onclick="switchTab(3)">材料＆テクスチャ</button>
+        <button class="tab-btn" onclick="switchTab(4)">ライトテーマ</button>
+        <button class="tab-btn" onclick="switchTab(5)">22 言語</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/ja/1designer.png" alt="4 画面 CAD">
+          <div class="shot-caption">
+            <span>同期 2D 正射影図とハードウェア アクセラレーション 3D 表示。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ja/2specs.png" alt="部材明細表">
+          <div class="shot-caption">
+            <span>仕上がり寸法とエッジ厚控除後の正味切断寸法を並列表示。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ja/3cutting.png" alt="木取り図">
+          <div class="shot-caption">
+            <span>木目方向を固定した原板の貫通切断と残材ラベル。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ja/4materials.png" alt="材料＆テクスチャ">
+          <div class="shot-caption">
+            <span>板厚設定、RGB カラー、テクスチャ（PNG/JPG/WEBP）管理。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ja/5lighttheme.png" alt="ライトテーマ">
+          <div class="shot-caption">
+            <span>システムと同期する見やすい高コントラスト ライトテーマ。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ja/6languages.png" alt="22 言語">
+          <div class="shot-caption">
+            <span>22 種類の内蔵言語切り替えと多言語 PDF 出力。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">ダウンロード</span>
+        <h2 class="section-title">QuadFurn CAD v0.2.2 を入手</h2>
+        <p class="section-desc">外部ランタイム不要のスタンドアロン ネイティブ バイナリ。</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64 ビット)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">ポータブル ZIP。解凍してそのまま実行可能。</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Debian / Ubuntu インストール コマンド:</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (Universal Binary)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Apple Silicon (M1–M4) および Intel x86_64 両対応の Universal Bundle。</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">操作性</span>
+        <h2 class="section-title">キーボード ショートカット</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">キー</th>
+              <th>動作</th>
+              <th style="width: 180px;">対象</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>選択・移動ツール（ドラッグ移動、8 個のサイズハンドル、矩形選択）</td>
+              <td>2D 画面</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>矩形枠で部材を作成（現在の平面にパネルを配置）</td>
+              <td>2D 画面</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>メジャー ツール（2 点間の距離をミリ単位で計測）</td>
+              <td>2D 画面</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>一人称フライト モード（Z キーで視点固定、WASD で移動）</td>
+              <td>3D 画面</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>グリッド単位で部材を移動（Shift 併用で 2 倍移動）</td>
+              <td>2D 画面</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>部材のコピー＆ペースト（タブ間対応）</td>
+              <td>全タブ</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>選択部材のオフセット複製</td>
+              <td>作業中プロジェクト</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>プロジェクトを .qfurn / .json に保存</td>
+              <td>作業中プロジェクト</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>元に戻す（最大 40 段階の履歴）</td>
+              <td>作業中プロジェクト</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>選択部材を削除</td>
+              <td>作業中プロジェクト</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>家具製造業・木工デザイナーのためのオープンソース CAD。</span>
+        <span>MIT ライセンスの下で自由に利用可能。</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html">Deutsch</a>
+<a href="pl.html">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html">简体中文</a>
+<a href="ja.html" class="active">日本語</a>
+<a href="ko.html">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

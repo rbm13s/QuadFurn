@@ -83,32 +83,32 @@ O QuadFurn reúne a ergonomia de três ferramentas consagradas num único fluxo 
 ### 1. Modelador CAD de 4 vistas (Tema Escuro)
 Projeções ortogonais sincronizadas (**Planta XY**, **Elevação XZ**, **Corte YZ**) e **Vista 3D** com texturas com correção de perspetiva, manipuladores de 8 pontos de redimensionamento e **Inspetor de peças** à direita.
 
-![Modelador CAD de 4 vistas](../assets/screenshots/1designer.png)
+![Modelador CAD de 4 vistas](screenshots/pt/1designer.png)
 
 ### 2. Lista de peças (Especificações) e corte
 Tabela completa exibindo tanto as **Dimensões finais da peça (`L × W`)** quanto as **Medidas de corte na serra (`CUT L × W`)** após dedução das fitas de bordo em cada face (`L1`, `L2`, `W1`, `W2`).
 
-![Tabela de especificações](../assets/screenshots/2specs.png)
+![Tabela de especificações](screenshots/pt/2specs.png)
 
 ### 3. Plano de corte de chapas por guilhotina
 Otimização em chapas padrão (`2800 × 2070 mm`, etc.) com cortes retos de guilhotina de ponta a ponta, compensação da serra, margens de refilo, marcas visuais de fitas de bordo e sobras aproveitáveis.
 
-![Plano de corte de chapas](../assets/screenshots/3cutting.png)
+![Plano de corte de chapas](screenshots/pt/3cutting.png)
 
 ### 4. Catálogo de materiais e fitas de bordo
 Gestão de espessuras de placas, cores 3D, texturas personalizadas (`PNG`, `JPG`, `WEBP`), restrições de veios e tipos de fitas de bordo em PVC/ABS.
 
-![Catálogo de materiais e fitas de bordo](../assets/screenshots/4materials.png)
+![Catálogo de materiais e fitas de bordo](screenshots/pt/4materials.png)
 
 ### 5. Suporte para Tema Claro
 Tema claro nítido e de alto contraste a par do Tema Escuro e com deteção automática do tema do sistema operativo.
 
-![Interface em Tema Claro](../assets/screenshots/5lighttheme.png)
+![Interface em Tema Claro](screenshots/pt/5lighttheme.png)
 
 ### 6. 22 idiomas integrados (Interface e exportação PDF)
 Troca instantânea de idioma sem reiniciar através do seletor **`🌐`** na barra superior, deteção automática do idioma do sistema operativo no primeiro arranque e relatórios PDF totalmente traduzidos.
 
-![22 idiomas disponíveis](../assets/screenshots/6languages.png)
+![22 idiomas disponíveis](screenshots/pt/6languages.png)
 
 ---
 

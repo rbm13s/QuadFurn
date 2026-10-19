@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — 판재 가구 설계 CAD & 2D 길로틴 재단 최적화</title>
+  <meta name="description" content="Rust 기반 고성능 판재 가구 CAD. 4-뷰포트 동기화 모델링, 에지 밴딩 두께 자동 공제, 재단기용 순수 절단 치수 계산 및 2D 길로틴 재단 최적화.">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="ko.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">기능</a>
+        <a href="#showcase">인터페이스</a>
+        <a href="#downloads">다운로드</a>
+        <a href="#shortcuts">단축키</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html">🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html">🇩🇪 Deutsch</option>
+<option value="pl.html">🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html">🇨🇳 简体中文</option>
+<option value="ja.html">🇯🇵 日本語</option>
+<option value="ko.html" selected>🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html">🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html">🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html">🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html">🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">다운로드</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>v0.2.2 출시 • MIT 오픈 소스 • 네이티브 데스크톱</span>
+      </div>
+
+      <h1 class="hero-title">
+        판재 가구 4-뷰포트 공간 CAD & 길로틴 방식 재단 최적화
+      </h1>
+
+      <p class="hero-subtitle">
+        가구 제작 공방 및 공장을 위한 고성능 데스크톱 CAD. 4-뷰포트 동기화 설계, 사칙연산 수식 지원 치수 입력, 에지 두께 자동 공제, 최적 재단 배치.
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Windows 버전 다운로드 (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          모든 플랫폼
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/ko/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">핵심 기능</span>
+        <h2 class="section-title">가구 제작 공방을 위한 엔지니어링 정밀 설계</h2>
+        <p class="section-desc">4-뷰포트 연동 도면 작성, 정밀 수치 변환 제어, 판재 관통 재단 최적화를 하나로 통합했습니다.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4-뷰포트 공간 모델링</h3>
+          <p>평면도(XY), 정면도(XZ), 측면도(YZ) 및 3D 원근 뷰 동시 편집. 자석 스냅 및 실시간 간격 측정 치수 표시.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>정밀 변환 툴바</h3>
+          <p>부품의 3차원 좌표(X, Y, Z), 크기(L × W × T), 각도(∠Z)를 직접 입력. 입력창에 600-4 또는 (800-36)/2 같은 수식 즉시 계산.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>에지 두께 자동 공제</h3>
+          <p>판재 사방 4면에 PVC/ABS 에지 밴딩(0.4~2.0 mm)을 지정하면 재단기용 순수 절단 치수를 자동으로 정확하게 산출.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>2D 길로틴 재단 최적화</h3>
+          <p>나뭇결 방향, 톱날 두께(4.0 mm), 원판 테두리 다듬기 여유를 반영하는 고성능 재단 엔진. 사용 가능한 잔재 자동 기록.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>다중 제품 탭 및 복사/붙여넣기</h3>
+          <p>여러 제품 탭을 동시에 작업. 프로젝트 간 부품 복사 및 붙여넣기(Ctrl+C / Ctrl+V) 시 자재 및 에지 속성 자동 전송.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>벡터 PDF 생산 도면 문서</h3>
+          <p>인쇄용 A4 가로 규격 PDF 출력: 부품 명세서, 4-뷰포트 도면, 판재별 재단 배치도, 자재 및 에지 소요량(+15% 여유분 포함).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">둘러보기</span>
+        <h2 class="section-title">인터페이스 및 작업 흐름</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4-뷰포트 CAD</button>
+        <button class="tab-btn" onclick="switchTab(1)">부품 명세서</button>
+        <button class="tab-btn" onclick="switchTab(2)">재단 배치도</button>
+        <button class="tab-btn" onclick="switchTab(3)">자재 및 텍스처</button>
+        <button class="tab-btn" onclick="switchTab(4)">라이트 테마</button>
+        <button class="tab-btn" onclick="switchTab(5)">22개 언어</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/ko/1designer.png" alt="4-뷰포트 CAD">
+          <div class="shot-caption">
+            <span>동기화된 2D 직교 투영 뷰 및 하드웨어 가속 3D 뷰포트.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ko/2specs.png" alt="부품 명세서">
+          <div class="shot-caption">
+            <span>에지 두께 차감 후의 완성 치수 및 순수 재단 치수 목록.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ko/3cutting.png" alt="재단 배치도">
+          <div class="shot-caption">
+            <span>원판 관통 절단 재단도와 나뭇결 고정 및 잔재 치수 표시.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ko/4materials.png" alt="자재 및 텍스처">
+          <div class="shot-caption">
+            <span>판재 두께별 사양, 색상, 표면 텍스처(PNG/JPG/WEBP), 에지 규격 관리.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ko/5lighttheme.png" alt="라이트 테마">
+          <div class="shot-caption">
+            <span>운영체제와 연동되는 눈이 편안한 고대비 라이트 테마.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ko/6languages.png" alt="22개 언어">
+          <div class="shot-caption">
+            <span>22개 내장 인터페이스 언어 즉시 전환 및 다국어 PDF 출력.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">다운로드</span>
+        <h2 class="section-title">QuadFurn CAD v0.2.2 받기</h2>
+        <p class="section-desc">외부 런타임 설치가 필요 없는 단독 실행 파일.</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64비트)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">아이콘이 포함된 포터블 실행 파일 (설치 불필요).</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Debian / Ubuntu 패키지 설치:</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (Universal Binary)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Apple Silicon (M1–M4) 및 Intel x86_64를 모두 지원하는 Universal 번들.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">생산성</span>
+        <h2 class="section-title">단축키 및 조작법</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">키 / 조합</th>
+              <th>동작 설명</th>
+              <th style="width: 180px;">적용 범위</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>선택 / 이동 도구 (드래그 이동, 8개 조절점, 영역 박스 선택)</td>
+              <td>2D 뷰포트</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>박스로 부품 생성 (현재 평면에서 드래그하여 패널 생성)</td>
+              <td>2D 뷰포트</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>줄자 도구 (두 점 사이의 정밀한 거리 밀리미터 측정)</td>
+              <td>2D 뷰포트</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>1인칭 자유 비행 모드 (Z 키로 마우스 고정 후 WASD 이동)</td>
+              <td>3D 뷰포트</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>그리드 간격만큼 부품 미세 이동 (Shift 누르면 2배 이동)</td>
+              <td>2D 뷰포트</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>부품 복사 / 붙여넣기 (다른 제품 탭 간 지원)</td>
+              <td>모든 탭</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>선택한 부품 오프셋 복제</td>
+              <td>현재 프로젝트</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>프로젝트를 .qfurn / .json 파일로 저장</td>
+              <td>현재 프로젝트</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>실행 취소 (최대 40단계 내역 보관)</td>
+              <td>현재 프로젝트</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>선택한 부품 삭제</td>
+              <td>현재 프로젝트</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>가구 제작자 및 공방 디자이너를 위한 오픈 소스 CAD 소프트웨어.</span>
+        <span>MIT 라이선스 하에 자유롭게 배포 가능.</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html">Deutsch</a>
+<a href="pl.html">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html">简体中文</a>
+<a href="ja.html">日本語</a>
+<a href="ko.html" class="active">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -83,32 +83,32 @@ QuadFurn łączy zalety trzech klasycznych narzędzi:
 ### 1. 4-rzutowy projektant CAD (Ciemny motyw)
 Jednoczesne widoki 2D (**Góra XY**, **Przód XZ**, **Bok YZ**) oraz teksturowane okno **3D** z poprawnym mapowaniem UV, 8 uchwytami zmiany rozmiaru i prawym **Inspektorem elementów**.
 
-![4-rzutowy projektant CAD](../assets/screenshots/1designer.png)
+![4-rzutowy projektant CAD](screenshots/pl/1designer.png)
 
 ### 2. Wykaz elementów (Specyfikacja) i eksport
 Zgrupowana tabela elementów z prezentacją **wymiarów gabarytowych (`Dł × Szer`)** oraz **wymiarów cięcia (`Cięcie Dł × Szer`)** po odliczeniu obrzeża z 4 stron (`D1`, `D2`, `S1`, `S2`).
 
-![Tabela specyfikacji](../assets/screenshots/2specs.png)
+![Tabela specyfikacji](screenshots/pl/2specs.png)
 
 ### 3. Mapy rozkroju płyt
 Optymalny układ elementów na standardowych arkuszach (`2800 × 2070 mm` itp.) z cięciami gilotynowymi, rzazem piły, obrzeżami i listą użytecznych odpadów użytkowych.
 
-![Rozkrój płyt](../assets/screenshots/3cutting.png)
+![Rozkrój płyt](screenshots/pl/3cutting.png)
 
 ### 4. Katalog materiałów i obrzeży
 Zarządzanie grubościami płyt, kolorami w 3D, teksturami dekorów (`PNG`, `JPG`, `WEBP`), wymiarami arkuszy, blokadą usłojenia i typami obrzeży PCV/ABS.
 
-![Katalog materiałów](../assets/screenshots/4materials.png)
+![Katalog materiałów](screenshots/pl/4materials.png)
 
 ### 5. Jasny motyw
 Czytelny, kontrastowy jasny motyw obok ciemnego oraz automatyczna synchronizacja z motywem systemu operacyjnego.
 
-![Jasny motyw](../assets/screenshots/5lighttheme.png)
+![Jasny motyw](screenshots/pl/5lighttheme.png)
 
 ### 6. 22 wbudowane języki
 Przełączanie języka w czasie rzeczywistym przyciskiem **`🌐`**, automatyczne wykrywanie języka systemu oraz zlokalizowany eksport do PDF.
 
-![22 języki](../assets/screenshots/6languages.png)
+![22 języki](screenshots/pl/6languages.png)
 
 ---
 

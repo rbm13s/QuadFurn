@@ -83,32 +83,32 @@ QuadFurn combina la mejor ergonomía de tres herramientas clásicas:
 ### 1. Diseñador de 4 vistas (Tema Oscuro)
 Vistas ortogonales simultáneas (**Superior XY**, **Frontal XZ**, **Lateral YZ**) y ventana **3D texturizada** con mapeo UV, 8 manejadores de redimensionado e **Inspector de piezas**.
 
-![Diseñador CAD](../assets/screenshots/1designer.png)
+![Diseñador CAD](screenshots/es/1designer.png)
 
 ### 2. Lista de piezas (Especificación) y exportación
 Tabla agrupada con dimensiones terminadas y **medidas netas de corte** tras descontar el grosor del canto en los cuatro lados (`L1`, `L2`, `An1`, `An2`).
 
-![Tabla de especificación](../assets/screenshots/2specs.png)
+![Tabla de especificación](screenshots/es/2specs.png)
 
 ### 3. Diagramas de corte por guillotina
 Distribución optimizada en tableros estándar (`2800 × 2070 mm`, etc.) con cortes continuos, sangría de sierra, marcas de color de cantos y lista de retales útiles.
 
-![Esquemas de corte](../assets/screenshots/3cutting.png)
+![Esquemas de corte](screenshots/es/3cutting.png)
 
 ### 4. Catálogo de tableros y cantos
 Gestión de espesores de tableros, colores 3D, texturas de acabado (`PNG`, `JPG`, `WEBP`), dimensiones de tablero y tipos de canto PVC/ABS.
 
-![Catálogo de materiales](../assets/screenshots/4materials.png)
+![Catálogo de materiales](screenshots/es/4materials.png)
 
 ### 5. Compatibilidad con tema claro
 Tema claro de alto contraste junto con tema oscuro y sincronización con el sistema operativo.
 
-![Tema claro](../assets/screenshots/5lighttheme.png)
+![Tema claro](screenshots/es/5lighttheme.png)
 
 ### 6. 22 idiomas integrados
 Cambio de idioma instantáneo desde la barra superior mediante el botón **`🌐`** y exportación de PDF multilingüe.
 
-![22 idiomas](../assets/screenshots/6languages.png)
+![22 idiomas](screenshots/es/6languages.png)
 
 ---
 

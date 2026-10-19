@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — Møbel-CAD & 2D Giljotin Kappeoptimalisering</title>
+  <meta name="description" content="Rask skrivebords-CAD i Rust for møbler av sponplater, MDF og kryssfiner med automatisk kantlistfradrag og 2D giljotin kappeoptimalisering.">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="no.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">Funksjoner</a>
+        <a href="#showcase">Galleri</a>
+        <a href="#downloads">Last ned</a>
+        <a href="#shortcuts">Snarveier</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html">🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html">🇩🇪 Deutsch</option>
+<option value="pl.html">🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html">🇨🇳 简体中文</option>
+<option value="ja.html">🇯🇵 日本語</option>
+<option value="ko.html">🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html">🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html" selected>🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html">🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html">🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">Last ned</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>Versjon v0.2.2 • MIT Open Source • Native Desktop</span>
+      </div>
+
+      <h1 class="hero-title">
+        Romlig CAD for Platemøbler & Giljotin Kappeoptimalisering
+      </h1>
+
+      <p class="hero-subtitle">
+        Rask CAD for møbelsnekkere. 4-visnings synkronisert modellering, formelberegning, kantlistfradrag og kappeskjema.
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Last ned for Windows (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Alle plattformer
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/no/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Egenskaper</span>
+        <h2 class="section-title">Teknisk presisjon for møbelverksteder</h2>
+        <p class="section-desc">Forener 4-visnings tegning, numerisk kontroll og kappeoptimalisering i ett program.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4-visnings romlig modellering</h3>
+          <p>Samtidig redigering i Plan (XY), Oppriss (XZ), Snitt (YZ) og 3D med magnetisk lås og dynamiske avstandsmål.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Presisjonstransformeringslinje</h3>
+          <p>Direkte inntasting av koordinater (X, Y, Z), mål (L × B × T) og vinkel med formelberegner (f.eks. 600-4).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>Automatisk kantlistfradrag</h3>
+          <p>Tildeling av PVC/ABS-kantlist (0,4–2,0 mm) til 4 kanter for å beregne det nøyaktige netto sagmålet.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>2D giljotin kappeoptimalisering</h3>
+          <p>Kappemotor som ivaretar treretning, bladbredde (4,0 mm), renskjæring og oversikt over brukbare kapprester.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>Produktfaner & kopiering mellom prosjekter</h3>
+          <p>Jobb på flere møbler samtidig. Kopier og lim inn deler mellom faner med overføring av materialer.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>Vektor-PDF produksjonspass</h3>
+          <p>Utskriftsklart A4 Liggende dokument: deleliste, 4-visnings tegninger, kappeskjema og materialoversikt med +15 % margin.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Oversikt</span>
+        <h2 class="section-title">Grensesnitt & arbeidsflyt</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4-visnings CAD</button>
+        <button class="tab-btn" onclick="switchTab(1)">Deleliste</button>
+        <button class="tab-btn" onclick="switchTab(2)">Kappeskjema</button>
+        <button class="tab-btn" onclick="switchTab(3)">Materialer & teksturer</button>
+        <button class="tab-btn" onclick="switchTab(4)">Lyst tema</button>
+        <button class="tab-btn" onclick="switchTab(5)">22 språk</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/no/1designer.png" alt="4-visnings CAD">
+          <div class="shot-caption">
+            <span>Synkroniserte 2D-projeksjoner og 3D-visning med komponentinspektør.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/no/2specs.png" alt="Deleliste">
+          <div class="shot-caption">
+            <span>Deleliste med ferdige mål og netto sagmål etter kantlistfradrag.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/no/3cutting.png" alt="Kappeskjema">
+          <div class="shot-caption">
+            <span>Giljotin-kappeplan med restsporing og treretning.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/no/4materials.png" alt="Materialer & teksturer">
+          <div class="shot-caption">
+            <span>Katalog over platetykkelser, farger, teksturer (PNG/JPG/WEBP) og kantlister.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/no/5lighttheme.png" alt="Lyst tema">
+          <div class="shot-caption">
+            <span>Lyst tema med høy kontrast synkronisert med systemet.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/no/6languages.png" alt="22 språk">
+          <div class="shot-caption">
+            <span>Øyeblikkelig bytte mellom 22 språk og oversatt PDF-eksport.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Nedlastinger</span>
+        <h2 class="section-title">Last ned QuadFurn CAD v0.2.2</h2>
+        <p class="section-desc">Frittstående kjørbare filer uten eksterne avhengigheter.</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64-bit)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Portabel kjørbar fil med ikon, ingen installasjon nødvendig.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Installasjon på Debian / Ubuntu:</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (Universal Binary)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Universal App-pakke for Apple Silicon (M1–M4) og Intel x86_64.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Produktivitet</span>
+        <h2 class="section-title">Tastatursnarveier og navigasjon</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">Tast</th>
+              <th>Handling</th>
+              <th style="width: 180px;">Område</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>Velg / Flytt-verktøy (8 håndtak, markeringsboks)</td>
+              <td>2D-visninger</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>Opprett del med boks i aktivt plan</td>
+              <td>2D-visninger</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>Målebånd (nøyaktig måling av avstander i mm)</td>
+              <td>2D-visninger</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>Frifluktmodus i førsteperson (WASD)</td>
+              <td>3D-vindu</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>Flytt deler etter rutenettstrinn (Shift for dobbelt trinn)</td>
+              <td>2D-visninger</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>Kopier / lim inn deler (mellom faner)</td>
+              <td>Alle faner</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>Dupliser valgte deler med forskyvning</td>
+              <td>Aktivt prosjekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>Lagre prosjekt som .qfurn / .json fil</td>
+              <td>Aktivt prosjekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>Angre handling (opptil 40 trinn)</td>
+              <td>Aktivt prosjekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>Slett valgte deler</td>
+              <td>Aktivt prosjekt</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Åpen kildekode CAD-programvare for møbelsnekkere og innredningsprodusenter.</span>
+        <span>Distribuert under MIT-lisensen.</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html">Deutsch</a>
+<a href="pl.html">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html">简体中文</a>
+<a href="ja.html">日本語</a>
+<a href="ko.html">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html" class="active">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

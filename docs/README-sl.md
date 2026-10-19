@@ -83,32 +83,32 @@ QuadFurn združuje najboljšo ergonomijo treh uveljavljenih orodij:
 ### 1. 4-pogledni CAD načrtovalec (Temna tema)
 Usklajene pravokotne projekcije (**Tloris XY**, **Naris XZ**, **Stranski ris YZ**) in perspektivni **3D pogled** s teksturami, 8-točkovnimi ročicami za spreminjanje velikosti ter desnim **Inšpektorjem elementov**.
 
-![4-pogledni CAD načrtovalec](../assets/screenshots/1designer.png)
+![4-pogledni CAD načrtovalec](screenshots/sl/1designer.png)
 
 ### 2. Kosovnica elementov in specifikacije
 Pregledna tabela s prikazom tako **Končnih mer elementov (`L × W`)** kot **Čistih rezalnih mer za žago (`CUT L × W`)** po odštetju debelin robnih trakov na posameznih stranicah (`L1`, `L2`, `W1`, `W2`).
 
-![Kosovnica elementov](../assets/screenshots/2specs.png)
+![Kosovnica elementov](screenshots/sl/2specs.png)
 
 ### 3. Gilotinski načrt razreza plošč
 Optimizirana razporeditev elementov na standardne formate plošč (`2800 × 2070 mm` itd.) s prebojnimi gilotinskimi rezi, rezalno režo žage, robnimi obrezi, oznakami trakov in evidenco uporabnih ostankov.
 
-![Načrt razreza plošč](../assets/screenshots/3cutting.png)
+![Načrt razreza plošč](screenshots/sl/3cutting.png)
 
 ### 4. Katalog materialov in robnih trakov
 Upravljanje debelin plošč, barv 3D, lastnih tekstur površin (`PNG`, `JPG`, `WEBP`), smeri lesnih vlaken in vrst ABS/PVC trakov.
 
-![Katalog materialov in robnih trakov](../assets/screenshots/4materials.png)
+![Katalog materialov in robnih trakov](screenshots/sl/4materials.png)
 
 ### 5. Podpora za Svetlo temo
 Sodobna svetla tema z visokim kontrastom poleg temne teme in možnostjo samodejne uskladitve s sistemskimi nastavitvami.
 
-![Svetla tema](../assets/screenshots/5lighttheme.png)
+![Svetla tema](screenshots/sl/5lighttheme.png)
 
 ### 6. 22 vgrajenih jezikov (Vmesnik in izvoz PDF)
 Takojšnje preklapljanje med jeziki brez ponovnega zagona prek gumba **`🌐`** v zgornji orodni vrstici, samodejno zaznavanje jezika operacijskega sistema ob prvem zagonu in večstranski prevedeni PDF izvozi.
 
-![22 jezikov vmesnika](../assets/screenshots/6languages.png)
+![22 jezikov vmesnika](screenshots/sl/6languages.png)
 
 ---
 

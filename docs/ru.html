@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — САПР корпусной мебели и карт раскроя ЛДСП</title>
+  <meta name="description" content="Быстрый нативный 3D/2D CAD на Rust для проектирования корпусной мебели из ЛДСП, МДФ и фанеры с автоматическим вычетом кромки и гильотинным раскроем.">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="ru.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">Возможности</a>
+        <a href="#showcase">Интерфейс</a>
+        <a href="#downloads">Скачать</a>
+        <a href="#shortcuts">Горячие клавиши</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html" selected>🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html">🇩🇪 Deutsch</option>
+<option value="pl.html">🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html">🇨🇳 简体中文</option>
+<option value="ja.html">🇯🇵 日本語</option>
+<option value="ko.html">🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html">🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html">🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html">🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html">🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">Скачать</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>Релиз v0.2.2 • Открытый исходный код MIT • Нативный десктоп</span>
+      </div>
+
+      <h1 class="hero-title">
+        САПР корпусной мебели с 4 окнами проекций и гильотинным раскроем
+      </h1>
+
+      <p class="hero-subtitle">
+        Быстрый настольный CAD для мебельщиков. Синхронное 4-видовое моделирование, мгновенный ввод точных размеров с калькулятором, автоматический вычет кромки и раскрой плит.
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Скачать для Windows (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Все платформы
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/ru/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Возможности</span>
+        <h2 class="section-title">Инженерная точность для мебельных производств</h2>
+        <p class="section-desc">Объединяет черчение в 4 проекциях, точное числовое позиционирование и оптимизацию карт раскроя в едином приложении.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4-видовое пространственное моделирование</h3>
+          <p>Одновременная работа в трех ортогональных проекциях (Сверху XY, Спереди XZ, Сбоку YZ) со скроллбарами, магнитной привязкой и интерактивным 3D-окном.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Панель точной трансформации</h3>
+          <p>Мгновенный ввод числовых координат (X, Y, Z), габаритов (Д × Ш × Т) и угла (∠Z) со встроенным калькулятором: ввод 600-4 или (800-36)/2 прямо в поле.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>Автоматический вычет кромки</h3>
+          <p>Назначение кромки ПВХ/АБС (0.4–2.0 мм) на любую из 4 граней (Д1, Д2, Ш1, Ш2) с мгновенным расчетом точных пилильных размеров для форматно-раскроечного станка.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>Оптимизация гильотинного раскроя</h3>
+          <p>Быстрый движок раскроя с учетом направления текстуры дерева, ширины пропила пилы, отступов обрезки краев листа и учета полезных деловых остатков.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>Вкладки изделий и буфер обмена</h3>
+          <p>Работа с несколькими проектами одновременно во вкладках. Копирование и вставка деталей между изделиями с автоматическим переносом материалов и кромок.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>Векторный PDF-паспорт изделия</h3>
+          <p>Экспорт готового к печати альбома A4 Альбомная: спецификация, чертежи 4 проекций, карты раскроя листов и сводная ведомость материалов и кромок с запасом +15%.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Обзор</span>
+        <h2 class="section-title">Интерфейс и рабочий процесс</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4-видовой CAD</button>
+        <button class="tab-btn" onclick="switchTab(1)">Спецификация деталей</button>
+        <button class="tab-btn" onclick="switchTab(2)">Карты раскроя</button>
+        <button class="tab-btn" onclick="switchTab(3)">Материалы и текстуры</button>
+        <button class="tab-btn" onclick="switchTab(4)">Светлая тема</button>
+        <button class="tab-btn" onclick="switchTab(5)">22 языка</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/ru/1designer.png" alt="4-видовой CAD">
+          <div class="shot-caption">
+            <span>Синхронные 2D-проекции (Сверху XY, Спереди XZ, Сбоку YZ) и аппаратное 3D-окно с Инспектором деталей.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ru/2specs.png" alt="Спецификация деталей">
+          <div class="shot-caption">
+            <span>Сгруппированная спецификация с габаритными и пилильными размерами после автоматического вычета толщины кромок.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ru/3cutting.png" alt="Карты раскроя">
+          <div class="shot-caption">
+            <span>Гильотинный сквозной раскрой на стандартных листах с деловыми остатками, пропилом пилы и фиксацией текстуры.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ru/4materials.png" alt="Материалы и текстуры">
+          <div class="shot-caption">
+            <span>Справочник толщин ЛДСП/МДФ, произвольные цвета, текстуры (PNG/JPG/WEBP) и каталог кромочных материалов.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ru/5lighttheme.png" alt="Светлая тема">
+          <div class="shot-caption">
+            <span>Контрастная светлая тема наряду с темной и автоматической синхронизацией с системной темой Windows.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/ru/6languages.png" alt="22 языка">
+          <div class="shot-caption">
+            <span>Мгновенное переключение между 22 встроенными языками интерфейса и локализованный экспорт в PDF.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Загрузка</span>
+        <h2 class="section-title">Скачать QuadFurn CAD v0.2.2</h2>
+        <p class="section-desc">Полностью автономные бинарные файлы без внешних зависимостей.</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64-бит)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Портативный исполняемый файл с иконкой, не требует установки.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Установка пакета для Debian / Ubuntu:</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (Universal Binary)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Универсальный бандл QuadFurn.app для Apple Silicon (M1–M4) и Intel x86_64.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Управление</span>
+        <h2 class="section-title">Горячие клавиши и навигация</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">Клавиша</th>
+              <th>Действие</th>
+              <th style="width: 180px;">Область</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>Инструмент Выбор / Сдвиг (перемещение, 8 маркеров размера, рамка выделения)</td>
+              <td>2D-проекции</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>Создать деталь рамкой (растягивание прямоугольника в текущей плоскости)</td>
+              <td>2D-проекции</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>Линейка (замер точных расстояний ΔX, ΔY, L в миллиметрах)</td>
+              <td>2D-проекции</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>Режим полета от первого лица (Noclip с управлением WASD + мышью)</td>
+              <td>3D-окно</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>Сдвиг выбранных деталей на шаг сетки (Shift — двойной шаг)</td>
+              <td>2D-проекции</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>Копировать / вставить выбранные детали (работает между вкладками изделий)</td>
+              <td>Все вкладки</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>Дублировать выбранные детали со смещением</td>
+              <td>Активный проект</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>Сохранить изделие в файл .qfurn / .json</td>
+              <td>Активный проект</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>Отменить последнее действие (до 40 шагов истории)</td>
+              <td>Активный проект</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>Удалить выбранные детали</td>
+              <td>Активный проект</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Свободное программное обеспечение для конструкторов корпусной мебели и цехов распила.</span>
+        <span>Распространяется под свободной лицензией MIT.</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html" class="active">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html">Deutsch</a>
+<a href="pl.html">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html">简体中文</a>
+<a href="ja.html">日本語</a>
+<a href="ko.html">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

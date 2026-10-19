@@ -83,32 +83,32 @@ QuadFurn forener ergonomien fra tre klassiske værktøjer i ét samlet arbejdsfl
 ### 1. 4-visnings CAD-designer (Mørkt tema)
 Synkrone ortogonale planer (**Plan XY**, **Front XZ**, **Side YZ**) og tekstureret **3D-visning** med perspektivkorrekt UV-kortlægning, 8-punkts størrelseshåndtag og højre **Elementinspektør**.
 
-![4-visnings CAD-designer](../assets/screenshots/1designer.png)
+![4-visnings CAD-designer](screenshots/da/1designer.png)
 
 ### 2. Komponentliste (Stykliste) og specifikationer
 Overskuelig tabel, der viser både **Færdigmål (`L × W`)** og **Netto savmål (`CUT L × W`)** efter fradrag af kantbånd på hver kant (`L1`, `L2`, `W1`, `W2`).
 
-![Stykliste over komponenter](../assets/screenshots/2specs.png)
+![Stykliste over komponenter](screenshots/da/2specs.png)
 
 ### 3. Guillotine skæreoptimering af plader
 Nesting på standard pladestørrelser (`2800 × 2070 mm` osv.) med gennemgående guillotinesnit, klingetab, kantbeskæring, visuelle kantbåndsmarkeringer og oversigt over brugbare rester.
 
-![Skæreoptimering](../assets/screenshots/3cutting.png)
+![Skæreoptimering](screenshots/da/3cutting.png)
 
 ### 4. Plade- og kantbåndskatalog
 Håndtering af pladetykkelser, 3D-farver, brugerdefinerede overfladeteksturer (`PNG`, `JPG`, `WEBP`), årelås og ABS/PVC-kantbåndstyper.
 
-![Materialekatalog](../assets/screenshots/4materials.png)
+![Materialekatalog](screenshots/da/4materials.png)
 
 ### 5. Understøttelse af Lyst tema
 Moderne lyst tema med høj kontrast ved siden af det mørke tema, inklusive automatisk synkronisering med styresystemets indstillinger.
 
-![Lyst tema](../assets/screenshots/5lighttheme.png)
+![Lyst tema](screenshots/da/5lighttheme.png)
 
 ### 6. 22 indbyggede sprog (Brugerflade og PDF-eksport)
 Øjeblikkeligt sprogskift uden genstart via knappen **`🌐`** i værktøjslinjen, automatisk registrering af operativsystemets sprog ved første start og oversatte PDF-rapporter.
 
-![22 sprog](../assets/screenshots/6languages.png)
+![22 sprog](screenshots/da/6languages.png)
 
 ---
 

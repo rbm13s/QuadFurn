@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — Meubel CAD & 2D Zaagoptimalisatie</title>
+  <meta name="description" content="Snelle desktop CAD in Rust voor meubels van spaanplaat, MDF en multiplex met automatische kantenbandaftrek en 2D guillotine zaagoptimalisatie.">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="nl.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">Functies</a>
+        <a href="#showcase">Galerij</a>
+        <a href="#downloads">Download</a>
+        <a href="#shortcuts">Sneltoetsen</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html">🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html">🇩🇪 Deutsch</option>
+<option value="pl.html">🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html">🇨🇳 简体中文</option>
+<option value="ja.html">🇯🇵 日本語</option>
+<option value="ko.html">🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html" selected>🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html">🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html">🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html">🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">Downloaden</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>Versie v0.2.2 • MIT Open Source • Native Desktop</span>
+      </div>
+
+      <h1 class="hero-title">
+        Ruimtelijke CAD voor Paneelmeubels & Guillotine Zaagoptimalisatie
+      </h1>
+
+      <p class="hero-subtitle">
+        Snelle CAD voor interieurbouwers en meubelmakers. 4-weergaven modellering, formuleberekening, kantenbandaftrek en geoptimaliseerde zaagplannen.
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Download voor Windows (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Alle platformen
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/nl/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Mogelijkheden</span>
+        <h2 class="section-title">Precisie voor meubelwerkplaatsen</h2>
+        <p class="section-desc">Combineert 4-weergaven tekenen, numerieke controle en zaagoptimalisatie in één applicatie.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4-weergaven ruimtelijke modellering</h3>
+          <p>Gelijktijdig bewerken in Boven (XY), Voor (XZ), Zijkant (YZ) en 3D met magnetische uitlijning en realtime afstandsmaten.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Precisie-transformatiebalk</h3>
+          <p>Directe invoer van coördinaten (X, Y, Z), afmetingen (L × B × D) en rotatiehoek met ingebouwde formuleberekening (bijv. 600-4).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>Automatische kantenbandaftrek</h3>
+          <p>Toewijzing van PVC/ABS-kantenband (0,4–2,0 mm) om exacte netto zaagmaten voor de paneelzaag te berekenen.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>2D guillotine zaagoptimalisatie</h3>
+          <p>Zaagmotor die rekening houdt met nerfrichting, zaagsnede (4,0 mm), voorrandsnede en registratie van bruikbare reststukken.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>Producttabbladen & kopiëren tussen projecten</h3>
+          <p>Werk aan meerdere meubels tegelijkertijd. Kopieer en plak onderdelen tussen tabbladen met materiaaloverdracht.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>Vector PDF productiepaspoort</h3>
+          <p>A4 liggend exportdocument: zaaglijst, 4-weergaven tekeningen, zaagplannen en materiaaloverzicht met +15% marge.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Rondleiding</span>
+        <h2 class="section-title">Interface & werkproces</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4-weergaven CAD</button>
+        <button class="tab-btn" onclick="switchTab(1)">Onderdelenlijst</button>
+        <button class="tab-btn" onclick="switchTab(2)">Zaagplannen</button>
+        <button class="tab-btn" onclick="switchTab(3)">Materialen & texturen</button>
+        <button class="tab-btn" onclick="switchTab(4)">Licht thema</button>
+        <button class="tab-btn" onclick="switchTab(5)">22 talen</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/nl/1designer.png" alt="4-weergaven CAD">
+          <div class="shot-caption">
+            <span>Gesynchroniseerde 2D-aanzichten en 3D-weergave met onderdeleninspecteur.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/nl/2specs.png" alt="Onderdelenlijst">
+          <div class="shot-caption">
+            <span>Zaaglijst met afgewerkte en netto zaagmaten na aftrek van kantenband.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/nl/3cutting.png" alt="Zaagplannen">
+          <div class="shot-caption">
+            <span>Guillotine-zaagplan met reststukken en nerfrichting.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/nl/4materials.png" alt="Materialen & texturen">
+          <div class="shot-caption">
+            <span>Catalogus van plaatdiktes, RGB-kleuren, texturen (PNG/JPG/WEBP) en kantenband.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/nl/5lighttheme.png" alt="Licht thema">
+          <div class="shot-caption">
+            <span>Contrastrijk licht thema met automatische Windows-systeemsynchronisatie.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/nl/6languages.png" alt="22 talen">
+          <div class="shot-caption">
+            <span>Direct wisselen tussen 22 talen en gelokaliseerde PDF-export.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Downloads</span>
+        <h2 class="section-title">Download QuadFurn CAD v0.2.2</h2>
+        <p class="section-desc">Volledig zelfstandige binaire bestanden zonder externe runtime-afhankelijkheden.</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64-bits)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Draagbaar bestand met pictogram, geen installatie vereist.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Installatie op Debian / Ubuntu:</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (Universal Binary)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Universal App-bundel voor Apple Silicon (M1–M4) en Intel x86_64.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Productiviteit</span>
+        <h2 class="section-title">Sneltoetsen en navigatie</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">Toets</th>
+              <th>Actie</th>
+              <th style="width: 180px;">Bereik</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>Selectie- / verplaatsgereedschap (8 handvatten, selectiekader)</td>
+              <td>2D-aanzichten</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>Onderdeel maken met kader in het actieve vlak</td>
+              <td>2D-aanzichten</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>Rolmaat (exact meten van afstanden in millimeters)</td>
+              <td>2D-aanzichten</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>Vrije vluchtcamera in eerstepersoonsperspectief (WASD)</td>
+              <td>3D-venster</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>Onderdelen verplaatsen per rasterstap (Shift voor dubbele stap)</td>
+              <td>2D-aanzichten</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>Kopiëren / plakken van onderdelen (werkt tussen tabbladen)</td>
+              <td>Alle tabbladen</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>Geselecteerde onderdelen dupliceren met verschuiving</td>
+              <td>Actief project</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>Project opslaan als .qfurn / .json bestand</td>
+              <td>Actief project</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>Laatste actie ongedaan maken (tot 40 stappen)</td>
+              <td>Actief project</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>Geselecteerde onderdelen verwijderen</td>
+              <td>Actief project</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Open source CAD-software voor meubelmakers en interieurbouwers.</span>
+        <span>Gedistribueerd onder de MIT-licentie.</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html">Deutsch</a>
+<a href="pl.html">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html">简体中文</a>
+<a href="ja.html">日本語</a>
+<a href="ko.html">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html" class="active">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

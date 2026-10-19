@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — Möbelbau CAD & 2D Plattenzuschnitt-Optimierung</title>
+  <meta name="description" content="Schnelles natives Desktop-CAD in Rust für Kastenmöbel aus Spanplatte, MDF und Sperrholz mit automatischem Kantenabzug und Guillotinen-Zuschnitt.">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="de.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">Funktionen</a>
+        <a href="#showcase">Galerie</a>
+        <a href="#downloads">Download</a>
+        <a href="#shortcuts">Tastenkürzel</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html">🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html" selected>🇩🇪 Deutsch</option>
+<option value="pl.html">🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html">🇨🇳 简体中文</option>
+<option value="ja.html">🇯🇵 日本語</option>
+<option value="ko.html">🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html">🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html">🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html">🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html">🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">Download</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>Release v0.2.2 • Open Source MIT • Native Desktop</span>
+      </div>
+
+      <h1 class="hero-title">
+        CAD-Möbelkonstruktion mit 4 Ansichten & Guillotinen-Zuschnitt
+      </h1>
+
+      <p class="hero-subtitle">
+        Schnelle, hardwarebeschleunigte CAD-Software für Tischler und Schreiner. 4-Projektionen-Raummodellierung, mathematische Maßeingabe, Kantenstärkenabzug und Plattenzuschnitt.
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Download für Windows (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Alle Plattformen
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/de/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Funktionen</span>
+        <h2 class="section-title">Ingenieurmäßige Präzision für Möbelwerkstätten</h2>
+        <p class="section-desc">Verbindet synchrones Zeichnen in 4 Projektionen, präzise Koordinateneingabe und Guillotinen-Zuschnitt in einer durchgängigen Software.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4-Projektionen-Raummodellierung</h3>
+          <p>Gleichzeitiges Arbeiten in Draufsicht (XY), Frontansicht (XZ), Seitenansicht (YZ) und 3D-Perspektive mit magnetischem Fangen und Maßausweisen.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Präzisions-Transformationsleiste</h3>
+          <p>Direkte Eingabe von Koordinaten (X, Y, Z), Abmessungen (L × B × T) und Drehwinkel (∠Z) mit integrierter Rechenformel (z. B. 600-4 oder (800-36)/2).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>Automatischer Kantenabzug</h3>
+          <p>Zuweisung von PVC/ABS-Kanten (0,4–2,0 mm) an jede der 4 Kanten zur automatischen Berechnung exakter Netto-Sägezuschnittmaße für die Formatkreissäge.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>Guillotinen-2D-Zuschnittoptimierung</h3>
+          <p>Optimierer unter Berücksichtigung von Faserrichtung, Sägeschnittbreite (z. B. 4,0 mm), Besäumschnitt und Erfassung wiederverwendbarer Restplatten.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>Projekt-Tabs & Zwischenablage</h3>
+          <p>Gleichzeitiges Bearbeiten mehrerer Möbelstücke in Tabs. Kopieren und Einfügen von Teilen zwischen Projekten mit Material- und Kantenübertragung.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>Vektor-PDF Fertigungspass</h3>
+          <p>Druckfertiger A4-Querformat-Export: Stückliste, 4-Ansichten-Zeichnungen, Schnittpläne und Materialbilanz mit +15 % Verschnittreserve.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Galerie</span>
+        <h2 class="section-title">Benutzeroberfläche & Arbeitsablauf</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4-Ansichten CAD</button>
+        <button class="tab-btn" onclick="switchTab(1)">Teilespezifikation</button>
+        <button class="tab-btn" onclick="switchTab(2)">Plattenzuschnitt</button>
+        <button class="tab-btn" onclick="switchTab(3)">Materialien & Texturen</button>
+        <button class="tab-btn" onclick="switchTab(4)">Helles Design</button>
+        <button class="tab-btn" onclick="switchTab(5)">22 Sprachen</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/de/1designer.png" alt="4-Ansichten CAD">
+          <div class="shot-caption">
+            <span>Synchrone 2D-Projektionen (Draufsicht, Front, Seite) und hardwarebeschleunigte 3D-Ansicht mit Bauteilinspektor.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/de/2specs.png" alt="Teilespezifikation">
+          <div class="shot-caption">
+            <span>Stückliste mit Fertigmaßen und Netto-Zuschnittmaßen nach automatischem Kantenabzug an allen 4 Kanten.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/de/3cutting.png" alt="Plattenzuschnitt">
+          <div class="shot-caption">
+            <span>Guillotinen-Durchgangsschnitt auf Standardplatten mit Resterfassung, Schnittfugenbreite und Faserrichtungsbindung.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/de/4materials.png" alt="Materialien & Texturen">
+          <div class="shot-caption">
+            <span>Plattenstärkenkatalog, individuelle RGB-Farben, Oberflächentexturen (PNG/JPG/WEBP) und Kantentypen.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/de/5lighttheme.png" alt="Helles Design">
+          <div class="shot-caption">
+            <span>Kontrastreiches helles Design neben dem dunklen Design mit automatischer Synchronisation zum Betriebssystem.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/de/6languages.png" alt="22 Sprachen">
+          <div class="shot-caption">
+            <span>Sofortiger Sprachwechsel zwischen 22 integrierten Oberflächensprachen und lokalisierter PDF-Export.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Downloads</span>
+        <h2 class="section-title">QuadFurn CAD v0.2.2 herunterladen</h2>
+        <p class="section-desc">Eigenständige portable Programmdateien ohne externe Laufzeitabhängigkeiten.</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64-Bit)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Portable ausführbare Datei mit Icon, keine Installation erforderlich.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Installation auf Debian / Ubuntu:</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (Universal Binary)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Universal App-Bundle für Apple Silicon (M1–M4) und Intel x86_64.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Produktivität</span>
+        <h2 class="section-title">Tastaturkürzel & Navigation</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">Taste / Kürzel</th>
+              <th>Aktion</th>
+              <th style="width: 180px;">Bereich</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>Auswahl- / Verschiebewerkzeug (8 Anfasser, Rahmenauswahl)</td>
+              <td>2D-Ansichten</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>Bauteil per Rahmen erstellen (Rechteck aufziehen)</td>
+              <td>2D-Ansichten</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>Maßband (Messung von ΔX, ΔY, L in Millimetern)</td>
+              <td>2D-Ansichten</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>Ego-Freiflugmodus (Noclip mit WASD + Mausblick)</td>
+              <td>3D-Fenster</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>Ausgewählte Bauteile um Rasterschritt bewegen (Shift für doppelten Schritt)</td>
+              <td>2D-Ansichten</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>Bauteile kopieren / einfügen (funktioniert zwischen Tabs)</td>
+              <td>Alle Tabs</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>Ausgewählte Bauteile mit Versatz duplizieren</td>
+              <td>Aktives Projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>Projekt in .qfurn / .json Datei speichern</td>
+              <td>Aktives Projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>Letzte Aktion rückgängig machen (bis zu 40 Schritte)</td>
+              <td>Aktives Projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>Ausgewählte Bauteile löschen</td>
+              <td>Aktives Projekt</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Open-Source CAD-Software für Tischler, Schreiner und Möbelbaubetriebe.</span>
+        <span>Lizenziert unter der MIT-Lizenz.</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html" class="active">Deutsch</a>
+<a href="pl.html">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html">简体中文</a>
+<a href="ja.html">日本語</a>
+<a href="ko.html">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

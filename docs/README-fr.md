@@ -83,32 +83,32 @@ QuadFurn associe l'ergonomie de trois outils de référence en un flux de travai
 ### 1. Concepteur CAO 4 vues (Thème Sombre)
 Projections orthogonales synchronisées (**Haut XY**, **Face XZ**, **Côté YZ**) et **Vue 3D** texturée avec perspective correcte, gizmos de redimensionnement à 8 poignées et **Inspecteur de pièces** à droite.
 
-![Concepteur CAO 4 vues](../assets/screenshots/1designer.png)
+![Concepteur CAO 4 vues](screenshots/fr/1designer.png)
 
 ### 2. Nomenclatures et spécifications
 Tableau complet listant les **dimensions finies (`L × W`)** et les **cotes de sciage nettes (`CUT L × W`)** après déduction des chants sur chaque rive (`L1`, `L2`, `W1`, `W2`).
 
-![Tableau de spécifications](../assets/screenshots/2specs.png)
+![Tableau de spécifications](screenshots/fr/2specs.png)
 
 ### 3. Plans de calepinage et découpe guillotine
 Imbrication 2D sur panneaux standards (`2800 × 2070 mm`, etc.) avec découpes débouchantes guillotine, trait de coupe, marges de détourage, repères de chants et chutes réutilisables.
 
-![Plan de découpe de panneaux](../assets/screenshots/3cutting.png)
+![Plan de découpe de panneaux](screenshots/fr/3cutting.png)
 
 ### 4. Catalogue de matériaux et chants
 Gestion des épaisseurs de panneaux, couleurs 3D, textures personnalisées (`PNG`, `JPG`, `WEBP`), sens du veinage et types de chants PVC/ABS.
 
-![Catalogue de matériaux et chants](../assets/screenshots/4materials.png)
+![Catalogue de matériaux et chants](screenshots/fr/4materials.png)
 
 ### 5. Support du Thème Clair
 Thème clair moderne et contrasté aux côtés du Thème Sombre et de la synchronisation automatique avec le système Windows/macOS/Linux.
 
-![Interface en Thème Clair](../assets/screenshots/5lighttheme.png)
+![Interface en Thème Clair](screenshots/fr/5lighttheme.png)
 
 ### 6. 22 langues intégrées (Interface et export PDF)
 Changement de langue instantané sans redémarrage via le sélecteur **`🌐`** dans la barre d'outils, détection automatique de la langue de l'OS au premier lancement et exportations PDF localisées.
 
-![22 langues d'interface](../assets/screenshots/6languages.png)
+![22 langues d'interface](screenshots/fr/6languages.png)
 
 ---
 

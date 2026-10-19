@@ -83,32 +83,32 @@ QuadFurn reunește ergonomia a trei instrumente de referință într-un singur f
 ### 1. Proiectant CAD cu 4 vederi (Temă Întunecată)
 Proiecții ortogonale sincronizate (**Sus XY**, **Față XZ**, **Lateral YZ**) și **Vedere 3D** texturată cu mapare UV corectată în perspectivă, puncte de redimensionare în 8 puncte și **Inspectorul de piese** în dreapta.
 
-![Proiectant CAD cu 4 vederi](../assets/screenshots/1designer.png)
+![Proiectant CAD cu 4 vederi](screenshots/ro/1designer.png)
 
 ### 2. Lista de piese (Specificație) și cote
 Tabel detaliat ce afișează atât **Dimensiunile finale (`L × W`)**, cât și **Cotele nete de tăiere la circular (`CUT L × W`)** după scăderea cantului pe fiecare latură (`L1`, `L2`, `W1`, `W2`).
 
-![Specificație piese](../assets/screenshots/2specs.png)
+![Specificație piese](screenshots/ro/2specs.png)
 
 ### 3. Diagramă de debitare ghilotină a plăcilor
 Îmbinare pe plăci de format standard (`2800 × 2070 mm` etc.) cu tăieturi ghilotină cap-la-cap, toleranță pânză, margini de tivire, benzi colorate de cant și evidența resturilor utile refolosibile.
 
-![Plan de debitare](../assets/screenshots/3cutting.png)
+![Plan de debitare](screenshots/ro/3cutting.png)
 
 ### 4. Catalog de plăci și canturi
 Administrarea grosimilor de panouri, culori 3D, texturi de suprafață personalizate (`PNG`, `JPG`, `WEBP`), blocare a fibrei și tipuri de cant PVC/ABS.
 
-![Catalog de materiale](../assets/screenshots/4materials.png)
+![Catalog de materiale](screenshots/ro/4materials.png)
 
 ### 5. Suport pentru Temă Luminoasă
 Temă luminoasă modernă cu contrast ridicat alături de tema întunecată, cu sincronizare automată după setările sistemului de operare.
 
-![Temă luminoasă](../assets/screenshots/5lighttheme.png)
+![Temă luminoasă](screenshots/ro/5lighttheme.png)
 
 ### 6. 22 de limbi integrate (Interfață și export PDF)
 Schimbare instantanee a limbii fără repornire prin butonul **`🌐`** din bara superioară, detectare automată a limbii sistemului la prima pornire și exporturi PDF traduse.
 
-![22 de limbi](../assets/screenshots/6languages.png)
+![22 de limbi](screenshots/ro/6languages.png)
 
 ---
 

@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — 板式家具设计 CAD 与 2D 剪板开料排版系统</title>
+  <meta name="description" content="基于 Rust 研发的高性能原生桌面板式家具 CAD，支持 4 视口联动建模、封边厚度自动扣除、推台锯净开料尺寸计算及 2D 贯通式剪板排版优化。">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="zh-cn.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">核心功能</a>
+        <a href="#showcase">界面展示</a>
+        <a href="#downloads">版本下载</a>
+        <a href="#shortcuts">快捷键</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html">🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html">🇩🇪 Deutsch</option>
+<option value="pl.html">🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html" selected>🇨🇳 简体中文</option>
+<option value="ja.html">🇯🇵 日本語</option>
+<option value="ko.html">🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html">🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html">🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html">🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html">🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">立即下载</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>v0.2.2 正式发布 • MIT 开源协议 • 原生跨平台桌面应用</span>
+      </div>
+
+      <h1 class="hero-title">
+        板式家具 4 视口空间 CAD 与 2D 剪板排版开料系统
+      </h1>
+
+      <p class="hero-subtitle">
+        专为定制家具厂与木工师傅打造的高性能桌面 CAD。4 视口联动空间建模、算术公式直接求值输入、四周封边厚度自动扣除与板材优化下料。
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          下载 Windows 版 (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          查看所有平台版本
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/zh-cn/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">系统功能</span>
+        <h2 class="section-title">专为板式家具制造而打造的工业级精度</h2>
+        <p class="section-desc">将 4 视口联动制图、精准数值几何变换与板材剪板优化开料算法融为一体。</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4 视口空间多维建模</h3>
+          <p>俯视（XY 平面）、主视（XZ 立面）、侧视（YZ 剖面）与 3D 透视视口多重视图联动，具备磁性边缘吸附与毫米级实时测距。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>精准几何变换工具栏</h3>
+          <p>直接输入零部件三维坐标（X, Y, Z）、外形尺寸（长宽高）与旋转角（∠Z），所有输入框均内置算术表达式自动求值（如直接输入 600-4）。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>封边厚度自动扣除与净尺寸</h3>
+          <p>在板件 4 边任意指定 PVC/ABS 封边条（0.4–2.0 mm），系统自动扣除对应边厚度，即时计算出裁板推台锯所需的精准净开料尺寸。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>2D 剪板机式开料排版优化</h3>
+          <p>严格遵循木材木纹方向、锯片锯路缝宽（如 4.0 mm）、板材四周边角修边量，并完整统计与追踪可利用余料。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>多产品标签页与跨工程复制</h3>
+          <p>支持多标签页并行设计不同柜体或家具，跨工程自由复制粘贴零部件（Ctrl+C / Ctrl+V），缺失材质与封边自动无缝补齐。</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>多页矢量 PDF 生产图纸手册</h3>
+          <p>一键导出 A4 横向生产下料手册：板件明细表、4 视口工程图、各板材开料排版图、板料与封边条消耗统计（含 +15% 耗损余量）。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">视觉漫游</span>
+        <h2 class="section-title">软件界面与生产工作流</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4 视口设计器</button>
+        <button class="tab-btn" onclick="switchTab(1)">零部件明细表</button>
+        <button class="tab-btn" onclick="switchTab(2)">板材开料排版</button>
+        <button class="tab-btn" onclick="switchTab(3)">材质与贴图管理</button>
+        <button class="tab-btn" onclick="switchTab(4)">浅色主题</button>
+        <button class="tab-btn" onclick="switchTab(5)">22 种语言</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/zh-cn/1designer.png" alt="4 视口设计器">
+          <div class="shot-caption">
+            <span>4 视口正交联动设计与硬件加速 3D 视图，右侧带属性检查器。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/zh-cn/2specs.png" alt="零部件明细表">
+          <div class="shot-caption">
+            <span>分组式板件明细表，自动显示全尺寸与扣除封边后的净开料尺寸。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/zh-cn/3cutting.png" alt="板材开料排版">
+          <div class="shot-caption">
+            <span>标准板料贯通式剪切排料，带木纹锁定与余料规格标注。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/zh-cn/4materials.png" alt="材质与贴图管理">
+          <div class="shot-caption">
+            <span>板材厚度、自定义 RGB 颜色、表面纹理贴图与封边规格库。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/zh-cn/5lighttheme.png" alt="浅色主题">
+          <div class="shot-caption">
+            <span>清晰舒适的浅色主题，并可与 Windows 系统主题自适应同步。</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/zh-cn/6languages.png" alt="22 种语言">
+          <div class="shot-caption">
+            <span>22 种内置界面语言即时切换，导出全语言矢量 PDF 图册。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">版本发布</span>
+        <h2 class="section-title">下载 QuadFurn CAD v0.2.2</h2>
+        <p class="section-desc">纯原生绿色免安装桌面可执行文件，无任何外部运行时依赖。</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64位)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">便携免安装 ZIP 压缩包，解压即用。</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Debian / Ubuntu 安装命令：</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (通用二进制)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">原生 Universal 应用包，同时支持 Apple Silicon (M1–M4) 与 Intel x86_64。</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">操作效率</span>
+        <h2 class="section-title">快捷键与视图导航</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">按键 / 组合键</th>
+              <th>功能说明</th>
+              <th style="width: 180px;">适用范围</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>选择 / 移动工具（拖拽平移、8 个拉伸控制柄、鼠标框选多选）</td>
+              <td>2D 正交视口</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>矩形画框创建板件（在当前视图平面内快速拉伸生成板件）</td>
+              <td>2D 正交视口</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>卷尺测距工具（精确测量两点间水平、垂直与直线距离）</td>
+              <td>2D 正交视口</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>第一人称自由飞行模式（按 Z 键锁定鼠标并用 WASD 巡游）</td>
+              <td>3D 视图</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>按网格步长平移选中板件（按住 Shift 为双倍步长）</td>
+              <td>2D 正交视口</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>复制 / 粘贴选中的板件（支持跨产品标签页）</td>
+              <td>所有标签页</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>原地偏移快速复制选中的板件</td>
+              <td>活动工程</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>将当前家具保存为 .qfurn / .json 工程文件</td>
+              <td>活动工程</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>撤销上一步操作（支持多达 40 步历史记录）</td>
+              <td>活动工程</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>删除当前选中的板件</td>
+              <td>活动工程</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>面向定制家具厂与木工设计师的现代化开源 CAD 系统。</span>
+        <span>遵循 MIT 开源许可证自由分发。</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html">Deutsch</a>
+<a href="pl.html">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html" class="active">简体中文</a>
+<a href="ja.html">日本語</a>
+<a href="ko.html">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

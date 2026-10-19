@@ -329,7 +329,7 @@ fn translate_common_phrase(lang: AppLanguage, ru: &str) -> Option<&'static str> 
         "📄 Экспорт в PDF" => Some(d.btn_export_pdf),
         "💾 Экспорт в CSV (Excel)" => Some(d.btn_export_csv),
         "Инспектор блоков" => Some(d.inspector_heading),
-        "Свойства выбранной детали" => Some(d.part_properties_heading),
+        "Свойства выбранной детали" | "Свойства детали" => Some(d.part_properties_heading),
         "Ведомость деталей (Спецификация)" => Some(d.spec_heading),
         "Справочник листовых материалов и кромок" => Some(d.materials_heading),
         "Группа" | "Группа:" => Some(d.pdf_col_group),

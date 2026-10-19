@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — CAD za Pohištvo & 2D Gilotinski Razrez Plošč</title>
+  <meta name="description" content="Hiter namizni CAD v Rustu za ploščasto pohištvo iz iverala, MDF in vezanih plošč s samodejnim odštevanjem robov in 2D gilotinskim razrezom.">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="sl.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">Funkcije</a>
+        <a href="#showcase">Galerija</a>
+        <a href="#downloads">Prenos</a>
+        <a href="#shortcuts">Bližnjice</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html">🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html">🇩🇪 Deutsch</option>
+<option value="pl.html">🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html">🇨🇳 简体中文</option>
+<option value="ja.html">🇯🇵 日本語</option>
+<option value="ko.html">🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html">🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html">🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html">🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html" selected>🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">Prenos</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>Različica v0.2.2 • MIT Open Source • Namizna Aplikacija</span>
+      </div>
+
+      <h1 class="hero-title">
+        Prostorski CAD za Ploščasto Pohištvo & Gilotinski Razrez
+      </h1>
+
+      <p class="hero-subtitle">
+        Hiter CAD za mizarje in pohištvene delavnice. 4-pogledno sinhrono modeliranje, vnos formul v dimenzije, odštevanje robnih trakov in razrez.
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Prenos za Windows (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Vse platforme
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/sl/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Zmogljivosti</span>
+        <h2 class="section-title">Inženirska natančnost za mizarske delavnice</h2>
+        <p class="section-desc">Združuje 4-pogledno risanje, neposreden številski nadzor in gilotinski razrez v enem programu.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4-pogledno prostorsko modeliranje</h3>
+          <p>Sočasno urejanje v Tlorisu (XY), Narisu (XZ), Stranskem risu (YZ) in 3D z drsniki, magnetnim pripenjanjem in merami odmikov.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Natančna vrstica transformacij</h3>
+          <p>Neposreden vnos koordinat (X, Y, Z), mer (D × Š × D) in kota z matematičnim kalkulatorjem (npr. 600-4 ali (800-36)/2).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>Samodejno odštevanje robnih trakov</h3>
+          <p>Določitev ABS/PVC robnih trakov (0,4–2,0 mm) na 4 straneh za izračun natančnih čistih rezalnih mer za žago.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>2D gilotinska optimizacija razreza</h3>
+          <p>Rezalni algoritem, ki upošteva smer lesnih vlaken, rezalno režo žaginega lista (4,0 mm), obreze in evidenco ostankov.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>Zavihki izdelkov & kopiranje med projekti</h3>
+          <p>Sočasno delo na več kosih pohištva v zavihkih. Kopiranje in lepljenje elementov s prenosom materialov.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>Vektorski PDF proizvodni potni list</h3>
+          <p>Pripravljen za tisk v formatu A4 Ležeče: kosovnica, 4-pogledne risbe, krojne sheme in poraba materiala s +15 % rezerve.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Predstavitev</span>
+        <h2 class="section-title">Vmesnik & potek dela</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4-pogledni CAD</button>
+        <button class="tab-btn" onclick="switchTab(1)">Kosovnica elementov</button>
+        <button class="tab-btn" onclick="switchTab(2)">Krojne sheme</button>
+        <button class="tab-btn" onclick="switchTab(3)">Materiali & teksture</button>
+        <button class="tab-btn" onclick="switchTab(4)">Svetla tema</button>
+        <button class="tab-btn" onclick="switchTab(5)">22 jezikov</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/sl/1designer.png" alt="4-pogledni CAD">
+          <div class="shot-caption">
+            <span>Sinhronizirane 2D pravokotne projekcije in 3D prikaz z inšpektorjem elementov.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/sl/2specs.png" alt="Kosovnica elementov">
+          <div class="shot-caption">
+            <span>Kosovnica s končnimi in čistimi rezalnimi merami po odštetju robov.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/sl/3cutting.png" alt="Krojne sheme">
+          <div class="shot-caption">
+            <span>Gilotinski razrez s spremljanjem ostankov in smeri vlaken.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/sl/4materials.png" alt="Materiali & teksture">
+          <div class="shot-caption">
+            <span>Katalog debelin plošč, RGB barve, teksture (PNG/JPG/WEBP) in robni trakovi.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/sl/5lighttheme.png" alt="Svetla tema">
+          <div class="shot-caption">
+            <span>Kontrastna svetla tema, usklajena s sistemsko temo Windows.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/sl/6languages.png" alt="22 jezikov">
+          <div class="shot-caption">
+            <span>Takojšnje preklapljanje med 22 jeziki in lokaliziran izvoz PDF.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Prenosi</span>
+        <h2 class="section-title">Prenesi QuadFurn CAD v0.2.2</h2>
+        <p class="section-desc">Samostojne izvršljive datoteke brez zunanjih odvisnosti.</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64-bit)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Prenosna različica z ikono, namestitev ni potrebna.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Namestitev paketa Debian / Ubuntu:</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (Universal Binary)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Univerzalni paket za Apple Silicon (M1–M4) in Intel x86_64.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Produktivnost</span>
+        <h2 class="section-title">Bližnjice na tipkovnici in navigacija</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">Tipka</th>
+              <th>Dejanje</th>
+              <th style="width: 180px;">Področje</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>Orodje Izbira / Premakni (8 ročic, izbira z okvirjem)</td>
+              <td>2D pogledi</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>Ustvari element z okvirjem v aktivni ravnini</td>
+              <td>2D pogledi</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>Merilni trak (natančno merjenje razdalj v milimetrih)</td>
+              <td>2D pogledi</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>Prosti let iz prve osebe (Noclip z WASD)</td>
+              <td>3D okno</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>Premik elementov za korak mreže (Shift za dvojni korak)</td>
+              <td>2D pogledi</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>Kopiraj / prilepi elemente (med zavihki)</td>
+              <td>Vsi zavihki</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>Podvoji izbrane elemente z odmikom</td>
+              <td>Aktivni projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>Shrani projekt v datoteko .qfurn / .json</td>
+              <td>Aktivni projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>Razveljavi zadnje dejanje (do 40 korakov)</td>
+              <td>Aktivni projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>Izbriši izbrane elemente</td>
+              <td>Aktivni projekt</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Odprtokodna CAD programska oprema za mizarje in pohištvene delavnice.</span>
+        <span>Distribuirano pod licenco MIT.</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html">Deutsch</a>
+<a href="pl.html">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html">简体中文</a>
+<a href="ja.html">日本語</a>
+<a href="ko.html">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html" class="active">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

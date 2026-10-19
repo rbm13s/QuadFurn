@@ -1,0 +1,452 @@
+﻿<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuadFurn CAD — Projektowanie mebli skrzyniowych i rozkrój płyt</title>
+  <meta name="description" content="Szybki natywny CAD w Rust do projektowania mebli z płyt wiórowych, MDF i sklejki z odliczaniem obrzeży i rozkrojem gilotynowym.">
+  <link rel="icon" type="image/x-icon" href="assets/icon.ico">
+  <link rel="stylesheet" href="style.css">
+  <script>
+    function switchTab(idx) {
+      var btns = document.querySelectorAll('.tab-btn');
+      var contents = document.querySelectorAll('.tab-content');
+      for (var i = 0; i < btns.length; i++) {
+        btns[i].classList.remove('active');
+        contents[i].classList.remove('active');
+      }
+      btns[idx].classList.add('active');
+      contents[idx].classList.add('active');
+    }
+  </script>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav-wrap">
+      <a href="pl.html" class="brand">
+        <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+        <span>QuadFurn CAD</span>
+        <span class="badge-ver">v0.2.2</span>
+      </a>
+
+      <nav class="main-nav">
+        <a href="#features">Funkcje</a>
+        <a href="#showcase">Galeria</a>
+        <a href="#downloads">Pobierz</a>
+        <a href="#shortcuts">Skróty</a>
+        <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="lang-selector">
+          <select aria-label="Language" onchange="window.location.href=this.value">
+            <option value="index.html">🇬🇧 English</option>
+<option value="ru.html">🇷🇺 Русский</option>
+<option value="uk.html">🇺🇦 Українська</option>
+<option value="de.html">🇩🇪 Deutsch</option>
+<option value="pl.html" selected>🇵🇱 Polski</option>
+<option value="es.html">🇪🇸 Español</option>
+<option value="fr.html">🇫🇷 Français</option>
+<option value="it.html">🇮🇹 Italiano</option>
+<option value="zh-cn.html">🇨🇳 简体中文</option>
+<option value="ja.html">🇯🇵 日本語</option>
+<option value="ko.html">🇰🇷 한국어</option>
+<option value="pt.html">🇵🇹 Português</option>
+<option value="cs.html">🇨🇿 Čeština</option>
+<option value="sk.html">🇸🇰 Slovenčina</option>
+<option value="tr.html">🇹🇷 Türkçe</option>
+<option value="nl.html">🇳🇱 Nederlands</option>
+<option value="da.html">🇩🇰 Dansk</option>
+<option value="no.html">🇳🇴 Norsk</option>
+<option value="sv.html">🇸🇪 Svenska</option>
+<option value="hu.html">🇭🇺 Magyar</option>
+<option value="ro.html">🇷🇴 Română</option>
+<option value="sl.html">🇸🇮 Slovenščina</option>
+
+          </select>
+        </div>
+        <a href="#downloads" class="btn btn-primary btn-sm">Pobierz</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-pill">
+        <span class="dot"></span>
+        <span>Wersja v0.2.2 • Open Source MIT • Aplikacja natywna</span>
+      </div>
+
+      <h1 class="hero-title">
+        CAD mebli skrzyniowych z 4 rzutami i rozkrojem gilotynowym
+      </h1>
+
+      <p class="hero-subtitle">
+        Szybki program CAD dla stolarzy. Równoczesne modelowanie w 4 rzutach, precyzyjne wprowadzanie wymiarów z kalkulatorem, odliczanie obrzeży i rozkrój.
+      </p>
+
+      <div class="hero-cta">
+        <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/></svg>
+          Pobierz dla Windows (x64)
+        </a>
+        <a href="#downloads" class="btn btn-secondary btn-lg">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Wszystkie platformy
+        </a>
+      </div>
+
+      <div class="hero-preview">
+        <img src="screenshots/pl/1designer.png" alt="QuadFurn CAD 4-Viewport Workspace">
+      </div>
+    </div>
+  </section>
+
+  <!-- Badges Bar -->
+  <div class="container">
+    <div class="badges-bar">
+      <div class="badge-item">🦀 Rust 2021</div>
+      <div class="badge-item">⚡ Hardware Accelerated (wgpu)</div>
+      <div class="badge-item">🖥️ Native Windows, Linux & macOS</div>
+      <div class="badge-item">📐 4-Viewport CAD</div>
+      <div class="badge-item">🪚 Guillotine 2D Nesting</div>
+      <div class="badge-item">📄 Vector A4 PDF Export</div>
+      <div class="badge-item">🌐 22 Interface Locales</div>
+      <div class="badge-item">⚖️ MIT License</div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Funkcje</span>
+        <h2 class="section-title">Inżynierska precyzja dla warsztatów meblarskich</h2>
+        <p class="section-desc">Łączy rysowanie w 4 rzutach, precyzyjne pozycjonowanie i optymalizację rozkroju w jednej aplikacji.</p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📐</div>
+          <h3>4-rzutowe modelowanie przestrzenne</h3>
+          <p>Praca w trzech rzutach ortogonalnych (Rzut z góry XY, Przód XZ, Bok YZ) z paskami przewijania, przyciąganiem i oknem 3D.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">⚡</div>
+          <h3>Pasek precyzyjnej transformacji</h3>
+          <p>Wprowadzanie współrzędnych (X, Y, Z), wymiarów (D × S × G) i kąta obrotu z kalkulatorem (np. 600-4 lub (800-36)/2).</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📏</div>
+          <h3>Automatyczne odliczanie obrzeży</h3>
+          <p>Przypisanie obrzeża PCV/ABS (0,4–2,0 mm) do 4 krawędzi w celu natychmiastowego obliczenia wymiarów cięcia dla piły formatowej.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🪚</div>
+          <h3>Optymalizacja rozkroju gilotynowego 2D</h3>
+          <p>Szybki algorytm rozkroju uwzględniający usłojenie drewna, szerokość rzazu piły, obrzynanie płyty i ewidencję odpadów użytecznych.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📂</div>
+          <h3>Karty wyrobów i schowek między projektami</h3>
+          <p>Praca nad wieloma meblami jednocześnie. Kopiowanie i wklejanie elementów z automatycznym przenoszeniem materiałów.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📄</div>
+          <h3>Wektorowy paszport produkcyjny PDF</h3>
+          <p>Gotowy do druku album A4 poziomy: zestawienie elementów, rysunki w 4 rzutach, mapy rozkroju i wykaz materiałów z naddatkiem +15%.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screenshots Showcase -->
+  <section id="showcase" class="showcase">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Przegląd</span>
+        <h2 class="section-title">Interfejs i organizacja pracy</h2>
+      </div>
+
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab(0)">4 rzuty CAD</button>
+        <button class="tab-btn" onclick="switchTab(1)">Wykaz elementów</button>
+        <button class="tab-btn" onclick="switchTab(2)">Mapy rozkroju</button>
+        <button class="tab-btn" onclick="switchTab(3)">Materiały i tekstury</button>
+        <button class="tab-btn" onclick="switchTab(4)">Jasny motyw</button>
+        <button class="tab-btn" onclick="switchTab(5)">22 języki</button>
+      </div>
+
+      <div class="tab-content active">
+        <div class="shot-frame">
+          <img src="screenshots/pl/1designer.png" alt="4 rzuty CAD">
+          <div class="shot-caption">
+            <span>Synchroniczne rzuty 2D i okno 3D z Inspektorem elementów.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/pl/2specs.png" alt="Wykaz elementów">
+          <div class="shot-caption">
+            <span>Zestawienie z wymiarami formatek i cięcia po odliczeniu obrzeża.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/pl/3cutting.png" alt="Mapy rozkroju">
+          <div class="shot-caption">
+            <span>Rozkrój gilotynowy z uwzględnieniem rzazu i usłojenia.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/pl/4materials.png" alt="Materiały i tekstury">
+          <div class="shot-caption">
+            <span>Katalog płyt, kolory, tekstury (PNG/JPG/WEBP) i obrzeża.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/pl/5lighttheme.png" alt="Jasny motyw">
+          <div class="shot-caption">
+            <span>Jasny motyw obok ciemnego z synchronizacją z systemem Windows.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <div class="shot-frame">
+          <img src="screenshots/pl/6languages.png" alt="22 języki">
+          <div class="shot-caption">
+            <span>Natychmiastowe przełączanie między 22 językami i eksport PDF.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section id="downloads" class="downloads">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Pobieranie</span>
+        <h2 class="section-title">Pobierz QuadFurn CAD v0.2.2</h2>
+        <p class="section-desc">Samodzielne pliki binarne bez zewnętrznych zależności.</p>
+      </div>
+
+      <div class="downloads-grid">
+        <!-- Windows -->
+        <div class="download-card highlight">
+          <div class="platform-header">
+            <div class="platform-icon">🪟</div>
+            <div>
+              <div class="platform-title">Windows</div>
+              <div class="platform-subtitle">Windows 10 / 11 (64-bit)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Wersja przenośna z ikoną, nie wymaga instalatora.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-windows-x86_64.zip</span>
+                <span class="download-desc">Portable 64-bit EXE • v0.2.2</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-windows-x86_64.zip" class="btn btn-primary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Linux -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🐧</div>
+            <div>
+              <div class="platform-title">Linux</div>
+              <div class="platform-subtitle">Debian 12+, Ubuntu 22.04+, Fedora, Arch</div>
+            </div>
+          </div>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">quadfurn_0.2.2_amd64.deb</span>
+                <span class="download-desc">Debian / Ubuntu package</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/quadfurn_0.2.2_amd64.deb" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-linux-x86_64.tar.gz</span>
+                <span class="download-desc">Portable standalone archive</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-linux-x86_64.tar.gz" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+          <div class="install-cmd">
+            <span style="color: var(--text-muted);">Instalacja pakietu Debian / Ubuntu:</span><br>
+            <code>sudo apt install ./quadfurn_0.2.2_amd64.deb</code>
+          </div>
+        </div>
+
+        <!-- macOS -->
+        <div class="download-card">
+          <div class="platform-header">
+            <div class="platform-icon">🍎</div>
+            <div>
+              <div class="platform-title">macOS</div>
+              <div class="platform-subtitle">macOS 11.0+ (Universal Binary)</div>
+            </div>
+          </div>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 12px;">Pakiet Universal dla Apple Silicon (M1–M4) oraz Intel x86_64.</p>
+          <ul class="download-list">
+            <li class="download-item">
+              <div class="download-info">
+                <span class="download-file">QuadFurn-macos-universal.zip</span>
+                <span class="download-desc">QuadFurn.app bundle • Universal</span>
+              </div>
+              <a href="https://github.com/rbm13s/QuadFurn/releases/download/v0.2.2/QuadFurn-macos-universal.zip" class="btn btn-secondary btn-sm">Download</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shortcuts Table -->
+  <section id="shortcuts" class="shortcuts">
+    <div class="container">
+      <div class="section-head">
+        <span class="section-tag">Skróty</span>
+        <h2 class="section-title">Klawisze skrótów i nawigacja</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table class="cad-table">
+          <thead>
+            <tr>
+              <th style="width: 220px;">Klawisz</th>
+              <th>Akcja</th>
+              <th style="width: 180px;">Obszar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>V</kbd></td>
+              <td>Wybór / Przesunięcie (8 uchwytów, zaznaczanie ramką)</td>
+              <td>Widoki 2D</td>
+            </tr>
+            <tr>
+              <td><kbd>B</kbd></td>
+              <td>Tworzenie elementu ramką w bieżącej płaszczyźnie</td>
+              <td>Widoki 2D</td>
+            </tr>
+            <tr>
+              <td><kbd>M</kbd></td>
+              <td>Miarka (pomiar dokładnych odległości ΔX, ΔY, L)</td>
+              <td>Widoki 2D</td>
+            </tr>
+            <tr>
+              <td><kbd>Z</kbd></td>
+              <td>Tryb swobodnego lotu (Noclip z WASD + mysz)</td>
+              <td>Okno 3D</td>
+            </tr>
+            <tr>
+              <td><kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd></td>
+              <td>Przesunięcie o krok siatki (Shift — podwójny krok)</td>
+              <td>Widoki 2D</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>C</kbd> / <kbd>V</kbd></td>
+              <td>Kopiuj / wklej elementy (działa między kartami)</td>
+              <td>Wszystkie karty</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>D</kbd></td>
+              <td>Duplikuj wybrane elementy</td>
+              <td>Aktywny projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+              <td>Zapisz projekt do pliku .qfurn / .json</td>
+              <td>Aktywny projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+              <td>Cofnij ostatnią akcję (do 40 kroków)</td>
+              <td>Aktywny projekt</td>
+            </tr>
+            <tr>
+              <td><kbd>Delete</kbd> / <kbd>Backspace</kbd></td>
+              <td>Usuń wybrane elementy</td>
+              <td>Aktywny projekt</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="brand">
+          <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo">
+          <span>QuadFurn CAD</span>
+        </div>
+        <div class="footer-links">
+          <a href="https://github.com/rbm13s/QuadFurn" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/rbm13s/QuadFurn/releases" target="_blank" rel="noopener">Releases</a>
+          <a href="https://github.com/rbm13s/QuadFurn/issues" target="_blank" rel="noopener">Issues</a>
+          <a href="https://github.com/rbm13s/QuadFurn/blob/main/LICENSE" target="_blank" rel="noopener">License (MIT)</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>Oprogramowanie CAD o otwartym kodzie źródłowym dla stolarzy i zakładów meblarskich.</span>
+        <span>Rozpowszechniane na licencji MIT.</span>
+      </div>
+      <div class="lang-grid-footer">
+        <a href="index.html">English</a>
+<a href="ru.html">Русский</a>
+<a href="uk.html">Українська</a>
+<a href="de.html">Deutsch</a>
+<a href="pl.html" class="active">Polski</a>
+<a href="es.html">Español</a>
+<a href="fr.html">Français</a>
+<a href="it.html">Italiano</a>
+<a href="zh-cn.html">简体中文</a>
+<a href="ja.html">日本語</a>
+<a href="ko.html">한국어</a>
+<a href="pt.html">Português</a>
+<a href="cs.html">Čeština</a>
+<a href="sk.html">Slovenčina</a>
+<a href="tr.html">Türkçe</a>
+<a href="nl.html">Nederlands</a>
+<a href="da.html">Dansk</a>
+<a href="no.html">Norsk</a>
+<a href="sv.html">Svenska</a>
+<a href="hu.html">Magyar</a>
+<a href="ro.html">Română</a>
+<a href="sl.html">Slovenščina</a>
+
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

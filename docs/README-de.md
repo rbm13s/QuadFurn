@@ -83,32 +83,32 @@ QuadFurn kombiniert die besten Arbeitsabläufe aus drei klassischen Werkzeugen:
 ### 1. 4-Projektionen-Designer (Dunkles Design)
 Gleichzeitige 2D-Projektionen (**Draufsicht XY**, **Front XZ**, **Seite YZ**) und texturiertes **3D-Fenster** mit perspektivischer Texturierung, Tiefensortierung, 8 interaktiven Größenänderungs-Griffen und dem rechten **Bauteil-Inspektor**.
 
-![4-Projektionen-CAD-Designer](../assets/screenshots/1designer.png)
+![4-Projektionen-CAD-Designer](screenshots/de/1designer.png)
 
 ### 2. Stückliste (Spezifikation) & Export
 Gruppierte Stückliste mit Anzeige von **Fertigmaßen (`L × B`)** und **Netto-Sägezuschnittmaßen (`Schnitt L × B`)** nach Abzug der Kantenstärken an allen vier Seiten (`L1`, `L2`, `B1`, `B2`).
 
-![Stücklistentabelle](../assets/screenshots/2specs.png)
+![Stücklistentabelle](screenshots/de/2specs.png)
 
 ### 3. Guillotinen-Plattenzuschnitt
 Optimierte Verschachtelung der Bauteile auf Standardplatten (`2800 × 2070 mm` etc.) mit durchgehenden Schnitten, Sägeblattbreite, Besäumrändern, Farbkantenmarkierungen und verwertbaren Restplatten.
 
-![Plattenzuschnitt](../assets/screenshots/3cutting.png)
+![Plattenzuschnitt](screenshots/de/3cutting.png)
 
 ### 4. Plattenmaterialien & Kantenkatalog
 Verwalten von Plattenstärken, 3D-Farben, Oberflächendekoren (`PNG`, `JPG`, `WEBP`), Plattenmaßen, Faserrichtungsfixierung und PVC/ABS-Kantentypen.
 
-![Materialien und Kantenkatalog](../assets/screenshots/4materials.png)
+![Materialien und Kantenkatalog](screenshots/de/4materials.png)
 
 ### 5. Helles Design
 Klares, kontrastreiches helles Design neben dem dunklen Design und automatischer Synchronisation mit dem Betriebssystem.
 
-![Helle Benutzeroberfläche](../assets/screenshots/5lighttheme.png)
+![Helle Benutzeroberfläche](screenshots/de/5lighttheme.png)
 
 ### 6. 22 integrierte Sprachen (UI & PDF-Export)
 Sofortige Umschaltung der Sprache über die Schaltfläche **`🌐`** in der oberen Symbolleiste, automatische Erkennung der Systemsprache beim ersten Start und lokalisierter PDF-Export.
 
-![22 Sprachen](../assets/screenshots/6languages.png)
+![22 Sprachen](screenshots/de/6languages.png)
 
 ---
 

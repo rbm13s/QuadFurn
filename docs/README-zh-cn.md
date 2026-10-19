@@ -83,32 +83,32 @@ QuadFurn 深度融合了三款经典工业设计软件的人机工程学优势�
 ### 1. 4 视口 CAD 设计器（暗黑主题）
 同步联动的 2D 正交投影视图（**俯视 XY**、**主视 XZ**、**侧视 YZ**）与具备透视校正 UV 贴图渲染的 **3D 视图**，辅以 8 点式交互变形手柄及右侧**零部件属性检查器**。
 
-![4 视口 CAD 设计器](../assets/screenshots/1designer.png)
+![4 视口 CAD 设计器](screenshots/zh-cn/1designer.png)
 
 ### 2. 零部件清单（BOM 规格表）与开料数据
 清晰明了的明细表，同时列出板件的**成品外形尺寸（`L × W`）**以及扣除各边（`L1`, `L2`, `W1`, `W2`）封边厚度后的**推台锯净开料尺寸（`CUT L × W`）**。
 
-![零部件规格表](../assets/screenshots/2specs.png)
+![零部件规格表](screenshots/zh-cn/2specs.png)
 
 ### 3. 2D 剪板机式开料排版图
 在标准大板（如 `2800 × 2070 mm`）上进行贯通式套料排版，清晰展示推台锯贯通剪切红线、锯缝间隙、修边余量、封边彩色色标以及带具体尺寸的可利用余料（余板）统计。
 
-![开料优化排版图](../assets/screenshots/3cutting.png)
+![开料优化排版图](screenshots/zh-cn/3cutting.png)
 
 ### 4. 板材原料与封边条库
 自由管理板材厚度、3D 材质颜色、自定义表面贴图（`PNG`, `JPG`, `WEBP`）、默认纹理走向锁以及各规格 ABS/PVC 封边条。
 
-![材质与封边条库](../assets/screenshots/4materials.png)
+![材质与封边条库](screenshots/zh-cn/4materials.png)
 
 ### 5. 明亮主题（浅色模式）
 现代化高对比度明亮主题，与暗黑主题无缝切换，并支持跟随 Windows/macOS/Linux 系统外观自动同步。
 
-![浅色主题界面](../assets/screenshots/5lighttheme.png)
+![浅色主题界面](screenshots/zh-cn/5lighttheme.png)
 
 ### 6. 内置 22 种国际语言（界面与 PDF 导出）
 点击顶部工具栏的 **`🌐`** 图标即可无需重启瞬间切换语言，首次启动自动检测操作系统语言环境，并支持生成对应语言的矢量 PDF 工艺报告。
 
-![22 种界面语言](../assets/screenshots/6languages.png)
+![22 种界面语言](screenshots/zh-cn/6languages.png)
 
 ---
 

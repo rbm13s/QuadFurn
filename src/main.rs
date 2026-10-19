@@ -7,6 +7,7 @@ mod model;
 mod snapping;
 mod ui_panels;
 mod viewport;
+mod batch_screenshot;
 
 use crate::i18n::AppLanguage;
 use crate::model::{EdgeId, MaterialId, PartId, Project};
@@ -339,6 +340,12 @@ pub struct QuadFurnApp {
     pub startup_maximize_frames: u8,
     pub screenshot_target: Option<std::path::PathBuf>,
     pub screenshot_frame_delay: u8,
+    pub batch_screenshots_dir: Option<std::path::PathBuf>,
+    pub batch_lang_idx: usize,
+    pub batch_shot_idx: usize,
+    pub batch_frame_delay: usize,
+    pub batch_startup_delay: usize,
+    pub force_open_lang_menu: bool,
 }
 
 impl Default for QuadFurnApp {
@@ -371,6 +378,12 @@ impl Default for QuadFurnApp {
             startup_maximize_frames: 0,
             screenshot_target: None,
             screenshot_frame_delay: 0,
+            batch_screenshots_dir: None,
+            batch_lang_idx: 0,
+            batch_shot_idx: 0,
+            batch_frame_delay: 0,
+            batch_startup_delay: 0,
+            force_open_lang_menu: false,
         }
     }
 }
@@ -1008,7 +1021,52 @@ impl eframe::App for QuadFurnApp {
         // Automated window screenshot via egui::ViewportCommand::Screenshot
         for event in ctx.input(|i| i.raw.events.clone()) {
             if let egui::Event::Screenshot { image, .. } = event {
-                if let Some(path) = self.screenshot_target.take() {
+                if let Some(ref batch_dir) = self.batch_screenshots_dir {
+                    let (lang_code, _) = crate::batch_screenshot::BATCH_LANGS[self.batch_lang_idx];
+                    let shot_name = match self.batch_shot_idx {
+                        0 => "1designer.png",
+                        1 => "2specs.png",
+                        2 => "3cutting.png",
+                        3 => "4materials.png",
+                        4 => "5lighttheme.png",
+                        _ => "6languages.png",
+                    };
+                    let out_dir = batch_dir.join(lang_code);
+                    let _ = std::fs::create_dir_all(&out_dir);
+                    let out_path = out_dir.join(shot_name);
+                    let (w, h) = (image.width() as u32, image.height() as u32);
+                    let _ = image::save_buffer(
+                        &out_path,
+                        image.as_raw(),
+                        w,
+                        h,
+                        image::ExtendedColorType::Rgba8,
+                    );
+                    let log_line = format!("Saved [{}/{}]: {}\n", lang_code, shot_name, out_path.display());
+                    eprint!("{}", log_line);
+                    let _ = std::fs::OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(batch_dir.join("progress.log"))
+                        .and_then(|mut f| {
+                            use std::io::Write;
+                            f.write_all(log_line.as_bytes())
+                        });
+
+                    self.batch_shot_idx += 1;
+                    self.batch_frame_delay = 0;
+                    if self.batch_shot_idx >= 6 {
+                        self.batch_shot_idx = 0;
+                        self.batch_lang_idx += 1;
+                    }
+                    if self.batch_lang_idx >= crate::batch_screenshot::BATCH_LANGS.len() {
+                        self.batch_screenshots_dir = None;
+                        self.allow_exit = true;
+                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                    } else {
+                        ctx.request_repaint();
+                    }
+                } else if let Some(path) = self.screenshot_target.take() {
                     let (w, h) = (image.width() as u32, image.height() as u32);
                     let _ = image::save_buffer(
                         &path,
@@ -1023,13 +1081,18 @@ impl eframe::App for QuadFurnApp {
             }
         }
 
-        if self.screenshot_target.is_some() {
+        if self.batch_screenshots_dir.is_some() {
+            crate::batch_screenshot::handle_batch_screenshot_step(self, ctx);
+        } else if self.screenshot_target.is_some() {
             if self.screenshot_frame_delay < 6 {
                 self.screenshot_frame_delay += 1;
                 ctx.request_repaint();
             } else if self.screenshot_frame_delay == 6 {
                 self.screenshot_frame_delay += 1;
                 ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
+                ctx.request_repaint();
+            } else {
+                ctx.request_repaint();
             }
         }
 
@@ -1196,8 +1259,21 @@ impl eframe::App for QuadFurnApp {
                     ));
 
                 // Language switcher icon next to theme selector
-                let lang_menu = ui.menu_button(
-                    RichText::new(self.language.switcher_button_text()).strong(),
+                let btn_resp = ui.button(RichText::new(self.language.switcher_button_text()).strong());
+                let pop_id = ui.make_persistent_id("lang_switcher_menu_popup");
+                if btn_resp.clicked() {
+                    ui.memory_mut(|m| m.toggle_popup(pop_id));
+                }
+                if self.force_open_lang_menu {
+                    ui.memory_mut(|m| m.open_popup(pop_id));
+                } else if self.batch_screenshots_dir.is_some() {
+                    ui.memory_mut(|m| m.close_popup());
+                }
+                egui::popup_below_widget(
+                    ui,
+                    pop_id,
+                    &btn_resp,
+                    egui::PopupCloseBehavior::CloseOnClickOutside,
                     |ui| {
                         ui.set_min_width(210.0);
                         ui.label(
@@ -1258,9 +1334,7 @@ impl eframe::App for QuadFurnApp {
                             });
                     },
                 );
-                lang_menu
-                    .response
-                    .on_hover_text(self.language.switcher_hover_tooltip());
+                btn_resp.on_hover_text(self.language.switcher_hover_tooltip());
             });
         });
 
@@ -1984,12 +2058,8 @@ fn main() -> eframe::Result<()> {
                         app.language = AppLanguage::Ru;
                     } else if l.eq_ignore_ascii_case("en") {
                         app.language = AppLanguage::En;
-                    } else if l.eq_ignore_ascii_case("uk") {
-                        app.language = AppLanguage::Uk;
-                    } else if l.eq_ignore_ascii_case("de") {
-                        app.language = AppLanguage::De;
-                    } else if l.eq_ignore_ascii_case("pl") {
-                        app.language = AppLanguage::Pl;
+                    } else if let Some(lang) = AppLanguage::from_locale_tag(l) {
+                        app.language = lang;
                     }
                     i += 2;
                 } else {
@@ -2014,6 +2084,10 @@ fn main() -> eframe::Result<()> {
                     }
                 } else if arg == "--lang" {
                     let _ = iter.next();
+                } else if arg == "--batch-screenshots" {
+                    if let Some(target) = iter.next() {
+                        app.batch_screenshots_dir = Some(std::path::PathBuf::from(target));
+                    }
                 } else if arg == "--screenshot" {
                     if let Some(target) = iter.next() {
                         app.screenshot_target = Some(std::path::PathBuf::from(target));

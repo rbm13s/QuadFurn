@@ -83,32 +83,32 @@ QuadFurn unisce l'ergonomia di tre celebri strumenti in un flusso di lavoro armo
 ### 1. Progettista CAD a 4 viste (Tema Scuro)
 Proiezioni ortografiche simultanee (**Dall'alto XY**, **Frontale XZ**, **Laterale YZ**) e **Vista 3D** con mappatura texture con correzione prospettica, gizmo a 8 maniglie di ridimensionamento e **Ispettore elementi** a destra.
 
-![Progettista CAD a 4 viste](../assets/screenshots/1designer.png)
+![Progettista CAD a 4 viste](screenshots/it/1designer.png)
 
 ### 2. Distinta base e specifiche
 Tabella riassuntiva che visualizza sia le **Dimensioni finite (`L × W`)** che le **Dimensioni nette di taglio (`CUT L × W`)** dopo la detrazione dei bordi su ciascun lato (`L1`, `L2`, `W1`, `W2`).
 
-![Tabella delle specifiche](../assets/screenshots/2specs.png)
+![Tabella delle specifiche](screenshots/it/2specs.png)
 
 ### 3. Schema di taglio lastre a ghigliottina
 Ottimizzazione del taglio su lastre standard (`2800 × 2070 mm`, ecc.) con tagli passanti a ghigliottina, tolleranza lama, margini di rifilo, indicatori visivi di bordatura e mappa dei ritagli riutilizzabili.
 
-![Schema di taglio](../assets/screenshots/3cutting.png)
+![Schema di taglio](screenshots/it/3cutting.png)
 
 ### 4. Catalogo materiali e bordature
 Gestione degli spessori dei pannelli, colori 3D, texture personalizzate (`PNG`, `JPG`, `WEBP`), vincoli di venatura e tipi di bordo in PVC/ABS.
 
-![Catalogo materiali e bordature](../assets/screenshots/4materials.png)
+![Catalogo materiali e bordature](screenshots/it/4materials.png)
 
 ### 5. Supporto per Tema Chiaro
 Tema chiaro nitido ad alto contrasto affiancato al Tema Scuro e alla sincronizzazione automatica con le impostazioni di sistema.
 
-![Interfaccia con Tema Chiaro](../assets/screenshots/5lighttheme.png)
+![Interfaccia con Tema Chiaro](screenshots/it/5lighttheme.png)
 
 ### 6. 22 lingue integrate (Interfaccia ed esportazione PDF)
 Cambio istantaneo della lingua senza riavvio tramite il selettore **`🌐`** nella barra superiore, rilevamento automatico della lingua del sistema operativo al primo avvio ed esportazioni PDF multilingue.
 
-![22 lingue disponibili](../assets/screenshots/6languages.png)
+![22 lingue disponibili](screenshots/it/6languages.png)
 
 ---
 

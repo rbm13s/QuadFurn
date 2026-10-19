@@ -83,32 +83,32 @@ QuadFurn, üç köklü aracın ergonomisini tek bir kusursuz iş akışında bir
 ### 1. 4 Görünümlü CAD Tasarımcısı (Koyu Tema)
 Senkronize dik açılı çizim görünümleri (**Üst XY**, **Ön XZ**, **Yan YZ**) ve perspektif düzeltmeli UV dokulu **3D Görünüm**, 8 noktalı boyutlandırma tutamaçları ve sağ taraftaki **Parça Denetçisi**.
 
-![4 Görünümlü CAD Tasarımcısı](../assets/screenshots/1designer.png)
+![4 Görünümlü CAD Tasarımcısı](screenshots/tr/1designer.png)
 
 ### 2. Parça Listesi (Teknik Şartname) ve Kesim Ölçüleri
 Hem **Net Bitmiş Ölçüleri (`L × W`)** hem de her kenardaki kenar bandı düşüldükten sonraki **Net Testere Kesim Ölçülerini (`CUT L × W`)** (`L1`, `L2`, `W1`, `W2`) gösteren ayrıntılı liste.
 
-![Parça Listesi](../assets/screenshots/2specs.png)
+![Parça Listesi](screenshots/tr/2specs.png)
 
 ### 3. Giyotin Levha Kesim Şeması
 Standart levha ebatları (`2800 × 2070 mm` vb.) üzerinde boydan boya giyotin kesim hatları, bıçak kalınlığı, kenar tıraşlama payları, kenar bant şeritleri ve ölçülendirilmiş artık parça dökümü.
 
-![Kesim Şeması](../assets/screenshots/3cutting.png)
+![Kesim Şeması](screenshots/tr/3cutting.png)
 
 ### 4. Malzeme ve Kenar Bandı Kataloğu
 Levha kalınlıkları, 3D renkler, özel yüzey dokuları (`PNG`, `JPG`, `WEBP`), ahşap desen kilitleme ve ABS/PVC kenar bandı tiplerinin yönetimi.
 
-![Malzeme Kataloğu](../assets/screenshots/4materials.png)
+![Malzeme Kataloğu](screenshots/tr/4materials.png)
 
 ### 5. Açık Tema Desteği
 Koyu temanın yanı sıra modern yüksek kontrastlı Açık Tema ve işletim sistemi renk düzeniyle otomatik eşzamanlama.
 
-![Açık Tema](../assets/screenshots/5lighttheme.png)
+![Açık Tema](screenshots/tr/5lighttheme.png)
 
 ### 6. 22 Dahili Dil (Arayüz ve PDF Dışa Aktarım)
 Üst araç çubuğundaki **`🌐`** simgesinden yeniden başlatma gerektirmeden anında dil değiştirme, ilk açılışta işletim sistemi dilini otomatik algılama ve çok dilli PDF çıktıları.
 
-![22 Dil Desteği](../assets/screenshots/6languages.png)
+![22 Dil Desteği](screenshots/tr/6languages.png)
 
 ---
 

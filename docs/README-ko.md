@@ -83,32 +83,32 @@ QuadFurn은 널리 검증된 3가지 전문 도구의 장점을 결합하여 설
 ### 1. 4-뷰포트 CAD 디자이너 (다크 테마)
 동기화된 2D 직교 투영 도면(**평면도 XY**, **정면도 XZ**, **측면도 YZ**)과 원근 보정 UV 매핑이 적용된 **3D 뷰**, 8점 크기 조절 핸들 및 우측 **부품 속성 인스펙터**.
 
-![4-뷰포트 CAD 디자이너](../assets/screenshots/1designer.png)
+![4-뷰포트 CAD 디자이너](screenshots/ko/1designer.png)
 
 ### 2. 부품 규격 명세서 (BOM) 및 재단 치수
 완제품 기준의 **완성 치수(`L × W`)**와 사방 4면(`L1`, `L2`, `W1`, `W2`)의 엣지 두께를 공제한 **순수 톱질 재단 치수(`CUT L × W`)**를 한눈에 보여주는 부품 목록표.
 
-![부품 규격 명세서](../assets/screenshots/2specs.png)
+![부품 규격 명세서](screenshots/ko/2specs.png)
 
 ### 3. 길로틴 판재 재단 최적화 배치도
 표준 규격 원판(`2800 × 2070 mm` 등) 위에 관통 절단 선, 톱날 폭, 테두리 여백, 에지 밴딩 색상 표시 및 치수가 표기된 재활용 가능 잔재(자투리 판재)를 보여주는 배치도.
 
-![재단 배치도](../assets/screenshots/3cutting.png)
+![재단 배치도](screenshots/ko/3cutting.png)
 
 ### 4. 자재 및 에지 밴딩 카탈로그
 판재 두께, 3D 색상, 사용자 지정 표면 텍스처(`PNG`, `JPG`, `WEBP`), 나뭇결 잠금 여부 및 다양한 ABS/PVC 에지 밴딩 종류를 손쉽게 관리.
 
-![자재 카탈로그](../assets/screenshots/4materials.png)
+![자재 카탈로그](screenshots/ko/4materials.png)
 
 ### 5. 라이트 테마 (밝은 모드) 지원
 다크 테마와 완벽하게 대비되는 모던한 라이트 테마를 탑재하여 운영체제(Windows/macOS/Linux) 설정에 맞게 자동 전환 가능.
 
-![라이트 테마](../assets/screenshots/5lighttheme.png)
+![라이트 테마](screenshots/ko/5lighttheme.png)
 
 ### 6. 22개 언어 다국어 지원 (UI 및 PDF 내보내기)
 상단 툴바의 **`🌐`** 아이콘을 클릭하여 재시작 없이 즉시 언어를 변경할 수 있으며, 첫 실행 시 OS 언어를 자동 감지하고 다국어 벡터 PDF 공정서를 생성합니다.
 
-![22개 언어 지원](../assets/screenshots/6languages.png)
+![22개 언어 지원](screenshots/ko/6languages.png)
 
 ---
 

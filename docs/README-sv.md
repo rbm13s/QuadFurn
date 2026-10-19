@@ -83,32 +83,32 @@ QuadFurn förenar ergonomin från tre beprövade verktyg till ett sammanhållet 
 ### 1. 4-vyers CAD-konstruktör (Mörkt tema)
 Synkroniserade ortogonala plan (**Plan XY**, **Front XZ**, **Sida YZ**) och texturerad **3D-vy** med perspektivkorrigerad UV-mappning, 8-punkters storlekshandtag och höger **Komponentinspektör**.
 
-![4-vyers CAD-konstruktör](../assets/screenshots/1designer.png)
+![4-vyers CAD-konstruktör](screenshots/sv/1designer.png)
 
 ### 2. Komponentlista (Stycklista) och specifikationer
 Överskådlig tabell som visar både **Färdiga mått (`L × W`)** och **Nettosågmått för såg (`CUT L × W`)** efter avdrag för kantlister på respektive sida (`L1`, `L2`, `W1`, `W2`).
 
-![Stycklista över komponenter](../assets/screenshots/2specs.png)
+![Stycklista över komponenter](screenshots/sv/2specs.png)
 
 ### 3. Giljotin kapoptimeringsplan för skivor
 Nesting på standardskivor (`2800 × 2070 mm` osv.) med genomgående giljotinsnitt, klingförlust, kantbeskärning, visuella kantlistmarkeringar och förteckning över användbara spillbitar.
 
-![Skivoptimeringsplan](../assets/screenshots/3cutting.png)
+![Skivoptimeringsplan](screenshots/sv/3cutting.png)
 
 ### 4. Skiv- och kantlistkatalog
 Hantering av skivtjocklekar, 3D-färger, anpassade yttexturer (`PNG`, `JPG`, `WEBP`), ådringslås och typer av ABS/PVC-kantlister.
 
-![Materialkatalog](../assets/screenshots/4materials.png)
+![Materialkatalog](screenshots/sv/4materials.png)
 
 ### 5. Stöd för Ljust tema
 Modernt ljust tema med hög kontrast jämte det mörka temat, inklusive automatisk synkronisering med operativsystemets färgschema.
 
-![Ljust tema](../assets/screenshots/5lighttheme.png)
+![Ljust tema](screenshots/sv/5lighttheme.png)
 
 ### 6. 22 inbyggda språk (Användargränssnitt och PDF-export)
 Omedelbart språkbyte utan omstart via **`🌐`**-knappen i verktygsraden, automatisk detektering av operativsystemets språk vid första start och fullt översatta PDF-rapporter.
 
-![22 språk](../assets/screenshots/6languages.png)
+![22 språk](screenshots/sv/6languages.png)
 
 ---
 
