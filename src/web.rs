@@ -336,3 +336,129 @@ pub fn init_web_keyboard_listener() {
         keyup_closure.forget();
     }
 }
+
+#[cfg(target_arch = "wasm32")]
+pub static PENDING_FONT_LOAD: LazyLock<Mutex<Option<(String, Vec<u8>)>>> =
+    LazyLock::new(|| Mutex::new(None));
+
+#[cfg(target_arch = "wasm32")]
+static INSTALLED_CJK_FONT: LazyLock<Mutex<Option<Vec<u8>>>> =
+    LazyLock::new(|| Mutex::new(None));
+
+#[allow(dead_code)]
+pub fn get_installed_cjk_font() -> Option<Vec<u8>> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        INSTALLED_CJK_FONT.lock().ok().and_then(|guard| guard.clone())
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        None
+    }
+}
+
+#[allow(dead_code)]
+pub fn set_installed_cjk_font(bytes: Vec<u8>) {
+    #[cfg(target_arch = "wasm32")]
+    {
+        if let Ok(mut guard) = INSTALLED_CJK_FONT.lock() {
+            *guard = Some(bytes);
+        }
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let _ = bytes;
+    }
+}
+
+#[allow(dead_code)]
+pub fn take_pending_font() -> Option<(String, Vec<u8>)> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        PENDING_FONT_LOAD.lock().ok().and_then(|mut guard| guard.take())
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        None
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+static CJK_FETCH_STATE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0); // 0 = not started, 1 = in progress, 2 = done
+
+/// Returns true if CJK font is currently being fetched over network in WebAssembly.
+#[cfg(target_arch = "wasm32")]
+pub fn is_cjk_font_fetching_web() -> bool {
+    CJK_FETCH_STATE.load(std::sync::atomic::Ordering::SeqCst) == 1
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn is_cjk_font_fetching_web() -> bool {
+    false
+}
+
+/// Returns true if CJK font has been downloaded and installed in WebAssembly.
+#[cfg(target_arch = "wasm32")]
+pub fn is_cjk_font_loaded_web() -> bool {
+    CJK_FETCH_STATE.load(std::sync::atomic::Ordering::SeqCst) == 2
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn is_cjk_font_loaded_web() -> bool {
+    false
+}
+
+/// Asynchronously fetches Noto Sans CJK font bytes from CDN when CJK language is selected.
+#[cfg(target_arch = "wasm32")]
+pub fn fetch_cjk_font_web() {
+    if CJK_FETCH_STATE.compare_exchange(0, 1, std::sync::atomic::Ordering::SeqCst, std::sync::atomic::Ordering::SeqCst).is_err() {
+        return; // Already started or completed
+    }
+
+    wasm_bindgen_futures::spawn_local(async move {
+        // High-availability CDN mirrors for Noto Sans CJK OTF/TTF
+        let urls = [
+            "https://cdn.jsdelivr.net/gh/googlefonts/noto-cjk@main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf",
+            "https://raw.githubusercontent.com/googlefonts/noto-cjk/main/Sans/OTF/SimplifiedChinese/NotoSansCJKsc-Regular.otf",
+        ];
+
+        let mut downloaded_bytes: Option<Vec<u8>> = None;
+        for url in urls {
+            if let Ok(bytes) = fetch_url_bytes(url).await {
+                if !bytes.is_empty() {
+                    downloaded_bytes = Some(bytes);
+                    break;
+                }
+            }
+        }
+
+        if let Some(bytes) = downloaded_bytes {
+            CJK_FETCH_STATE.store(2, std::sync::atomic::Ordering::SeqCst);
+            if let Ok(mut lock) = PENDING_FONT_LOAD.lock() {
+                *lock = Some(("cjk_noto_web".to_string(), bytes));
+            }
+        } else {
+            // Reset to 0 on failure so user can retry by switching language again
+            CJK_FETCH_STATE.store(0, std::sync::atomic::Ordering::SeqCst);
+        }
+    });
+}
+
+#[cfg(target_arch = "wasm32")]
+async fn fetch_url_bytes(url: &str) -> Result<Vec<u8>, wasm_bindgen::JsValue> {
+    use wasm_bindgen::JsCast;
+    let window = web_sys::window().ok_or_else(|| wasm_bindgen::JsValue::from_str("no window"))?;
+    let resp_value = wasm_bindgen_futures::JsFuture::from(window.fetch_with_str(url)).await?;
+    let resp: web_sys::Response = resp_value.dyn_into()?;
+    if !resp.ok() {
+        return Err(wasm_bindgen::JsValue::from_str(&format!("HTTP {}", resp.status())));
+    }
+    let array_buffer_val = wasm_bindgen_futures::JsFuture::from(resp.array_buffer()?).await?;
+    let uint8_array = js_sys::Uint8Array::new(&array_buffer_val);
+    Ok(uint8_array.to_vec())
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn fetch_cjk_font_web() {}
+

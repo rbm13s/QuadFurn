@@ -746,114 +746,117 @@ impl QuadFurnApp {
                                     self.open_project_interactive(ctx);
                                 }
 
-                                ui.add_space(16.0);
-                                ui.separator();
-                                ui.add_space(10.0);
+                                #[cfg(not(target_arch = "wasm32"))]
+                                {
+                                    ui.add_space(16.0);
+                                    ui.separator();
+                                    ui.add_space(10.0);
 
-                                ui.label(
-                                    RichText::new(format!(
-                                        "{} ({}/10):",
-                                        lang.tr(
-                                            "Последние открытые проекты",
-                                            "Recent projects"
-                                        ),
-                                        self.recent_projects.len().min(10)
-                                    ))
-                                    .strong()
-                                    .size(14.5),
-                                );
-                                ui.add_space(6.0);
-
-                                if self.recent_projects.is_empty() {
                                     ui.label(
-                                        RichText::new(d.start_recent_empty)
-                                            .size(12.5)
-                                            .color(Color32::GRAY),
+                                        RichText::new(format!(
+                                            "{} ({}/10):",
+                                            lang.tr(
+                                                "Последние открытые проекты",
+                                                "Recent projects"
+                                            ),
+                                            self.recent_projects.len().min(10)
+                                        ))
+                                        .strong()
+                                        .size(14.5),
                                     );
-                                } else {
-                                    let mut open_recent_path: Option<std::path::PathBuf> = None;
-                                    let mut remove_recent_idx: Option<usize> = None;
+                                    ui.add_space(6.0);
 
-                                    for (idx, rpath) in
-                                        self.recent_projects.iter().take(10).enumerate()
-                                    {
-                                        let file_title = rpath
-                                            .file_name()
-                                            .and_then(|n| n.to_str())
-                                            .unwrap_or_else(|| lang.tr("Проект", "Project"));
-                                        let exists = rpath.exists();
+                                    if self.recent_projects.is_empty() {
+                                        ui.label(
+                                            RichText::new(d.start_recent_empty)
+                                                .size(12.5)
+                                                .color(Color32::GRAY),
+                                        );
+                                    } else {
+                                        let mut open_recent_path: Option<std::path::PathBuf> = None;
+                                        let mut remove_recent_idx: Option<usize> = None;
 
-                                        ui.horizontal(|ui| {
-                                            let btn_label = if exists {
-                                                format!(
-                                                    "{}. 🗄 {}   —   {}",
-                                                    idx + 1,
-                                                    file_title,
-                                                    rpath.display()
-                                                )
-                                            } else {
-                                                format!(
-                                                    "{}. ⚠ {} ({})   —   {}",
-                                                    idx + 1,
-                                                    file_title,
-                                                    lang.tr("файл не найден", "file not found"),
-                                                    rpath.display()
-                                                )
-                                            };
+                                        for (idx, rpath) in
+                                            self.recent_projects.iter().take(10).enumerate()
+                                        {
+                                            let file_title = rpath
+                                                .file_name()
+                                                .and_then(|n| n.to_str())
+                                                .unwrap_or_else(|| lang.tr("Проект", "Project"));
+                                            let exists = rpath.exists();
 
-                                            let resp = ui
-                                                .add_sized(
-                                                    [424.0, 28.0],
-                                                    egui::Button::new(
-                                                        RichText::new(btn_label).size(12.5),
-                                                    ),
-                                                )
-                                                .on_hover_text(format!(
-                                                    "{}: {}",
-                                                    lang.tr("Открыть проект", "Open project"),
-                                                    rpath.display()
-                                                ));
-                                            if resp.clicked() {
-                                                open_recent_path = Some(rpath.clone());
+                                            ui.horizontal(|ui| {
+                                                let btn_label = if exists {
+                                                    format!(
+                                                        "{}. 🗄 {}   —   {}",
+                                                        idx + 1,
+                                                        file_title,
+                                                        rpath.display()
+                                                    )
+                                                } else {
+                                                    format!(
+                                                        "{}. ⚠ {} ({})   —   {}",
+                                                        idx + 1,
+                                                        file_title,
+                                                        lang.tr("файл не найден", "file not found"),
+                                                        rpath.display()
+                                                    )
+                                                };
+
+                                                let resp = ui
+                                                    .add_sized(
+                                                        [424.0, 28.0],
+                                                        egui::Button::new(
+                                                            RichText::new(btn_label).size(12.5),
+                                                        ),
+                                                    )
+                                                    .on_hover_text(format!(
+                                                        "{}: {}",
+                                                        lang.tr("Открыть проект", "Open project"),
+                                                        rpath.display()
+                                                    ));
+                                                if resp.clicked() {
+                                                    open_recent_path = Some(rpath.clone());
+                                                }
+
+                                                if ui
+                                                    .add_sized([28.0, 28.0], egui::Button::new("✖"))
+                                                    .on_hover_text(lang.tr(
+                                                        "Убрать из списка последних проектов",
+                                                        "Remove from recent projects list",
+                                                    ))
+                                                    .clicked()
+                                                {
+                                                    remove_recent_idx = Some(idx);
+                                                }
+                                            });
+                                        }
+
+                                        if let Some(rem_idx) = remove_recent_idx {
+                                            if rem_idx < self.recent_projects.len() {
+                                                self.recent_projects.remove(rem_idx);
+                                                let _ = self.save_settings();
                                             }
-
-                                            if ui
-                                                .add_sized([28.0, 28.0], egui::Button::new("✖"))
-                                                .on_hover_text(lang.tr(
-                                                    "Убрать из списка последних проектов",
-                                                    "Remove from recent projects list",
-                                                ))
-                                                .clicked()
-                                            {
-                                                remove_recent_idx = Some(idx);
-                                            }
-                                        });
-                                    }
-
-                                    if let Some(rem_idx) = remove_recent_idx {
-                                        if rem_idx < self.recent_projects.len() {
-                                            self.recent_projects.remove(rem_idx);
-                                            let _ = self.save_settings();
+                                        }
+                                        if let Some(p) = open_recent_path {
+                                            self.open_project_from_path(ctx, &p);
                                         }
                                     }
-                                    if let Some(p) = open_recent_path {
-                                        self.open_project_from_path(ctx, &p);
-                                    }
-                                }
 
-                                ui.add_space(14.0);
-                                ui.label(
-                                    RichText::new(format!(
-                                        "{}: {}",
-                                        lang.tr(
-                                            "Настройки и цветовая схема сохраняются в",
-                                            "Settings & theme are saved in"
-                                        ),
-                                        AppSettings::settings_file_path().display()
-                                    ))
-                                    .size(11.5)
-                                    .color(Color32::GRAY),
-                                );
+                                    ui.add_space(14.0);
+                                    ui.label(
+                                        RichText::new(format!(
+                                            "{}: {}",
+                                            lang.tr(
+                                                "Настройки и цветовая схема сохраняются в",
+                                                "Settings & theme are saved in"
+                                            ),
+                                            AppSettings::settings_file_path().display()
+                                        ))
+                                        .size(11.5)
+                                        .color(Color32::GRAY),
+                                    );
+                                }
                             });
                         });
                     ui.add_space(20.0);
@@ -1146,6 +1149,27 @@ impl eframe::App for QuadFurnApp {
 
         #[cfg(target_arch = "wasm32")]
         {
+            if let Some((_name, font_bytes)) = crate::web::take_pending_font() {
+                crate::web::set_installed_cjk_font(font_bytes);
+                configure_fonts(ctx);
+                self.status_msg = match self.language {
+                    AppLanguage::Ja => "CJKフォントが正常に読み込まれました。".to_string(),
+                    AppLanguage::ZhCn => "CJK中文字体已成功加载。".to_string(),
+                    AppLanguage::Ko => "CJK 한국어 글꼴이 성공적으로 로드되었습니다.".to_string(),
+                    _ => self.language.tr("CJK шрифты успешно загружены", "CJK fonts loaded successfully").to_string(),
+                };
+                ctx.request_repaint();
+            }
+
+            if matches!(self.language, AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::Ko) {
+                if crate::web::is_cjk_font_fetching_web() {
+                    ctx.request_repaint();
+                } else if !crate::web::is_cjk_font_loaded_web() {
+                    crate::web::fetch_cjk_font_web();
+                    ctx.request_repaint();
+                }
+            }
+
             if let Ok(mut uploads) = crate::web::PENDING_PROJECT_UPLOADS.lock() {
                 for (name, bytes) in uploads.drain(..) {
                     if let Ok(mut proj) = serde_json::from_slice::<Project>(&bytes) {
@@ -1600,9 +1624,12 @@ impl eframe::App for QuadFurnApp {
                                         )
                                         .clicked()
                                     {
-                                        ctx.send_viewport_cmd(egui::ViewportCommand::Title(
-                                            self.language.dict().window_title.to_string(),
-                                        ));
+                                        let app_ver = env!("CARGO_PKG_VERSION");
+                                        let win_title = self.language.dict().window_title.replacen("QuadFurn CAD", &format!("QuadFurn CAD v{}", app_ver), 1);
+                                        ctx.send_viewport_cmd(egui::ViewportCommand::Title(win_title));
+                                        if matches!(self.language, AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::Ko) && !crate::web::is_cjk_font_loaded_web() {
+                                            crate::web::fetch_cjk_font_web();
+                                        }
                                         if self.new_product_name_buf == "Новое изделие 1"
                                             || self.new_product_name_buf == "New Product 1"
                                         {
@@ -2487,6 +2514,20 @@ pub fn configure_fonts(ctx: &egui::Context) {
         }
     }
 
+    // 7. Dynamically downloaded CJK font for WebAssembly (Noto Sans CJK)
+    if let Some(cjk_bytes) = crate::web::get_installed_cjk_font() {
+        let ttf = crate::export::ensure_ttf_bytes(cjk_bytes);
+        fonts
+            .font_data
+            .insert("cjk_dynamic".to_owned(), egui::FontData::from_owned(ttf));
+        if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
+            vec.push("cjk_dynamic".to_owned());
+        }
+        if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
+            vec.push("cjk_dynamic".to_owned());
+        }
+    }
+
     ctx.set_fonts(fonts);
 }
 
@@ -2519,12 +2560,18 @@ pub fn load_app_icon_texture(ctx: &egui::Context) -> Option<TextureHandle> {
 #[cfg(not(target_arch = "wasm32"))]
 fn main() -> eframe::Result<()> {
     let initial_settings = AppSettings::load();
+    let app_ver = env!("CARGO_PKG_VERSION");
+    let win_title = initial_settings
+        .language
+        .dict()
+        .window_title
+        .replacen("QuadFurn CAD", &format!("QuadFurn CAD v{}", app_ver), 1);
     // Set base (restored) window size 1520×920 without .with_maximized(true),
     // because winit on Windows with simultaneous with_maximized(true) + with_inner_size(...)
     // issues SetWindowPos over WS_MAXIMIZE (leaving window 1520×920 with restore icon ❐).
     // Actual SW_MAXIMIZE maximization is executed on first frame render.
     let mut viewport = egui::ViewportBuilder::default()
-        .with_title(initial_settings.language.dict().window_title)
+        .with_title(&win_title)
         .with_inner_size([1520.0, 920.0])
         .with_min_inner_size([1024.0, 680.0]);
 
@@ -2539,7 +2586,7 @@ fn main() -> eframe::Result<()> {
     };
 
     eframe::run_native(
-        "QuadFurn CAD",
+        &format!("QuadFurn CAD v{}", app_ver),
         native_options,
         Box::new(|cc| {
             configure_fonts(&cc.egui_ctx);
@@ -2639,11 +2686,6 @@ fn main() {
                     let mut app = QuadFurnApp::default();
                     app.app_icon_tex = load_app_icon_texture(&cc.egui_ctx);
                     app.theme_choice.apply(&cc.egui_ctx);
-
-                    // Preload a demo cabinet so online user immediately has a 3D model to inspect
-                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(app.language)));
-                    app.active_doc_idx = 0;
-                    app.active_tab = AppTab::Designer4View;
 
                     Ok(Box::new(app))
                 }),

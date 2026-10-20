@@ -740,16 +740,16 @@ struct DefaultProjectL10n {
 fn default_project_l10n(lang: AppLanguage) -> DefaultProjectL10n {
     match lang {
         AppLanguage::Ru => DefaultProjectL10n {
-            mat_white_18: "ЛДСП 18мм Белый Альпийский",
-            mat_oak_18: "ЛДСП 18мм Дуб Вотан",
-            mat_hdf_3: "ХДФ 3мм Белый (Задняя стенка)",
-            edge_pvc_2: "ПВХ 2.0 мм",
-            edge_pvc_08: "ПВХ 0.8 мм",
-            edge_pvc_04: "ПВХ 0.4 мм",
+            mat_white_18: "ЛДСП Белый Альпийский",
+            mat_oak_18: "ЛДСП Дуб Вотан",
+            mat_hdf_3: "ХДФ Белый (Задняя стенка)",
+            edge_pvc_2: "ПВХ",
+            edge_pvc_08: "ПВХ",
+            edge_pvc_04: "ПВХ",
             grp_carcass: "Корпус шкафа (800x500x720)",
             grp_fronts: "Фасады и наполнение",
             grp_main: "Основной корпус",
-            proj_name: "Тумба распашная 800х500х720 (ЛДСП 18мм)",
+            proj_name: "Тумба распашная 800х500х720",
             part_left_side: "Боковина левая",
             part_right_side: "Боковина правая",
             part_bottom: "Дно вкладное",
@@ -760,16 +760,16 @@ fn default_project_l10n(lang: AppLanguage) -> DefaultProjectL10n {
             part_door_right: "Фасад правый (Дуб)",
         },
         AppLanguage::Uk => DefaultProjectL10n {
-            mat_white_18: "ЛДСП 18мм Білий Альпійський",
-            mat_oak_18: "ЛДСП 18мм Дуб Вотан",
-            mat_hdf_3: "ХДФ 3мм Білий (Задня стінка)",
-            edge_pvc_2: "ПВХ 2.0 мм",
-            edge_pvc_08: "ПВХ 0.8 мм",
-            edge_pvc_04: "ПВХ 0.4 мм",
+            mat_white_18: "ЛДСП Білий Альпійський",
+            mat_oak_18: "ЛДСП Дуб Вотан",
+            mat_hdf_3: "ХДФ Білий (Задня стінка)",
+            edge_pvc_2: "ПВХ",
+            edge_pvc_08: "ПВХ",
+            edge_pvc_04: "ПВХ",
             grp_carcass: "Корпус шафи (800x500x720)",
             grp_fronts: "Фасади та наповнення",
             grp_main: "Основний корпус",
-            proj_name: "Тумба розпашна 800х500х720 (ЛДСП 18мм)",
+            proj_name: "Тумба розпашна 800х500х720",
             part_left_side: "Боковина ліва",
             part_right_side: "Боковина права",
             part_bottom: "Дно вкладене",
@@ -780,16 +780,16 @@ fn default_project_l10n(lang: AppLanguage) -> DefaultProjectL10n {
             part_door_right: "Фасад правий (Дуб)",
         },
         AppLanguage::De => DefaultProjectL10n {
-            mat_white_18: "18mm Spanplatte Alpinweiß",
-            mat_oak_18: "18mm Spanplatte Wotaneiche",
-            mat_hdf_3: "3mm HDF Weiß (Rückwand)",
-            edge_pvc_2: "PVC 2.0 mm",
-            edge_pvc_08: "PVC 0.8 mm",
-            edge_pvc_04: "PVC 0.4 mm",
+            mat_white_18: "Spanplatte Alpinweiß",
+            mat_oak_18: "Spanplatte Wotaneiche",
+            mat_hdf_3: "HDF Weiß (Rückwand)",
+            edge_pvc_2: "PVC",
+            edge_pvc_08: "PVC",
+            edge_pvc_04: "PVC",
             grp_carcass: "Schrankkorpus (800x500x720)",
             grp_fronts: "Fronten & Fächer",
             grp_main: "Hauptkorpus",
-            proj_name: "Drehtürenschrank 800x500x720 (18mm)",
+            proj_name: "Drehtürenschrank 800x500x720",
             part_left_side: "Linke Seitenwand",
             part_right_side: "Rechte Seitenwand",
             part_bottom: "Unterboden",
@@ -800,16 +800,16 @@ fn default_project_l10n(lang: AppLanguage) -> DefaultProjectL10n {
             part_door_right: "Front rechts (Eiche)",
         },
         AppLanguage::Pl => DefaultProjectL10n {
-            mat_white_18: "Płyta wiórowa 18mm Biały Alpejski",
-            mat_oak_18: "Płyta wiórowa 18mm Dąb Wotan",
-            mat_hdf_3: "HDF 3mm Biały (Ściana tylna)",
-            edge_pvc_2: "PCV 2.0 mm",
-            edge_pvc_08: "PCV 0.8 mm",
-            edge_pvc_04: "PCV 0.4 mm",
+            mat_white_18: "Płyta wiórowa Biały Alpejski",
+            mat_oak_18: "Płyta wiórowa Dąb Wotan",
+            mat_hdf_3: "HDF Biały (Ściana tylna)",
+            edge_pvc_2: "PCV",
+            edge_pvc_08: "PCV",
+            edge_pvc_04: "PCV",
             grp_carcass: "Korpus szafy (800x500x720)",
             grp_fronts: "Fronty i wypełnienie",
             grp_main: "Główny korpus",
-            proj_name: "Szafka uchylna 800x500x720 (18mm)",
+            proj_name: "Szafka uchylna 800x500x720",
             part_left_side: "Bok lewy",
             part_right_side: "Bok prawy",
             part_bottom: "Wieniec dolny",
@@ -820,16 +820,16 @@ fn default_project_l10n(lang: AppLanguage) -> DefaultProjectL10n {
             part_door_right: "Front prawy (Dąb)",
         },
         _ => DefaultProjectL10n {
-            mat_white_18: "18mm Chipboard Alpine White",
-            mat_oak_18: "18mm Chipboard Wotan Oak",
-            mat_hdf_3: "3mm HDF White (Back panel)",
-            edge_pvc_2: "PVC 2.0 mm",
-            edge_pvc_08: "PVC 0.8 mm",
-            edge_pvc_04: "PVC 0.4 mm",
+            mat_white_18: "Chipboard Alpine White",
+            mat_oak_18: "Chipboard Wotan Oak",
+            mat_hdf_3: "HDF White (Back panel)",
+            edge_pvc_2: "PVC",
+            edge_pvc_08: "PVC",
+            edge_pvc_04: "PVC",
             grp_carcass: "Cabinet Carcass (800x500x720)",
             grp_fronts: "Fronts & Infill",
             grp_main: "Main Carcass",
-            proj_name: "Cabinet 800x500x720 (18mm Chipboard)",
+            proj_name: "Cabinet 800x500x720",
             part_left_side: "Left Side",
             part_right_side: "Right Side",
             part_bottom: "Bottom Panel",
@@ -917,36 +917,36 @@ mod tests {
     fn test_project_default_materials_localization() {
         // Russian localization
         let proj_ru = Project::new_demo_cabinet_i18n(AppLanguage::Ru);
-        assert_eq!(proj_ru.materials[0].name, "ЛДСП 18мм Белый Альпийский");
-        assert_eq!(proj_ru.materials[1].name, "ЛДСП 18мм Дуб Вотан");
-        assert_eq!(proj_ru.edge_bandings[0].name, "ПВХ 2.0 мм");
+        assert_eq!(proj_ru.materials[0].name, "ЛДСП Белый Альпийский");
+        assert_eq!(proj_ru.materials[1].name, "ЛДСП Дуб Вотан");
+        assert_eq!(proj_ru.edge_bandings[0].name, "ПВХ");
         assert_eq!(proj_ru.groups[0].name, "Корпус шкафа (800x500x720)");
         assert_eq!(proj_ru.parts[0].name, "Боковина левая");
 
         // English localization
         let proj_en = Project::new_demo_cabinet_i18n(AppLanguage::En);
-        assert_eq!(proj_en.materials[0].name, "18mm Chipboard Alpine White");
-        assert_eq!(proj_en.materials[1].name, "18mm Chipboard Wotan Oak");
-        assert_eq!(proj_en.edge_bandings[0].name, "PVC 2.0 mm");
+        assert_eq!(proj_en.materials[0].name, "Chipboard Alpine White");
+        assert_eq!(proj_en.materials[1].name, "Chipboard Wotan Oak");
+        assert_eq!(proj_en.edge_bandings[0].name, "PVC");
         assert_eq!(proj_en.groups[0].name, "Cabinet Carcass (800x500x720)");
         assert_eq!(proj_en.parts[0].name, "Left Side");
 
         // Ukrainian localization
         let proj_uk = Project::new_demo_cabinet_i18n(AppLanguage::Uk);
-        assert_eq!(proj_uk.materials[0].name, "ЛДСП 18мм Білий Альпійський");
+        assert_eq!(proj_uk.materials[0].name, "ЛДСП Білий Альпійський");
         assert_eq!(proj_uk.groups[0].name, "Корпус шафи (800x500x720)");
         assert_eq!(proj_uk.parts[0].name, "Боковина ліва");
 
         // German localization
         let proj_de = Project::new_demo_cabinet_i18n(AppLanguage::De);
-        assert_eq!(proj_de.materials[0].name, "18mm Spanplatte Alpinweiß");
+        assert_eq!(proj_de.materials[0].name, "Spanplatte Alpinweiß");
         assert_eq!(proj_de.groups[0].name, "Schrankkorpus (800x500x720)");
 
         // Empty project localization
         let empty_en = Project::new_empty_i18n("Custom Desk", AppLanguage::En);
         assert_eq!(empty_en.name, "Custom Desk");
         assert_eq!(empty_en.groups[0].name, "Main Carcass");
-        assert_eq!(empty_en.materials[0].name, "18mm Chipboard Alpine White");
+        assert_eq!(empty_en.materials[0].name, "Chipboard Alpine White");
     }
 
     #[test]

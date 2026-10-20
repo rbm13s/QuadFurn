@@ -2604,6 +2604,8 @@ impl QuadViewportController {
             screen_pts: [Pos2; 4],
             screen_bbox: Rect,
             avg_depth: f32,
+            min_depth: f32,
+            max_depth: f32,
             fill_color: Color32,
             stroke_color: Color32,
             is_selected: bool,
@@ -2820,6 +2822,12 @@ impl QuadViewportController {
                         let sub_center =
                             (w_verts[0] + w_verts[1] + w_verts[2] + w_verts[3]) * 0.25;
                         let dist_to_cam = eye.distance(sub_center);
+                        let d0 = eye.distance(w_verts[0]);
+                        let d1 = eye.distance(w_verts[1]);
+                        let d2 = eye.distance(w_verts[2]);
+                        let d3 = eye.distance(w_verts[3]);
+                        let min_depth = d0.min(d1).min(d2).min(d3);
+                        let max_depth = d0.max(d1).max(d2).max(d3);
 
                         let outer_edges = [
                             iv == 0,         // edge 0..1 (top along V)
@@ -2903,6 +2911,8 @@ impl QuadViewportController {
                                 Pos2::new(max_sx, max_sy),
                             ),
                             avg_depth: dist_to_cam,
+                            min_depth,
+                            max_depth,
                             fill_color: Color32::from_rgb(r, g, b),
                             stroke_color: stroke_col,
                             is_selected: is_sel,
@@ -2923,35 +2933,129 @@ impl QuadViewportController {
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
 
-        // Refine order using Newell's Separating Plane Visibility Sort:
-        // For any two faces whose screen bounding boxes overlap, test relative positions against each other's planes and camera!
+        // Refine order using Topological Depth Sorting:
+        // Detects exact 2D screen overlap between quad faces, casts ray through overlap point,
+        // and establishes directed dependency edges (B -> A means B must be drawn before A).
         let n_faces = faces_to_draw.len();
-        for i in 0..n_faces {
-            for j in (i + 1)..n_faces {
-                if faces_to_draw[i].part_id == faces_to_draw[j].part_id {
-                    continue;
-                }
-                if !faces_to_draw[i]
-                    .screen_bbox
-                    .intersects(faces_to_draw[j].screen_bbox)
-                {
-                    continue;
-                }
+        if n_faces > 1 {
+            let inv_vp = vp_mat.inverse();
+            let mut adj: Vec<Vec<usize>> = vec![Vec::new(); n_faces];
+            let mut in_degree: Vec<usize> = vec![0; n_faces];
 
-                // Test if face `i` should be drawn AFTER (i.e. on top of) face `j`
-                let i_in_front_of_j = is_face_a_in_front_of_b(
-                    &faces_to_draw[i].world_verts,
-                    faces_to_draw[i].world_norm,
-                    faces_to_draw[i].plane_d,
-                    &faces_to_draw[j].world_verts,
-                    faces_to_draw[j].world_norm,
-                    faces_to_draw[j].plane_d,
-                    eye,
-                );
-                if i_in_front_of_j {
-                    faces_to_draw.swap(i, j);
+            for i in 0..n_faces {
+                let fa = &faces_to_draw[i];
+                for j in (i + 1)..n_faces {
+                    let fb = &faces_to_draw[j];
+                    if fa.part_id == fb.part_id {
+                        continue;
+                    }
+
+                    // Quick test 1: If depth ranges do not overlap, the one strictly farther must be drawn first
+                    if fa.min_depth >= fb.max_depth - 0.2 {
+                        adj[i].push(j);
+                        in_degree[j] += 1;
+                        continue;
+                    }
+                    if fb.min_depth >= fa.max_depth - 0.2 {
+                        adj[j].push(i);
+                        in_degree[i] += 1;
+                        continue;
+                    }
+
+                    // Quick test 2: Screen bounding boxes
+                    if !fa.screen_bbox.intersects(fb.screen_bbox) {
+                        continue;
+                    }
+
+                    // Detailed test 3: Find point in 2D quad overlap and test ray depths
+                    if let Some(inter_pt) = find_point_in_quad_intersection(&fa.screen_pts, &fb.screen_pts) {
+                        if let Some(ray_dir) = ray_from_screen_point(inter_pt, rect, &inv_vp) {
+                            let t_a = ray_plane_distance(eye, ray_dir, fa.world_norm, fa.plane_d);
+                            let t_b = ray_plane_distance(eye, ray_dir, fb.world_norm, fb.plane_d);
+                            if let (Some(ta), Some(tb)) = (t_a, t_b) {
+                                if ta + 0.3 < tb {
+                                    // A is closer than B at this screen pixel -> B must be drawn BEFORE A (B -> A)
+                                    adj[j].push(i);
+                                    in_degree[i] += 1;
+                                } else if tb + 0.3 < ta {
+                                    // B is closer than A at this screen pixel -> A must be drawn BEFORE B (A -> B)
+                                    adj[i].push(j);
+                                    in_degree[j] += 1;
+                                }
+                            }
+                        }
+                    }
                 }
             }
+
+            // Kahn's algorithm with priority queue ordered by descending avg_depth (farthest first)
+            use std::collections::BinaryHeap;
+            #[derive(PartialEq)]
+            struct HeapItem {
+                depth: f32,
+                idx: usize,
+            }
+            impl Eq for HeapItem {}
+            impl PartialOrd for HeapItem {
+                fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+                    Some(self.cmp(other))
+                }
+            }
+            impl Ord for HeapItem {
+                fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+                    self.depth.partial_cmp(&other.depth).unwrap_or(std::cmp::Ordering::Equal)
+                }
+            }
+
+            let mut heap = BinaryHeap::new();
+            for (idx, &deg) in in_degree.iter().enumerate() {
+                if deg == 0 {
+                    heap.push(HeapItem {
+                        depth: faces_to_draw[idx].avg_depth,
+                        idx,
+                    });
+                }
+            }
+
+            let mut sorted_indices = Vec::with_capacity(n_faces);
+            let mut visited = vec![false; n_faces];
+
+            while let Some(HeapItem { idx: u, .. }) = heap.pop() {
+                if visited[u] {
+                    continue;
+                }
+                visited[u] = true;
+                sorted_indices.push(u);
+
+                for &v in &adj[u] {
+                    if in_degree[v] > 0 {
+                        in_degree[v] -= 1;
+                        if in_degree[v] == 0 && !visited[v] {
+                            heap.push(HeapItem {
+                                depth: faces_to_draw[v].avg_depth,
+                                idx: v,
+                            });
+                        }
+                    }
+                }
+            }
+
+            if sorted_indices.len() < n_faces {
+                let mut remaining: Vec<usize> = (0..n_faces).filter(|&idx| !visited[idx]).collect();
+                remaining.sort_by(|&a, &b| {
+                    faces_to_draw[b]
+                        .avg_depth
+                        .partial_cmp(&faces_to_draw[a].avg_depth)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                });
+                sorted_indices.extend(remaining);
+            }
+
+            let mut reordered = Vec::with_capacity(n_faces);
+            for idx in sorted_indices {
+                reordered.push(faces_to_draw[idx].clone());
+            }
+            faces_to_draw = reordered;
         }
 
         // 3. Render faces (with perspective-correct 3D subdivision for textures without PS1 affine distortion, or solid material color)
@@ -3350,77 +3454,77 @@ fn point_in_quad(pt: Pos2, quad: &[Pos2; 4]) -> bool {
     pos == 0 || neg == 0
 }
 
-/// Evaluates Newell's Separating Plane Test criteria:
-/// whether face `A` is in front of face `B` relative to camera eye (meaning `A` should be drawn on top of `B`).
-fn is_face_a_in_front_of_b(
-    verts_a: &[Vec3; 4],
-    norm_a: Vec3,
-    plane_d_a: f32,
-    verts_b: &[Vec3; 4],
-    norm_b: Vec3,
-    plane_d_b: f32,
-    _eye: Vec3,
-) -> bool {
-    let eps = 0.25_f32;
+fn line_segment_intersection_2d(p1: Pos2, p2: Pos2, q1: Pos2, q2: Pos2) -> Option<Pos2> {
+    let d = (p2.x - p1.x) * (q2.y - q1.y) - (p2.y - p1.y) * (q2.x - q1.x);
+    if d.abs() < 1e-5 {
+        return None;
+    }
+    let t = ((q1.x - p1.x) * (q2.y - q1.y) - (q1.y - p1.y) * (q2.x - q1.x)) / d;
+    let u = ((q1.x - p1.x) * (p2.y - p1.y) - (q1.y - p1.y) * (p2.x - p1.x)) / d;
+    if (0.0..=1.0).contains(&t) && (0.0..=1.0).contains(&u) {
+        Some(Pos2::new(
+            p1.x + t * (p2.x - p1.x),
+            p1.y + t * (p2.y - p1.y),
+        ))
+    } else {
+        None
+    }
+}
 
-    // 1. Relative to face B's plane:
-    // Camera is on front side of B: norm_b.dot(eye) - plane_d_b > 0.
-    // If ALL vertices of A lie on the same side of B's plane as camera (>= -eps), and at least one is strictly closer to camera (> eps),
-    // then A is guaranteed to be in front of B!
-    let mut a_all_front_of_b = true;
-    let mut a_all_behind_b = true;
-    let mut a_strictly_front = false;
-    let mut a_strictly_behind = false;
-
-    for va in verts_a {
-        let dist = norm_b.dot(*va) - plane_d_b;
-        if dist < -eps {
-            a_all_front_of_b = false;
-        }
-        if dist > eps {
-            a_strictly_front = true;
-            a_all_behind_b = false;
-        }
-        if dist < -eps {
-            a_strictly_behind = true;
+fn find_point_in_quad_intersection(quad_a: &[Pos2; 4], quad_b: &[Pos2; 4]) -> Option<Pos2> {
+    for &pa in quad_a {
+        if point_in_quad(pa, quad_b) {
+            return Some(pa);
         }
     }
-
-    if a_all_front_of_b && a_strictly_front {
-        return true; // A is entirely in front of plane B -> A on top of B
-    }
-    if a_all_behind_b && a_strictly_behind {
-        return false; // A is entirely behind plane B -> B on top of A
-    }
-
-    // 2. Relative to face A's plane:
-    // Camera is on front side of A: norm_a.dot(eye) - plane_d_a > 0.
-    // If ALL vertices of B lie behind plane A (<= eps, away from camera), then A is in front of B!
-    let mut b_all_behind_a = true;
-    let mut b_all_front_of_a = true;
-    let mut b_strictly_behind = false;
-    let mut b_strictly_front = false;
-
-    for vb in verts_b {
-        let dist = norm_a.dot(*vb) - plane_d_a;
-        if dist > eps {
-            b_all_behind_a = false;
-            b_strictly_front = true;
-        }
-        if dist < -eps {
-            b_all_front_of_a = false;
-            b_strictly_behind = true;
+    for &pb in quad_b {
+        if point_in_quad(pb, quad_a) {
+            return Some(pb);
         }
     }
-
-    if b_all_behind_a && b_strictly_behind {
-        return true; // B is entirely behind plane A -> A on top of B
+    for i in 0..4 {
+        let a1 = quad_a[i];
+        let a2 = quad_a[(i + 1) % 4];
+        for j in 0..4 {
+            let b1 = quad_b[j];
+            let b2 = quad_b[(j + 1) % 4];
+            if let Some(inter) = line_segment_intersection_2d(a1, a2, b1, b2) {
+                return Some(inter);
+            }
+        }
     }
-    if b_all_front_of_a && b_strictly_front {
-        return false; // B is entirely in front of plane A -> B on top of A
-    }
+    None
+}
 
-    false
+fn ray_from_screen_point(scr_pt: Pos2, rect: Rect, inv_vp: &Mat4) -> Option<Vec3> {
+    let ndc_x = (scr_pt.x - rect.center().x) / (rect.width() * 0.5).max(1.0);
+    let ndc_y = -(scr_pt.y - rect.center().y) / (rect.height() * 0.5).max(1.0);
+    let clip_near = Vec4::new(ndc_x, ndc_y, -1.0, 1.0);
+    let world_near_h = *inv_vp * clip_near;
+    if world_near_h.w.abs() < 1e-6 {
+        return None;
+    }
+    let world_near = world_near_h.truncate() / world_near_h.w;
+    let clip_far = Vec4::new(ndc_x, ndc_y, 1.0, 1.0);
+    let world_far_h = *inv_vp * clip_far;
+    if world_far_h.w.abs() < 1e-6 {
+        return None;
+    }
+    let world_far = world_far_h.truncate() / world_far_h.w;
+    Some((world_far - world_near).normalize())
+}
+
+fn ray_plane_distance(eye: Vec3, ray_dir: Vec3, norm: Vec3, plane_d: f32) -> Option<f32> {
+    let denom = norm.dot(ray_dir);
+    if denom.abs() < 1e-5 {
+        return None;
+    }
+    let t = (plane_d - norm.dot(eye)) / denom;
+    if t > 0.0 {
+        Some(t)
+    } else {
+        None
+    }
 }
 
 #[cfg(test)]

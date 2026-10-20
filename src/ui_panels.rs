@@ -1653,8 +1653,8 @@ pub fn ui_materials_manager_tab(
     ui.horizontal(|ui| {
         if ui
             .button(lang.tr(
-                "➕ Добавить листовой материал (ЛДСП 18 мм)",
-                "➕ Add Sheet Material (18 mm Chipboard)",
+                "➕ Добавить листовой материал",
+                "➕ Add Sheet Material",
             ))
             .clicked()
         {
@@ -1663,19 +1663,19 @@ pub fn ui_materials_manager_tab(
                 id,
                 name: match lang {
                     AppLanguage::Ru => {
-                        format!("ЛДСП 18мм Новый декор {}", project.materials.len() + 1)
+                        format!("ЛДСП Новый декор {}", project.materials.len() + 1)
                     }
                     AppLanguage::Uk => {
-                        format!("ЛДСП 18мм Новий декор {}", project.materials.len() + 1)
+                        format!("ЛДСП Новий декор {}", project.materials.len() + 1)
                     }
                     AppLanguage::De => {
-                        format!("18mm Spanplatte Neues Dekor {}", project.materials.len() + 1)
+                        format!("Spanplatte Neues Dekor {}", project.materials.len() + 1)
                     }
                     AppLanguage::Pl => {
-                        format!("Płyta 18mm Nowy dekor {}", project.materials.len() + 1)
+                        format!("Płyta wiórowa Nowy dekor {}", project.materials.len() + 1)
                     }
                     _ => {
-                        format!("18mm Chipboard New Decor {}", project.materials.len() + 1)
+                        format!("Chipboard New Decor {}", project.materials.len() + 1)
                     }
                 },
                 thickness_mm: 18.0,
@@ -1697,9 +1697,9 @@ pub fn ui_materials_manager_tab(
             project.edge_bandings.push(crate::model::EdgeBanding {
                 id,
                 name: match lang {
-                    AppLanguage::Ru | AppLanguage::Uk => format!("ПВХ {:.1} мм", 1.0),
-                    AppLanguage::Pl => format!("PCV {:.1} mm", 1.0),
-                    _ => format!("PVC {:.1} mm", 1.0),
+                    AppLanguage::Ru | AppLanguage::Uk => "ПВХ".to_string(),
+                    AppLanguage::Pl => "PCV".to_string(),
+                    _ => "PVC".to_string(),
                 },
                 thickness_mm: 1.0,
                 color_rgb: [180, 100, 240],
