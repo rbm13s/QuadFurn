@@ -138,7 +138,7 @@ Fanen **Designer** (`📐 1. Designer`) består av tre hovedområder:
 
 1. **Øvre verktøylinjer**:
    - **Tegneverktøy**:
-     - `↖ Velg / Flytt (V)`: Klikk for å velge et element, dra for å flytte, eller bruk de 8 håndtakene i 2D for å endre størrelse. Dra i tomt rom for å åpne en markeringsramme.
+     - `↖ Velg / Flytt (V)`: Klikk for å velge et element, dra for å flytte, eller bruk håndtakene (8 størrelseshåndtak på flaten og 2 kanthåndtak fra siden). Dra i tomt rom for å åpne en markeringsramme. Under flytting i 2D: hold **`Shift`** for å låse bevegelsen til vannrett eller loddrett akse, hold **`Ctrl` (`Cmd`)** for å omgå kantfeste, og hold **`Alt`** for å duplisere delen når du slipper musen.
      - `➕ Opprett element med ramme (B)`: Dra et rektangel i en 2D-visning (`Plan XY`, `Front XZ` eller `Side YZ`) for å sette inn en plate i det planet.
      - `📏 Målebånd (M)`: Mål nøyaktige avstander punkt til punkt (`ΔX`, `ΔY`, `L`) i millimeter.
    - **Hurtiginnsetting**: Knapper for rask innsetting av hyller (`+ Hylle (XY)`), sider (`+ Side (YZ)`) eller dører/bakplater (`+ Dør/Bakplate (XZ)`).
@@ -249,6 +249,9 @@ I fanen **Materialer** (`🎨 4. Materialer`):
 | **`B`** | Aktiver verktøyet **Opprett element med ramme** i 2D-visninger |
 | **`M`** | Aktiver **Målebånd** i 2D-visninger |
 | **Dra med `Venstre museknapp` (2D)** | Flytt elementer, juster håndtak eller dra markeringsramme i tomt rom |
+| **`Shift + Venstreklikk` Dra (2D)** | Lås delens bevegelse strengt til vannrett eller loddrett akse |
+| **`Ctrl / Cmd + Venstreklikk` Dra (2D)** | Deaktiver magnetisk kantfeste midlertidig under flytting |
+| **`Alt + Venstreklikk` Dra (2D)** | Dupliser valgt(e) del(er) til målposisjonen ved slipp |
 | **`Skift / Ctrl (Cmd) + Venstre museknapp` (2D)** | Legg til eller fjern element fra flervalg |
 | **Dra med `Høyre` / `Midtre museknap` (2D)** | Panorer visningen (2D pan) |
 | **`Rullehjul på mus` (2D / 3D)** | Zoom inn/ut sentrert rundt markøren |

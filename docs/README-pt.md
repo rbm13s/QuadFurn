@@ -138,7 +138,7 @@ O separador **Modelador** (`📐 1. Modelador`) divide-se em três áreas fundam
 
 1. **Barras de ferramentas superiores**:
    - **Ferramentas de desenho**:
-     - `↖ Selecionar / Mover (V)`: Clique numa peça para selecioná-la, arraste para movê-la, ou use os 8 manipuladores de redimensionamento nas vistas 2D. Arraste no espaço vazio para abrir uma caixa de seleção múltipla.
+     - `↖ Selecionar / Mover (V)`: Clique numa peça para selecioná-la, arraste para movê-la, ou use os manipuladores (8 pegas em vista frontal e 2 em vista de topo). Arraste no espaço vazio para abrir uma caixa de seleção múltipla. Ao arrastar em 2D: segure **`Shift`** para restringir o movimento ao eixo horizontal ou vertical, **`Ctrl` (`Cmd`)** para desativar o encaixe magnético e **`Alt`** para duplicar a peça na posição de destino.
      - `➕ Criar peça por retângulo (B)`: Desenhe um retângulo numa vista 2D (`Planta XY`, `Frontal XZ` ou `Lateral YZ`) para inserir um painel correspondente àquele plano.
      - `📏 Fita métrica (M)`: Meça distâncias precisas ponto a ponto (`ΔX`, `ΔY`, `L`) em milímetros.
    - **Inserção rápida de peças**: Botões para adicionar com um clique prateleiras (`+ Prateleira (XY)`), laterais (`+ Lateral (YZ)`) ou portas/fundos (`+ Porta/Fundo (XZ)`).
@@ -249,6 +249,9 @@ No separador **Materiais** (`🎨 4. Materiais`):
 | **`B`** | Ativar ferramenta **Criar peça por retângulo** nas vistas 2D |
 | **`M`** | Ativar ferramenta **Fita métrica** nas vistas 2D |
 | **Arrastar `Botão esquerdo` (2D)** | Mover peças selecionadas, redimensionar ou abrir caixa de seleção múltipla em espaço vazio |
+| **`Shift + Botão esq.` Arrastar (2D)** | Restringir o movimento estritamente ao eixo horizontal ou vertical |
+| **`Ctrl / Cmd + Botão esq.` Arrastar (2D)** | Desativar o encaixe magnético às bordas durante o arrasto |
+| **`Alt + Botão esq.` Arrastar (2D)** | Duplicar a(s) peça(s) selecionada(s) na posição de destino ao soltar |
 | **`Shift / Ctrl (Cmd) + Botão esquerdo` (2D)** | Adicionar ou remover peças da seleção |
 | **Arrastar `Botão direito` / `Botão central` (2D)** | Mover a vista (Panorâmica 2D) |
 | **`Roda do rato` (2D / 3D)** | Zoom de aproximação/afastamento centrado no cursor |

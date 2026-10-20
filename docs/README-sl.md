@@ -138,7 +138,7 @@ Zavihek **Načrtovalec** (`📐 1. Načrtovalec`) obsega tri poglavitna območja
 
 1. **Zgornje orodne vrstice**:
    - **Orodja za risanje**:
-     - `↖ Izberi / Premakni (V)`: Kliknite element za izbiro, povlecite za premik, ali uporabite 8 ročic za spreminjanje mer v 2D. Vlečenje po praznem prostoru odpre izbirni pravokotnik za več elementov.
+     - `↖ Izberi / Premakni (V)`: Kliknite element za izbiro, povlecite za premik, ali uporabite ročice (8 ročic za elemente plosko in 2 ročici z roba). Vlečenje po praznem prostoru odpre izbirni pravokotnik za več elementov. Med vlečenjem v 2D: držite **`Shift`**, da premikanje zaklenete na vodoravno ali navpično os, **`Ctrl` (`Cmd`)**, da začasno izklopite magnetno pritrjevanje na robove, in **`Alt`**, da ustvarite kopijo kosa ob spustu.
      - `➕ Ustvari element z okvirjem (B)`: Povlecite pravokotnik v 2D pogledu (`Tloris XY`, `Naris XZ` ali `Stranski ris YZ`), da ustvarite ploščo, usmerjeno v tej ravnini.
      - `📏 Merilni trak (M)`: Natančno merjenje razdalj od točke do točke (`ΔX`, `ΔY`, `L`) v milimetrih.
    - **Hitro vstavljanje**: Gumbi za hitro dodajanje polic (`+ Polica (XY)`), stranic (`+ Stranica (YZ)`) ali ličnic/hrbtišč (`+ Ličnica/Hrbet (XZ)`).
@@ -249,6 +249,9 @@ V zavihku **Materiali** (`🎨 4. Materiali`):
 | **`B`** | Vključi orodje **Ustvari element z okvirjem** v 2D pogledih |
 | **`M`** | Vključi orodje **Merilni trak** v 2D pogledih |
 | **Vlečenje z `Levim gumbom` (2D)** | Premik elementov, spreminjanje velikosti z ročico ali risanje izbirnega okvirja na praznem |
+| **`Shift + Levi klik` Vlečenje (2D)** | Omejitev premikanja kosa strogo na vodoravno ali navpično os |
+| **`Ctrl / Cmd + Levi klik` Vlečenje (2D)** | Izklop magnetnega pritrjevanja na robove med vlečenjem |
+| **`Alt + Levi klik` Vlečenje (2D)** | Podvajanje izbranega kosa na ciljno mesto ob spustu miške |
 | **`Shift / Ctrl (Cmd) + Levi gumb` (2D)** | Dodajanje ali odstranjevanje elementa iz večkratne izbire |
 | **Vlečenje z `Desnim` / `Srednjim gumbom` (2D)** | Premik pogleda (Panoramski 2D pomik) |
 | **`Kolesce miške` (2D / 3D)** | Približevanje / oddaljevanje pogleda glede na kazalec |

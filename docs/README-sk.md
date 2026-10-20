@@ -138,7 +138,7 @@ Záložka **Konštruktér** (`📐 1. Konštruktér`) sa skladá z troch hlavný
 
 1. **Horné nástrojové lišty**:
    - **Kresliace nástroje**:
-     - `↖ Vybrať / Posunúť (V)`: Kliknutím vyberiete dielec, ťahaním posúvate, alebo meníte rozmery pomocou 8 úchopových bodov v 2D. Ťahaním v prázdnom priestore vytvoríte obdĺžnikový výber viacerých dielcov.
+     - `↖ Vybrať / Posunúť (V)`: Kliknutím vyberiete dielec, ťahaním posúvate, alebo meníte rozmery pomocou úchopov (8 úchopov pre dielce naplocho a 2 pre dielce z hrany). Ťahaním v prázdnom priestore vytvoríte obdĺžnikový výber viacerých dielcov. Pri preťahovaní v 2D: podržaním **`Shift`** obmedzíte pohyb iba na vodorovnú alebo zvislú os, **`Ctrl` (`Cmd`)** deaktivujete magnetické prichytávanie k hranám a **`Alt`** vytvoríte kópiu dielu v mieste pustenia.
      - `➕ Vytvoriť dielec rámčekom (B)`: Ťahaním obdĺžnika v 2D pohľade (`Pôdorys XY`, `Nárys XZ` alebo `Bokorys YZ`) vytvoríte novú dosku zodpovedajúcu danej rovine.
      - `📏 Meracie pásmo (M)`: Meranie presných vzdialeností bod od bodu (`ΔX`, `ΔY`, `L`) v milimetroch.
    - **Rýchle vkladanie dielcov**: Tlačidlá na vloženie police (`+ Polica (XY)`), boku (`+ Bok (YZ)`) alebo dvierok/chrbta (`+ Dvierka/Chrbát (XZ)`).
@@ -249,6 +249,9 @@ V záložke **Materiály** (`🎨 4. Materiály`):
 | **`B`** | Aktivovať nástroj **Vytvoriť dielec rámčekom** v 2D pohľadoch |
 | **`M`** | Aktivovať nástroj **Meracie pásmo** v 2D pohľadoch |
 | **Ťahanie `Ľavým tlačidlom` (2D)** | Posunúť vybrané dielce, upraviť rozmer úchopom alebo ťahať výberový rámček v prázdne |
+| **`Shift + Ľavé tl.` Pretiahnutie (2D)** | Obmedzenie pohybu dielu striktne na vodorovnú alebo zvislú os |
+| **`Ctrl / Cmd + Ľavé tl.` Pretiahnutie (2D)** | Deaktivácia magnetického prichytávania k hranám počas preťahovania |
+| **`Alt + Ľavé tl.` Pretiahnutie (2D)** | Duplikovanie vybraného dielu do cieľového miesta pri pustení |
 | **`Shift / Ctrl (Cmd) + Ľavým tlačidlom` (2D)** | Pridať alebo odobrať dielec z viacnásobného výberu |
 | **Ťahanie `Pravým` / `Stredným tlačidlom` (2D)** | Posun zobrazenia (Panoráma 2D) |
 | **`Koliesko myši` (2D / 3D)** | Priblíženie / oddialenie pohľadu na pozíciu kurzora |

@@ -138,7 +138,7 @@ Der Reiter **Designer** (`📐 1. Designer`) gliedert sich in drei Hauptbereiche
 
 1. **Obere Werkzeugleiste**:
    - **Editor-Werkzeuge**:
-     - `↖ Auswählen / Verschieben (V)`: Klick wählt ein Bauteil aus, Ziehen verschiebt es, Ziehen an einem der 8 Griffe skaliert es. Ziehen auf freier Fläche spannt einen **Auswahlrahmen** auf.
+     - `↖ Auswählen / Verschieben (V)`: Klick wählt ein Bauteil aus, Ziehen verschiebt es, Ziehen an Griffen (8 Griffe bei Frontalansicht & 2 Kanten-Griffe bei Stirnansicht) skaliert es. Ziehen auf freier Fläche spannt einen **Auswahlrahmen** auf. Beim Ziehen in 2D: Halten Sie **`Shift`** gedrückt, um die Bewegung auf die horizontale oder vertikale Achse zu beschränken, **`Ctrl` (`Cmd`)**, um das magnetische Einrasten an Kanten zu umgehen, und **`Alt`**, um das Bauteil beim Loslassen zu duplizieren.
      - `➕ Bauteil per Rahmen erstellen (B)`: Ziehen eines Rechtecks in einer 2D-Ansicht erzeugt eine Platte in dieser Ebene (`Fachboden XY`, `Seitenwand YZ`, `Front/Rückwand XZ`).
      - `📏 Messband (M)`: Misst exakte Abstände (`ΔX`, `ΔY`, `L`) in Millimetern.
    - **Schnellbausteine**: Direkte Tasten (`+ Fachboden (XY)`, `+ Seitenwand (YZ)`, `+ Front (XZ)`).
@@ -237,6 +237,9 @@ Im Reiter **Materialien** (`🎨 4. Materialien`):
 | **`B`** | Werkzeug **Bauteil per Rahmen erstellen** in 2D-Fenstern |
 | **`M`** | Werkzeug **Messband** in 2D-Fenstern |
 | **`LMB` Ziehen (2D)** | Ausgewählte Bauteile verschieben, Griffe ziehen oder Rahmen aufziehen |
+| **`Shift + LMB` Ziehen (2D)** | Bauteilbewegung strikt auf horizontale oder vertikale Achse beschränken |
+| **`Ctrl / Cmd + LMB` Ziehen (2D)** | Magnetisches Einrasten an Bauteilkanten beim Ziehen vorübergehend deaktivieren |
+| **`Alt + LMB` Ziehen (2D)** | Ausgewähltes Bauteil am Zielort duplizieren (Original bleibt erhalten) |
 | **`Shift / Ctrl (Cmd) + LMB` (2D)** | Bauteil zur Mehrfachauswahl hinzufügen/entfernen |
 | **`RMB` / `MMB` Ziehen (2D)** | 2D-Kamera verschieben (Pan) |
 | **`Mausrad` (2D / 3D)** | Kamera zoomen |

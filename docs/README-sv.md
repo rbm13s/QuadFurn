@@ -138,7 +138,7 @@ Fliken **Konstruktör** (`📐 1. Konstruktör`) omfattar tre huvuddelar:
 
 1. **Övre verktygsrader**:
    - **Ritverktyg**:
-     - `↖ Välj / Flytta (V)`: Klicka för att välja ett element, dra för att flytta, eller använd de 8 handtagen i 2D för att ändra storlek. Dra i tomt utrymme för att öppna en markeringsrektangel.
+     - `↖ Välj / Flytta (V)`: Klicka för att välja ett element, dra för att flytta, eller använd handtagen (8 storlekshandtag på ytan och 2 kanthandtag från kanten). Dra i tomt utrymme för att öppna en markeringsrektangel. Under förflyttning i 2D: håll ned **`Shift`** för att låsa rörelsen till horisontell eller vertikal axel, håll **`Ctrl` (`Cmd`)** för att kringgå magnetsnäppning, och håll **`Alt`** för att duplicera detaljen vid släpp.
      - `➕ Skapa komponent med ram (B)`: Dra en rektangel i en 2D-vy (`Plan XY`, `Front XZ` eller `Sida YZ`) för att skapa en skiva i det planet.
      - `📏 Måttband (M)`: Mät exakta avstånd från punkt till punkt (`ΔX`, `ΔY`, `L`) i millimeter.
    - **Snabbinsättning**: Knappar för snabb placering av hyllplan (`+ Hyllplan (XY)`), gavlar (`+ Gavel (YZ)`) eller luckor/ryggar (`+ Lucka/Rygg (XZ)`).
@@ -249,6 +249,9 @@ I fliken **Material** (`🎨 4. Material`):
 | **`B`** | Aktivera verktyget **Skapa komponent med ram** i 2D-vyer |
 | **`M`** | Aktivera **Måttband** i 2D-vyer |
 | **Dra med `Vänster musknapp` (2D)** | Flytta komponenter, justera handtag eller dra markeringsram i tomt utrymme |
+| **`Shift + Vänsterklick` Dra (2D)** | Begränsa detaljens förflyttning strikt till horisontell eller vertikal axel |
+| **`Ctrl / Cmd + Vänsterklick` Dra (2D)** | Inaktivera magnetisk snäppning mot kanter tillfälligt under dragning |
+| **`Alt + Vänsterklick` Dra (2D)** | Duplicera markerad(e) del(ar) till målpositionen när musknappen släpps |
 | **`Skift / Ctrl (Cmd) + Vänster musknapp` (2D)** | Lägg till eller ta bort komponent från flerval |
 | **Dra med `Höger` / `Mittenmusknapp` (2D)** | Panorera vyn (2D pan) |
 | **`Rullhjul på mus` (2D / 3D)** | Zooma in/ut centrerat kring markören |

@@ -138,7 +138,7 @@ Koyu temanın yanı sıra modern yüksek kontrastlı Açık Tema ve işletim sis
 
 1. **Üst Araç Çubukları**:
    - **Çizim Araçları**:
-     - `↖ Seç / Taşı (V)`: Seçmek için tıklayın, taşımak için sürükleyin veya 2D görünümlerde 8 tutamacı kullanarak boyutlandırın. Boş alanda sürükleyerek seçim kutusu açın.
+     - `↖ Seç / Taşı (V)`: Seçmek için tıklayın, taşımak için sürükleyin veya tutamaçları (yüzeyden 8 tutamaç, kesitten 2 kenar tutamacı) kullanarak boyutlandırın. Boş alanda sürükleyerek seçim kutusu açın. 2D sürükleme sırasında: hareketi yalnızca yatay veya dikey eksene kilitlemek için **`Shift`**, kenarlara yapışmayı yok saymak için **`Ctrl` (`Cmd`)** ve parçayı bırakıldığında çoğaltmak için **`Alt`** tuşunu basılı tutun.
      - `➕ Kutu ile Parça Oluştur (B)`: 2D görünümlerde (`Üst XY`, `Ön XZ` veya `Yan YZ`) bir dikdörtgen sürükleyerek o düzleme uygun yeni bir panel ekleyin.
      - `📏 Mezura (M)`: Milimetre cinsinden noktadan noktaya net mesafe ölçümü (`ΔX`, `ΔY`, `L`).
    - **Hızlı Parça Ekleme**: Raf (`+ Raf (XY)`), dikme (`+ Dikme/Yan (YZ)`) veya kapak/arkalık (`+ Kapak/Arkalık (XZ)`) ekleme butonları.
@@ -249,6 +249,9 @@ Programdaki tüm sayısal giriş kutuları matematiksel ifadeleri destekler:
 | **`B`** | 2D görünümlerde **Kutu ile Parça Oluştur** aracını etkinleştir |
 | **`M`** | 2D görünümlerde **Mezura** aracını etkinleştir |
 | **`Sol Fare Tuşu` Sürükleme (2D)** | Parçaları taşıma, tutamaçla boyutlandırma veya boşlukta seçim kutusu açma |
+| **`Shift + Sol tık` Sürükleme (2D)** | Parça hareketini kesinlikle yatay veya dikey eksene kilitleme |
+| **`Ctrl / Cmd + Sol tık` Sürükleme (2D)** | Sürükleme sırasında kenarlara manyetik yapışmayı geçici olarak devre dışı bırakma |
+| **`Alt + Sol tık` Sürükleme (2D)** | Bırakma noktasında seçili parça(lar)yı anında çoğaltma (kopyalama) |
 | **`Shift / Ctrl (Cmd) + Sol Fare Tuşu` (2D)** | Parçayı çoklu seçime ekleme veya seçimden çıkarma |
 | **`Sağ` / `Orta Tuş` Sürükleme (2D)** | Görünümü kaydırma (2D pan) |
 | **`Fare Tekerleği` (2D / 3D)** | İmlece odaklı yakınlaştırma / uzaklaştırma |

@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -136,7 +136,7 @@ Cambio de idioma instantáneo desde la barra superior mediante el botón **`🌐
 La pestaña **Diseñador** (`📐 1. Diseñador`) se divide en tres áreas principales:
 
 1. **Barra de herramientas superior**:
-   - `↖ Seleccionar / Mover (V)`: Seleccionar piezas, mover arrastrando, o modificar tamaño con los 8 manejadores en vistas 2D. Arrastrar en espacio vacío crea un **recuadro de selección**.
+   - `↖ Seleccionar / Mover (V)`: Seleccionar piezas, mover arrastrando, o modificar tamaño con los tiradores (8 tiradores en cara y 2 en cantos). Arrastrar en espacio vacío crea un **recuadro de selección**. Al arrastrar en 2D: mantenga presionado **`Shift`** para restringir el movimiento al eje horizontal o vertical, **`Ctrl` (`Cmd`)** para desactivar el ajuste magnético a bordes y **`Alt`** para duplicar la pieza en la posición de destino.
    - `➕ Crear pieza mediante recuadro (B)`: Dibujar un rectángulo en cualquier vista 2D crea una pieza orientada a ese plano (`Balda XY`, `Lateral YZ`, `Frontal/Trasera XZ`).
    - `📏 Cinta métrica (M)`: Medición milimétrica precisa en vistas 2D.
    - **Inserción rápida**: Botones de un clic (`+ Balda (XY)`, `+ Lateral (YZ)`, `+ Frontal (XZ)`).
@@ -230,6 +230,9 @@ En la pestaña **Materiales** (`🎨 4. Materiales`):
 | **`B`** | Herramienta **Crear pieza mediante recuadro** en 2D |
 | **`M`** | Herramienta **Cinta métrica** en 2D |
 | **Arrastrar `Click Izq` (2D)** | Mover piezas, arrastrar manejadores o recuadro de selección |
+| **`Shift + Clic izq.` Arrastrar (2D)** | Restringir el movimiento estrictamente al eje horizontal o vertical |
+| **`Ctrl / Cmd + Clic izq.` Arrastrar (2D)** | Desactivar el ajuste magnético a los bordes durante el arrastre |
+| **`Alt + Clic izq.` Arrastrar (2D)** | Duplicar la(s) pieza(s) en la posición de destino al soltar |
 | **`Shift / Ctrl (Cmd) + Click Izq` (2D)** | Añadir o quitar pieza de la selección múltiple |
 | **Arrastrar `Click Der` / `Medio` (2D)** | Encuadre (Pan) de la cámara 2D |
 | **`Rueda del ratón` (2D / 3D)** | Zoom de la cámara |

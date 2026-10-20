@@ -138,7 +138,7 @@ La scheda **Progettista** (`📐 1. Progettista`) include tre aree principali:
 
 1. **Barre degli strumenti superiori**:
    - **Strumenti di disegno**:
-     - `↖ Seleziona / Sposta (V)`: Clicca su un elemento per selezionarlo, trascina per spostarlo, o manipola le 8 maniglie di ridimensionamento nelle viste 2D. Trascina sull'area vuota per disegnare un riquadro di selezione multipla.
+     - `↖ Seleziona / Sposta (V)`: Clicca su un elemento per selezionarlo, trascina per spostarlo, o manipola le maniglie (8 maniglie per pezzi frontali e 2 per pezzi di taglio). Trascina sull'area vuota per disegnare un riquadro di selezione multipla. Durante il trascinamento 2D: tieni premuto **`Shift`** per vincolare il movimento all'asse orizzontale o verticale, **`Ctrl` (`Cmd`)** per disattivare l'aggancio magnetico ai bordi e **`Alt`** per duplicare la parte al rilascio.
      - `➕ Crea elemento con riquadro (B)`: Traccia un rettangolo in una vista 2D (`Dall'alto XY`, `Frontale XZ` o `Laterale YZ`) per inserire un pannello orientato secondo quel piano.
      - `📏 Metro a nastro (M)`: Misura distanze punto-punto esatte (`ΔX`, `ΔY`, `L`) in millimetri.
    - **Inserimento rapido**: Pulsanti per aggiungere con un clic ripiani (`+ Ripiano (XY)`), montanti (`+ Montante (YZ)`) o frontali/schienali (`+ Frontale/Schienale (XZ)`).
@@ -249,6 +249,9 @@ Nella scheda **Materiali** (`🎨 4. Materiali`):
 | **`B`** | Attiva lo strumento **Crea elemento con riquadro** nelle viste 2D |
 | **`M`** | Attiva lo strumento **Metro a nastro** nelle viste 2D |
 | **Trascina `Tasto sinistro` (2D)** | Sposta le parti selezionate, ridimensiona con maniglia o crea riquadro di selezione su spazio vuoto |
+| **`Shift + Clic sin.` Trascina (2D)** | Vincola lo spostamento rigorosamente all'asse orizzontale o verticale |
+| **`Ctrl / Cmd + Clic sin.` Trascina (2D)** | Disattiva l'aggancio magnetico ai bordi durante il trascinamento |
+| **`Alt + Clic sin.` Trascina (2D)** | Duplica le parti selezionate nella posizione di destinazione al rilascio |
 | **`Maiusc / Ctrl (Cmd) + Tasto sinistro` (2D)** | Aggiunge o rimuove una parte dalla selezione multipla |
 | **Trascina `Tasto destro` / `Tasto centrale` (2D)** | Panoramica della vista 2D |
 | **`Rotellina mouse` (2D / 3D)** | Zoom avanti e indietro rispetto al cursore |

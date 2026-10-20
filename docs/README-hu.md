@@ -138,7 +138,7 @@ A **Szerkesztő** lap (`📐 1. Szerkesztő`) három fő területből áll:
 
 1. **Felső eszköztárak**:
    - **Rajzeszközök**:
-     - `↖ Kijelölés / Mozgatás (V)`: Kattintással kiválasztja az elemet, húzással mozgatja, vagy a 2D nézetekben lévő 8 fogantyúval átméretezi. Üres területen húzva téglalapos többszörös kijelölést indít.
+     - `↖ Kijelölés / Mozgatás (V)`: Kattintással kiválasztja az elemet, húzással mozgatja, vagy a fogantyúkkal (8 fogantyú lapján és 2 élfogantyú élből nézve) átméretezi. Üres területen húzva téglalapos többszörös kijelölést indít. 2D mozgatás közben: tartsa lenyomva a **`Shift`** gombot a mozgás vízszintes vagy függőleges tengelyre korlátozásához, a **`Ctrl` (`Cmd`)** gombot a mágneses élillesztés mellőzéséhez, és az **`Alt`** gombot az alkatrész másolásához elengedéskor.
      - `➕ Alkatrész rajzolása kerettel (B)`: Téglalap húzásával a 2D nézetekben (`Felülnézet XY`, `Elölnézet XZ` vagy `Oldalnézet YZ`) közvetlenül az adott síknak megfelelő lapot hoz létre.
      - `📏 Mérőszalag (M)`: Pontos távolságmérés ponttól pontig (`ΔX`, `ΔY`, `L`) milliméterben.
    - **Gyors beillesztés**: Gombok polc (`+ Polc (XY)`), oldalfal (`+ Oldallap (YZ)`) vagy ajtó/hátfal (`+ Ajtó/Hátfal (XZ)`) azonnali elhelyezésére.
@@ -249,6 +249,9 @@ Az **Anyagok** lapon (`🎨 4. Anyagok`):
 | **`B`** | **Alkatrész rajzolása kerettel** eszköz a 2D nézetekben |
 | **`M`** | **Mérőszalag** eszköz a 2D nézetekben |
 | **Húzás `Bal egérgombbal` (2D)** | Elemek mozgatása, méretezése fogantyúval vagy kijelölő keret üres helyen |
+| **`Shift + Bal klikk` Húzás (2D)** | Alkatrész mozgatásának rögzítése szigorúan vízszintes vagy függőleges tengelyre |
+| **`Ctrl / Cmd + Bal klikk` Húzás (2D)** | Élekhez való mágneses igazítás ideiglenes kikapcsolása mozgatáskor |
+| **`Alt + Bal klikk` Húzás (2D)** | Kijelölt alkatrész(ek) azonnali duplázása a célhelyre elengedéskor |
 | **`Shift / Ctrl (Cmd) + Bal egérgomb` (2D)** | Elem hozzáadása vagy elvétele a kijelölésből |
 | **Húzás `Jobb` / `Középső gombbal` (2D)** | Nézet mozgatása (2D pásztázás) |
 | **`Egérgörgő` (2D / 3D)** | Nagyítás / kicsinyítés a mutató pozíciójára |

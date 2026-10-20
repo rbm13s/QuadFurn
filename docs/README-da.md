@@ -138,7 +138,7 @@ Fanen **Designer** (`📐 1. Designer`) består af tre primære sektioner:
 
 1. **Øverste værktøjslinjer**:
    - **Tegneværktøjer**:
-     - `↖ Vælg / Flyt (V)`: Klik for at vælge et element, træk for at flytte, eller brug de 8 håndtag i 2D til at tilpasse størrelsen. Træk i tomt rum for at oprette en markeringsramme.
+     - `↖ Vælg / Flyt (V)`: Klik for at vælge et element, træk for at flytte, eller brug håndtagene (8 håndtag på fladen og 2 kanthåndtag fra siden). Træk i tomt rum for at oprette en markeringsramme. Under træk i 2D: hold **`Shift`** nede for at låse bevægelsen til vandret eller lodret akse, hold **`Ctrl` (`Cmd`)** for at ignorere kantfastgørelse, og hold **`Alt`** for at duplikere delen ved slip.
      - `➕ Opret element med ramme (B)`: Træk et rektangel i en 2D-visning (`Plan XY`, `Front XZ` eller `Side YZ`) for at indsætte en plade i det plan.
      - `📏 Målebånd (M)`: Mål nøjagtige afstande punkt til punkt (`ΔX`, `ΔY`, `L`) i millimeter.
    - **Hurtig indsættelse**: Knapper til at indsætte hylder (`+ Hylde (XY)`), sider (`+ Side (YZ)`) eller låger/bagbeklædning (`+ Låge/Bagplade (XZ)`).
@@ -249,6 +249,9 @@ I fanen **Materialer** (`🎨 4. Materialer`):
 | **`B`** | Aktivér værktøjet **Opret element med ramme** i 2D-visninger |
 | **`M`** | Aktivér **Målebånd** i 2D-visninger |
 | **Træk med `Venstre museknap` (2D)** | Flyt elementer, justér håndtag eller træk markeringsramme i tomt rum |
+| **`Shift + Venstreklik` Træk (2D)** | Lås delens bevægelse strengt til vandret eller lodret akse |
+| **`Ctrl / Cmd + Venstreklik` Træk (2D)** | Deaktiver magnetisk kantfastgørelse midlertidigt under træk |
+| **`Alt + Venstreklik` Træk (2D)** | Dupliker valgte del(e) til destinationspositionen ved slip |
 | **`Skift / Ctrl (Cmd) + Venstre museknap` (2D)** | Tilføj eller fjern element fra flervalgsmarkeringen |
 | **Træk med `Højre` / `Midterste museknap` (2D)** | Panorér visningen (2D pan) |
 | **`Rullehjul på mus` (2D / 3D)** | Zoom ind/ud centreret på markøren |

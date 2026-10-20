@@ -138,7 +138,7 @@ Záložka **Konstruktér** (`📐 1. Konstruktér`) se skládá ze tří hlavní
 
 1. **Horní nástrojové lišty**:
    - **Kreslicí nástroje**:
-     - `↖ Vybrat / Posunout (V)`: Kliknutím vyberete dílec, tažením posouváte, nebo měníte rozměry pomocí 8 úchopových bodů ve 2D. Tažením v prázdném prostoru vytvoříte obdélníkový výběr více dílců.
+     - `↖ Vybrat / Posunout (V)`: Kliknutím vyberete dílec, tažením posouváte, nebo měníte rozměry pomocí úchopů (8 úchopů pro dílce naplocho a 2 pro dílce z hrany). Tažením v prázdném prostoru vytvoříte obdélníkový výběr více dílců. Při přetahování ve 2D: přidržením **`Shift`** omezíte pohyb pouze na vodorovnou nebo svislou osu, **`Ctrl` (`Cmd`)** deaktivujete magnetické přichytávání k hranám a **`Alt`** vytvoříte kopii dílu v místě puštění.
      - `➕ Vytvořit dílec rámečkem (B)`: Tažením obdélníku ve 2D pohledu (`Půdorys XY`, `Nárys XZ` nebo `Bokorys YZ`) vytvoříte novou desku odpovídající dané rovině.
      - `📏 Měřicí pásmo (M)`: Měření přesných vzdáleností bod od bodu (`ΔX`, `ΔY`, `L`) v milimetrech.
    - **Rychlé vkládání dílců**: Tlačítka pro vložení police (`+ Police (XY)`), boku (`+ Bok (YZ)`) nebo dvířek/zad (`+ Dvířka/Záda (XZ)`).
@@ -249,6 +249,9 @@ V záložce **Materiály** (`🎨 4. Materiály`):
 | **`B`** | Aktivovat nástroj **Vytvořit dílec rámečkem** ve 2D pohledech |
 | **`M`** | Aktivovat nástroj **Měřicí pásmo** ve 2D pohledech |
 | **Tažení `Levým tlačítkem` (2D)** | Posunout vybrané dílce, upravit rozměr úchopem nebo táhnout výběrový rámeček v prázdnu |
+| **`Shift + Levé tl.` Přetažení (2D)** | Omezení pohybu dílu striktně na vodorovnou nebo svislou osu |
+| **`Ctrl / Cmd + Levé tl.` Přetažení (2D)** | Deaktivace magnetického přichytávání k hranám během přetahování |
+| **`Alt + Levé tl.` Přetažení (2D)** | Duplikování vybraného dílu do cílového místa při puštění |
 | **`Shift / Ctrl (Cmd) + Levým tlačítkem` (2D)** | Přidat nebo odebrat dílec z vícenásobného výběru |
 | **Tažení `Pravým` / `Prostředním tlačítkem` (2D)** | Posun zobrazení (Panoráma 2D) |
 | **`Kolečko myši` (2D / 3D)** | Přiblížení / oddálení pohledu na pozici kurzoru |

@@ -138,7 +138,7 @@ Het tabblad **Ontwerper** (`📐 1. Ontwerper`) bestaat uit drie hoofdgebieden:
 
 1. **Bovenste werkbalken**:
    - **Teken- en bewerkgereedschappen**:
-     - `↖ Selecteren / Verplaatsen (V)`: Klik op een onderdeel om het te selecteren, sleep om te verplaatsen, of gebruik de 8 formaatgrepen in 2D. Sleep in de lege ruimte voor een selectiekader.
+     - `↖ Selecteren / Verplaatsen (V)`: Klik op een onderdeel om het te selecteren, sleep om te verplaatsen, of gebruik de formaatgrepen (8 handgrepen bij vooraanzicht & 2 randgrepen bij kopse kant). Sleep in de lege ruimte voor een selectiekader. Tijdens slepen in 2D: houd **`Shift`** ingedrukt om verplaatsing vast te zetten op de horizontale of verticale as, houd **`Ctrl` (`Cmd`)** ingedrukt om magnetisch vastklikken aan randen te omzeilen, en houd **`Alt`** ingedrukt om het onderdeel bij loslaten te dupliceren.
      - `➕ Onderdeel maken via kader (B)`: Sleep een rechthoek in een 2D-aanzicht (`Boven XY`, `Voor XZ` of `Zij YZ`) om direct een paneel in dat vlak te plaatsen.
      - `📏 Rolmaat (M)`: Meet afstanden van punt tot punt (`ΔX`, `ΔY`, `L`) in millimeters.
    - **Snelle invoeging**: Knoppen voor het snel toevoegen van legplanken (`+ Legplank (XY)`), zijwanden (`+ Zijwand (YZ)`) of deuren/achterwanden (`+ Deur/Achterwand (XZ)`).
@@ -249,6 +249,9 @@ In het tabblad **Materialen** (`🎨 4. Materialen`):
 | **`B`** | Activeer gereedschap **Onderdeel maken via kader** in 2D-aanzichten |
 | **`M`** | Activeer **Rolmaat** in 2D-aanzichten |
 | **Slepen `Linkermuisknop` (2D)** | Panelen verplaatsen, afmetingen aanpassen via greep of kaderselectie in de vrije ruimte |
+| **`Shift + Linkermuisknop` Slepen (2D)** | Verplaatsing strikt beperken tot horizontale of verticale as |
+| **`Ctrl / Cmd + Linkermuisknop` Slepen (2D)** | Magnetisch vastklikken aan paneelranden tijdelijk uitschakelen |
+| **`Alt + Linkermuisknop` Slepen (2D)** | Geselecteerd(e) onderdeel(en) direct dupliceren naar doelpositie bij loslaten |
 | **`Shift / Ctrl (Cmd) + Linkermuisknop` (2D)** | Onderdeel toevoegen aan of verwijderen uit meervoudige selectie |
 | **Slepen `Rechter` / `Middelste muisknop` (2D)** | Weergave verschuiven (Pan 2D) |
 | **`Muiswiel` (2D / 3D)** | In- en uitzoomen gecentreerd op de cursor |

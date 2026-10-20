@@ -138,7 +138,7 @@ Zakładka **Projektant** (`📐 1. Projektant`) składa się z trzech głównych
 
 1. **Górny pasek narzędzi**:
    - **Narzędzia edytora**:
-     - `↖ Zaznacz / Przesuń (V)`: Kliknięcie zaznacza formatkę, przeciąganie wewnątrz przesuwa ją, przeciąganie 8 uchwytów zmienia jej wymiary. Przeciąganie po pustym tle rozwija **ramkę zaznaczenia**.
+     - `↖ Zaznacz / Przesuń (V)`: Kliknięcie zaznacza formatkę, przeciąganie wewnątrz przesuwa ją, przeciąganie uchwytów (8 uchwytów dla formatek na płasko i 2 uchwyty z krawędzi) zmienia jej wymiary. Przeciąganie po pustym tle rozwija **ramkę zaznaczenia**. Podczas przeciągania w 2D: przytrzymanie **`Shift`** blokuje ruch do jednej osi (tylko poziom lub pion), **`Ctrl` (`Cmd`)** wyłącza przyciąganie do krawędzi, a **`Alt`** tworzy duplikat elementu w miejscu upuszczenia.
      - `➕ Utwórz element ramką (B)`: Rozciągnięcie prostokąta w oknie 2D tworzy formatkę zorientowaną w płaszczyźnie tego rzutu (`Półka XY`, `Bok YZ`, `Front/Tył XZ`).
      - `📏 Miarka (M)`: Pomiar dokładnych odległości (`ΔX`, `ΔY`, `L`) w milimetrach w rzutach 2D.
    - **Szybkie wstawianie elementów**: Przyciski jednoetapowe (`+ Półka (XY)`, `+ Bok (YZ)`, `+ Front (XZ)`).
@@ -237,6 +237,9 @@ W zakładce **Materiały** (`🎨 4. Materiały`):
 | **`B`** | Narzędzie **Tworzenie elementu ramką** w oknach 2D |
 | **`M`** | Narzędzie **Miarka** w oknach 2D |
 | **Przeciąganie `LPM` (2D)** | Przesuwanie elementów, zmiana rozmiaru lub ramka zaznaczenia |
+| **`Shift + LPM` Przeciąganie (2D)** | Ograniczenie ruchu elementu ściśle do osi poziomej lub pionowej |
+| **`Ctrl / Cmd + LPM` Przeciąganie (2D)** | Wyłączenie magnetycznego przyciągania do krawędzi podczas przeciągania |
+| **`Alt + LPM` Przeciąganie (2D)** | Duplikowanie (szybkie kopiowanie) elementu w miejsce upuszczenia |
 | **`Shift / Ctrl (Cmd) + LPM` (2D)** | Dodanie / usunięcie elementu z zaznaczenia |
 | **Przeciąganie `PPM` / `ŚPM` (2D)** | Przesuwanie kamery (Pan) |
 | **`Kółko myszy` (2D / 3D)** | Przybliżanie / oddalanie kamery |
