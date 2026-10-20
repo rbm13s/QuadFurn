@@ -1059,9 +1059,10 @@ impl QuadFurnApp {
                 for sid in ids_to_dup {
                     if let Some(orig) = doc.project.parts.iter().find(|p| p.id == sid).cloned() {
                         let new_id = doc.project.alloc_id();
-                        let mut copy = orig;
+                        let mut copy = orig.clone();
                         copy.id = new_id;
-                        copy.name = format!("{} ({})", copy.name, lang.tr("копия", "copy"));
+                        let copy_word = lang.tr("копия", "copy");
+                        copy.name = doc.project.generate_copy_name(&orig.name, copy_word);
                         copy.position_mm += Vec3::new(36.0, 0.0, 36.0);
                         doc.project.parts.push(copy);
                         new_ids.push(new_id);

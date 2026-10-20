@@ -381,6 +381,49 @@ impl Default for Project {
     }
 }
 
+/// Strips trailing copy suffixes such as "(copy)", "(copy 2)", "(копия)", "(копия 3)", etc.
+pub fn strip_copy_suffixes(s: &str) -> &str {
+    let copy_patterns = [
+        "copy", "копия", "копія", "Kopie", "copie", "copia", "cópia", "kopia",
+    ];
+    let mut current = s.trim_end();
+    loop {
+        if !current.ends_with(')') {
+            break;
+        }
+        if let Some(open_idx) = current.rfind('(') {
+            let inside = current[open_idx + 1..current.len() - 1].trim();
+            let mut matches_copy = false;
+            for pattern in &copy_patterns {
+                if inside.eq_ignore_ascii_case(pattern) {
+                    matches_copy = true;
+                    break;
+                }
+                let inside_lower = inside.to_lowercase();
+                let pat_lower = pattern.to_lowercase();
+                if let Some(rest) = inside_lower.strip_prefix(&pat_lower) {
+                    if let Some(stripped) = rest.strip_prefix(' ') {
+                        if !stripped.is_empty() && stripped.chars().all(|c| c.is_ascii_digit()) {
+                            matches_copy = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            if matches_copy {
+                current = current[..open_idx].trim_end();
+                continue;
+            }
+        }
+        break;
+    }
+    if current.is_empty() {
+        s
+    } else {
+        current
+    }
+}
+
 impl Project {
     pub fn alloc_id(&mut self) -> u64 {
         let id = self.next_id;
@@ -422,6 +465,52 @@ impl Project {
             }
         }
         false
+    }
+
+    /// Generates a sequenced copy name: "Name (copy)", "Name (copy 2)", "Name (copy 3)", etc.,
+    /// preventing exponential accumulation of repeated "(copy)" tags.
+    pub fn generate_copy_name(&self, orig_name: &str, copy_word: &str) -> String {
+        let base = strip_copy_suffixes(orig_name);
+        let mut max_idx = 0usize;
+
+        let copy_patterns = [
+            "copy", "копия", "копія", "Kopie", "copie", "copia", "cópia", "kopia", copy_word,
+        ];
+
+        for part in &self.parts {
+            let name = part.name.trim();
+            if let Some(rest) = name.strip_prefix(base) {
+                let rest = rest.trim();
+                if rest.is_empty() {
+                    continue;
+                }
+                if rest.starts_with('(') && rest.ends_with(')') {
+                    let inside = rest[1..rest.len() - 1].trim();
+                    for pat in &copy_patterns {
+                        if inside.eq_ignore_ascii_case(pat) {
+                            max_idx = max_idx.max(1);
+                            break;
+                        }
+                        let inside_lower = inside.to_lowercase();
+                        let pat_lower = pat.to_lowercase();
+                        if let Some(num_str) = inside_lower.strip_prefix(&pat_lower) {
+                            if let Some(digits) = num_str.strip_prefix(' ') {
+                                if let Ok(n) = digits.trim().parse::<usize>() {
+                                    max_idx = max_idx.max(n);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if max_idx == 0 {
+            format!("{} ({})", base, copy_word)
+        } else {
+            format!("{} ({} {})", base, copy_word, max_idx + 1)
+        }
     }
 
     /// Creates a demo cabinet project in 18 mm particleboard with doors and 3 mm HDF back,
@@ -972,5 +1061,78 @@ mod tests {
             "single_file.jpg"
         );
         assert_eq!(extract_cross_platform_filename(""), "");
+    }
+
+    #[test]
+    fn test_copy_name_generation() {
+        assert_eq!(strip_copy_suffixes("Полка"), "Полка");
+        assert_eq!(strip_copy_suffixes("Полка (copy)"), "Полка");
+        assert_eq!(strip_copy_suffixes("Полка (copy 2)"), "Полка");
+        assert_eq!(strip_copy_suffixes("Полка (copy 15)"), "Полка");
+        assert_eq!(strip_copy_suffixes("Полка (копия)"), "Полка");
+        assert_eq!(strip_copy_suffixes("Полка (копия 3)"), "Полка");
+        assert_eq!(strip_copy_suffixes("Полка (copy) (copy) (copy)"), "Полка");
+        assert_eq!(strip_copy_suffixes("Полка (18мм)"), "Полка (18мм)");
+
+        let mut proj = Project::new_demo_cabinet();
+        proj.parts.clear();
+
+        // 1st copy -> "Полка (copy)"
+        let name1 = proj.generate_copy_name("Полка", "copy");
+        assert_eq!(name1, "Полка (copy)");
+
+        // Add 1st copy
+        let p1 = PartBlock {
+            id: 1,
+            name: "Полка (copy)".to_string(),
+            group_id: None,
+            material_id: 1,
+            orientation: PartOrientation::HorizontalXY,
+            position_mm: glam::Vec3::ZERO,
+            length_mm: 500.0,
+            width_mm: 300.0,
+            yaw_deg: 0.0,
+            grain_fixed: false,
+            grain_along_width: false,
+            edges: PartEdges::default(),
+            drill_holes: Vec::new(),
+            visible: true,
+            locked: false,
+        };
+        proj.parts.push(p1);
+
+        // 2nd copy from original or from copy -> "Полка (copy 2)"
+        let name2 = proj.generate_copy_name("Полка", "copy");
+        assert_eq!(name2, "Полка (copy 2)");
+        let name2_from_copy = proj.generate_copy_name("Полка (copy)", "copy");
+        assert_eq!(name2_from_copy, "Полка (copy 2)");
+
+        // Add 2nd copy
+        let p2 = PartBlock {
+            id: 2,
+            name: "Полка (copy 2)".to_string(),
+            group_id: None,
+            material_id: 1,
+            orientation: PartOrientation::HorizontalXY,
+            position_mm: glam::Vec3::ZERO,
+            length_mm: 500.0,
+            width_mm: 300.0,
+            yaw_deg: 0.0,
+            grain_fixed: false,
+            grain_along_width: false,
+            edges: PartEdges::default(),
+            drill_holes: Vec::new(),
+            visible: true,
+            locked: false,
+        };
+        proj.parts.push(p2);
+
+        // 3rd copy -> "Полка (copy 3)"
+        let name3 = proj.generate_copy_name("Полка (copy 2)", "copy");
+        assert_eq!(name3, "Полка (copy 3)");
+
+        // Legacy repeated copy name -> collapses to "Полка (copy 3)"
+        let name3_legacy = proj.generate_copy_name("Полка (copy) (copy)", "copy");
+        assert_eq!(name3_legacy, "Полка (copy 3)");
     }
 }

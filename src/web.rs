@@ -166,6 +166,52 @@ pub static WEB_KEY_Q_DOWN: AtomicBool = AtomicBool::new(false);
 pub static WEB_KEY_E_DOWN: AtomicBool = AtomicBool::new(false);
 pub static WEB_KEY_SPACE_DOWN: AtomicBool = AtomicBool::new(false);
 
+static WEB_MOUSE_DELTA_X: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
+static WEB_MOUSE_DELTA_Y: std::sync::atomic::AtomicI32 = std::sync::atomic::AtomicI32::new(0);
+#[allow(dead_code)]
+static WEB_POINTER_LOCKED: AtomicBool = AtomicBool::new(false);
+#[allow(dead_code)]
+static WEB_POINTER_LOCK_LOST: AtomicBool = AtomicBool::new(false);
+
+#[allow(dead_code)]
+pub fn is_web_pointer_locked() -> bool {
+    WEB_POINTER_LOCKED.load(Ordering::SeqCst)
+}
+
+pub fn check_and_clear_pointer_lock_lost() -> bool {
+    WEB_POINTER_LOCK_LOST.swap(false, Ordering::SeqCst)
+}
+
+pub fn get_and_clear_web_mouse_delta() -> glam::Vec2 {
+    let dx = WEB_MOUSE_DELTA_X.swap(0, Ordering::SeqCst);
+    let dy = WEB_MOUSE_DELTA_Y.swap(0, Ordering::SeqCst);
+    glam::Vec2::new(dx as f32, dy as f32)
+}
+
+pub fn request_web_pointer_lock() {
+    #[cfg(target_arch = "wasm32")]
+    {
+        if let Some(w) = web_sys::window() {
+            if let Some(d) = w.document() {
+                if let Some(canvas) = d.get_element_by_id("the_canvas_id") {
+                    let _ = canvas.request_pointer_lock();
+                }
+            }
+        }
+    }
+}
+
+pub fn exit_web_pointer_lock() {
+    #[cfg(target_arch = "wasm32")]
+    {
+        if let Some(w) = web_sys::window() {
+            if let Some(d) = w.document() {
+                d.exit_pointer_lock();
+            }
+        }
+    }
+}
+
 pub fn check_and_clear_web_undo() -> bool {
     WEB_UNDO_TRIGGERED.swap(false, Ordering::SeqCst)
 }
@@ -235,8 +281,8 @@ pub fn is_macos_web() -> bool {
     false
 }
 
-/// Installs low-level DOM `keydown` and `keyup` listeners on `window` to intercept physical keys (like physical `KeyZ` on Russian keyboard layout)
-/// ensuring shortcuts (Ctrl+Z, Z Noclip, WASD flight, Tools) work regardless of the active keyboard layout or browser language.
+/// Installs low-level DOM `keydown`, `keyup`, and `mousemove` listeners on `window` to intercept physical keys
+/// and mouse look deltas, ensuring shortcuts (Ctrl+Z, Z Noclip, WASD flight, Tools) work regardless of the active keyboard layout or browser language.
 #[allow(dead_code)]
 pub fn init_web_keyboard_listener() {
     #[cfg(target_arch = "wasm32")]
@@ -249,17 +295,8 @@ pub fn init_web_keyboard_listener() {
         // 1. Keydown listener
         let keydown_closure = wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::KeyboardEvent)>::new(
             move |event: web_sys::KeyboardEvent| {
-                // Ignore if active element is an input or textarea
-                if let Some(target) = event.target() {
-                    if let Ok(el) = target.dyn_into::<web_sys::HtmlElement>() {
-                        let tag = el.tag_name().to_uppercase();
-                        if tag == "INPUT" || tag == "TEXTAREA" {
-                            return;
-                        }
-                    }
-                }
-
                 let code = event.code();
+                let key = event.key();
                 let ctrl_or_cmd = event.ctrl_key() || event.meta_key();
 
                 if ctrl_or_cmd {
@@ -276,7 +313,23 @@ pub fn init_web_keyboard_listener() {
                             WEB_DUPLICATE_TRIGGERED.store(true, Ordering::SeqCst);
                             event.prevent_default();
                         }
-                        _ => {}
+                        _ => {
+                            match key.as_str() {
+                                "я" | "Я" => {
+                                    WEB_UNDO_TRIGGERED.store(true, Ordering::SeqCst);
+                                    event.prevent_default();
+                                }
+                                "ы" | "Ы" => {
+                                    WEB_SAVE_TRIGGERED.store(true, Ordering::SeqCst);
+                                    event.prevent_default();
+                                }
+                                "в" | "В" => {
+                                    WEB_DUPLICATE_TRIGGERED.store(true, Ordering::SeqCst);
+                                    event.prevent_default();
+                                }
+                                _ => {}
+                            }
+                        }
                     }
                 } else if !event.alt_key() {
                     if !event.shift_key() {
@@ -293,20 +346,40 @@ pub fn init_web_keyboard_listener() {
                             "KeyM" => {
                                 WEB_TOOL_M_TRIGGERED.store(true, Ordering::SeqCst);
                             }
-                            _ => {}
+                            _ => {
+                                match key.as_str() {
+                                    "я" | "Я" | "z" | "Z" => WEB_NOCLIP_TOGGLE_TRIGGERED.store(true, Ordering::SeqCst),
+                                    "м" | "М" | "v" | "V" => WEB_TOOL_V_TRIGGERED.store(true, Ordering::SeqCst),
+                                    "и" | "И" | "b" | "B" => WEB_TOOL_B_TRIGGERED.store(true, Ordering::SeqCst),
+                                    "ь" | "Ь" | "m" | "M" => WEB_TOOL_M_TRIGGERED.store(true, Ordering::SeqCst),
+                                    _ => {}
+                                }
+                            }
                         }
                     }
 
-                    // WASD / Flight key tracking
-                    match code.as_str() {
-                        "KeyW" => WEB_KEY_W_DOWN.store(true, Ordering::SeqCst),
-                        "KeyA" => WEB_KEY_A_DOWN.store(true, Ordering::SeqCst),
-                        "KeyS" => WEB_KEY_S_DOWN.store(true, Ordering::SeqCst),
-                        "KeyD" => WEB_KEY_D_DOWN.store(true, Ordering::SeqCst),
-                        "KeyQ" => WEB_KEY_Q_DOWN.store(true, Ordering::SeqCst),
-                        "KeyE" => WEB_KEY_E_DOWN.store(true, Ordering::SeqCst),
-                        "Space" => WEB_KEY_SPACE_DOWN.store(true, Ordering::SeqCst),
-                        _ => {}
+                    // WASD / Flight key tracking:
+                    // Checks both physical scancode (KeyW/A/S/D/Q/E) and character key (e.g. Russian ЦФЫВЙУ, etc.)
+                    if code == "KeyW" || key == "w" || key == "W" || key == "ц" || key == "Ц" {
+                        WEB_KEY_W_DOWN.store(true, Ordering::SeqCst);
+                    }
+                    if code == "KeyA" || key == "a" || key == "A" || key == "ф" || key == "Ф" {
+                        WEB_KEY_A_DOWN.store(true, Ordering::SeqCst);
+                    }
+                    if code == "KeyS" || key == "s" || key == "S" || key == "ы" || key == "Ы" {
+                        WEB_KEY_S_DOWN.store(true, Ordering::SeqCst);
+                    }
+                    if code == "KeyD" || key == "d" || key == "D" || key == "в" || key == "В" {
+                        WEB_KEY_D_DOWN.store(true, Ordering::SeqCst);
+                    }
+                    if code == "KeyQ" || key == "q" || key == "Q" || key == "й" || key == "Й" {
+                        WEB_KEY_Q_DOWN.store(true, Ordering::SeqCst);
+                    }
+                    if code == "KeyE" || key == "e" || key == "E" || key == "у" || key == "У" {
+                        WEB_KEY_E_DOWN.store(true, Ordering::SeqCst);
+                    }
+                    if code == "Space" || key == " " {
+                        WEB_KEY_SPACE_DOWN.store(true, Ordering::SeqCst);
                     }
                 }
             },
@@ -319,21 +392,82 @@ pub fn init_web_keyboard_listener() {
         let keyup_closure = wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::KeyboardEvent)>::new(
             move |event: web_sys::KeyboardEvent| {
                 let code = event.code();
-                match code.as_str() {
-                    "KeyW" => WEB_KEY_W_DOWN.store(false, Ordering::SeqCst),
-                    "KeyA" => WEB_KEY_A_DOWN.store(false, Ordering::SeqCst),
-                    "KeyS" => WEB_KEY_S_DOWN.store(false, Ordering::SeqCst),
-                    "KeyD" => WEB_KEY_D_DOWN.store(false, Ordering::SeqCst),
-                    "KeyQ" => WEB_KEY_Q_DOWN.store(false, Ordering::SeqCst),
-                    "KeyE" => WEB_KEY_E_DOWN.store(false, Ordering::SeqCst),
-                    "Space" => WEB_KEY_SPACE_DOWN.store(false, Ordering::SeqCst),
-                    _ => {}
+                let key = event.key();
+
+                if code == "KeyW" || key == "w" || key == "W" || key == "ц" || key == "Ц" {
+                    WEB_KEY_W_DOWN.store(false, Ordering::SeqCst);
+                }
+                if code == "KeyA" || key == "a" || key == "A" || key == "ф" || key == "Ф" {
+                    WEB_KEY_A_DOWN.store(false, Ordering::SeqCst);
+                }
+                if code == "KeyS" || key == "s" || key == "S" || key == "ы" || key == "Ы" {
+                    WEB_KEY_S_DOWN.store(false, Ordering::SeqCst);
+                }
+                if code == "KeyD" || key == "d" || key == "D" || key == "в" || key == "В" {
+                    WEB_KEY_D_DOWN.store(false, Ordering::SeqCst);
+                }
+                if code == "KeyQ" || key == "q" || key == "Q" || key == "й" || key == "Й" {
+                    WEB_KEY_Q_DOWN.store(false, Ordering::SeqCst);
+                }
+                if code == "KeyE" || key == "e" || key == "E" || key == "у" || key == "У" {
+                    WEB_KEY_E_DOWN.store(false, Ordering::SeqCst);
+                }
+                if code == "Space" || key == " " {
+                    WEB_KEY_SPACE_DOWN.store(false, Ordering::SeqCst);
                 }
             },
         );
 
         let _ = window.add_event_listener_with_callback("keyup", keyup_closure.as_ref().unchecked_ref());
         keyup_closure.forget();
+
+        // 3. Blur listener (clears all held keys if window loses focus)
+        let blur_closure = wasm_bindgen::closure::Closure::<dyn FnMut()>::new(move || {
+            WEB_KEY_W_DOWN.store(false, Ordering::SeqCst);
+            WEB_KEY_A_DOWN.store(false, Ordering::SeqCst);
+            WEB_KEY_S_DOWN.store(false, Ordering::SeqCst);
+            WEB_KEY_D_DOWN.store(false, Ordering::SeqCst);
+            WEB_KEY_Q_DOWN.store(false, Ordering::SeqCst);
+            WEB_KEY_E_DOWN.store(false, Ordering::SeqCst);
+            WEB_KEY_SPACE_DOWN.store(false, Ordering::SeqCst);
+        });
+        let _ = window.add_event_listener_with_callback("blur", blur_closure.as_ref().unchecked_ref());
+        blur_closure.forget();
+
+        // 4. Mousemove listener for Pointer Lock camera deltas
+        let mousemove_closure = wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::MouseEvent)>::new(
+            move |event: web_sys::MouseEvent| {
+                if WEB_POINTER_LOCKED.load(Ordering::SeqCst) {
+                    let dx = event.movement_x();
+                    let dy = event.movement_y();
+                    if dx != 0 || dy != 0 {
+                        WEB_MOUSE_DELTA_X.fetch_add(dx, Ordering::SeqCst);
+                        WEB_MOUSE_DELTA_Y.fetch_add(dy, Ordering::SeqCst);
+                    }
+                }
+            },
+        );
+        let _ = window.add_event_listener_with_callback("mousemove", mousemove_closure.as_ref().unchecked_ref());
+        mousemove_closure.forget();
+
+        // 5. Pointerlockchange listener on document
+        if let Some(doc) = window.document() {
+            let pointerlock_closure = wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::Event)>::new(
+                move |_event: web_sys::Event| {
+                    if let Some(w) = web_sys::window() {
+                        if let Some(d) = w.document() {
+                            let locked = d.pointer_lock_element().is_some();
+                            WEB_POINTER_LOCKED.store(locked, Ordering::SeqCst);
+                            if !locked {
+                                WEB_POINTER_LOCK_LOST.store(true, Ordering::SeqCst);
+                            }
+                        }
+                    }
+                },
+            );
+            let _ = doc.add_event_listener_with_callback("pointerlockchange", pointerlock_closure.as_ref().unchecked_ref());
+            pointerlock_closure.forget();
+        }
     }
 }
 

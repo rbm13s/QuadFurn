@@ -2,22 +2,47 @@
 
 ## 1. Release Workflow & Pre-Release Checklist Rule
 
-Before creating or pushing any new release version tag (e.g. `vX.Y.Z`) to the repository, ALWAYS follow this mandatory three-phase release protocol:
+Before releasing a new version, ALWAYS follow this mandatory three-phase release protocol:
+**First push the tag, wait for GitHub Actions desktop builds and release assets to succeed, and only then build & deploy the WebAssembly version and update READMEs and HTML pages.**
 
-### Phase 1: CI Build Verification & Local Preflight
+### Phase 1: Local Preflight & Version Tagging
 1. **Local Preflight Checks**:
    - Run `cargo test --release` — verify that all unit tests pass with zero failures.
    - Run `cargo check --target wasm32-unknown-unknown` — verify that WebAssembly compilation succeeds without errors.
    - Run `cargo clippy --all-targets` — ensure there are no breaking or critical warnings.
-2. **GitHub Actions CI Verification**:
-   - Query GitHub Actions workflow status for the latest commit on `main`.
-   - Ensure that all 3 desktop matrix targets (Windows x86_64, Linux Debian/Ubuntu x86_64, macOS Universal) and the Pages deployment have passed with status `success`.
-   - **NEVER** push a release tag if any CI job on `main` is failed, in progress, or unverified.
+2. **Version Bump in Cargo.toml**:
+   - Update `version = "X.Y.Z"` in `Cargo.toml`.
+   - Commit the version bump:
+     `git commit -am "chore(release): bump version to vX.Y.Z"`
+   - Push commit to `main`: `git push origin main`.
+3. **Tag & Push Release**:
+   - Create an annotated git tag:
+     `git tag -a vX.Y.Z -m "Release vX.Y.Z - <Summary of changes>"`
+   - Push the tag to remote:
+     `git push origin vX.Y.Z`
 
-### Phase 2: Version & Documentation Synchronization
-Only after Phase 1 passes:
-1. **Bump Version in Cargo.toml**: Update `version = "X.Y.Z"`.
-2. **Synchronize All Documentation**:
+### Phase 2: GitHub Actions CI Build Verification
+1. **Monitor Release Pipeline**:
+   - Query GitHub Actions workflow status for the release run triggered on tag `vX.Y.Z`.
+   - Wait until all desktop matrix build jobs succeed:
+     - `Windows (x86_64)`
+     - `Linux (Debian / Ubuntu x86_64)`
+     - `macOS Universal (Apple Silicon + Intel)`
+     - `Publish GitHub Release`
+2. **Verify Published Release Assets**:
+   - Query GitHub Releases API to verify all 4 binary packages are published and attached:
+     - `QuadFurn-windows-x86_64.zip`
+     - `quadfurn_X.Y.Z_amd64.deb`
+     - `QuadFurn-linux-x86_64.tar.gz`
+     - `QuadFurn-macos-universal.zip`
+   - **NEVER** proceed to Phase 3 if any desktop build failed or any asset is missing.
+
+### Phase 3: WebAssembly CAD Rebuild & Documentation Synchronization
+*Only after Phase 2 passes and all binary assets are verified on GitHub Releases:*
+1. **Rebuild WebAssembly (WASM) Online CAD for GitHub Pages**:
+   - Run `trunk build web/index.html --release --dist docs/app --public-url ./` (or `.\build_wasm.ps1` / `./build_wasm.sh`).
+   - Verify that `docs/app/` contains the newly compiled `.wasm` and `.js` bundle for `vX.Y.Z`.
+2. **Synchronize All Markdown Documentation**:
    - Primary `README.md` at root.
    - All 21 localized documentation files in `docs/`:
      `docs/README-ru.md`, `docs/README-uk.md`, `docs/README-de.md`, `docs/README-pl.md`,
@@ -28,30 +53,12 @@ Only after Phase 1 passes:
      `docs/README-ko.md`.
 3. **Synchronize All HTML Pages**:
    - Update version badges (e.g. `<span class="badge-ver">vX.Y.Z</span>`), hero banners, and download links in `docs/index.html` and all 21 localized HTML files (`docs/ru.html`, `docs/de.html`, etc.).
-   - Verify that all platform download URLs point to the upcoming release:
-     - `https://github.com/rbm13s/QuadFurn/releases/download/vX.Y.Z/QuadFurn-windows-x86_64.zip`
-     - `https://github.com/rbm13s/QuadFurn/releases/download/vX.Y.Z/quadfurn_X.Y.Z_amd64.deb`
-     - `https://github.com/rbm13s/QuadFurn/releases/download/vX.Y.Z/QuadFurn-linux-x86_64.tar.gz`
-     - `https://github.com/rbm13s/QuadFurn/releases/download/vX.Y.Z/QuadFurn-macos-universal.zip`
-4. **Rebuild WebAssembly (WASM) Online CAD for GitHub Pages**:
-   - Run `trunk build web/index.html --release --dist docs/app --public-url ./` (or `.\build_wasm.ps1` / `./build_wasm.sh`).
-   - Verify that `docs/app/` contains the newly compiled `.wasm` and `.js` bundle.
-5. **Commit & Push to Main**:
-   - Commit the version bump, documentation sync, and WASM web build:
-     `git commit -am "chore(release): bump version to vX.Y.Z and sync documentation"`
+   - Verify that all platform download URLs point to the newly published release.
+4. **Commit & Push to Main**:
+   - Commit the WebAssembly build and synchronized documentation:
+     `git commit -am "docs(release): sync documentation and deploy web cad for vX.Y.Z"`
    - Push to `main`: `git push origin main`.
-   - Wait for the GitHub Actions push build on `main` to pass successfully.
-
-### Phase 3: Tagging and Releasing
-Only after Phase 1 and Phase 2 are verified:
-1. **Tag the Release**:
-   - Create an annotated git tag:
-     `git tag -a vX.Y.Z -m "Release vX.Y.Z - <Summary of changes>"`
-2. **Push the Tag**:
-   - `git push origin vX.Y.Z`
-3. **Monitor Release Pipeline**:
-   - Monitor the triggered GitHub Actions release workflow run until all build jobs (Windows, Linux, macOS) and the `Publish GitHub Release` job succeed.
-   - Verify that all 4 binary assets are attached to the release on GitHub.
+   - Monitor `pages build and deployment` on GitHub Actions until it finishes with status `success`.
 
 ---
 

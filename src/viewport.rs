@@ -2073,10 +2073,14 @@ impl QuadViewportController {
                         let delta_3d = cur_pos - orig_pos;
                         if delta_3d.length() >= 1.0 {
                             let mut new_clones = Vec::new();
+                            let copy_word = self.lang.tr("копия", "copy");
                             for &(pid, orig_pos) in &drag.group_orig_positions {
-                                if let Some(part) = project.parts.iter_mut().find(|p| p.id == pid) {
+                                if let Some(idx) = project.parts.iter().position(|p| p.id == pid) {
+                                    let orig_name = project.parts[idx].name.clone();
+                                    let copy_name = project.generate_copy_name(&orig_name, copy_word);
+                                    let part = &mut project.parts[idx];
                                     let mut clone = part.clone();
-                                    clone.name = format!("{} ({})", clone.name, self.lang.tr("копия", "copy"));
+                                    clone.name = copy_name;
                                     clone.position_mm = part.position_mm;
                                     part.position_mm = orig_pos; // Restore original part
                                     new_clones.push(clone);
@@ -2599,6 +2603,16 @@ impl QuadViewportController {
             || resp.hovered();
 
         if !text_input_busy && (pointer_in_3d || self.cam_3d.noclip_active) {
+            if self.cam_3d.noclip_active && crate::web::check_and_clear_pointer_lock_lost() {
+                self.cam_3d.noclip_active = false;
+                self.cam_3d.sync_orbit_from_eye();
+                Self::set_noclip_cursor_grab(ui.ctx(), false, rect.center());
+            }
+
+            if self.cam_3d.noclip_active && resp.clicked() && !crate::web::is_web_pointer_locked() {
+                crate::web::request_web_pointer_lock();
+            }
+
             let web_z = crate::web::check_and_clear_web_noclip();
             let pure_z_pressed = ui.input(|i| {
                 (i.key_pressed(Key::Z)
@@ -2636,9 +2650,16 @@ impl QuadViewportController {
                 .send_viewport_cmd(egui::ViewportCommand::CursorPosition(rect.center()));
 
             // First-person Z-Noclip mode: take raw mouse delta from DeviceEvent::MouseMotion (pointer.motion)
-            let raw_motion = ui
+            // or accumulated HTML5 Pointer Lock API motion in web mode
+            let mut raw_motion = ui
                 .input(|i| i.pointer.motion())
                 .unwrap_or_else(|| ui.input(|i| i.pointer.delta()));
+
+            let web_delta = crate::web::get_and_clear_web_mouse_delta();
+            if web_delta.length_squared() > 0.0 {
+                raw_motion = egui::Vec2::new(web_delta.x, web_delta.y);
+            }
+
             if raw_motion.length_sq() > 0.0 {
                 let sensitivity = 0.0032;
                 self.cam_3d.yaw_rad -= raw_motion.x * sensitivity;
@@ -3712,11 +3733,13 @@ impl QuadViewportController {
             ));
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorVisible(false));
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorPosition(center_pos));
+            crate::web::request_web_pointer_lock();
         } else {
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorGrab(
                 egui::CursorGrab::None,
             ));
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorVisible(true));
+            crate::web::exit_web_pointer_lock();
         }
     }
 }
