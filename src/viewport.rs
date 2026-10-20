@@ -2887,8 +2887,8 @@ impl QuadViewportController {
                 // so T-junctions (shelf meeting middle of an upright) sort correctly per tile!
                 let len_u = q0.distance(q1);
                 let len_v = q1.distance(q2);
-                let div_u = ((len_u / 260.0).ceil() as usize).clamp(1, 4);
-                let div_v = ((len_v / 260.0).ceil() as usize).clamp(1, 4);
+                let div_u = 1;
+                let div_v = 1;
 
                 // Compute physical UV scale on this face (so textures on narrow 18 mm edges aren't compressed 40x)
                 // and orient texture U axis strictly along the part grain direction!
@@ -3090,20 +3090,21 @@ impl QuadViewportController {
                         continue;
                     }
 
-                    // Quick test 1: If depth ranges do not overlap, the one strictly farther must be drawn first
-                    if fa.min_depth >= fb.max_depth - 0.2 {
+                    // Test 1: Screen bounding boxes MUST intersect!
+                    // If faces don't overlap on screen, they cannot occlude each other; never create fake dependency edges!
+                    if !fa.screen_bbox.intersects(fb.screen_bbox) {
+                        continue;
+                    }
+
+                    // Test 2: If depth ranges do not overlap, the one strictly farther must be drawn first
+                    if fa.min_depth >= fb.max_depth + 0.1 {
                         adj[i].push(j);
                         in_degree[j] += 1;
                         continue;
                     }
-                    if fb.min_depth >= fa.max_depth - 0.2 {
+                    if fb.min_depth >= fa.max_depth + 0.1 {
                         adj[j].push(i);
                         in_degree[i] += 1;
-                        continue;
-                    }
-
-                    // Quick test 2: Screen bounding boxes
-                    if !fa.screen_bbox.intersects(fb.screen_bbox) {
                         continue;
                     }
 
@@ -3113,11 +3114,11 @@ impl QuadViewportController {
                             let t_a = ray_plane_distance(eye, ray_dir, fa.world_norm, fa.plane_d);
                             let t_b = ray_plane_distance(eye, ray_dir, fb.world_norm, fb.plane_d);
                             if let (Some(ta), Some(tb)) = (t_a, t_b) {
-                                if ta + 0.3 < tb {
+                                if ta + 0.2 < tb {
                                     // A is closer than B at this screen pixel -> B must be drawn BEFORE A (B -> A)
                                     adj[j].push(i);
                                     in_degree[i] += 1;
-                                } else if tb + 0.3 < ta {
+                                } else if tb + 0.2 < ta {
                                     // B is closer than A at this screen pixel -> A must be drawn BEFORE B (A -> B)
                                     adj[i].push(j);
                                     in_degree[j] += 1;
@@ -3160,35 +3161,45 @@ impl QuadViewportController {
             let mut sorted_indices = Vec::with_capacity(n_faces);
             let mut visited = vec![false; n_faces];
 
-            while let Some(HeapItem { idx: u, .. }) = heap.pop() {
-                if visited[u] {
-                    continue;
-                }
-                visited[u] = true;
-                sorted_indices.push(u);
+            while sorted_indices.len() < n_faces {
+                if let Some(HeapItem { idx: u, .. }) = heap.pop() {
+                    if visited[u] {
+                        continue;
+                    }
+                    visited[u] = true;
+                    sorted_indices.push(u);
 
-                for &v in &adj[u] {
-                    if in_degree[v] > 0 {
-                        in_degree[v] -= 1;
-                        if in_degree[v] == 0 && !visited[v] {
-                            heap.push(HeapItem {
-                                depth: faces_to_draw[v].avg_depth,
-                                idx: v,
-                            });
+                    for &v in &adj[u] {
+                        if in_degree[v] > 0 {
+                            in_degree[v] -= 1;
+                            if in_degree[v] == 0 && !visited[v] {
+                                heap.push(HeapItem {
+                                    depth: faces_to_draw[v].avg_depth,
+                                    idx: v,
+                                });
+                            }
                         }
                     }
+                } else {
+                    // Heap is empty but unvisited nodes remain -> cycle detected in graph.
+                    // Break the cycle gracefully: pick the unvisited node farthest from the camera and continue.
+                    let mut best_idx = None;
+                    let mut best_depth = f32::MIN;
+                    for (idx, &vis) in visited.iter().enumerate() {
+                        if !vis && faces_to_draw[idx].avg_depth > best_depth {
+                            best_depth = faces_to_draw[idx].avg_depth;
+                            best_idx = Some(idx);
+                        }
+                    }
+                    if let Some(idx) = best_idx {
+                        heap.push(HeapItem {
+                            depth: best_depth,
+                            idx,
+                        });
+                    } else {
+                        break;
+                    }
                 }
-            }
-
-            if sorted_indices.len() < n_faces {
-                let mut remaining: Vec<usize> = (0..n_faces).filter(|&idx| !visited[idx]).collect();
-                remaining.sort_by(|&a, &b| {
-                    faces_to_draw[b]
-                        .avg_depth
-                        .partial_cmp(&faces_to_draw[a].avg_depth)
-                        .unwrap_or(std::cmp::Ordering::Equal)
-                });
-                sorted_indices.extend(remaining);
             }
 
             let mut reordered = Vec::with_capacity(n_faces);
