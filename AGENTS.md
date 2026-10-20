@@ -33,8 +33,11 @@ Only after Phase 1 passes:
      - `https://github.com/rbm13s/QuadFurn/releases/download/vX.Y.Z/quadfurn_X.Y.Z_amd64.deb`
      - `https://github.com/rbm13s/QuadFurn/releases/download/vX.Y.Z/QuadFurn-linux-x86_64.tar.gz`
      - `https://github.com/rbm13s/QuadFurn/releases/download/vX.Y.Z/QuadFurn-macos-universal.zip`
-4. **Commit & Push to Main**:
-   - Commit the version bump and documentation sync:
+4. **Rebuild WebAssembly (WASM) Online CAD for GitHub Pages**:
+   - Run `trunk build web/index.html --release --dist docs/app --public-url ./` (or `.\build_wasm.ps1` / `./build_wasm.sh`).
+   - Verify that `docs/app/` contains the newly compiled `.wasm` and `.js` bundle.
+5. **Commit & Push to Main**:
+   - Commit the version bump, documentation sync, and WASM web build:
      `git commit -am "chore(release): bump version to vX.Y.Z and sync documentation"`
    - Push to `main`: `git push origin main`.
    - Wait for the GitHub Actions push build on `main` to pass successfully.

@@ -56,9 +56,16 @@ Before touching version numbers or creating tags, verify build integrity locally
      - Section heading: `Download QuadFurn CAD vX.Y.Z`
      - Download URLs for Windows, Linux (.deb, .tar.gz), and macOS.
 
-4. **Commit & Push to `main`**:
+5. **Rebuild WebAssembly (WASM) Online CAD for GitHub Pages**:
    ```powershell
-   git commit -am "chore(release): bump version to vX.Y.Z and sync documentation"
+   trunk build web/index.html --release --dist docs/app --public-url ./
+   ```
+   Ensure `docs/app/` is updated with the new wasm/js artifacts.
+
+6. **Commit & Push to `main`**:
+   ```powershell
+   git add docs/app/
+   git commit -am "chore(release): bump version to vX.Y.Z, sync documentation and web build"
    git push origin main
    ```
    Wait for the GitHub Actions push workflow on `main` to pass.
