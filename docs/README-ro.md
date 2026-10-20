@@ -69,10 +69,10 @@
 
 ## Introducere
 
-**QuadFurn CAD** este o aplicație desktop nativă extrem de rapidă scrisă în Rust, special creată pentru proiectarea mobilierului din panouri (PAL melaminat, MDF, HDF, placaj), cu generare automată a listei de piese și optimizare 2D a debitării prin tăieri drepte de tip ghilotină.
+**QuadFurn CAD** este o aplicație CAD multiplatformă de înaltă performanță scrisă în Rust, disponibilă atât ca aplicație desktop nativă rapidă (Windows, Linux, macOS), cât și ca versiune online WebAssembly (WASM) fără instalare, direct în browserele web moderne. Este special creată pentru proiectarea mobilierului din panouri (PAL melaminat, MDF, HDF, placaj), cu generare automată a listei de piese și optimizare 2D a debitării prin tăieri drepte de tip ghilotină.
 
 QuadFurn reunește ergonomia a trei instrumente de referință într-un singur flux de lucru:
-1. **Modelare spațială în 4 vederi**: Editare sincronă în trei proiecții ortogonale 2D (**Vedere de sus XY — Plan**, **Vedere frontală XZ — Fațadă**, **Vedere laterală YZ — Secțiune**) cu bare de derulare, aliniere magnetică la muchii și o fereastră **3D Orbit / Zbor liber persoana întâi (`Z` Noclip)** în timp real.
+1. **Modelare spațială în 4 vederi**: Editare sincronă în trei proiecții ortogonale 2D (**Vedere de sus XY — Plan**, **Vedere frontală XZ — Fațadă**, **Vedere laterală YZ — Secțiune**) cu bare de derulare, aliniere magnetică la muchii, buton de egalizare a ferestrelor (`⊞ Egalizează ferestrele`), protecție inteligentă a grosimii pentru piese din cant și o fereastră **3D Orbit / Zbor liber persoana întâi (`Z` Noclip)** în timp real.
 2. **Bară de transformare de precizie**: Introducere numerică instantanee a coordonatelor (`X`, `Y`, `Z`), dimensiunilor piesei (`L × W × T`) și unghiului de rotație (`∠Z`), cu calculator matematic integrat direct în câmpuri (de ex. `600-4` sau `720+18`).
 3. **Debitarea plăcilor și deducerea automată a cantului**: Scăderea automată a grosimii cantului PVC/ABS de pe toate cele 4 laturi pentru a calcula **dimensiunile exacte de tăiere la circular**, corelată cu un optimizator 2D de tip ghilotină care respectă fibra lemnului, lățimea pânzei de circular și tăierile de îndreptare a marginilor.
 
@@ -245,20 +245,21 @@ Fila **Plan de debitare** (`🪚 3. Plan de debitare`) calculează așezarea ide
 
 | Scurtătură | Acțiune |
 | :--- | :--- |
-| **`V`** | Activează instrumentul **Selectare și mutare** (cu 8 puncte și cadru de selecție) |
+| **`V`** | Activează instrumentul **Selectare și mutare** (8 mânere pentru piesele din față și 2 pe cant, plus cadru de selecție) |
 | **`B`** | Activează instrumentul **Creare piesă prin cadru** în vederile 2D |
 | **`M`** | Activează **Ruleta de măsurare** în vederile 2D |
 | **Trage cu `Click stânga` (2D)** | Mută piesele, ajustează dimensiunea de un punct sau deschide cadru pe spațiul liber |
-| **`Shift + Click stânga` (2D)** | Adaugă sau elimină piesa din selecția multiplă |
+| **`Shift / Ctrl (Cmd) + Click stânga` (2D)** | Adaugă sau elimină piesa din selecția multiplă |
 | **Trage cu `Click dreapta` / `Click mijloc` (2D)** | Deplasează vederea (Panoramare 2D) |
 | **`Rotiță mouse` (2D / 3D)** | Mărire / micșorare centrată pe cursor |
 | **Trage cu `Click dreapta` / `Click mijloc` (3D)** | Rotație orbitală a camerei 3D |
 | **`Z` (deasupra ferestrei 3D)** | Activează / dezactivează **Modul de zbor liber (Noclip)** |
-| **`W` `A` `S` `D` / `Spațiu` / `Ctrl`** | Zbor înainte/stânga/înapoi/dreapta/sus/jos în 3D (`Shift` mărește viteza) |
-| **`Ctrl + S`** | Salvează corpul curent (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Anulează ultima acțiune (istoric de până la 40 de pași) |
-| **`Ctrl + C` / `Ctrl + V`** | Copiază / Lipește piesele selectate (funcționează între file) |
-| **`Ctrl + D`** | Duplică piesele selectate |
+| **`W` `A` `S` `D` / `Spațiu` / `Ctrl (Cmd)`** | Zbor înainte/stânga/înapoi/dreapta/sus/jos în 3D (`Shift` mărește viteza) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Salvează corpul curent (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Anulează ultima acțiune (istoric de până la 40 de pași) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Copiază piesele selectate în clipboard |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Lipește piesele (funcționează între file) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplică piesele selectate |
 | **`Delete` / `Backspace`** | Șterge piesele selectate |
 | **`←` `→` `↑` `↓` (vederi 2D)** | Deplasare piese selectate cu pasul grilei selectate (`Shift` pentru pas dublu) |
 

@@ -69,10 +69,10 @@
 
 ## Introduktion
 
-**QuadFurn CAD** är ett blixtsnabbt, integrerat skrivbords-CAD-program skrivet i Rust, framtaget för formgivning av skåp- och panelmöbler i laminerad spånskiva (melamin), MDF, HDF och plywood, komplett med automatisk stycklistgenerering och 2D giljotinkapningsoptimering för formatsågar.
+**QuadFurn CAD** är ett högpresterande flerplattforms CAD-program skrivet i Rust, tillgängligt både som ett snabbt integrerat skrivbordsprogram (Windows, Linux, macOS) och som en installationsfri WebAssembly (WASM) onlineversion som körs direkt i moderna webbläsare. Det är framtaget för formgivning av skåp- och panelmöbler i laminerad spånskiva (melamin), MDF, HDF och plywood, komplett med automatisk stycklistgenerering och 2D giljotinkapningsoptimering för formatsågar.
 
 QuadFurn förenar ergonomin från tre beprövade verktyg till ett sammanhållet arbetsflöde:
-1. **4-vyers rumslig modellering**: Samtidig redigering i tre synkroniserade 2D ortogonala vyer (**Plan XY — Planritning**, **Front XZ — Fasad/Uppställning**, **Sida YZ — Sektion**) med rullningslister, magnetisk kantlåsning och en interaktiv **3D Orbit / Förstaperson flygläge (`Z` Noclip)** i realtid.
+1. **4-vyers rumslig modellering**: Samtidig redigering i tre synkroniserade 2D ortogonala vyer (**Plan XY — Planritning**, **Front XZ — Fasad/Uppställning**, **Sida YZ — Sektion**) med rullningslister, magnetisk kantlåsning, knapp för att jämna ut fönsterstorlekar (`⊞ Jämna ut fönster`), intelligent tjockleksskydd för delar sedda från kant och en interaktiv **3D Orbit / Förstaperson flygläge (`Z` Noclip)** i realtid.
 2. **Precisionstransformeringsfält**: Omedelbar numerisk inmatning av koordinater (`X`, `Y`, `Z`), skivmått (`L × W × T`) och vridningsvinkel (`∠Z`) med inbyggd formelberäkning direkt i inmatningsfälten (t.ex. `600-4` eller `720+18`).
 3. **Skivsågning och automatiskt kantlistavdrag**: Automatiskt avdrag för tjockleken på PVC/ABS-kantlister på alla 4 sidor för att beräkna det exakta **nettosågmåttet för justersågen**, kopplat till en 2D giljotinoptimerare som respekterar träets ådringsriktning, sågklingans snittbredd och renkapning av skivans råkanter.
 
@@ -245,20 +245,21 @@ I fliken **Material** (`🎨 4. Material`):
 
 | Tangentbordsgenväg | Åtgärd |
 | :--- | :--- |
-| **`V`** | Aktivera verktyget **Välj och flytta** (med 8 storlekshandtag och rammarkering) |
+| **`V`** | Aktivera verktyget **Välj och flytta** (8 storlekshandtag på ytan och 2 kanthandtag från kanten, plus rammarkering) |
 | **`B`** | Aktivera verktyget **Skapa komponent med ram** i 2D-vyer |
 | **`M`** | Aktivera **Måttband** i 2D-vyer |
 | **Dra med `Vänster musknapp` (2D)** | Flytta komponenter, justera handtag eller dra markeringsram i tomt utrymme |
-| **`Skift + Vänster musknapp` (2D)** | Lägg till eller ta bort komponent från flerval |
+| **`Skift / Ctrl (Cmd) + Vänster musknapp` (2D)** | Lägg till eller ta bort komponent från flerval |
 | **Dra med `Höger` / `Mittenmusknapp` (2D)** | Panorera vyn (2D pan) |
 | **`Rullhjul på mus` (2D / 3D)** | Zooma in/ut centrerat kring markören |
 | **Dra med `Höger` / `Mittenmusknapp` (3D)** | Orbit-rotation av 3D-kameran |
 | **`Z` (över 3D-rutan)** | Slå på/av **Förstaperson flygläge (Noclip)** |
-| **`W` `A` `S` `D` / `Mellanslag` / `Ctrl`** | Flyg fram/vänster/bakåt/höger/upp/ner i 3D (`Skift` för högre fart) |
-| **`Ctrl + S`** | Spara den aktiva möbeln (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Ångra senaste åtgärd (historik upp till 40 steg) |
-| **`Ctrl + C` / `Ctrl + V`** | Kopiera / Klistra in markerade komponenter (fungerar mellan flikar) |
-| **`Ctrl + D`** | Duplicera markerade komponenter |
+| **`W` `A` `S` `D` / `Mellanslag` / `Ctrl (Cmd)`** | Flyg fram/vänster/bakåt/höger/upp/ner i 3D (`Skift` för högre fart) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Spara den aktiva möbeln (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Ångra senaste åtgärd (historik upp till 40 steg) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopiera markerade delar till urklipp |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Klistra in delar (fungerar mellan olika flikar) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplicera markerade komponenter |
 | **`Delete` / `Backspace`** | Ta bort markerade komponenter |
 | **`←` `→` `↑` `↓` (2D-vyer)** | Flytta markerade delar med valt rutnätssteg (`Shift` för dubbelt steg) |
 

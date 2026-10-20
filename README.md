@@ -73,10 +73,10 @@
 
 ## Introduction
 
-**QuadFurn CAD** is a fast, native desktop CAD application written in Rust for designing cabinet and panel furniture made of laminated chipboard (LDSP), MDF, HDF, and plywood, complete with automated specification generation and 2D guillotine sheet cutting optimization.
+**QuadFurn CAD** is a high-performance cross-platform CAD application written in Rust, available both as a fast native desktop application (Windows, Linux, macOS) and as a zero-install WebAssembly (WASM) online version running directly in modern web browsers. It is designed for cabinet and panel furniture made of laminated chipboard (LDSP), MDF, HDF, and plywood, complete with automated specification generation and 2D guillotine sheet cutting optimization.
 
 QuadFurn combines three essential furniture manufacturing capabilities into one cohesive workflow:
-1. **4-Viewport Spatial Modeling**: Simultaneous editing across three synchronized 2D orthographic projections (**Top XY — Plan**, **Front XZ — Elevation**, **Side YZ — Section**) with viewport scrollbars, magnetic edge snapping, and a real-time **3D Orbit / First-Person Fly (`Z` Noclip)** viewport.
+1. **4-Viewport Spatial Modeling**: Simultaneous editing across three synchronized 2D orthographic projections (**Top XY — Plan**, **Front XZ — Elevation**, **Side YZ — Section**) with viewport scrollbars, magnetic edge snapping, window equalizer button (`⊞ Equal Views`), intelligent edge-on thickness protection, and a real-time **3D Orbit / First-Person Fly (`Z` Noclip)** viewport.
 2. **Precision Transform Bar**: Instant numeric coordinate (`X`, `Y`, `Z`), full dimension (`L × W × T`), and yaw angle (`∠Z`) input with built-in inline math evaluation (e.g., typing `600-4` or `720+18` directly into any input box).
 3. **Sheet Cutting Layout & Edge Banding Deduction**: Automatic subtraction of PVC/ABS edge banding thickness from full part dimensions to compute exact **net saw cutting sizes**, paired with a guillotine 2D bin-packing optimizer that respects wood grain direction, saw kerf width, and sheet edge trim margins.
 
@@ -252,20 +252,21 @@ In the **Materials** tab (`🎨 4. Materials`):
 
 | Input / Shortcut | Action |
 | :--- | :--- |
-| **`V`** | Activate **Select & Move** tool (with 8 resize handles & marquee box selection) |
+| **`V`** | Activate **Select & Move** tool (with 8 resize handles on face-on parts & 2 edge handles on edge-on parts, plus marquee box selection) |
 | **`B`** | Activate **Create Part by Box** tool in 2D viewports |
 | **`M`** | Activate **Tape Measure** tool in 2D viewports |
 | **`LMB` Drag (2D View)** | Move selected part(s), drag resize handles, or draw marquee selection box on empty space |
-| **`Shift + LMB` (2D View)** | Toggle part in/out of current multi-selection group |
+| **`Shift / Ctrl (Cmd) + LMB` (2D View)** | Toggle part in/out of current multi-selection group |
 | **`RMB` / `MMB` Drag (2D View)** | Pan 2D orthographic camera |
 | **`Mouse Wheel` (2D / 3D)** | Zoom camera in/out around cursor |
 | **`RMB` / `MMB` Drag (3D View)** | Orbit 3D camera around target |
-| **`Z` (hovering 3D View)** | Toggle **3D First-Person Fly Mode (Noclip)** |
-| **`W` `A` `S` `D` / `Space` / `Ctrl`** | Fly forward/left/back/right/up/down in 3D Fly Mode (`Shift` for speed boost) |
-| **`Ctrl + S`** | Save current furniture product (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Undo last action in active product tab (up to 40 steps) |
-| **`Ctrl + C` / `Ctrl + V`** | Copy / Paste selected part(s) (works across different product tabs) |
-| **`Ctrl + D`** | Duplicate selected part(s) |
+| **`Z` (hovering 3D View)** | Toggle **3D First-Person Fly Mode (Noclip)** (layout-independent) |
+| **`W` `A` `S` `D` / `Space` / `Ctrl (Cmd)`** | Fly forward/left/back/right/up/down in 3D Fly Mode (`Shift` for speed boost) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Save current furniture product (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Undo last action in active product tab (up to 40 steps, layout-independent) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Copy selected part(s) to shared clipboard |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Paste selected part(s) (works across different product tabs) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplicate selected part(s) |
 | **`Delete` / `Backspace`** | Delete selected part(s) |
 | **`←` `→` `↑` `↓` (2D View)** | Nudge selected part(s) by current grid step (`Shift` for double step) |
 

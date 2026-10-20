@@ -69,10 +69,10 @@
 
 ## Wprowadzenie
 
-**QuadFurn CAD** to szybka, natywna aplikacja desktopowa w języku Rust, przeznaczona do projektowania mebli skrzyniowych i panelowych z płyt wiórowych laminowanych, MDF, HDF i sklejki, wyposażona w automatyczne generowanie specyfikacji oraz optymalizator rozkroju gilotynowego 2D.
+**QuadFurn CAD** to wysokowydajna wieloplatformowa aplikacja CAD napisana w języku Rust, dostępna zarówno jako szybka natywna aplikacja desktopowa (Windows, Linux, macOS), jak i bezinstalacyjna wersja online WebAssembly (WASM) działająca bezpośrednio w nowoczesnych przeglądarkach internetowych. Jest przeznaczona do projektowania mebli skrzyniowych i panelowych z płyt wiórowych laminowanych, MDF, HDF i sklejki, wyposażona w automatyczne generowanie specyfikacji oraz optymalizator rozkroju gilotynowego 2D.
 
 QuadFurn łączy zalety trzech klasycznych narzędzi:
-1. **4-rzutowe modelowanie przestrzenne**: Jednoczesna praca w trzech rzutach ortogonalnych (**Góra XY — Rzut z góry**, **Przód XZ — Elewacja**, **Bok YZ — Przekrój**) z suwakami, magnetycznym przyciąganiem i interaktywnym oknem **3D Orbit / Lot swobodny (`Z` Noclip)**.
+1. **4-rzutowe modelowanie przestrzenne**: Jednoczesna praca w trzech rzutach ortogonalnych (**Góra XY — Rzut z góry**, **Przód XZ — Elewacja**, **Bok YZ — Przekrój**) z suwakami, magnetycznym przyciąganiem, przyciskiem wyrównywania rzutni (`⊞ Wyrównaj okna`), inteligentną ochroną grubości formatek z krawędzi i interaktywnym oknem **3D Orbit / Lot swobodny (`Z` Noclip)**.
 2. **Pasek precyzyjnej transformacji**: Błyskawiczne wprowadzanie współrzędnych (`X`, `Y`, `Z`), wymiarów (`Dł × Szer × Grub`) i kąta obrotu (`∠Z`) z wbudowanym kalkulatorem (np. `600-4` lub `720+18`).
 3. **Rozkrój płyt i automatyczne odliczanie obrzeży**: Automatyczne odejmowanie grubości obrzeża PCV/ABS od wymiarów formatek meblowych w celu uzyskania dokładnych **wymiarów cięcia**, połączone z gilotynowym rozkrojem uwzględniającym usłojenie, grubość rzazu piły i marginesy obrzynania płyty.
 
@@ -233,20 +233,21 @@ W zakładce **Materiały** (`🎨 4. Materiały`):
 
 | Skrót / Klawisz | Akcja |
 | :--- | :--- |
-| **`V`** | Narzędzie **Wybór i przesuwanie** (z 8 uchwytami i ramką zaznaczania) |
+| **`V`** | Narzędzie **Wybór i przesuwanie** (8 uchwytów dla formatek na płasko i 2 uchwyty z krawędzi, plus zaznaczanie ramką) |
 | **`B`** | Narzędzie **Tworzenie elementu ramką** w oknach 2D |
 | **`M`** | Narzędzie **Miarka** w oknach 2D |
 | **Przeciąganie `LPM` (2D)** | Przesuwanie elementów, zmiana rozmiaru lub ramka zaznaczenia |
-| **`Shift + LPM` (2D)** | Dodanie / usunięcie elementu z zaznaczenia |
+| **`Shift / Ctrl (Cmd) + LPM` (2D)** | Dodanie / usunięcie elementu z zaznaczenia |
 | **Przeciąganie `PPM` / `ŚPM` (2D)** | Przesuwanie kamery (Pan) |
 | **`Kółko myszy` (2D / 3D)** | Przybliżanie / oddalanie kamery |
 | **Przeciąganie `PPM` / `ŚPM` (3D)** | Obrót orbity 3D wokół modelu |
 | **`Z` (nad oknem 3D)** | Włączenie / wyłączenie **Trybu swobodnego lotu 3D (Noclip)** |
-| **`W` `A` `S` `D` / `Spacja` / `Ctrl`** | Poruszanie się w trybie 3D (`Shift` przyspiesza) |
-| **`Ctrl + S`** | Zapisanie bieżącego projektu mebla (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Cofnięcie ostatniej operacji (do 40 kroków) |
-| **`Ctrl + C` / `Ctrl + V`** | Kopiowanie / Wklejanie zaznaczonych elementów (między zakładkami) |
-| **`Ctrl + D`** | Duplikowanie zaznaczonych elementów |
+| **`W` `A` `S` `D` / `Spacja` / `Ctrl (Cmd)`** | Poruszanie się w trybie 3D (`Shift` przyspiesza) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Zapisanie bieżącego projektu mebla (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Cofnięcie ostatniej operacji (do 40 kroków) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopiowanie zaznaczonych elementów do schowka |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Wklejanie elementów (działa także między różnymi zakładkami) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplikowanie zaznaczonych elementów |
 | **`Delete` / `Backspace`** | Usunięcie zaznaczonych elementów |
 | **`←` `→` `↑` `↓` (widoki 2D)** | Przesunięcie zaznaczonych części o krok wybranej siatki (`Shift` — podwójny krok) |
 

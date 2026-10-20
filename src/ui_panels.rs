@@ -344,14 +344,14 @@ pub fn ui_top_transform_toolbar(
         ));
 
         if ui
-            .button(lang.tr("🔍 Центрировать вид", "🔍 Center View"))
+            .button(lang.tr("⊞ Выровнять окна", "⊞ Equal Views"))
             .on_hover_text(lang.tr(
-                "Сцентрировать все 4 экрана на изделии без сброса масштаба",
-                "Center all 4 views on the product without resetting zoom",
+                "Сбросить разделители и выровнять все 4 окна проекций поровну (50% / 50%)",
+                "Reset splitters and equalize all 4 viewport window sizes (50% / 50%)",
             ))
             .clicked()
         {
-            viewport_ctrl.focus_all_on_project(project);
+            viewport_ctrl.equalize_viewports();
         }
 
         if ui
@@ -869,7 +869,7 @@ pub fn ui_right_inspector(
         if ui
             .add_enabled(
                 has_sel,
-                egui::Button::new(lang.tr("📄 Копировать (Ctrl+C)", "📄 Copy (Ctrl+C)")),
+                egui::Button::new(crate::i18n::adapt_shortcuts(lang.tr("📄 Копировать (Ctrl+C)", "📄 Copy (Ctrl+C)"))),
             )
             .on_hover_text(lang.tr(
                 "Скопировать выделенные детали в буфер (можно вставить в другую вкладку или окно мебели)",
@@ -882,34 +882,36 @@ pub fn ui_right_inspector(
                 if let Ok(json) = serde_json::to_string(&copied) {
                     ui.ctx().copy_text(format!("{}{}", CLIPBOARD_PREFIX, json));
                 }
+                let is_mac = crate::i18n::is_macos_platform();
+                let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
                 if copied.len() == 1 {
                     *status_msg = match lang {
                         AppLanguage::Ru => format!(
-                            "Деталь «{}» скопирована в буфер обмена (перейдите в любую вкладку мебели и нажмите Ctrl+V)",
-                            copied[0].part.name
+                            "Деталь «{}» скопирована в буфер обмена (перейдите в любую вкладку мебели и нажмите {}+V)",
+                            copied[0].part.name, mod_name
                         ),
                         AppLanguage::Uk => format!(
-                            "Деталь «{}» скопійована в буфер обміну (перейдіть у будь-яку вкладку меблів та натисніть Ctrl+V)",
-                            copied[0].part.name
+                            "Деталь «{}» скопійована в буфер обміну (перейдіть у будь-яку вкладку меблів та натисніть {}+V)",
+                            copied[0].part.name, mod_name
                         ),
                         _ => format!(
-                            "Part \"{}\" copied to clipboard (switch to any product tab and press Ctrl+V)",
-                            copied[0].part.name
+                            "Part \"{}\" copied to clipboard (switch to any product tab and press {}+V)",
+                            copied[0].part.name, mod_name
                         ),
                     };
                 } else {
                     *status_msg = match lang {
                         AppLanguage::Ru => format!(
-                            "Скопировано деталей: {} шт. (перейдите в любую вкладку мебели и нажмите Ctrl+V)",
-                            copied.len()
+                            "Скопировано деталей: {} шт. (перейдите в любую вкладку мебели и нажмите {}+V)",
+                            copied.len(), mod_name
                         ),
                         AppLanguage::Uk => format!(
-                            "Скопійовано деталей: {} шт. (перейдіть у будь-яку вкладку меблів та натисніть Ctrl+V)",
-                            copied.len()
+                            "Скопійовано деталей: {} шт. (перейдіть у будь-яку вкладку меблів та натисніть {}+V)",
+                            copied.len(), mod_name
                         ),
                         _ => format!(
-                            "Copied {} parts (switch to any product tab and press Ctrl+V)",
-                            copied.len()
+                            "Copied {} parts (switch to any product tab and press {}+V)",
+                            copied.len(), mod_name
                         ),
                     };
                 }
@@ -920,17 +922,17 @@ pub fn ui_right_inspector(
         if ui
             .add_enabled(
                 !clipboard.is_empty(),
-                egui::Button::new(lang.tr("📥 Вставить (Ctrl+V)", "📥 Paste (Ctrl+V)")),
+                egui::Button::new(crate::i18n::adapt_shortcuts(lang.tr("📥 Вставить (Ctrl+V)", "📥 Paste (Ctrl+V)"))),
             )
             .on_hover_text(lang.tr(
                 "Вставить скопированные детали в текущий объект мебели",
                 "Paste copied parts into the current furniture product",
             ))
             .clicked()
+            && !clipboard.is_empty()
         {
-            if !clipboard.is_empty() {
-                on_before_mutate(project);
-                let new_ids = paste_parts_into_project(project, clipboard);
+            on_before_mutate(project);
+            let new_ids = paste_parts_into_project(project, clipboard);
                 *selected_part = new_ids.last().copied();
                 *selected_parts = new_ids.clone();
                 if new_ids.len() == 1 {
@@ -968,7 +970,6 @@ pub fn ui_right_inspector(
                     };
                 }
             }
-        }
     });
 
     ui.horizontal_wrapped(|ui| {
@@ -976,7 +977,7 @@ pub fn ui_right_inspector(
         if ui
             .add_enabled(
                 has_sel,
-                egui::Button::new(lang.tr("📋 Дублировать (Ctrl+D)", "📋 Duplicate (Ctrl+D)")),
+                egui::Button::new(crate::i18n::adapt_shortcuts(lang.tr("📋 Дублировать (Ctrl+D)", "📋 Duplicate (Ctrl+D)"))),
             )
             .clicked()
         {
@@ -1425,10 +1426,10 @@ fn render_part_tree_row(
         );
         let resp = ui
             .selectable_label(is_sel, label_text)
-            .on_hover_text(lang.tr(
+            .on_hover_text(crate::i18n::adapt_shortcuts(lang.tr(
                 "Клик — выбрать деталь; Shift/Ctrl + клик — добавить/убрать из группового выделения",
                 "Click to select part; Shift/Ctrl + click to toggle in multi-selection",
-            ));
+            )));
         if resp.clicked() {
             let multi_mod = ui.input(|i| i.modifiers.shift || i.modifiers.command || i.modifiers.ctrl);
             if multi_mod {

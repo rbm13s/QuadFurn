@@ -69,10 +69,10 @@
 
 ## Introduksjon
 
-**QuadFurn CAD** er et lynraskt, integrert skrivebords-CAD-program skrevet i Rust, utviklet for konstruksjon av skap- og platemøbler i laminert sponplate (melamin), MDF, HDF og kryssfiner, komplett med automatisk stykklisteregning og 2D giljotin-kappeoptimalisering for platesager.
+**QuadFurn CAD** er et lynraskt, fleroppsett CAD-program skrevet i Rust, tilgjengelig både som et raskt integrert skrivebordsprogram (Windows, Linux, macOS) og som en installasjonsfri WebAssembly (WASM) nettversjon som kjører direkte i moderne nettlesere. Det er utviklet for konstruksjon av skap- og platemøbler av laminert sponplate (melamin), MDF, HDF og kryssfiner, komplett med automatisk stykkelistegenerering og 2D giljotin kappeoptimalisering.
 
 QuadFurn forener ergonomien fra tre velkjente verktøy i én sømløs arbeidsflyt:
-1. **4-visnings romlig modellering**: Samtidig redigering i tre synkroniserte 2D ortogonale projeksjoner (**Plan XY — Plantegning**, **Front XZ — Oppriss**, **Side YZ — Snitt**) med rullefelt, magnetisk kantlås og en interaktiv sanntids **3D Bane / Førstepersons Flymodus (`Z` Noclip)**.
+1. **Romlig modellering i 4 visninger**: Samtidig redigering i tre synkroniserte 2D-projeksjoner (**Ovenfra XY — Plan**, **Front XZ — Oppriss**, **Side YZ — Snitt**) med rullefelt, magnetisk snapping, knapp for utjevning av vindusstørrelser (`⊞ Likestill vinduer`), intelligent tykkelsesbeskyttelse for deler sett fra kant og en sanntids **3D Bane / Førstepersons flymodus (`Z` Noclip)** visning.
 2. **Presisjonstransformeringslinje**: Umiddelbar numerisk inntasting av koordinater (`X`, `Y`, `Z`), platestørrelse (`L × W × T`) og rotasjonsvinkel (`∠Z`) med innebygd beregning i alle tekstbokser (f.eks. `600-4` eller `720+18`).
 3. **Platekapping og automatisk kantlistfradrag**: Automatisk fradrag for PVC/ABS-kantlistetykkelse på alle 4 kanter for å beregne det nøyaktige **netto sagmålet for formatsagen**, sammen med en 2D giljotin-nestingmotor som ivaretar treretning, bladbredde og kantavretting på råplatene.
 
@@ -245,20 +245,21 @@ I fanen **Materialer** (`🎨 4. Materialer`):
 
 | Snarvei | Handling |
 | :--- | :--- |
-| **`V`** | Aktiver verktøyet **Velg og flytt** (med 8 størrelseshåndtak og rammemarkering) |
+| **`V`** | Aktiver verktøyet **Velg og flytt** (8 størrelseshåndtak på flaten og 2 kanthåndtak fra siden, pluss rammeutvalg) |
 | **`B`** | Aktiver verktøyet **Opprett element med ramme** i 2D-visninger |
 | **`M`** | Aktiver **Målebånd** i 2D-visninger |
 | **Dra med `Venstre museknapp` (2D)** | Flytt elementer, juster håndtak eller dra markeringsramme i tomt rom |
-| **`Skift + Venstre museknapp` (2D)** | Legg til eller fjern element fra flervalg |
+| **`Skift / Ctrl (Cmd) + Venstre museknapp` (2D)** | Legg til eller fjern element fra flervalg |
 | **Dra med `Høyre` / `Midtre museknap` (2D)** | Panorer visningen (2D pan) |
 | **`Rullehjul på mus` (2D / 3D)** | Zoom inn/ut sentrert rundt markøren |
 | **Dra med `Høyre` / `Midtre museknap` (3D)** | Bane-rotasjon av 3D-kameraet |
 | **`Z` (over 3D-ruten)** | Slå av/på **Førstepersons Flymodus (Noclip)** |
-| **`W` `A` `S` `D` / `Mellomrom` / `Ctrl`** | Fly frem/venstre/tilbake/høyre/opp/ned i 3D (`Skift` for høyere fart) |
-| **`Ctrl + S`** | Lagre det aktive møbelet (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Angre siste handling (historikk på inntil 40 trinn) |
-| **`Ctrl + C` / `Ctrl + V`** | Kopier / Lim inn merkede elementer (fungerer mellom faner) |
-| **`Ctrl + D`** | Dupliser merkede elementer |
+| **`W` `A` `S` `D` / `Mellomrom` / `Ctrl (Cmd)`** | Fly frem/venstre/tilbake/høyre/opp/ned i 3D (`Skift` for høyere fart) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Lagre det aktive møbelet (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Angre siste handling (historikk på inntil 40 trinn) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopier valgte deler til utklippstavlen |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Lim inn deler (fungerer på tvers av faner) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Dupliser merkede elementer |
 | **`Delete` / `Backspace`** | Slett merkede elementer |
 | **`←` `→` `↑` `↓` (2D-visninger)** | Flytt valgte deler med valgt rutenettstrinn (`Shift` for dobbelt trinn) |
 

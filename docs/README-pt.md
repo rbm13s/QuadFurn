@@ -69,10 +69,10 @@
 
 ## Introdução
 
-O **QuadFurn CAD** é uma aplicação CAD nativa e de alto desempenho para computador, escrita em Rust, desenvolvida para o desenho de mobiliário em painéis (MDP/MDF melamínico, contraplacado, HDF), geração automática de lista de corte e especificações, e otimização de corte 2D por guilhotina.
+O **QuadFurn CAD** é uma aplicação CAD multiplataforma de alto desempenho escrita em Rust, disponível tanto como aplicação desktop nativa rápida (Windows, Linux, macOS) como versão online WebAssembly (WASM) sem instalação executada diretamente nos navegadores modernos. Foi desenvolvida para o desenho de mobiliário em painéis (MDP/MDF melamínico, contraplacado, HDF), geração automática de lista de corte e especificações, e otimização de corte 2D por guilhotina.
 
 O QuadFurn reúne a ergonomia de três ferramentas consagradas num único fluxo de trabalho:
-1. **Modelação espacial em 4 vistas**: Edição simultânea em três projeções ortogonais 2D (**Planta XY**, **Elevação Frontal XZ**, **Corte Lateral YZ**) com barras de rolagem em primeira pessoa, atração magnética às arestas e uma vista **3D Órbita / Voo livre em primeira pessoa (`Z` Noclip)** em tempo real.
+1. **Modelação espacial em 4 vistas**: Edição simultânea em três projeções ortogonais 2D (**Planta XY**, **Elevação Frontal XZ**, **Corte Lateral YZ**) com barras de rolagem, atração magnética às arestas, botão de equalização de vistas (`⊞ Equalizar vistas`), proteção inteligente da espessura para peças de topo e uma vista **3D Órbita / Voo livre em primeira persona (`Z` Noclip)** em tempo real.
 2. **Barra de transformação de precisão**: Entrada numérica rápida de coordenadas (`X`, `Y`, `Z`), dimensões totais (`L × W × T`) e rotação horizontal (`∠Z`), com cálculo matemático direto nos próprios campos de texto (por exemplo, digitando `600-4` ou `720+18`).
 3. **Corte de chapas e dedução automática de orlas**: Subtração automática da espessura da fita de bordo em PVC/ABS dos 4 lados da peça para calcular as **dimensões exatas de corte bruto na serra**, em conjunto com um otimizador 2D por passagens guilhotina que respeita o sentido do veio da madeira, a espessura da serra e os refilos de fábrica.
 
@@ -245,20 +245,21 @@ No separador **Materiais** (`🎨 4. Materiais`):
 
 | Atalho | Ação |
 | :--- | :--- |
-| **`V`** | Ativar ferramenta **Selecionar e Mover** (com 8 pontos de redimensionamento e seleção por caixa) |
+| **`V`** | Ativar ferramenta **Selecionar e Mover** (8 pegas em vista frontal e 2 em vista de topo, mais seleção por caixa) |
 | **`B`** | Ativar ferramenta **Criar peça por retângulo** nas vistas 2D |
 | **`M`** | Ativar ferramenta **Fita métrica** nas vistas 2D |
 | **Arrastar `Botão esquerdo` (2D)** | Mover peças selecionadas, redimensionar ou abrir caixa de seleção múltipla em espaço vazio |
-| **`Shift + Botão esquerdo` (2D)** | Adicionar ou remover peças da seleção |
+| **`Shift / Ctrl (Cmd) + Botão esquerdo` (2D)** | Adicionar ou remover peças da seleção |
 | **Arrastar `Botão direito` / `Botão central` (2D)** | Mover a vista (Panorâmica 2D) |
 | **`Roda do rato` (2D / 3D)** | Zoom de aproximação/afastamento centrado no cursor |
 | **Arrastar `Botão direito` / `Botão central` (3D)** | Rotação orbital da câmara 3D |
 | **`Z` (com o cursor na vista 3D)** | Ativar / desativar **Modo Voo Livre em Primeira Pessoa (Noclip)** |
-| **`W` `A` `S` `D` / `Espaço` / `Ctrl`** | Movimento para a frente/esquerda/trás/direita/cima/baixo em voo 3D (`Shift` acelera) |
-| **`Ctrl + S`** | Guardar o móvel atual (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Desfazer a última ação (histórico até 40 passos) |
-| **`Ctrl + C` / `Ctrl + V`** | Copiar / Colar peças selecionadas (funciona entre diferentes separadores) |
-| **`Ctrl + D`** | Duplicar peças selecionadas |
+| **`W` `A` `S` `D` / `Espaço` / `Ctrl (Cmd)`** | Movimento para a frente/esquerda/trás/direita/cima/baixo em voo 3D (`Shift` acelera) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Guardar o móvel atual (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Desfazer a última ação (histórico até 40 passos) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Copiar peças selecionadas para a área de transferência |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Colar peças (funciona entre diferentes separadores) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplicar peças selecionadas |
 | **`Delete` / `Backspace`** | Eliminar peças selecionadas |
 | **`←` `→` `↑` `↓` (vistas 2D)** | Mover as peças selecionadas pelo passo da grade (`Shift` para duplicar) |
 

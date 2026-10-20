@@ -69,10 +69,10 @@
 
 ## Introduction
 
-**QuadFurn CAD** est une application CAO de bureau ultra-rapide et native écrite en Rust, conçue pour la conception de meubles en panneaux (mélaminé/panneaux de particules, MDF, HDF, contreplaqué), avec génération automatique de nomenclatures et optimisation de découpe de panneaux 2D par passes guillotine.
+**QuadFurn CAD** est une application CAO multiplateforme haute performance écrite en Rust, disponible à la fois sous forme d'application de bureau native rapide (Windows, Linux, macOS) et de version en ligne WebAssembly (WASM) sans installation s'exécutant directement dans les navigateurs web modernes. Elle est conçue pour la conception de meubles en panneaux (mélaminé/panneaux de particules, MDF, HDF, contreplaqué), avec génération automatique de nomenclatures et optimisation de découpe de panneaux 2D par passes guillotine.
 
 QuadFurn associe l'ergonomie de trois outils de référence en un flux de travail continu :
-1. **Modélisation spatiale 4 vues** : Édition synchronisée sur trois projections orthogonales 2D (**Haut XY — Plan**, **Face XZ — Élévation**, **Côté YZ — Coupe**) avec ascenseurs, magnétisme d'arêtes et vue **3D Orbit / Vol libre première personne (`Z` Noclip)** en temps réel.
+1. **Modélisation spatiale 4 vues** : Édition synchronisée sur trois projections orthogonales 2D (**Haut XY — Plan**, **Face XZ — Élévation**, **Côté YZ — Coupe**) avec ascenseurs, magnétisme d'arêtes, bouton d'égalisation des fenêtres (`⊞ Égaliser les vues`), protection intelligente de l'épaisseur pour les pièces de chant et vue **3D Orbit / Vol libre première personne (`Z` Noclip)** en temps réel.
 2. **Barre de transformation de précision** : Saisie numérique immédiate des coordonnées (`X`, `Y`, `Z`), dimensions hors-tout (`L × W × T`) et angle de rotation (`∠Z`), avec évaluation mathématique en ligne (par exemple `600-4` ou `720+18`).
 3. **Découpe de panneaux et déduction des chants** : Déduction automatique de l'épaisseur du chant PVC/ABS sur les 4 côtés pour calculer les **cotes brutes de sciage**, couplée à un optimiseur de découpe 2D par guillotine respectant le sens du fil du bois, la largeur du trait de scie et les chutes réutilisables.
 
@@ -245,20 +245,21 @@ Dans l'onglet **Matériaux** (`🎨 4. Matériaux`) :
 
 | Raccourci | Action |
 | :--- | :--- |
-| **`V`** | Activer l'outil **Sélectionner et Déplacer** (avec 8 poignées et cadre de sélection) |
+| **`V`** | Activer l'outil **Sélectionner et Déplacer** (8 poignées de face et 2 poignées de chant, plus cadre de sélection) |
 | **`B`** | Activer l'outil **Créer une pièce par rectangle** dans les vues 2D |
 | **`M`** | Activer le **Mètre ruban** dans les vues 2D |
 | **Glisser `Clic gauche` (2D)** | Déplacer la pièce, ajuster une poignée ou tracer un cadre de sélection dans le vide |
-| **`Maj + Clic gauche` (2D)** | Ajouter / retirer une pièce de la sélection multiple |
+| **`Maj / Ctrl (Cmd) + Clic gauche` (2D)** | Ajouter / retirer une pièce de la sélection multiple |
 | **Glisser `Clic droit` / `Clic central` (2D)** | Déplacer la vue (Panoramique 2D) |
 | **`Molette souris` (2D / 3D)** | Zoom avant / arrière centré sur le curseur |
 | **Glisser `Clic droit` / `Clic central` (3D)** | Rotation orbitale de la caméra 3D |
 | **`Z` (au-dessus de la vue 3D)** | Activer / désactiver le **Mode Vol Libre Première Personne (Noclip)** |
-| **`Z` `Q` `S` `D` / `Espace` / `Ctrl`** | Voler en avant/gauche/arrière/droite/haut/bas en vue 3D (`Maj` pour accélérer) |
-| **`Ctrl + S`** | Enregistrer le meuble actif (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Annuler la dernière action (historique jusqu'à 40 étapes) |
-| **`Ctrl + C` / `Ctrl + V`** | Copier / Coller les pièces sélectionnées (fonctionne entre onglets) |
-| **`Ctrl + D`** | Dupliquer les pièces sélectionnées |
+| **`Z` `Q` `S` `D` / `Espace` / `Ctrl (Cmd)`** | Voler en avant/gauche/arrière/droite/haut/bas en vue 3D (`Maj` pour accélérer) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Enregistrer le meuble actif (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Annuler la dernière action (historique jusqu'à 40 étapes) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Copier les pièces sélectionnées dans le presse-papiers |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Coller les pièces (fonctionne entre onglets) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Dupliquer les pièces sélectionnées |
 | **`Suppr` / `Retour arrière`** | Supprimer les pièces sélectionnées |
 | **`←` `→` `↑` `↓` (vues 2D)** | Déplacer les pièces sélectionnées du pas de grille choisi (`Shift` pour doubler le pas) |
 

@@ -69,10 +69,10 @@
 
 ## Introducción
 
-**QuadFurn CAD** es una aplicación CAD de escritorio nativa y de alto rendimiento desarrollada en Rust para el diseño de muebles de paneles y gabinetes en tableros aglomerados laminados (melamina), MDF, HDF y contrachapado, con cálculo automatizado de especificaciones y optimizador de corte en guillotina 2D.
+**QuadFurn CAD** es una aplicación CAD multiplataforma de alto rendimiento desarrollada en Rust, disponible tanto como aplicación de escritorio nativa rápida (Windows, Linux, macOS) como versión en línea WebAssembly (WASM) sin instalación que se ejecuta directamente en navegadores web modernos. Está diseñada para el diseño de muebles de paneles y gabinetes en tableros aglomerados laminados (melamina), MDF, HDF y contrachapado, con cálculo automatizado de especificaciones y optimizador de corte en guillotina 2D.
 
 QuadFurn combina la mejor ergonomía de tres herramientas clásicas:
-1. **Modelado espacial en 4 vistas**: Edición simultánea en tres proyecciones ortogonales (**Planta Superior XY**, **Alzado Frontal XZ**, **Sección Lateral YZ**) con barras de desplazamiento, ajuste magnético y una vista **3D con órbita y vuelo libre en primera persona (`Z` Noclip)**.
+1. **Modelado espacial en 4 vistas**: Edición simultánea en tres proyecciones ortogonales (**Planta Superior XY**, **Alzado Frontal XZ**, **Sección Lateral YZ**) con barras de desplazamiento, ajuste magnético, botón de ecualización de vistas (`⊞ Igualar vistas`), protección inteligente de espesor para piezas de canto y una vista **3D con órbita y vuelo libre en primera persona (`Z` Noclip)**.
 2. **Barra de transformación de precisión**: Entrada numérica directa de coordenadas (`X`, `Y`, `Z`), dimensiones (`L × An × Gr`) y ángulo de rotación (`∠Z`) con calculadora integrada (por ejemplo, `600-4` o `720+18`).
 3. **Optimización de corte y deducción de cantos**: Resta automática del grosor de canto PVC/ABS de las dimensiones de las piezas para obtener los **tamaños netos de corte de sierra**, junto con anidado guillotina 2D que respeta la veta de la madera, el grosor de corte de la sierra y los márgenes de refilado.
 
@@ -226,20 +226,21 @@ En la pestaña **Materiales** (`🎨 4. Materiales`):
 
 | Entrada / Atajo | Acción |
 | :--- | :--- |
-| **`V`** | Herramienta **Seleccionar y Mover** |
+| **`V`** | Herramienta **Seleccionar y Mover** (8 tiradores de cambio de tamaño en cara y 2 en cantos, más selección por recuadro) |
 | **`B`** | Herramienta **Crear pieza mediante recuadro** en 2D |
 | **`M`** | Herramienta **Cinta métrica** en 2D |
 | **Arrastrar `Click Izq` (2D)** | Mover piezas, arrastrar manejadores o recuadro de selección |
-| **`Shift + Click Izq` (2D)** | Añadir o quitar pieza de la selección múltiple |
+| **`Shift / Ctrl (Cmd) + Click Izq` (2D)** | Añadir o quitar pieza de la selección múltiple |
 | **Arrastrar `Click Der` / `Medio` (2D)** | Encuadre (Pan) de la cámara 2D |
 | **`Rueda del ratón` (2D / 3D)** | Zoom de la cámara |
 | **Arrastrar `Click Der` / `Medio` (3D)** | Rotación orbital 3D |
 | **`Z` (sobre ventana 3D)** | Alternar **Modo de vuelo libre 3D (Noclip)** |
-| **`W` `A` `S` `D` / `Espacio` / `Ctrl`** | Movimiento en modo vuelo (`Shift` acelera) |
-| **`Ctrl + S`** | Guardar proyecto actual (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Deshacer última acción (hasta 40 pasos) |
-| **`Ctrl + C` / `Ctrl + V`** | Copiar / Pegar piezas seleccionadas (entre pestañas) |
-| **`Ctrl + D`** | Duplicar piezas seleccionadas |
+| **`W` `A` `S` `D` / `Espacio` / `Ctrl (Cmd)`** | Movimiento en modo vuelo (`Shift` acelera) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Guardar proyecto actual (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Deshacer última acción (hasta 40 pasos) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Copiar piezas seleccionadas al portapapeles |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Pegar piezas (funciona entre diferentes pestañas) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplicar piezas seleccionadas |
 | **`Delete` / `Backspace`** | Eliminar piezas seleccionadas |
 | **`←` `→` `↑` `↓` (vistas 2D)** | Desplazar las piezas seleccionadas según el paso de cuadrícula (`Shift` para duplicar) |
 

@@ -69,10 +69,10 @@
 
 ## Introduzione
 
-**QuadFurn CAD** è un'applicazione desktop CAD ad alte prestazioni scritta in Rust, progettata per l'ideazione e costruzione di mobili in pannelli (truciolare nobilitato/melaminico, MDF, HDF, compensato), con distinta base automatica e ottimizzazione di taglio bidimensionale a ghigliottina.
+**QuadFurn CAD** è un'applicazione CAD multipiattaforma ad alte prestazioni scritta in Rust, disponibile sia come veloce applicazione desktop nativa (Windows, Linux, macOS) sia come versione online WebAssembly (WASM) senza installazione eseguibile direttamente nei moderni browser web. È progettata per l'ideazione e costruzione di mobili in pannelli (truciolare nobilitato/melaminico, MDF, HDF, compensato), con distinta base automatica e ottimizzazione di taglio bidimensionale a ghigliottina.
 
 QuadFurn unisce l'ergonomia di tre celebri strumenti in un flusso di lavoro armonioso:
-1. **Modellazione spaziale a 4 viste**: Modifica sincronizzata attraverso tre proiezioni ortografiche 2D (**Dall'alto XY — Pianta**, **Frontale XZ — Prospetto**, **Laterale YZ — Sezione**) con barre di scorrimento, snap magnetico ai bordi e una vista **3D Orbit / Volo libero in prima persona (`Z` Noclip)** in tempo reale.
+1. **Modellazione spaziale a 4 viste**: Modifica sincronizzata attraverso tre proiezioni ortografiche 2D (**Dall'alto XY — Pianta**, **Frontale XZ — Prospetto**, **Laterale YZ — Sezione**) con barre di scorrimento, snap magnetico ai bordi, pulsante di equalizzazione delle viste (`⊞ Equalizza viste`), protezione intelligente dello spessore per pezzi di taglio e una vista **3D Orbit / Volo libero in prima persona (`Z` Noclip)** in tempo reale.
 2. **Barra di trasformazione di precisione**: Inserimento numerico immediato delle coordinate (`X`, `Y`, `Z`), dimensioni complessive (`L × W × T`) e angolo di rotazione orizzontale (`∠Z`), con calcolatrice matematica integrata direttamente nei campi (es. digitando `600-4` o `720+18`).
 3. **Taglio lastre e detrazione automatica dei bordi**: Sottrazione automatica dello spessore del bordo in PVC/ABS da tutti e 4 i lati per calcolare le esatte **misure nette di taglio alla sega**, abbinata a un algoritmo di taglio 2D a ghigliottina che rispetta la venatura del legno, lo spessore della lama e i rifili perimetrali.
 
@@ -245,20 +245,21 @@ Nella scheda **Materiali** (`🎨 4. Materiali`):
 
 | Scorciatoia | Azione |
 | :--- | :--- |
-| **`V`** | Attiva lo strumento **Seleziona e Sposta** (con 8 maniglie e riquadro di selezione) |
+| **`V`** | Attiva lo strumento **Seleziona e Sposta** (8 maniglie per pezzi frontali e 2 per pezzi di taglio, più riquadro di selezione) |
 | **`B`** | Attiva lo strumento **Crea elemento con riquadro** nelle viste 2D |
 | **`M`** | Attiva lo strumento **Metro a nastro** nelle viste 2D |
 | **Trascina `Tasto sinistro` (2D)** | Sposta le parti selezionate, ridimensiona con maniglia o crea riquadro di selezione su spazio vuoto |
-| **`Maiusc + Tasto sinistro` (2D)** | Aggiunge o rimuove una parte dalla selezione multipla |
+| **`Maiusc / Ctrl (Cmd) + Tasto sinistro` (2D)** | Aggiunge o rimuove una parte dalla selezione multipla |
 | **Trascina `Tasto destro` / `Tasto centrale` (2D)** | Panoramica della vista 2D |
 | **`Rotellina mouse` (2D / 3D)** | Zoom avanti e indietro rispetto al cursore |
 | **Trascina `Tasto destro` / `Tasto centrale` (3D)** | Rotazione orbitale della telecamera 3D |
 | **`Z` (sopra la vista 3D)** | Attiva / disattiva la **Modalità Volo Libero in Prima Persona (Noclip)** |
-| **`W` `A` `S` `D` / `Spazio` / `Ctrl`** | Movimento avanti/sinistra/indietro/destra/alto/basso in volo 3D (`Maiusc` per accelerare) |
-| **`Ctrl + S`** | Salva il mobile corrente (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Annulla l'ultima azione (cronologia fino a 40 passaggi) |
-| **`Ctrl + C` / `Ctrl + V`** | Copia / Incolla le parti selezionate (funziona tra schede diverse) |
-| **`Ctrl + D`** | Duplica le parti selezionate |
+| **`W` `A` `S` `D` / `Spazio` / `Ctrl (Cmd)`** | Movimento avanti/sinistra/indietro/destra/alto/basso in volo 3D (`Maiusc` per accelerare) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Salva il mobile corrente (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Annulla l'ultima azione (cronologia fino a 40 passaggi) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Copia i pezzi selezionati negli appunti |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Incolla i pezzi (funziona tra schede diverse) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplica le parti selezionate |
 | **`Canc` / `Backspace`** | Elimina le parti selezionate |
 | **`←` `→` `↑` `↓` (viste 2D)** | Sposta le parti selezionate del passo della griglia (`Shift` per raddoppiare) |
 

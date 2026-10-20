@@ -69,10 +69,10 @@
 
 ## Úvod
 
-**QuadFurn CAD** je mimoriadne rýchla, natívna desktopová CAD aplikácia napísaná v jazyku Rust, určená na navrhovanie korpusového a doskového nábytku z laminovanej drevotriesky (LDTD), MDF, HDF a preglejky, vrátane automatického generovania kusovníkov a 2D gilotínovej optimalizácie nárezových plánov veľkoplošných materiálov.
+**QuadFurn CAD** je vysoko výkonná multiplatformová CAD aplikácia napísaná v jazyku Rust, dostupná ako rýchla natívna desktopová aplikácia (Windows, Linux, macOS), tak aj ako online verzia WebAssembly (WASM) bez nutnosti inštalácie priamo v moderných webových prehliadačoch. Je určená na navrhovanie korpusového a doskového nábytku z laminovanej drevotriesky (LDTD), MDF, HDF a preglejky, vrátane automatického generovania kusovníkov a 2D gilotínovej optimalizácie nárezových plánov veľkoplošných materiálov.
 
 QuadFurn spája najlepšiu ergonómiu troch osvedčených nástrojov:
-1. **4-pohľadové priestorové modelovanie**: Súčasná práca v troch synchronizovaných 2D pravouhlých priemetoch (**Pôdorys XY**, **Nárys XZ**, **Bokorys YZ**) s posuvníkmi, magnetickým prichytávaním k hranám a interaktívnym **3D pohľadom (Orbit / Voľný let z pohľadu prvej osoby `Z` Noclip)**.
+1. **4-pohľadové priestorové modelovanie**: Súčasná práca v troch synchronizovaných 2D pravouhlých priemietoch (**Pôdorys XY**, **Nárys XZ**, **Bokorys YZ**) s posuvníkmi, magnetickým prichytávaním k hranám, tlačidlom vyrovnania okien (`⊞ Vyrovnať okná`), inteligentnou ochranou hrúbky dielcov z hrany a interaktívnym **3D pohľadom (Orbit / Voľný let z pohľadu prvej osoby `Z` Noclip)**.
 2. **Presný transformačný panel**: Okamžité zadávanie súradníc (`X`, `Y`, `Z`), rozmerov dielca (`L × W × T`) a uhla natočenia (`∠Z`) s integrovaným vyhodnocovaním matematických výrazov (napr. `600-4` alebo `720+18`).
 3. **Nárezové plány a automatický odpočet hrán**: Automatický odpočet hrúbky ABS/PVC hrán zo všetkých 4 strán pre zistenie presných **čistých rezných rozmerov pre formátovaciu pílu**, prepojený s gilotínovým 2D algoritmom rešpektujúcim smer štruktúry dreva, prerez pílového kotúča a formátovací orez dosiek.
 
@@ -245,20 +245,21 @@ V záložke **Materiály** (`🎨 4. Materiály`):
 
 | Klávesová skratka | Akcia |
 | :--- | :--- |
-| **`V`** | Aktivovať nástroj **Vybrať a posunúť** (s 8 manipulačnými bodmi a rámčekovým výberom) |
+| **`V`** | Aktivovať nástroj **Vybrať a posunúť** (8 manipulačných bodov pre dielce naplocho a 2 pre dielce z hrany, plus rámčekový výber) |
 | **`B`** | Aktivovať nástroj **Vytvoriť dielec rámčekom** v 2D pohľadoch |
 | **`M`** | Aktivovať nástroj **Meracie pásmo** v 2D pohľadoch |
 | **Ťahanie `Ľavým tlačidlom` (2D)** | Posunúť vybrané dielce, upraviť rozmer úchopom alebo ťahať výberový rámček v prázdne |
-| **`Shift + Ľavým tlačidlom` (2D)** | Pridať alebo odobrať dielec z viacnásobného výberu |
+| **`Shift / Ctrl (Cmd) + Ľavým tlačidlom` (2D)** | Pridať alebo odobrať dielec z viacnásobného výberu |
 | **Ťahanie `Pravým` / `Stredným tlačidlom` (2D)** | Posun zobrazenia (Panoráma 2D) |
 | **`Koliesko myši` (2D / 3D)** | Priblíženie / oddialenie pohľadu na pozíciu kurzora |
 | **Ťahanie `Pravým` / `Stredným tlačidlom` (3D)** | Orbitálna rotácia 3D kamery |
 | **`Z` (nad 3D oknom)** | Zapnúť / vypnúť **Režim voľného letu (Noclip)** |
-| **`W` `A` `S` `D` / `Medzerník` / `Ctrl`** | Pohyb dopredu/doľava/dozadu/doprava/hore/dole v 3D lete (`Shift` zrýchľuje) |
-| **`Ctrl + S`** | Uložiť aktuálny výrobok (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Vrátiť späť posledný krok (história až 40 krokov) |
-| **`Ctrl + C` / `Ctrl + V`** | Kopírovať / Vložiť vybrané dielce (funguje aj medzi rôznymi záložkami) |
-| **`Ctrl + D`** | Duplikovať vybrané dielce |
+| **`W` `A` `S` `D` / `Medzerník` / `Ctrl (Cmd)`** | Pohyb dopredu/doľava/dozadu/doprava/hore/dole v 3D lete (`Shift` zrýchľuje) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Uložiť aktuálny výrobok (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Vrátiť späť posledný krok (história až 40 krokov) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopírovať vybrané dielce do schránky |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Vložiť vybrané dielce (funguje medzi rôznymi záložkami) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplikovať vybrané dielce |
 | **`Delete` / `Backspace`** | Zmazať vybrané dielce |
 | **`←` `→` `↑` `↓` (2D pohľady)** | Posun vybraných dielov o krok zvolenej mriežky (`Shift` pre dvojnásobný krok) |
 

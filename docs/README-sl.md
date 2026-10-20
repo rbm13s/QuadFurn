@@ -69,10 +69,10 @@
 
 ## Uvod
 
-**QuadFurn CAD** je izjemno hitra, domorodna namizna aplikacija CAD, napisana v programskem jeziku Rust, zasnovana za načrtovanje korpusnega in panelnega pohištva iz oplemenitene iverne plošče (iveral), MDF, HDF ter vezanega lesa, s samodejnim ustvarjanjem kosovnic ter 2D gilotinsko optimizacijo razreza plošč.
+**QuadFurn CAD** je visoko zmogljiva večplatformna CAD aplikacija, napisana v jeziku Rust, na voljo tako kot hitra domorodna namizna aplikacija (Windows, Linux, macOS) kot tudi kot spletna različica WebAssembly (WASM) brez namestitve neposredno v sodobnih spletnih brskalnikih. Namenjena je načrtovanju omarnega in ploščnega pohištva iz oplemenitene iverne plošče (iveral), MDF, HDF in vezanih plošč, skupaj s samodejnim ustvarjanjem kosovnic in optimizacijo 2D giljotinskega razreza plošč.
 
 QuadFurn združuje najboljšo ergonomijo treh uveljavljenih orodij:
-1. **4-pogledno prostorsko modeliranje**: Hkratno urejanje v treh sinhroniziranih 2D pravokotnih projekcijah (**Tloris XY**, **Naris XZ**, **Stranski ris YZ**) z drsniki, magnetnim pripenjanjem na robove in interaktivnim **3D pogledom (Orbita / Prosti let iz prve osebe `Z` Noclip)**.
+1. **Prostorsko modeliranje v 4 pogledih**: Sočasno urejanje v treh sinhroniziranih 2D pogledih (**Tloris XY**, **Naris XZ**, **Stranski ris YZ**) z drsniki, magnetnim pripenjanjem, gumbom za izravnavo oken (`⊞ Izravnaj okna`), inteligentno zaščito debeline elementov z roba ter oknom **3D Orbit / Prosti let v prvi osebi (`Z` Noclip)** v realnem času.
 2. **Natančna vrstica transformacij**: Takojšen vnos koordinat (`X`, `Y`, `Z`), končnih mer elementa (`L × W × T`) in kota zasukovanja (`∠Z`) z neposrednim računanjem matematičnih formul (npr. `600-4` ali `720+18`).
 3. **Razrez plošč in samodejno odštevanje robov**: Samodejni odštevek debeline ABS/PVC robnih trakov z vseh 4 strani za izračun natančnih **čistih rezalnih mer za žago**, povezan z gilotinskim 2D algoritmom, ki upošteva smer lesnih vlaken, rezalno režo žaginega lista ter robne obreze surovih plošč.
 
@@ -245,20 +245,21 @@ V zavihku **Materiali** (`🎨 4. Materiali`):
 
 | Bližnjica | Dejanje |
 | :--- | :--- |
-| **`V`** | Vključi orodje **Izberi in premakni** (z 8 ročicami in izbirnim okvirjem) |
+| **`V`** | Vključi orodje **Izberi in premakni** (8 ročic za elemente plosko in 2 ročici z roba ter izbirni okvir) |
 | **`B`** | Vključi orodje **Ustvari element z okvirjem** v 2D pogledih |
 | **`M`** | Vključi orodje **Merilni trak** v 2D pogledih |
 | **Vlečenje z `Levim gumbom` (2D)** | Premik elementov, spreminjanje velikosti z ročico ali risanje izbirnega okvirja na praznem |
-| **`Shift + Levi gumb` (2D)** | Dodajanje ali odstranjevanje elementa iz večkratne izbire |
+| **`Shift / Ctrl (Cmd) + Levi gumb` (2D)** | Dodajanje ali odstranjevanje elementa iz večkratne izbire |
 | **Vlečenje z `Desnim` / `Srednjim gumbom` (2D)** | Premik pogleda (Panoramski 2D pomik) |
 | **`Kolesce miške` (2D / 3D)** | Približevanje / oddaljevanje pogleda glede na kazalec |
 | **Vlečenje z `Desnim` / `Srednjim gumbom` (3D)** | Orbitalno vrtenje 3D kamere |
 | **`Z` (nad 3D oknom)** | Vklop / izklop **Načina prostega leta iz prve osebe (Noclip)** |
-| **`W` `A` `S` `D` / `Preslednica` / `Ctrl`** | Letenje naprej/levo/nazaj/desno/gor/dol v 3D pogledu (`Shift` pospeši) |
-| **`Ctrl + S`** | Shrani trenutno pohištvo (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Razveljavi zadnje dejanje (zgodovina do 40 korakov) |
-| **`Ctrl + C` / `Ctrl + V`** | Kopiraj / Prilepi izbrane elemente (deluje tudi med različnimi zavihki) |
-| **`Ctrl + D`** | Podvoji izbrane elemente |
+| **`W` `A` `S` `D` / `Preslednica` / `Ctrl (Cmd)`** | Letenje naprej/levo/nazaj/desno/gor/dol v 3D pogledu (`Shift` pospeši) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Shrani trenutno pohištvo (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Razveljavi zadnje dejanje (zgodovina do 40 korakov) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopiraj izbrane elemente v odložišče |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Prilepi elemente (deluje tudi med različnimi zavihki) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Podvoji izbrane elemente |
 | **`Delete` / `Backspace`** | Izbriši izbrane elemente |
 | **`←` `→` `↑` `↓` (2D pogledi)** | Premik izbranih delov za korak izbrane mreže (`Shift` za dvojni korak) |
 

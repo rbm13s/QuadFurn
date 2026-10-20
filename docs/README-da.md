@@ -69,10 +69,10 @@
 
 ## Introduktion
 
-**QuadFurn CAD** er et lynhurtigt, indbygget desktop CAD-program skrevet i Rust, udviklet til design af skabs- og plademøbler i melaminbelagte spånplader, MDF, HDF og krydsfiner, komplet med automatisk styklisteberegning og 2D guillotine-skæreoptimering.
+**QuadFurn CAD** er et højtydende multiplatform CAD-program skrevet i Rust, tilgængeligt både som en hurtig native desktop-applikation (Windows, Linux, macOS) og som en installationsfri WebAssembly (WASM) online version, der kører direkte i moderne webbrowsere. Det er udviklet til design af skabs- og plademøbler af lamineret spånplade (melamin), MDF, HDF og krydsfiner, komplet med automatisk styklistegenerering og 2D guillotine pladeskæringsoptimering.
 
 QuadFurn forener ergonomien fra tre klassiske værktøjer i ét samlet arbejdsflow:
-1. **4-visnings rumlig modellering**: Samtidig redigering i tre synkroniserede 2D ortogonale projektioner (**Plan XY — Plantegning**, **Front XZ — Opstalt**, **Side YZ — Snit**) med rullebjælker, magnetisk kantlås og en interaktiv realtids **3D Orbit / Førstepersons Flyvetilstand (`Z` Noclip)**.
+1. **Rumlig modellering i 4 visninger**: Samtidig redigering i tre synkroniserede 2D-projektioner (**Ovenfra XY — Plan**, **Front XZ — Opstalt**, **Side YZ — Snit**) med rullebjælker, magnetisk snapping, vinduesudligningsknap (`⊞ Udlign vinduer`), intelligent tykkelsesbeskyttelse for kantvendte dele og en realtids **3D Orbit / Førstepersons flyvning (`Z` Noclip)** visning.
 2. **Præcisionstransformeringslinje**: Øjeblikkelig numerisk indtastning af koordinater (`X`, `Y`, `Z`), pladestørrelse (`L × W × T`) og rotationsvinkel (`∠Z`) med indbygget matematisk beregning i alle felter (f.eks. `600-4` eller `720+18`).
 3. **Pladeskæring og automatisk kantbåndsfradrag**: Automatisk fradrag af PVC/ABS-kantbåndstykkelse på alle 4 kanter for at beregne det nøjagtige **netto savmål for formatsaven**, koblet med en 2D guillotine-nestingmotor, der overholder træets åreretning, savklingens snitbredde og renskæring af pladekanter.
 
@@ -245,20 +245,21 @@ I fanen **Materialer** (`🎨 4. Materialer`):
 
 | Genvej | Handling |
 | :--- | :--- |
-| **`V`** | Aktivér værktøjet **Vælg og flyt** (med 8 størrelseshåndtag og rammemarkering) |
+| **`V`** | Aktivér værktøjet **Vælg og flyt** (8 skaleringshåndtag på fladen og 2 kanthåndtag fra siden, plus rammemarkering) |
 | **`B`** | Aktivér værktøjet **Opret element med ramme** i 2D-visninger |
 | **`M`** | Aktivér **Målebånd** i 2D-visninger |
 | **Træk med `Venstre museknap` (2D)** | Flyt elementer, justér håndtag eller træk markeringsramme i tomt rum |
-| **`Skift + Venstre museknap` (2D)** | Tilføj eller fjern element fra flervalgsmarkeringen |
+| **`Skift / Ctrl (Cmd) + Venstre museknap` (2D)** | Tilføj eller fjern element fra flervalgsmarkeringen |
 | **Træk med `Højre` / `Midterste museknap` (2D)** | Panorér visningen (2D pan) |
 | **`Rullehjul på mus` (2D / 3D)** | Zoom ind/ud centreret på markøren |
 | **Træk med `Højre` / `Midterste museknap` (3D)** | Orbit-rotation af 3D-kameraet |
 | **`Z` (over 3D-ruden)** | Slå **Førstepersons Flyvetilstand (Noclip)** til/fra |
-| **`W` `A` `S` `D` / `Mellemrum` / `Ctrl`** | Flyv frem/venstre/tilbage/højre/op/ned i 3D (`Skift` for højere fart) |
-| **`Ctrl + S`** | Gem det aktive møbel (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Fortryd sidste handling (historik på op til 40 trin) |
-| **`Ctrl + C` / `Ctrl + V`** | Kopiér / Indsæt markerede elementer (virker mellem faner) |
-| **`Ctrl + D`** | Duplikér markerede elementer |
+| **`W` `A` `S` `D` / `Mellemrum` / `Ctrl (Cmd)`** | Flyv frem/venstre/tilbage/højre/op/ned i 3D (`Skift` for højere fart) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Gem det aktive møbel (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Fortryd sidste handling (historik på op til 40 trin) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopiér markerede dele til udklipsholderen |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Indsæt dele (fungerer på tværs af faner) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplikér markerede elementer |
 | **`Delete` / `Backspace`** | Slet markerede elementer |
 | **`←` `→` `↑` `↓` (2D-visninger)** | Flyt valgte dele med det valgte gittertrin (`Shift` for dobbelt trin) |
 

@@ -1,24 +1,29 @@
-#![cfg(target_arch = "wasm32")]
-
+#[cfg(target_arch = "wasm32")]
 use std::sync::{LazyLock, Mutex};
+#[cfg(target_arch = "wasm32")]
 use wasm_bindgen::JsCast;
+#[cfg(target_arch = "wasm32")]
 use web_sys::{Blob, BlobPropertyBag, HtmlAnchorElement, Url};
 use crate::model::MaterialId;
 
+#[cfg(target_arch = "wasm32")]
 pub static PENDING_PROJECT_UPLOADS: LazyLock<Mutex<Vec<(String, Vec<u8>)>>> =
     LazyLock::new(|| Mutex::new(Vec::new()));
 
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub struct PendingTextureUpload {
     pub material_id: MaterialId,
     pub filename: String,
     pub bytes: Vec<u8>,
 }
 
+#[cfg(target_arch = "wasm32")]
 pub static PENDING_TEXTURE_UPLOADS: LazyLock<Mutex<Vec<PendingTextureUpload>>> =
     LazyLock::new(|| Mutex::new(Vec::new()));
 
 /// Triggers a browser file download in WebAssembly.
+#[cfg(target_arch = "wasm32")]
 pub fn download_file(filename: &str, mime_type: &str, data: &[u8]) {
     let array = js_sys::Array::new();
     let uint8_array = js_sys::Uint8Array::from(data);
@@ -44,7 +49,12 @@ pub fn download_file(filename: &str, mime_type: &str, data: &[u8]) {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn download_file(_filename: &str, _mime_type: &str, _data: &[u8]) {}
+
 /// Opens an asynchronous file picker in the browser for `.qfurn` projects.
+#[cfg(target_arch = "wasm32")]
 pub fn pick_project_file_web() {
     wasm_bindgen_futures::spawn_local(async move {
         if let Some(handle) = rfd::AsyncFileDialog::new()
@@ -61,7 +71,12 @@ pub fn pick_project_file_web() {
     });
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn pick_project_file_web() {}
+
 /// Opens an asynchronous file picker in the browser for texture images.
+#[cfg(target_arch = "wasm32")]
 pub fn pick_texture_file_web(mat_id: MaterialId) {
     wasm_bindgen_futures::spawn_local(async move {
         if let Some(handle) = rfd::AsyncFileDialog::new()
@@ -82,7 +97,12 @@ pub fn pick_texture_file_web(mat_id: MaterialId) {
     });
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn pick_texture_file_web(_mat_id: MaterialId) {}
+
 /// Detects language from URL query string `?lang=...` or from `navigator.languages`/`navigator.language`.
+#[cfg(target_arch = "wasm32")]
 pub fn detect_browser_language() -> Option<crate::i18n::AppLanguage> {
     let window = web_sys::window()?;
 
@@ -120,4 +140,199 @@ pub fn detect_browser_language() -> Option<crate::i18n::AppLanguage> {
     }
 
     None
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn detect_browser_language() -> Option<crate::i18n::AppLanguage> {
+    None
+}
+
+use std::sync::atomic::{AtomicBool, Ordering};
+
+pub static WEB_UNDO_TRIGGERED: AtomicBool = AtomicBool::new(false);
+pub static WEB_NOCLIP_TOGGLE_TRIGGERED: AtomicBool = AtomicBool::new(false);
+pub static WEB_SAVE_TRIGGERED: AtomicBool = AtomicBool::new(false);
+pub static WEB_DUPLICATE_TRIGGERED: AtomicBool = AtomicBool::new(false);
+pub static WEB_TOOL_V_TRIGGERED: AtomicBool = AtomicBool::new(false);
+pub static WEB_TOOL_B_TRIGGERED: AtomicBool = AtomicBool::new(false);
+pub static WEB_TOOL_M_TRIGGERED: AtomicBool = AtomicBool::new(false);
+
+pub static WEB_KEY_W_DOWN: AtomicBool = AtomicBool::new(false);
+pub static WEB_KEY_A_DOWN: AtomicBool = AtomicBool::new(false);
+pub static WEB_KEY_S_DOWN: AtomicBool = AtomicBool::new(false);
+pub static WEB_KEY_D_DOWN: AtomicBool = AtomicBool::new(false);
+pub static WEB_KEY_Q_DOWN: AtomicBool = AtomicBool::new(false);
+pub static WEB_KEY_E_DOWN: AtomicBool = AtomicBool::new(false);
+pub static WEB_KEY_SPACE_DOWN: AtomicBool = AtomicBool::new(false);
+
+pub fn check_and_clear_web_undo() -> bool {
+    WEB_UNDO_TRIGGERED.swap(false, Ordering::SeqCst)
+}
+
+pub fn check_and_clear_web_noclip() -> bool {
+    WEB_NOCLIP_TOGGLE_TRIGGERED.swap(false, Ordering::SeqCst)
+}
+
+pub fn check_and_clear_web_save() -> bool {
+    WEB_SAVE_TRIGGERED.swap(false, Ordering::SeqCst)
+}
+
+pub fn check_and_clear_web_duplicate() -> bool {
+    WEB_DUPLICATE_TRIGGERED.swap(false, Ordering::SeqCst)
+}
+
+pub fn check_and_clear_web_tool_v() -> bool {
+    WEB_TOOL_V_TRIGGERED.swap(false, Ordering::SeqCst)
+}
+
+pub fn check_and_clear_web_tool_b() -> bool {
+    WEB_TOOL_B_TRIGGERED.swap(false, Ordering::SeqCst)
+}
+
+pub fn check_and_clear_web_tool_m() -> bool {
+    WEB_TOOL_M_TRIGGERED.swap(false, Ordering::SeqCst)
+}
+
+pub fn is_web_key_w_down() -> bool {
+    WEB_KEY_W_DOWN.load(Ordering::SeqCst)
+}
+
+pub fn is_web_key_a_down() -> bool {
+    WEB_KEY_A_DOWN.load(Ordering::SeqCst)
+}
+
+pub fn is_web_key_s_down() -> bool {
+    WEB_KEY_S_DOWN.load(Ordering::SeqCst)
+}
+
+pub fn is_web_key_d_down() -> bool {
+    WEB_KEY_D_DOWN.load(Ordering::SeqCst)
+}
+
+pub fn is_web_key_q_down() -> bool {
+    WEB_KEY_Q_DOWN.load(Ordering::SeqCst)
+}
+
+pub fn is_web_key_e_down() -> bool {
+    WEB_KEY_E_DOWN.load(Ordering::SeqCst)
+}
+
+pub fn is_web_key_space_down() -> bool {
+    WEB_KEY_SPACE_DOWN.load(Ordering::SeqCst)
+}
+
+/// Checks if browser is running on macOS
+pub fn is_macos_web() -> bool {
+    #[cfg(target_arch = "wasm32")]
+    {
+        if let Some(w) = web_sys::window() {
+            if let Ok(ua) = w.navigator().user_agent() {
+                return ua.contains("Macintosh") || ua.contains("Mac OS X");
+            }
+        }
+    }
+    false
+}
+
+/// Installs low-level DOM `keydown` and `keyup` listeners on `window` to intercept physical keys (like physical `KeyZ` on Russian keyboard layout)
+/// ensuring shortcuts (Ctrl+Z, Z Noclip, WASD flight, Tools) work regardless of the active keyboard layout or browser language.
+#[allow(dead_code)]
+pub fn init_web_keyboard_listener() {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let window = match web_sys::window() {
+            Some(w) => w,
+            None => return,
+        };
+
+        // 1. Keydown listener
+        let keydown_closure = wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::KeyboardEvent)>::new(
+            move |event: web_sys::KeyboardEvent| {
+                // Ignore if active element is an input or textarea
+                if let Some(target) = event.target() {
+                    if let Ok(el) = target.dyn_into::<web_sys::HtmlElement>() {
+                        let tag = el.tag_name().to_uppercase();
+                        if tag == "INPUT" || tag == "TEXTAREA" {
+                            return;
+                        }
+                    }
+                }
+
+                let code = event.code();
+                let ctrl_or_cmd = event.ctrl_key() || event.meta_key();
+
+                if ctrl_or_cmd {
+                    match code.as_str() {
+                        "KeyZ" => {
+                            WEB_UNDO_TRIGGERED.store(true, Ordering::SeqCst);
+                            event.prevent_default();
+                        }
+                        "KeyS" => {
+                            WEB_SAVE_TRIGGERED.store(true, Ordering::SeqCst);
+                            event.prevent_default();
+                        }
+                        "KeyD" => {
+                            WEB_DUPLICATE_TRIGGERED.store(true, Ordering::SeqCst);
+                            event.prevent_default();
+                        }
+                        _ => {}
+                    }
+                } else if !event.alt_key() {
+                    if !event.shift_key() {
+                        match code.as_str() {
+                            "KeyZ" => {
+                                WEB_NOCLIP_TOGGLE_TRIGGERED.store(true, Ordering::SeqCst);
+                            }
+                            "KeyV" => {
+                                WEB_TOOL_V_TRIGGERED.store(true, Ordering::SeqCst);
+                            }
+                            "KeyB" => {
+                                WEB_TOOL_B_TRIGGERED.store(true, Ordering::SeqCst);
+                            }
+                            "KeyM" => {
+                                WEB_TOOL_M_TRIGGERED.store(true, Ordering::SeqCst);
+                            }
+                            _ => {}
+                        }
+                    }
+
+                    // WASD / Flight key tracking
+                    match code.as_str() {
+                        "KeyW" => WEB_KEY_W_DOWN.store(true, Ordering::SeqCst),
+                        "KeyA" => WEB_KEY_A_DOWN.store(true, Ordering::SeqCst),
+                        "KeyS" => WEB_KEY_S_DOWN.store(true, Ordering::SeqCst),
+                        "KeyD" => WEB_KEY_D_DOWN.store(true, Ordering::SeqCst),
+                        "KeyQ" => WEB_KEY_Q_DOWN.store(true, Ordering::SeqCst),
+                        "KeyE" => WEB_KEY_E_DOWN.store(true, Ordering::SeqCst),
+                        "Space" => WEB_KEY_SPACE_DOWN.store(true, Ordering::SeqCst),
+                        _ => {}
+                    }
+                }
+            },
+        );
+
+        let _ = window.add_event_listener_with_callback("keydown", keydown_closure.as_ref().unchecked_ref());
+        keydown_closure.forget();
+
+        // 2. Keyup listener
+        let keyup_closure = wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::KeyboardEvent)>::new(
+            move |event: web_sys::KeyboardEvent| {
+                let code = event.code();
+                match code.as_str() {
+                    "KeyW" => WEB_KEY_W_DOWN.store(false, Ordering::SeqCst),
+                    "KeyA" => WEB_KEY_A_DOWN.store(false, Ordering::SeqCst),
+                    "KeyS" => WEB_KEY_S_DOWN.store(false, Ordering::SeqCst),
+                    "KeyD" => WEB_KEY_D_DOWN.store(false, Ordering::SeqCst),
+                    "KeyQ" => WEB_KEY_Q_DOWN.store(false, Ordering::SeqCst),
+                    "KeyE" => WEB_KEY_E_DOWN.store(false, Ordering::SeqCst),
+                    "Space" => WEB_KEY_SPACE_DOWN.store(false, Ordering::SeqCst),
+                    _ => {}
+                }
+            },
+        );
+
+        let _ = window.add_event_listener_with_callback("keyup", keyup_closure.as_ref().unchecked_ref());
+        keyup_closure.forget();
+    }
 }

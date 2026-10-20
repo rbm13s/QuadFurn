@@ -69,10 +69,10 @@
 
 ## Einführung
 
-**QuadFurn CAD** ist eine schnelle, native Desktop-CAD-Anwendung in Rust für die Konstruktion von Korpus- und Plattenmöbeln aus beschichteten Spanplatten, MDF, HDF und Sperrholz, komplett mit automatischer Stücklistenerstellung und 2D-Guillotinen-Plattenzuschnitt-Optimierung.
+**QuadFurn CAD** ist eine leistungsstarke plattformübergreifende CAD-Anwendung in Rust, verfügbar sowohl als schnelle native Desktop-Anwendung (Windows, Linux, macOS) als auch als installationsfreie WebAssembly (WASM) Online-Version direkt im modernen Webbrowser. Sie wurde für die Konstruktion von Korpus- und Plattenmöbeln aus beschichteten Spanplatten (LDSP), MDF, HDF und Sperrholz entwickelt, komplett mit automatischer Stücklistenerstellung und 2D-Guillotinen-Plattenzuschnitt-Optimierung.
 
 QuadFurn kombiniert die besten Arbeitsabläufe aus drei klassischen Werkzeugen:
-1. **4-Projektionen-Raummodellierung**: Gleichzeitiges Arbeiten in drei synchronisierten 2D-Projektionen (**Draufsicht XY — Grundriss**, **Frontansicht XZ — Aufriss**, **Seitenansicht YZ — Schnitt**) mit Scrollbalken, magnetischem Fangen und einem Echtzeit-**3D-Orbit-/Freiflugfenster (`Z` Noclip)**.
+1. **4-Projektionen-Raummodellierung**: Gleichzeitiges Arbeiten in drei synchronisierten 2D-Projektionen (**Draufsicht XY — Grundriss**, **Frontansicht XZ — Aufriss**, **Seitenansicht YZ — Schnitt**) mit Scrollbalken, magnetischem Fangen, Fenster-Ausgleichstaste (`⊞ Fenster ausgleichen`), intelligentem Dicken-Schutz für Stirnansichten und einem Echtzeit-**3D-Orbit-/Freiflugfenster (`Z` Noclip)**.
 2. **Präzisions-Transformationsleiste**: Sofortige Eingabe von Koordinaten (`X`, `Y`, `Z`), Abmessungen (`L × B × T`) und Drehwinkel (`∠Z`) mit direktem Rechenausdruck (z. B. Eingabe von `600-4` oder `720+18`).
 3. **Plattenzuschnitt & Kantenstärkenabzug**: Automatischer Abzug der PVC/ABS-Kantenstärke von den Fertigmaßen zur Berechnung exakter **Netto-Sägezuschnittmaße**, kombiniert mit einem 2D-Guillotinen-Packer unter Berücksichtigung von Faserrichtung, Sägeschnittbreite und Besäumschnitt.
 
@@ -233,20 +233,21 @@ Im Reiter **Materialien** (`🎨 4. Materialien`):
 
 | Eingabe / Tastenkürzel | Aktion |
 | :--- | :--- |
-| **`V`** | Werkzeug **Auswählen & Verschieben** aktivieren (mit 8 Griffen & Rahmenauswahl) |
+| **`V`** | Werkzeug **Auswählen & Verschieben** aktivieren (8 Griffe bei Frontalansicht & 2 Kanten-Griffe bei Stirnansicht, plus Rahmenauswahl) |
 | **`B`** | Werkzeug **Bauteil per Rahmen erstellen** in 2D-Fenstern |
 | **`M`** | Werkzeug **Messband** in 2D-Fenstern |
 | **`LMB` Ziehen (2D)** | Ausgewählte Bauteile verschieben, Griffe ziehen oder Rahmen aufziehen |
-| **`Shift + LMB` (2D)** | Bauteil zur Mehrfachauswahl hinzufügen/entfernen |
+| **`Shift / Ctrl (Cmd) + LMB` (2D)** | Bauteil zur Mehrfachauswahl hinzufügen/entfernen |
 | **`RMB` / `MMB` Ziehen (2D)** | 2D-Kamera verschieben (Pan) |
 | **`Mausrad` (2D / 3D)** | Kamera zoomen |
 | **`RMB` / `MMB` Ziehen (3D)** | 3D-Kamera um das Modell drehen (Orbit) |
-| **`Z` (über 3D-Fenster)** | **3D-Freiflugmodus (Noclip)** ein-/ausschalten |
-| **`W` `A` `S` `D` / `Leertaste` / `Ctrl`** | Vorwärts/links/rückwärts/rechts/auf/ab im 3D-Flugmodus (`Shift` für Turbo) |
-| **`Ctrl + S`** | Aktuelles Möbelprojekt speichern (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Letzte Aktion im aktiven Tab rückgängig machen (bis zu 40 Schritte) |
-| **`Ctrl + C` / `Ctrl + V`** | Ausgewählte Bauteile kopieren / einfügen (tabübergreifend) |
-| **`Ctrl + D`** | Ausgewählte Bauteile duplizieren |
+| **`Z` (über 3D-Fenster)** | **3D-Freiflugmodus (Noclip)** ein-/ausschalten (tastaturlayout-unabhängig) |
+| **`W` `A` `S` `D` / `Leertaste` / `Ctrl (Cmd)`** | Vorwärts/links/rückwärts/rechts/auf/ab im 3D-Flugmodus (`Shift` für Turbo) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Aktuelles Möbelprojekt speichern (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Letzte Aktion im aktiven Tab rückgängig machen (bis zu 40 Schritte, layout-unabhängig) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Ausgewählte Bauteile in die Zwischenablage kopieren |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Bauteile einfügen (tabübergreifend) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Ausgewählte Bauteile duplizieren |
 | **`Delete` / `Backspace`** | Ausgewählte Bauteile löschen |
 | **`←` `→` `↑` `↓` (2D-Ansichten)** | Ausgewählte Teile um gewählten Rasterschritt verschieben (`Shift` verdoppelt den Schritt) |
 

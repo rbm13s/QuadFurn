@@ -53,6 +53,76 @@ impl DragHandle2D {
     }
 }
 
+/// Classification of how a part appears in a 2D orthogonal projection
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum PartViewMode2D {
+    /// Part is viewed face-on (broad panel face).
+    /// All 8 resize handles (4 corners + 4 edges) are active and resizable.
+    FaceOn,
+    /// Part is viewed edge-on (butt-end) with thickness along the horizontal 2D axis (U).
+    /// Thickness cannot be altered; only vertical handles (ResizeTop, ResizeBottom) are active.
+    EdgeOnHorizontalThickness,
+    /// Part is viewed edge-on (butt-end) with thickness along the vertical 2D axis (V).
+    /// Thickness cannot be altered; only horizontal handles (ResizeLeft, ResizeRight) are active.
+    EdgeOnVerticalThickness,
+}
+
+pub fn part_view_mode_2d(axis: OrthoAxis, part: &PartBlock, thick: f32) -> PartViewMode2D {
+    let mode = match (axis, part.orientation) {
+        (OrthoAxis::TopXY, PartOrientation::HorizontalXY)
+        | (OrthoAxis::FrontXZ, PartOrientation::FrontalXZ)
+        | (OrthoAxis::SideYZ, PartOrientation::VerticalYZ) => PartViewMode2D::FaceOn,
+
+        (OrthoAxis::TopXY, PartOrientation::VerticalYZ)
+        | (OrthoAxis::FrontXZ, PartOrientation::VerticalYZ)
+        | (OrthoAxis::SideYZ, PartOrientation::FrontalXZ) => PartViewMode2D::EdgeOnHorizontalThickness,
+
+        (OrthoAxis::TopXY, PartOrientation::FrontalXZ)
+        | (OrthoAxis::FrontXZ, PartOrientation::HorizontalXY)
+        | (OrthoAxis::SideYZ, PartOrientation::HorizontalXY) => PartViewMode2D::EdgeOnVerticalThickness,
+    };
+
+    if mode != PartViewMode2D::FaceOn {
+        let (min_3d, max_3d) = part.world_aabb(thick);
+        let min_uv = axis.project(min_3d);
+        let max_uv = axis.project(max_3d);
+        let size_uv = (max_uv - min_uv).abs();
+
+        if size_uv.x <= thick * 1.5 && size_uv.y > thick * 1.5 {
+            PartViewMode2D::EdgeOnHorizontalThickness
+        } else if size_uv.y <= thick * 1.5 && size_uv.x > thick * 1.5 {
+            PartViewMode2D::EdgeOnVerticalThickness
+        } else {
+            mode
+        }
+    } else {
+        PartViewMode2D::FaceOn
+    }
+}
+
+pub fn get_allowed_handles_2d(r: Rect, mode: PartViewMode2D) -> Vec<(Pos2, DragHandle2D)> {
+    match mode {
+        PartViewMode2D::FaceOn => vec![
+            (r.left_top(), DragHandle2D::ResizeTopLeft),
+            (Pos2::new(r.center().x, r.top()), DragHandle2D::ResizeTop),
+            (r.right_top(), DragHandle2D::ResizeTopRight),
+            (Pos2::new(r.right(), r.center().y), DragHandle2D::ResizeRight),
+            (r.right_bottom(), DragHandle2D::ResizeBottomRight),
+            (Pos2::new(r.center().x, r.bottom()), DragHandle2D::ResizeBottom),
+            (r.left_bottom(), DragHandle2D::ResizeBottomLeft),
+            (Pos2::new(r.left(), r.center().y), DragHandle2D::ResizeLeft),
+        ],
+        PartViewMode2D::EdgeOnHorizontalThickness => vec![
+            (Pos2::new(r.center().x, r.top()), DragHandle2D::ResizeTop),
+            (Pos2::new(r.center().x, r.bottom()), DragHandle2D::ResizeBottom),
+        ],
+        PartViewMode2D::EdgeOnVerticalThickness => vec![
+            (Pos2::new(r.left(), r.center().y), DragHandle2D::ResizeLeft),
+            (Pos2::new(r.right(), r.center().y), DragHandle2D::ResizeRight),
+        ],
+    }
+}
+
 /// State of active dragging (single or multi-part) in 2D view
 #[derive(Clone, Debug)]
 pub struct ActiveDrag2D {
@@ -375,6 +445,12 @@ impl QuadViewportController {
         self.side_yz.pan_uv_mm = Vec2::new(center.y, center.z);
         self.cam_3d.orbit_target_mm = center;
         self.cam_3d.sync_eye_from_orbit();
+    }
+
+    /// Resets the 4-viewport splitters to exactly 50% / 50% (equal sizes for all 4 panes).
+    pub fn equalize_viewports(&mut self) {
+        self.split_x = 0.5;
+        self.split_y = 0.5;
     }
 
     /// Fits entire model into each of the 4 viewports (3 ortho 2D projections + 3D view)
@@ -1175,7 +1251,7 @@ impl QuadViewportController {
         }
     }
 
-    /// Draws 8 square resize handle markers around the selected part
+    /// Draws resize handle markers around the selected part (all 8 for face-on parts, 2 along length/width for edge-on parts)
     fn draw_selection_handles_2d(
         &self,
         painter: &Painter,
@@ -1193,18 +1269,8 @@ impl QuadViewportController {
         let p_max_scr = vp.world_to_screen(rect, Vec2::new(max_uv.x, min_uv.y));
         let r = Rect::from_min_max(p_min_scr, p_max_scr);
 
-        let handle_pts = [
-            r.left_top(),
-            Pos2::new(r.center().x, r.top()),
-            r.right_top(),
-            Pos2::new(r.right(), r.center().y),
-            r.right_bottom(),
-            Pos2::new(r.center().x, r.bottom()),
-            r.left_bottom(),
-            Pos2::new(r.left(), r.center().y),
-        ];
-
-        for hp in handle_pts {
+        let mode = part_view_mode_2d(vp.axis, part, thick);
+        for (hp, _handle) in get_allowed_handles_2d(r, mode) {
             let hrect = Rect::from_center_size(hp, EguiVec2::splat(7.0));
             painter.rect_filled(hrect, 1.0, Color32::WHITE);
             painter.rect_stroke(hrect, 1.0, Stroke::new(1.2, Color32::from_rgb(20, 20, 20)));
@@ -2116,18 +2182,8 @@ impl QuadViewportController {
         let p_max_scr = vp.world_to_screen(rect, Vec2::new(max_uv.x, min_uv.y));
         let r = Rect::from_min_max(p_min_scr, p_max_scr);
 
-        let candidates = [
-            (r.left_top(), DragHandle2D::ResizeTopLeft),
-            (Pos2::new(r.center().x, r.top()), DragHandle2D::ResizeTop),
-            (r.right_top(), DragHandle2D::ResizeTopRight),
-            (Pos2::new(r.right(), r.center().y), DragHandle2D::ResizeRight),
-            (r.right_bottom(), DragHandle2D::ResizeBottomRight),
-            (Pos2::new(r.center().x, r.bottom()), DragHandle2D::ResizeBottom),
-            (r.left_bottom(), DragHandle2D::ResizeBottomLeft),
-            (Pos2::new(r.left(), r.center().y), DragHandle2D::ResizeLeft),
-        ];
-
-        for (pt, handle) in candidates {
+        let mode = part_view_mode_2d(vp.axis, part, thick);
+        for (pt, handle) in get_allowed_handles_2d(r, mode) {
             if pt.distance(mouse_pos) <= 10.0 {
                 return Some(handle);
             }
@@ -2400,12 +2456,17 @@ impl QuadViewportController {
             || resp.hovered();
 
         if !text_input_busy && (pointer_in_3d || self.cam_3d.noclip_active) {
+            let web_z = crate::web::check_and_clear_web_noclip();
             let pure_z_pressed = ui.input(|i| {
-                i.key_pressed(Key::Z)
+                (i.key_pressed(Key::Z)
+                    || i.events.iter().any(|e| match e {
+                        egui::Event::Text(t) => t == "я" || t == "Я" || t == "z" || t == "Z",
+                        _ => false,
+                    }))
                     && !i.modifiers.ctrl
                     && !i.modifiers.alt
                     && !i.modifiers.command
-            });
+            }) || (web_z && !ui.input(|i| i.modifiers.ctrl || i.modifiers.alt || i.modifiers.command));
             if pure_z_pressed {
                 self.cam_3d.noclip_active = !self.cam_3d.noclip_active;
                 if self.cam_3d.noclip_active {
@@ -2455,22 +2516,22 @@ impl QuadViewportController {
             let right = self.cam_3d.right_dir();
 
             ui.input(|i| {
-                if i.key_down(Key::W) || i.key_down(Key::ArrowUp) {
+                if i.key_down(Key::W) || i.key_down(Key::ArrowUp) || crate::web::is_web_key_w_down() {
                     move_vec += fwd;
                 }
-                if i.key_down(Key::S) || i.key_down(Key::ArrowDown) {
+                if i.key_down(Key::S) || i.key_down(Key::ArrowDown) || crate::web::is_web_key_s_down() {
                     move_vec -= fwd;
                 }
-                if i.key_down(Key::D) || i.key_down(Key::ArrowRight) {
+                if i.key_down(Key::D) || i.key_down(Key::ArrowRight) || crate::web::is_web_key_d_down() {
                     move_vec += right;
                 }
-                if i.key_down(Key::A) || i.key_down(Key::ArrowLeft) {
+                if i.key_down(Key::A) || i.key_down(Key::ArrowLeft) || crate::web::is_web_key_a_down() {
                     move_vec -= right;
                 }
-                if i.key_down(Key::Space) || i.key_down(Key::E) {
+                if i.key_down(Key::Space) || i.key_down(Key::E) || crate::web::is_web_key_space_down() || crate::web::is_web_key_e_down() {
                     move_vec += Vec3::Z;
                 }
-                if i.key_down(Key::Q) || i.modifiers.ctrl {
+                if i.key_down(Key::Q) || i.modifiers.ctrl || crate::web::is_web_key_q_down() {
                     move_vec -= Vec3::Z;
                 }
             });
@@ -3569,6 +3630,60 @@ mod tests {
             false,
         );
         assert_eq!(none, None);
+    }
+
+    #[test]
+    fn test_part_view_mode_2d_allowed_handles() {
+        let mut p = PartBlock {
+            id: 1,
+            name: "Test".to_string(),
+            group_id: None,
+            material_id: 1,
+            orientation: PartOrientation::HorizontalXY,
+            position_mm: Vec3::ZERO,
+            length_mm: 800.0,
+            width_mm: 500.0,
+            yaw_deg: 0.0,
+            grain_fixed: false,
+            grain_along_width: false,
+            edges: PartEdges::default(),
+            visible: true,
+            locked: false,
+            drill_holes: Vec::new(),
+        };
+        let thick = 18.0;
+
+        // 1. HorizontalXY:
+        // TopXY: Face-on -> 8 handles
+        assert_eq!(part_view_mode_2d(OrthoAxis::TopXY, &p, thick), PartViewMode2D::FaceOn);
+        // FrontXZ: Edge-on (vertical thickness Z) -> Only left & right handles
+        assert_eq!(part_view_mode_2d(OrthoAxis::FrontXZ, &p, thick), PartViewMode2D::EdgeOnVerticalThickness);
+        // SideYZ: Edge-on (vertical thickness Z) -> Only left & right handles
+        assert_eq!(part_view_mode_2d(OrthoAxis::SideYZ, &p, thick), PartViewMode2D::EdgeOnVerticalThickness);
+
+        // 2. VerticalYZ:
+        p.orientation = PartOrientation::VerticalYZ;
+        // SideYZ: Face-on -> 8 handles
+        assert_eq!(part_view_mode_2d(OrthoAxis::SideYZ, &p, thick), PartViewMode2D::FaceOn);
+        // TopXY: Edge-on (horizontal thickness X) -> Only top & bottom handles
+        assert_eq!(part_view_mode_2d(OrthoAxis::TopXY, &p, thick), PartViewMode2D::EdgeOnHorizontalThickness);
+        // FrontXZ: Edge-on (horizontal thickness X) -> Only top & bottom handles
+        assert_eq!(part_view_mode_2d(OrthoAxis::FrontXZ, &p, thick), PartViewMode2D::EdgeOnHorizontalThickness);
+
+        // 3. FrontalXZ:
+        p.orientation = PartOrientation::FrontalXZ;
+        // FrontXZ: Face-on -> 8 handles
+        assert_eq!(part_view_mode_2d(OrthoAxis::FrontXZ, &p, thick), PartViewMode2D::FaceOn);
+        // TopXY: Edge-on (vertical thickness Y) -> Only left & right handles
+        assert_eq!(part_view_mode_2d(OrthoAxis::TopXY, &p, thick), PartViewMode2D::EdgeOnVerticalThickness);
+        // SideYZ: Edge-on (horizontal thickness Y) -> Only top & bottom handles
+        assert_eq!(part_view_mode_2d(OrthoAxis::SideYZ, &p, thick), PartViewMode2D::EdgeOnHorizontalThickness);
+
+        // Verify handle counts from get_allowed_handles_2d:
+        let dummy_r = Rect::from_min_size(Pos2::ZERO, EguiVec2::new(100.0, 100.0));
+        assert_eq!(get_allowed_handles_2d(dummy_r, PartViewMode2D::FaceOn).len(), 8);
+        assert_eq!(get_allowed_handles_2d(dummy_r, PartViewMode2D::EdgeOnHorizontalThickness).len(), 2);
+        assert_eq!(get_allowed_handles_2d(dummy_r, PartViewMode2D::EdgeOnVerticalThickness).len(), 2);
     }
 }
 

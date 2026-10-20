@@ -8,7 +8,6 @@ mod snapping;
 mod ui_panels;
 mod viewport;
 mod batch_screenshot;
-#[cfg(target_arch = "wasm32")]
 mod web;
 
 use crate::i18n::AppLanguage;
@@ -882,7 +881,12 @@ impl QuadFurnApp {
         }
 
         // Ctrl+S / Cmd+S -> Quick save current project
-        if ctx.input(|i| (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::S)) {
+        let save_pressed = ctx.input(|i| {
+            let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
+            (i.key_pressed(Key::S) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "ы" || t == "Ы")))
+                && ctrl_cmd
+        }) || crate::web::check_and_clear_web_save();
+        if save_pressed {
             let saved_path =
                 self.documents[self.active_doc_idx].save_interactive(&mut self.status_msg, self.language);
             if let Some(path) = saved_path {
@@ -895,24 +899,32 @@ impl QuadFurnApp {
         let doc = &mut self.documents[self.active_doc_idx];
 
         // Ctrl+Z / Cmd+Z -> Undo in current furniture tab
-        if ctx.input(|i| (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::Z)) {
+        let undo_pressed = ctx.input(|i| {
+            let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
+            (i.key_pressed(Key::Z) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "я" || t == "Я")))
+                && ctrl_cmd
+        }) || crate::web::check_and_clear_web_undo();
+        if undo_pressed {
             if let Some(prev) = doc.undo_stack.pop() {
                 doc.project = prev;
-                self.status_msg = lang
-                    .tr(
-                        "Отменено последнее действие (Ctrl+Z)",
-                        "Last action undone (Ctrl+Z)",
-                    )
-                    .to_string();
+                let is_mac = crate::i18n::is_macos_platform();
+                let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
+                self.status_msg = match lang {
+                    AppLanguage::Ru => format!("Отменено последнее действие ({}+Z)", mod_name),
+                    _ => format!("Last action undone ({}+Z)", mod_name),
+                };
             }
             return;
         }
 
         // Ctrl+C / Cmd+C -> Copy selected part or parts to shared clipboard (to paste into any furniture tab or window)
-        if ctx.input(|i| {
-            ((i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::C))
+        let copy_pressed = ctx.input(|i| {
+            let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
+            ((i.key_pressed(Key::C) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "с" || t == "С")))
+                && ctrl_cmd)
                 || i.events.iter().any(|e| matches!(e, egui::Event::Copy))
-        }) {
+        });
+        if copy_pressed {
             let copied = copy_selected_parts_to_clipboard(
                 &doc.project,
                 doc.selected_part,
@@ -922,26 +934,28 @@ impl QuadFurnApp {
                 if let Ok(json) = serde_json::to_string(&copied) {
                     ctx.copy_text(format!("{}{}", CLIPBOARD_PREFIX, json));
                 }
+                let is_mac = crate::i18n::is_macos_platform();
+                let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
                 if copied.len() == 1 {
                     self.status_msg = match lang {
                         AppLanguage::Ru => format!(
-                            "Деталь «{}» скопирована (Ctrl+C). Переключитесь на нужную вкладку мебели и нажмите Ctrl+V.",
-                            copied[0].part.name
+                            "Деталь «{}» скопирована ({}+C). Переключитесь на нужную вкладку мебели и нажмите {}+V.",
+                            copied[0].part.name, mod_name, mod_name
                         ),
                         _ => format!(
-                            "Part \"{}\" copied (Ctrl+C). Switch to the target furniture tab and press Ctrl+V.",
-                            copied[0].part.name
+                            "Part \"{}\" copied ({}+C). Switch to the target furniture tab and press {}+V.",
+                            copied[0].part.name, mod_name, mod_name
                         ),
                     };
                 } else {
                     self.status_msg = match lang {
                         AppLanguage::Ru => format!(
-                            "Скопировано деталей: {} шт. (Ctrl+C). Переключитесь на нужную вкладку мебели и нажмите Ctrl+V.",
-                            copied.len()
+                            "Скопировано деталей: {} шт. ({}+C). Переключитесь на нужную вкладку мебели и нажмите {}+V.",
+                            copied.len(), mod_name, mod_name
                         ),
                         _ => format!(
-                            "Copied {} parts (Ctrl+C). Switch to the target furniture tab and press Ctrl+V.",
-                            copied.len()
+                            "Copied {} parts ({}+C). Switch to the target furniture tab and press {}+V.",
+                            copied.len(), mod_name, mod_name
                         ),
                     };
                 }
@@ -954,7 +968,10 @@ impl QuadFurnApp {
         let mut paste_requested = false;
         let mut pasted_from_os: Option<Vec<ClipboardPart>> = None;
         ctx.input(|i| {
-            if (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::V) {
+            let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
+            if (i.key_pressed(Key::V) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "м" || t == "М")))
+                && ctrl_cmd
+            {
                 paste_requested = true;
             }
             for ev in &i.events {
@@ -981,28 +998,32 @@ impl QuadFurnApp {
                 let new_ids = paste_parts_into_project(&mut doc.project, &clips);
                 doc.selected_part = new_ids.last().copied();
                 doc.viewport_ctrl.selected_parts = new_ids.clone();
+                let is_mac = crate::i18n::is_macos_platform();
+                let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
                 if new_ids.len() == 1 {
                     self.status_msg = match lang {
                         AppLanguage::Ru => format!(
-                            "Деталь «{}» вставлена во вкладку «{}» (Ctrl+V)",
-                            clips[0].part.name, doc.project.name
+                            "Деталь «{}» вставлена во вкладку «{}» ({}+V)",
+                            clips[0].part.name, doc.project.name, mod_name
                         ),
                         _ => format!(
-                            "Part \"{}\" pasted into tab \"{}\" (Ctrl+V)",
-                            clips[0].part.name, doc.project.name
+                            "Part \"{}\" pasted into tab \"{}\" ({}+V)",
+                            clips[0].part.name, doc.project.name, mod_name
                         ),
                     };
                 } else {
                     self.status_msg = match lang {
                         AppLanguage::Ru => format!(
-                            "Вставлено деталей: {} шт. во вкладку «{}» (Ctrl+V)",
+                            "Вставлено деталей: {} шт. во вкладку «{}» ({}+V)",
                             new_ids.len(),
-                            doc.project.name
+                            doc.project.name,
+                            mod_name
                         ),
                         _ => format!(
-                            "Pasted {} parts into tab \"{}\" (Ctrl+V)",
+                            "Pasted {} parts into tab \"{}\" ({}+V)",
                             new_ids.len(),
-                            doc.project.name
+                            doc.project.name,
+                            mod_name
                         ),
                     };
                 }
@@ -1011,7 +1032,12 @@ impl QuadFurnApp {
         }
 
         // Ctrl+D / Cmd+D -> Duplicate selected part or parts within current tab
-        if ctx.input(|i| (i.modifiers.ctrl || i.modifiers.command) && i.key_pressed(Key::D)) {
+        let dup_pressed = ctx.input(|i| {
+            let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
+            (i.key_pressed(Key::D) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "в" || t == "В")))
+                && ctrl_cmd
+        }) || crate::web::check_and_clear_web_duplicate();
+        if dup_pressed {
             let ids_to_dup: Vec<PartId> = if !doc.viewport_ctrl.selected_parts.is_empty() {
                 doc.viewport_ctrl.selected_parts.clone()
             } else {
@@ -1033,12 +1059,12 @@ impl QuadFurnApp {
                 }
                 doc.selected_part = new_ids.last().copied();
                 doc.viewport_ctrl.selected_parts = new_ids;
-                self.status_msg = lang
-                    .tr(
-                        "Выделенные детали продублированы (Ctrl+D)",
-                        "Selected parts duplicated (Ctrl+D)",
-                    )
-                    .to_string();
+                let is_mac = crate::i18n::is_macos_platform();
+                let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
+                self.status_msg = match lang {
+                    AppLanguage::Ru => format!("Выделенные детали продублированы ({}+D)", mod_name),
+                    _ => format!("Selected parts duplicated ({}+D)", mod_name),
+                };
             }
         }
 
@@ -1061,13 +1087,33 @@ impl QuadFurnApp {
         }
 
         // Tool switching hotkeys (V, B, M — only without Ctrl, Cmd, or Alt modifiers!)
-        if ctx.input(|i| !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt && i.key_pressed(Key::V)) {
+        let tool_v = ctx.input(|i| {
+            let no_mods = !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt;
+            no_mods
+                && (i.key_pressed(Key::V)
+                    || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "м" || t == "М")))
+        }) || crate::web::check_and_clear_web_tool_v();
+        if tool_v {
             doc.viewport_ctrl.tool = EditorTool::SelectAndMove;
         }
-        if ctx.input(|i| !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt && i.key_pressed(Key::B)) {
+
+        let tool_b = ctx.input(|i| {
+            let no_mods = !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt;
+            no_mods
+                && (i.key_pressed(Key::B)
+                    || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "и" || t == "И")))
+        }) || crate::web::check_and_clear_web_tool_b();
+        if tool_b {
             doc.viewport_ctrl.tool = EditorTool::CreateBlock;
         }
-        if ctx.input(|i| !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt && i.key_pressed(Key::M)) {
+
+        let tool_m = ctx.input(|i| {
+            let no_mods = !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt;
+            no_mods
+                && (i.key_pressed(Key::M)
+                    || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "ь" || t == "Ь")))
+        }) || crate::web::check_and_clear_web_tool_m();
+        if tool_m {
             doc.viewport_ctrl.tool = EditorTool::MeasureTape;
         }
     }
@@ -1395,7 +1441,7 @@ impl eframe::App for QuadFurnApp {
                         has_open_docs,
                         egui::Button::new(d.save_current_product),
                     )
-                    .on_hover_text(d.save_current_product_hover)
+                    .on_hover_text(d.save_hover_label())
                     .clicked()
                 {
                     let saved_path = if let Some(doc) = self.documents.get_mut(self.active_doc_idx)
@@ -1428,7 +1474,7 @@ impl eframe::App for QuadFurnApp {
                     .map(|doc_item| !doc_item.undo_stack.is_empty())
                     .unwrap_or(false);
                 if ui
-                    .add_enabled(has_undo, egui::Button::new(d.undo_btn))
+                    .add_enabled(has_undo, egui::Button::new(d.undo_btn_label()))
                     .clicked()
                 {
                     if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
@@ -2587,6 +2633,7 @@ fn main() {
                 canvas,
                 web_options,
                 Box::new(|cc| {
+                    crate::web::init_web_keyboard_listener();
                     configure_fonts(&cc.egui_ctx);
                     egui_extras::install_image_loaders(&cc.egui_ctx);
                     let mut app = QuadFurnApp::default();

@@ -69,10 +69,10 @@
 
 ## Giriş
 
-**QuadFurn CAD**, suntalam, MDF, HDF ve kontrplak gibi levha malzemelerden gövde ve panel mobilya tasarımı yapmak, otomatik parça kesim listesi üretmek ve 2D giyotin panel kesim optimizasyonu sağlamak amacıyla Rust ile geliştirilmiş yerel ve son derece hızlı bir masaüstü CAD uygulamasıdır.
+**QuadFurn CAD**, Rust ile yazılmış, hem hızlı bir yerel masaüstü uygulaması (Windows, Linux, macOS) hem de modern web tarayıcılarında doğrudan çalışan kurulumsuz bir WebAssembly (WASM) çevrimiçi sürümü olarak kullanılabilen yüksek performanslı çok platformlu bir CAD yazılımıdır. Suntalam, MDF, HDF ve kontrplak gibi levha malzemelerden gövde ve panel mobilya tasarımı yapmak, otomatik parça kesim listesi üretmek ve 2D giyotin panel kesim optimizasyonu sağlamak amacıyla geliştirilmiştir.
 
 QuadFurn, üç köklü aracın ergonomisini tek bir kusursuz iş akışında birleştirir:
-1. **4 Görünümlü Mekânsal Modelleme**: Üç senkronize 2D dik projeksiyonda (**Üst XY — Plan**, **Ön XZ — Görünüş**, **Yan YZ — Kesit**) kaydırma çubukları, manyetik kenar yakalama ve eş zamanlı gerçek zamanlı **3D Yörünge / Birinci Şahıs Serbest Uçuş (`Z` Noclip)** ile tasarım.
+1. **4 Görünümlü Mekânsal Modelleme**: Üç senkronize 2D dik projeksiyonda (**Üst XY — Plan**, **Ön XZ — Görünüş**, **Yan YZ — Kesit**) kaydırma çubukları, manyetik kenar yakalama, pencere eşitleme butonu (`⊞ Pencereleri Eşitle`), alın görünümünde akıllı kalınlık koruması ve eş zamanlı gerçek zamanlı **3D Yörünge / Birinci Şahıs Serbest Uçuş (`Z` Noclip)** ile tasarım.
 2. **Hassas Dönüşüm Çubuğu**: Koordinatların (`X`, `Y`, `Z`), parça boyutlarının (`L × W × T`) ve dönüş açısının (`∠Z`) doğrudan metin kutuları içinden matematiksel formüllerle (örn. `600-4` veya `720+18`) anında girilmesi.
 3. **Panel Kesimi ve Otomatik Kenar Bandı Düşümü**: Parça boyutlarından 4 kenardaki PVC/ABS bant kalınlıklarının otomatik düşülerek **net testere ebatlama ölçülerinin** hesaplanması ve ahşap desen yönü, testere bıçağı payı ve kenar tıraşlamalarını gözeten 2D giyotin optimizasyon algoritması.
 
@@ -245,20 +245,21 @@ Programdaki tüm sayısal giriş kutuları matematiksel ifadeleri destekler:
 
 | Kısayol | İşlem |
 | :--- | :--- |
-| **`V`** | **Seç ve Taşı** aracını etkinleştir (8 tutamaç ve kutu seçimiyle) |
+| **`V`** | **Seç ve Taşı** aracını etkinleştir (yüzeyden 8 tutamaç, kesitten 2 kenar tutamacı ve kutu seçimiyle) |
 | **`B`** | 2D görünümlerde **Kutu ile Parça Oluştur** aracını etkinleştir |
 | **`M`** | 2D görünümlerde **Mezura** aracını etkinleştir |
 | **`Sol Fare Tuşu` Sürükleme (2D)** | Parçaları taşıma, tutamaçla boyutlandırma veya boşlukta seçim kutusu açma |
-| **`Shift + Sol Fare Tuşu` (2D)** | Parçayı çoklu seçime ekleme veya seçimden çıkarma |
+| **`Shift / Ctrl (Cmd) + Sol Fare Tuşu` (2D)** | Parçayı çoklu seçime ekleme veya seçimden çıkarma |
 | **`Sağ` / `Orta Tuş` Sürükleme (2D)** | Görünümü kaydırma (2D pan) |
 | **`Fare Tekerleği` (2D / 3D)** | İmlece odaklı yakınlaştırma / uzaklaştırma |
 | **`Sağ` / `Orta Tuş` Sürükleme (3D)** | 3D kamerayı yörüngede döndürme |
 | **`Z` (3D penceresi üzerinde)** | **Birinci Şahıs Uçuş Modunu (Noclip)** aç / kapat |
-| **`W` `A` `S` `D` / `Boşluk` / `Ctrl`** | 3D uçuşta ileri/sola/geri/sağa/yukarı/aşağı hareket (`Shift` hızlandırır) |
-| **`Ctrl + S`** | Mevcut mobilyayı kaydet (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Son işlemi geri al (40 adıma kadar geçmiş) |
-| **`Ctrl + C` / `Ctrl + V`** | Seçili parçaları Kopyala / Yapıştır (sekmeler arasında çalışır) |
-| **`Ctrl + D`** | Seçili parçaları çoğalt |
+| **`W` `A` `S` `D` / `Boşluk` / `Ctrl (Cmd)`** | 3D uçuşta ileri/sola/geri/sağa/yukarı/aşağı hareket (`Shift` hızlandırır) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Mevcut mobilyayı kaydet (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Son işlemi geri al (40 adıma kadar geçmiş) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Seçili parçaları panoya kopyala |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Parçaları yapıştır (sekmeler arasında çalışır) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Seçili parçaları çoğalt |
 | **`Delete` / `Backspace`** | Seçili parçaları sil |
 | **`←` `→` `↑` `↓` (2D görünümler)** | Seçili parçaları seçilen ızgara adımı kadar kaydır (`Shift` ile iki katı) |
 

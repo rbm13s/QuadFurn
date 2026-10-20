@@ -69,10 +69,10 @@
 
 ## Úvod
 
-**QuadFurn CAD** je rychlá, nativní desktopová CAD aplikace napsaná v jazyce Rust, určená pro navrhování korpusového a deskového nábytku z laminované dřevotřísky (LDTD), MDF, HDF a překližky, včetně automatického generování kusovníků a 2D gilotinové optimalizace nářezových plánů velkoplošných materiálů.
+**QuadFurn CAD** je vysoce výkonná multiplatformní CAD aplikace napsaná v jazyce Rust, dostupná jak ve formě rychlé nativní desktopové aplikace (Windows, Linux, macOS), tak jako online verze WebAssembly (WASM) bez instalace přímo v moderních webových prohlížečích. Je určená pro navrhování korpusového a deskového nábytku z laminované dřevotřísky (LDTD), MDF, HDF a překližky, včetně automatického generování kusovníků a 2D gilotinové optimalizace nářezových plánů velkoplošných materiálů.
 
 QuadFurn spojuje to nejlepší z ergonomie tří osvědčených nástrojů:
-1. **4pohledové prostorové modelování**: Současná práce ve třech synchronizovaných 2D pravoúhlých průmětech (**Půdorys XY**, **Nárys XZ**, **Bokorys YZ**) s posuvníky, magnetickým přichytáváním k hranám a interaktivním **3D pohledem (Orbit / Volný let z pohledu první osoby `Z` Noclip)**.
+1. **4pohledové prostorové modelování**: Současná práce ve třech synchronizovaných 2D pravoúhlých průmětech (**Půdorys XY**, **Nárys XZ**, **Bokorys YZ**) s posuvníky, magnetickým přichytáváním k hranám, tlačítkem vyrovnání oken (`⊞ Vyrovnat okna`), inteligentní ochranou tloušťky dílců z hrany a interaktivním **3D pohledem (Orbit / Volný let z pohledu první osoby `Z` Noclip)**.
 2. **Přesný transformační panel**: Okamžité zadávání souřadnic (`X`, `Y`, `Z`), rozměrů dílce (`L × W × T`) a úhlu natočení (`∠Z`) s integrovaným vyhodnocováním matematických výrazů (např. `600-4` nebo `720+18`).
 3. **Nářezové plány a automatický odpočet hran**: Automatický odpočet tloušťky ABS/PVC hran ze všech 4 stran pro zjištění přesných **čistých řezných rozměrů pro formátovací pilu**, propojený s gilotinovým 2D algoritmem respektujícím směr letokruhů dřeva, prořez pilového kotouče a formátovací ořez desek.
 
@@ -245,20 +245,21 @@ V záložce **Materiály** (`🎨 4. Materiály`):
 
 | Klávesová zkratka | Akce |
 | :--- | :--- |
-| **`V`** | Aktivovat nástroj **Vybrat a posunout** (s 8 manipulačními body a rámečkovým výběrem) |
+| **`V`** | Aktivovat nástroj **Vybrat a posunout** (8 manipulačních bodů pro dílce naplocho a 2 pro dílce z hrany, plus rámečkový výběr) |
 | **`B`** | Aktivovat nástroj **Vytvořit dílec rámečkem** ve 2D pohledech |
 | **`M`** | Aktivovat nástroj **Měřicí pásmo** ve 2D pohledech |
 | **Tažení `Levým tlačítkem` (2D)** | Posunout vybrané dílce, upravit rozměr úchopem nebo táhnout výběrový rámeček v prázdnu |
-| **`Shift + Levým tlačítkem` (2D)** | Přidat nebo odebrat dílec z vícenásobného výběru |
+| **`Shift / Ctrl (Cmd) + Levým tlačítkem` (2D)** | Přidat nebo odebrat dílec z vícenásobného výběru |
 | **Tažení `Pravým` / `Prostředním tlačítkem` (2D)** | Posun zobrazení (Panoráma 2D) |
 | **`Kolečko myši` (2D / 3D)** | Přiblížení / oddálení pohledu na pozici kurzoru |
 | **Tažení `Pravým` / `Prostředním tlačítkem` (3D)** | Orbitální rotace 3D kamery |
 | **`Z` (nad 3D oknem)** | Zapnout / vypnout **Režim volného letu (Noclip)** |
-| **`W` `A` `S` `D` / `Mezerník` / `Ctrl`** | Pohyb dopředu/doleva/dozadu/doprava/nahoru/dolů ve 3D letu (`Shift` zrychluje) |
-| **`Ctrl + S`** | Uložit aktuální výrobek (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Vrátit zpět poslední krok (historie až 40 kroků) |
-| **`Ctrl + C` / `Ctrl + V`** | Kopírovat / Vložit vybrané dílce (funguje i mezi různými záložkami) |
-| **`Ctrl + D`** | Duplikovat vybrané dílce |
+| **`W` `A` `S` `D` / `Mezerník` / `Ctrl (Cmd)`** | Pohyb dopředu/doleva/dozadu/doprava/nahoru/dolů ve 3D letu (`Shift` zrychluje) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Uložit aktuální výrobek (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Vrátit zpět poslední krok (historie až 40 kroků) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopírovat vybrané dílce do schránky |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Vložit vybrané dílce (funguje mezi různými záložkami) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplikovat vybrané dílce |
 | **`Delete` / `Backspace`** | Smazat vybrané dílce |
 | **`←` `→` `↑` `↓` (2D pohledy)** | Posun vybraných dílů o krok zvolené mřížky (`Shift` pro dvojnásobný krok) |
 

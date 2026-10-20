@@ -69,10 +69,10 @@
 
 ## Introductie
 
-**QuadFurn CAD** is een snelle, native desktop CAD-toepassing geschreven in Rust, ontworpen voor het construeren van kasten en paneelmeubels van gelamineerd spaanplaat (melamine), MDF, HDF en multiplex, compleet met automatische stuklijstberekening en 2D guillotine-zaagoptimalisatie.
+**QuadFurn CAD** is een krachtige multiplatform CAD-toepassing geschreven in Rust, beschikbaar als snelle native desktop-app (Windows, Linux, macOS) én als installatievrije WebAssembly (WASM) online versie die rechtstreeks in moderne webbrowsers draait. Het is ontwikkeld voor het ontwerpen van kasten en paneelmeubels van gelamineerd spaanplaat (melamine), MDF, HDF en multiplex, compleet met automatische stuklijstgeneratie en 2D zaagplanoptimalisatie (guillotine).
 
 QuadFurn brengt de ergonomie van drie beproefde gereedschappen samen:
-1. **4-weergaven ruimtelijke modellering**: Gelijktijdig werken in drie gesynchroniseerde 2D orthogonale aanzichten (**Bovenaanzicht XY — Plattegrond**, **Vooraanzicht XZ — Aanzicht**, **Zijaanzicht YZ — Doorsnede**) met schuifbalken, magnetische hoek- en randvergrendeling en een realtime **3D Orbit / Eerstepersoons Vlucht (`Z` Noclip)** weergave.
+1. **Ruimtelijke modellering in 4 vensters**: Gelijktijdig ontwerpen in drie gesynchroniseerde 2D-projecties (**Bovenaanzicht XY — Plattegrond**, **Vooraanzicht XZ — Gevel**, **Zijaanzicht YZ — Doorsnede**) met schuifbalken, magnetisch uitlijnen, knop voor het gelijktrekken van vensters (`⊞ Vensters gelijktrekken`), intelligente diktebescherming voor kopse kanten en een realtime **3D Orbit / First-Person Fly (`Z` Noclip)** weergave.
 2. **Precisie-transformatiebalk**: Direct numerieke invoer van coördinaten (`X`, `Y`, `Z`), paneelafmetingen (`L × W × T`) en rotatiehoek (`∠Z`) met ingebouwde rekenmachine in elk invoerveld (bijv. typ `600-4` of `720+18`).
 3. **Plaatzagen en automatische kantenbandaftrek**: Automatische aftrek van de dikte van PVC/ABS-kantenband aan alle 4 de zijden om exacte **netto zaagmaten voor de paneelzaag** te berekenen, gekoppeld aan een 2D guillotine-nestingalgoritme dat rekening houdt met nerfrichting, zaagsnede en voorrandsnede.
 
@@ -245,20 +245,21 @@ In het tabblad **Materialen** (`🎨 4. Materialen`):
 
 | Sneltoets | Actie |
 | :--- | :--- |
-| **`V`** | Activeer gereedschap **Selecteren en verplaatsen** (met 8 formaatgrepen en kaderselectie) |
+| **`V`** | Activeer **Selecteren en verplaatsen** (8 handgrepen bij vooraanzicht & 2 randgrepen bij kopse kant, plus selectiekader) |
 | **`B`** | Activeer gereedschap **Onderdeel maken via kader** in 2D-aanzichten |
 | **`M`** | Activeer **Rolmaat** in 2D-aanzichten |
 | **Slepen `Linkermuisknop` (2D)** | Panelen verplaatsen, afmetingen aanpassen via greep of kaderselectie in de vrije ruimte |
-| **`Shift + Linkermuisknop` (2D)** | Onderdeel toevoegen aan of verwijderen uit meervoudige selectie |
+| **`Shift / Ctrl (Cmd) + Linkermuisknop` (2D)** | Onderdeel toevoegen aan of verwijderen uit meervoudige selectie |
 | **Slepen `Rechter` / `Middelste muisknop` (2D)** | Weergave verschuiven (Pan 2D) |
 | **`Muiswiel` (2D / 3D)** | In- en uitzoomen gecentreerd op de cursor |
 | **Slepen `Rechter` / `Middelste muisknop` (3D)** | Orbitale rotatie van de 3D-camera |
 | **`Z` (boven het 3D-venster)** | In-/uitschakelen van **Eerstepersoons Vrije Vlucht (Noclip)** |
-| **`W` `A` `S` `D` / `Spatie` / `Ctrl`** | Vliegen naar voor/links/achter/rechts/omhoog/omlaag in 3D (`Shift` versnelt) |
-| **`Ctrl + S`** | Huidig meubel opslaan (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Laatste bewerking ongedaan maken (geschiedenis tot 40 stappen) |
-| **`Ctrl + C` / `Ctrl + V`** | Kopiëren / Plakken van geselecteerde onderdelen (werkt tussen tabbladen) |
-| **`Ctrl + D`** | Geselecteerde onderdelen dupliceren |
+| **`W` `A` `S` `D` / `Spatie` / `Ctrl (Cmd)`** | Vliegen naar voor/links/achter/rechts/omhoog/omlaag in 3D (`Shift` versnelt) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Huidig meubel opslaan (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Laatste bewerking ongedaan maken (geschiedenis tot 40 stappen) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Geselecteerde onderdelen naar het klembord kopiëren |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Onderdelen plakken (werkt ook tussen tabbladen) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Geselecteerde onderdelen dupliceren |
 | **`Delete` / `Backspace`** | Geselecteerde onderdelen verwijderen |
 | **`←` `→` `↑` `↓` (2D-weergaven)** | Geselecteerde onderdelen verplaatsen met geselecteerde rasterstap (`Shift` voor dubbele stap) |
 

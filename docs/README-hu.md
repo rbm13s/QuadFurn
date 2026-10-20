@@ -69,10 +69,10 @@
 
 ## Bevezetés
 
-A **QuadFurn CAD** egy villámgyors, natív asztali CAD alkalmazás Rust nyelven megírva, amelyet kifejezetten laminált bútorlapból (faforgácslap, MDF, HDF, rétegelt lemez) készülő korpuszbútorok tervezésére fejlesztettek, automatikus alkatrészjegyzék-készítéssel és 2D guillotine lapszabászati optimalizáló motorral kiegészítve.
+A **QuadFurn CAD** egy nagy teljesítményű, többplatformos CAD alkalmazás Rust nyelven, amely elérhető gyors natív asztali programként (Windows, Linux, macOS) és telepítést nem igénylő WebAssembly (WASM) online verzióként is, közvetlenül a modern böngészőkben. Kifejezetten laminált bútorlapból (faforgácslap, MDF, HDF, rétegelt lemez) készülő korpuszbútorok tervezésére fejlesztették, automatikus alkatrészjegyzék-készítéssel és 2D guillotine lapszabászati optimalizáló motorral kiegészítve.
 
 A QuadFurn három elismert szoftver ergonomikus előnyeit ötvözi egyetlen munkafolyamatban:
-1. **4-nézetes térbeli modellezés**: Egyidejű szerkesztés három szinkronizált 2D merőleges vetületben (**Felülnézet XY — Alaprajz**, **Elölnézet XZ — Homlokzat**, **Oldalnézet YZ — Metszet**) gördítősávokkal, mágneses élillesztéssel és valós idejű **3D Körbeforgatás / Belső nézetes szabad repülés (`Z` Noclip)** ablakkal.
+1. **4-nézetes térbeli modellezés**: Egyidejű szerkesztés három szinkronizált 2D merőleges vetületben (**Felülnézet XY — Alaprajz**, **Elölnézet XZ — Homlokzat**, **Oldalnézet YZ — Metszet**) gördítősávokkal, mágneses élillesztéssel, nézetkiegyenlítő gombbal (`⊞ Ablakok kiegyenlítése`), intelligens vastagságvédelemmel az élből látható alkatrészekhez és valós idejű **3D Körbeforgatás / Belső nézetes szabad repülés (`Z` Noclip)** ablakkal.
 2. **Precíziós transzformációs sáv**: Azonnali koordinátamegadás (`X`, `Y`, `Z`), készméret-állítás (`L × W × T`) és elforgatási szög (`∠Z`) beépített matematikai kifejezésértékelővel minden mezőben (pl. `600-4` vagy `720+18`).
 3. **Lapszabászat és automatikus élzárólevonás**: Az ABS/PVC élzárók vastagságának automatikus levonása mind a 4 oldalon a lapszabász fűrészgéphez szükséges **nettó szabásméret** kiszámításához, kiegészítve egy guillotine-elvű 2D optimalizálóval, amely figyelembe veszi a szálirányt, a fűrészlap vágásvastagságát és a szélezési levágásokat.
 
@@ -245,20 +245,21 @@ Az **Anyagok** lapon (`🎨 4. Anyagok`):
 
 | Billentyű | Művelet |
 | :--- | :--- |
-| **`V`** | **Kijelölés és mozgatás** eszköz (8 fogantyúval és keretes kijelöléssel) |
+| **`V`** | **Kijelölés és mozgatás** eszköz (8 fogantyú lapján és 2 élfogantyú élből nézve, plusz keretes kijelölés) |
 | **`B`** | **Alkatrész rajzolása kerettel** eszköz a 2D nézetekben |
 | **`M`** | **Mérőszalag** eszköz a 2D nézetekben |
 | **Húzás `Bal egérgombbal` (2D)** | Elemek mozgatása, méretezése fogantyúval vagy kijelölő keret üres helyen |
-| **`Shift + Bal egérgomb` (2D)** | Elem hozzáadása vagy elvétele a kijelölésből |
+| **`Shift / Ctrl (Cmd) + Bal egérgomb` (2D)** | Elem hozzáadása vagy elvétele a kijelölésből |
 | **Húzás `Jobb` / `Középső gombbal` (2D)** | Nézet mozgatása (2D pásztázás) |
 | **`Egérgörgő` (2D / 3D)** | Nagyítás / kicsinyítés a mutató pozíciójára |
 | **Húzás `Jobb` / `Középső gombbal` (3D)** | 3D kamera körbeforgatása |
 | **`Z` (a 3D ablak felett)** | **Belső nézetes szabad repülés (Noclip)** ki-/bekapcsolása |
-| **`W` `A` `S` `D` / `Szóköz` / `Ctrl`** | Repülés előre/balra/hátra/jobbra/fel/le a 3D-ben (`Shift` gyorsít) |
-| **`Ctrl + S`** | Aktuális bútor mentése (`.qfurn` / `.json`) |
-| **`Ctrl + Z`** | Utolsó művelet visszavonása (akár 40 lépésig) |
-| **`Ctrl + C` / `Ctrl + V`** | Kijelölt elemek másolása / beillesztése (fülek között is működik) |
-| **`Ctrl + D`** | Kijelölt elemek megkettőzése |
+| **`W` `A` `S` `D` / `Szóköz` / `Ctrl (Cmd)`** | Repülés előre/balra/hátra/jobbra/fel/le a 3D-ben (`Shift` gyorsít) |
+| **`Ctrl + S` / `Cmd (⌘) + S`** | Aktuális bútor mentése (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Utolsó művelet visszavonása (akár 40 lépésig) |
+| **`Ctrl + C` / `Cmd (⌘) + C`** | Kijelölt alkatrészek másolása a vágólapra |
+| **`Ctrl + V` / `Cmd (⌘) + V`** | Alkatrészek beillesztése (fülek között is működik) |
+| **`Ctrl + D` / `Cmd (⌘) + D`** | Kijelölt elemek megkettőzése |
 | **`Delete` / `Backspace`** | Kijelölt elemek törlése |
 | **`←` `→` `↑` `↓` (2D nézetek)** | Kijelölt alkatrészek mozgatása a rácslépésköz szerint (`Shift` a duplázáshoz) |
 
