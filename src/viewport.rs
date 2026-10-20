@@ -203,6 +203,8 @@ pub struct Camera3D {
     pub wireframe_overlay: bool,
     /// Whether to show edge banding markers in 3D
     pub show_edge_banding_3d: bool,
+    /// Whether precise camera Z-order depth sorting is enabled (subdivided per-tile depth sorting)
+    pub z_order: bool,
 }
 
 impl Default for Camera3D {
@@ -217,6 +219,7 @@ impl Default for Camera3D {
             fly_speed_mm_per_sec: 1200.0,
             wireframe_overlay: true,
             show_edge_banding_3d: true,
+            z_order: false,
         };
         cam.sync_eye_from_orbit();
         cam
@@ -2744,8 +2747,11 @@ impl QuadViewportController {
             screen_pts: [Pos2; 4],
             screen_bbox: Rect,
             avg_depth: f32,
+            z_depth: f32,
             min_depth: f32,
             max_depth: f32,
+            min_z: f32,
+            max_z: f32,
             fill_color: Color32,
             stroke_color: Color32,
             is_selected: bool,
@@ -2883,12 +2889,18 @@ impl QuadViewportController {
                     }
                 }
 
-                // Adaptive grid subdivision of large faces (e.g. side panel / shelf / backing),
-                // so T-junctions (shelf meeting middle of an upright) sort correctly per tile!
+                // Adaptive grid subdivision of large faces (e.g. side panel / shelf / backing)
+                // when Z-order is enabled, so T-junctions sort correctly per tile!
+                let is_z_order = self.cam_3d.z_order;
                 let len_u = q0.distance(q1);
                 let len_v = q1.distance(q2);
-                let div_u = 1;
-                let div_v = 1;
+                let (div_u, div_v) = if is_z_order {
+                    let u_divs = ((len_u / 220.0).ceil() as usize).clamp(1, 12);
+                    let v_divs = ((len_v / 220.0).ceil() as usize).clamp(1, 12);
+                    (u_divs, v_divs)
+                } else {
+                    (1, 1)
+                };
 
                 // Compute physical UV scale on this face (so textures on narrow 18 mm edges aren't compressed 40x)
                 // and orient texture U axis strictly along the part grain direction!
@@ -2968,6 +2980,15 @@ impl QuadViewportController {
                         let d3 = eye.distance(w_verts[3]);
                         let min_depth = d0.min(d1).min(d2).min(d3);
                         let max_depth = d0.max(d1).max(d2).max(d3);
+
+                        let fwd = self.cam_3d.forward_dir();
+                        let z0 = (w_verts[0] - eye).dot(fwd);
+                        let z1 = (w_verts[1] - eye).dot(fwd);
+                        let z2 = (w_verts[2] - eye).dot(fwd);
+                        let z3 = (w_verts[3] - eye).dot(fwd);
+                        let z_depth = (sub_center - eye).dot(fwd);
+                        let min_z = z0.min(z1).min(z2).min(z3);
+                        let max_z = z0.max(z1).max(z2).max(z3);
 
                         let outer_edges = [
                             iv == 0,         // edge 0..1 (top along V)
@@ -3051,8 +3072,11 @@ impl QuadViewportController {
                                 Pos2::new(max_sx, max_sy),
                             ),
                             avg_depth: dist_to_cam,
+                            z_depth,
                             min_depth,
                             max_depth,
+                            min_z,
+                            max_z,
                             fill_color: Color32::from_rgb(r, g, b),
                             stroke_color: stroke_col,
                             is_selected: is_sel,
@@ -3067,11 +3091,20 @@ impl QuadViewportController {
         }
 
         // Sort descending by distance to camera first (far to near)
-        faces_to_draw.sort_by(|a, b| {
-            b.avg_depth
-                .partial_cmp(&a.avg_depth)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
+        let is_z_order = self.cam_3d.z_order;
+        if is_z_order {
+            faces_to_draw.sort_by(|a, b| {
+                b.z_depth
+                    .partial_cmp(&a.z_depth)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
+        } else {
+            faces_to_draw.sort_by(|a, b| {
+                b.avg_depth
+                    .partial_cmp(&a.avg_depth)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
+        }
 
         // Refine order using Topological Depth Sorting:
         // Detects exact 2D screen overlap between quad faces, casts ray through overlap point,
@@ -3097,15 +3130,28 @@ impl QuadViewportController {
                     }
 
                     // Test 2: If depth ranges do not overlap, the one strictly farther must be drawn first
-                    if fa.min_depth >= fb.max_depth + 0.1 {
-                        adj[i].push(j);
-                        in_degree[j] += 1;
-                        continue;
-                    }
-                    if fb.min_depth >= fa.max_depth + 0.1 {
-                        adj[j].push(i);
-                        in_degree[i] += 1;
-                        continue;
+                    if is_z_order {
+                        if fa.min_z >= fb.max_z + 0.1 {
+                            adj[i].push(j);
+                            in_degree[j] += 1;
+                            continue;
+                        }
+                        if fb.min_z >= fa.max_z + 0.1 {
+                            adj[j].push(i);
+                            in_degree[i] += 1;
+                            continue;
+                        }
+                    } else {
+                        if fa.min_depth >= fb.max_depth + 0.1 {
+                            adj[i].push(j);
+                            in_degree[j] += 1;
+                            continue;
+                        }
+                        if fb.min_depth >= fa.max_depth + 0.1 {
+                            adj[j].push(i);
+                            in_degree[i] += 1;
+                            continue;
+                        }
                     }
 
                     // Detailed test 3: Find point in 2D quad overlap and test ray depths
@@ -3129,7 +3175,7 @@ impl QuadViewportController {
                 }
             }
 
-            // Kahn's algorithm with priority queue ordered by descending avg_depth (farthest first)
+            // Kahn's algorithm with priority queue ordered by descending depth (farthest first)
             use std::collections::BinaryHeap;
             #[derive(PartialEq)]
             struct HeapItem {
@@ -3148,11 +3194,19 @@ impl QuadViewportController {
                 }
             }
 
+            let get_depth = |idx: usize| -> f32 {
+                if is_z_order {
+                    faces_to_draw[idx].z_depth
+                } else {
+                    faces_to_draw[idx].avg_depth
+                }
+            };
+
             let mut heap = BinaryHeap::new();
             for (idx, &deg) in in_degree.iter().enumerate() {
                 if deg == 0 {
                     heap.push(HeapItem {
-                        depth: faces_to_draw[idx].avg_depth,
+                        depth: get_depth(idx),
                         idx,
                     });
                 }
@@ -3174,7 +3228,7 @@ impl QuadViewportController {
                             in_degree[v] -= 1;
                             if in_degree[v] == 0 && !visited[v] {
                                 heap.push(HeapItem {
-                                    depth: faces_to_draw[v].avg_depth,
+                                    depth: get_depth(v),
                                     idx: v,
                                 });
                             }
@@ -3186,8 +3240,9 @@ impl QuadViewportController {
                     let mut best_idx = None;
                     let mut best_depth = f32::MIN;
                     for (idx, &vis) in visited.iter().enumerate() {
-                        if !vis && faces_to_draw[idx].avg_depth > best_depth {
-                            best_depth = faces_to_draw[idx].avg_depth;
+                        let d = get_depth(idx);
+                        if !vis && d > best_depth {
+                            best_depth = d;
                             best_idx = Some(idx);
                         }
                     }
@@ -3394,6 +3449,84 @@ impl QuadViewportController {
                 MaximizedPane::Perspective3D
             };
         }
+
+        // Bottom-right "Z-order" toggle checkbox
+        let zorder_rect = Rect::from_min_size(
+            Pos2::new(rect.right() - 86.0, rect.bottom() - 28.0),
+            EguiVec2::new(80.0, 22.0),
+        );
+        let z_resp = ui.interact(zorder_rect, ui.id().with("z_order_toggle_3d"), Sense::click());
+        if z_resp.clicked() {
+            self.cam_3d.z_order = !self.cam_3d.z_order;
+        }
+        let z_hovered = z_resp.hovered();
+        painter.rect_filled(
+            zorder_rect,
+            4.0,
+            if z_hovered {
+                Color32::from_rgb(50, 65, 85)
+            } else {
+                Color32::from_rgba_unmultiplied(28, 34, 42, 220)
+            },
+        );
+        painter.rect_stroke(
+            zorder_rect,
+            4.0,
+            Stroke::new(
+                1.0,
+                if self.cam_3d.z_order {
+                    Color32::from_rgb(80, 170, 255)
+                } else {
+                    Color32::from_gray(60)
+                },
+            ),
+        );
+        let box_size = 12.0;
+        let box_rect = Rect::from_min_size(
+            Pos2::new(zorder_rect.left() + 6.0, zorder_rect.center().y - box_size * 0.5),
+            EguiVec2::new(box_size, box_size),
+        );
+        painter.rect_filled(
+            box_rect,
+            2.0,
+            if self.cam_3d.z_order {
+                Color32::from_rgb(60, 130, 246)
+            } else {
+                Color32::from_gray(40)
+            },
+        );
+        painter.rect_stroke(box_rect, 2.0, Stroke::new(1.0, Color32::from_gray(120)));
+        if self.cam_3d.z_order {
+            painter.line_segment(
+                [
+                    Pos2::new(box_rect.left() + 2.5, box_rect.center().y),
+                    Pos2::new(box_rect.center().x - 0.5, box_rect.bottom() - 3.0),
+                ],
+                Stroke::new(1.5, Color32::WHITE),
+            );
+            painter.line_segment(
+                [
+                    Pos2::new(box_rect.center().x - 0.5, box_rect.bottom() - 3.0),
+                    Pos2::new(box_rect.right() - 2.5, box_rect.top() + 3.0),
+                ],
+                Stroke::new(1.5, Color32::WHITE),
+            );
+        }
+        painter.text(
+            Pos2::new(box_rect.right() + 6.0, zorder_rect.center().y),
+            egui::Align2::LEFT_CENTER,
+            "Z-order",
+            FontId::proportional(11.0),
+            if self.cam_3d.z_order {
+                Color32::WHITE
+            } else {
+                Color32::from_gray(200)
+            },
+        );
+        z_resp.on_hover_text(self.lang.tr(
+            "Включить точную Z-сортировку граней (разбиение панелей и учет глубины)",
+            "Enable precise Z-order face sorting (panel subdivision & depth testing)",
+        ));
     }
 
     /// Renders a textured 3D quadrilateral with perspective-correct 3D tessellation and symmetric center X-split.
@@ -3623,14 +3756,15 @@ fn line_segment_intersection_2d(p1: Pos2, p2: Pos2, q1: Pos2, q2: Pos2) -> Optio
 }
 
 fn find_point_in_quad_intersection(quad_a: &[Pos2; 4], quad_b: &[Pos2; 4]) -> Option<Pos2> {
+    let mut pts = Vec::with_capacity(8);
     for &pa in quad_a {
         if point_in_quad(pa, quad_b) {
-            return Some(pa);
+            pts.push(pa);
         }
     }
     for &pb in quad_b {
         if point_in_quad(pb, quad_a) {
-            return Some(pb);
+            pts.push(pb);
         }
     }
     for i in 0..4 {
@@ -3640,11 +3774,20 @@ fn find_point_in_quad_intersection(quad_a: &[Pos2; 4], quad_b: &[Pos2; 4]) -> Op
             let b1 = quad_b[j];
             let b2 = quad_b[(j + 1) % 4];
             if let Some(inter) = line_segment_intersection_2d(a1, a2, b1, b2) {
-                return Some(inter);
+                pts.push(inter);
             }
         }
     }
-    None
+    if pts.is_empty() {
+        return None;
+    }
+    let mut sum_x = 0.0;
+    let mut sum_y = 0.0;
+    for p in &pts {
+        sum_x += p.x;
+        sum_y += p.y;
+    }
+    Some(Pos2::new(sum_x / pts.len() as f32, sum_y / pts.len() as f32))
 }
 
 fn ray_from_screen_point(scr_pt: Pos2, rect: Rect, inv_vp: &Mat4) -> Option<Vec3> {
@@ -4008,6 +4151,25 @@ mod tests {
 
         // Neither stroke extends past x = 782.0 -> zero overlap!
         assert!(outer_right_a <= outer_left_b);
+    }
+
+    #[test]
+    fn test_z_order_camera_view_depth_ordering() {
+        // Camera looking at left side of cabinet from above (negative X looking towards +X)
+        let eye = Vec3::new(-1200.0, -200.0, 2600.0);
+        let target = Vec3::new(300.0, 275.0, 2000.0);
+        let fwd = (target - eye).normalize();
+
+        // Upright panel top tile at x = 9.0 (between x=0 and x=18)
+        let upright_tile_center = Vec3::new(9.0, 275.0, 2535.0);
+        // Shelf center at x = 300.0 (between x=18 and x=582)
+        let shelf_center = Vec3::new(300.0, 275.0, 2661.0);
+
+        let z_upright = (upright_tile_center - eye).dot(fwd);
+        let z_shelf = (shelf_center - eye).dot(fwd);
+
+        // Upright is closer along camera forward view direction than the shelf behind it
+        assert!(z_upright < z_shelf, "Upright must have smaller view depth than shelf: {} < {}", z_upright, z_shelf);
     }
 }
 

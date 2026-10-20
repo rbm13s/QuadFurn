@@ -63,6 +63,8 @@ pub struct AppSettings {
     pub language: AppLanguage,
     #[serde(default)]
     pub recent_projects: Vec<std::path::PathBuf>,
+    #[serde(default)]
+    pub z_order: bool,
 }
 
 impl Default for AppSettings {
@@ -71,6 +73,7 @@ impl Default for AppSettings {
             theme_choice: ThemeChoice::Dark,
             language: AppLanguage::detect_system_or_en(),
             recent_projects: Vec::new(),
+            z_order: false,
         }
     }
 }
@@ -434,6 +437,7 @@ pub struct QuadFurnApp {
     pub batch_frame_delay: usize,
     pub batch_startup_delay: usize,
     pub force_open_lang_menu: bool,
+    pub z_order: bool,
 }
 
 impl Default for QuadFurnApp {
@@ -472,6 +476,7 @@ impl Default for QuadFurnApp {
             batch_frame_delay: 0,
             batch_startup_delay: 0,
             force_open_lang_menu: false,
+            z_order: settings.z_order,
         }
     }
 }
@@ -490,6 +495,7 @@ impl QuadFurnApp {
             theme_choice: self.theme_choice,
             language: self.language,
             recent_projects: self.recent_projects.clone(),
+            z_order: self.z_order,
         };
         cfg.save()
     }
@@ -508,6 +514,7 @@ impl QuadFurnApp {
             Ok(txt) => match serde_json::from_str::<Project>(&txt) {
                 Ok(proj) => {
                     let mut new_doc = FurnitureDocument::new(proj);
+                    new_doc.viewport_ctrl.cam_3d.z_order = self.z_order;
                     new_doc.mark_saved(Some(path.to_path_buf()));
                     new_doc.load_project_textures(ctx, Some(path), self.language);
                     self.documents.push(new_doc);
@@ -2241,6 +2248,11 @@ impl eframe::App for QuadFurnApp {
                 self.render_start_page(ctx, ui);
             });
             return;
+        }
+
+        if self.documents[self.active_doc_idx].viewport_ctrl.cam_3d.z_order != self.z_order {
+            self.z_order = self.documents[self.active_doc_idx].viewport_ctrl.cam_3d.z_order;
+            let _ = self.save_settings();
         }
 
         let doc = &mut self.documents[self.active_doc_idx];
