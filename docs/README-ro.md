@@ -276,7 +276,7 @@ Fiecare versiune generează automat pachete executabile prin [GitHub Actions](ht
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versiune>_amd64.deb` — pachet oficial pentru Debian/Ubuntu (instalează executabilul, intrarea în meniu și pictogramele de sistem):
     ```bash
-    sudo apt install ./quadfurn_0.2.3_amd64.deb
+    sudo apt install ./quadfurn_0.2.4_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — arhivă portabilă pentru Linux.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — aplicație nativă `QuadFurn.app` cu pictogramă Retina.

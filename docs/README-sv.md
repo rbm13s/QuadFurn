@@ -276,7 +276,7 @@ Varje ny utgåva bygger automatiskt färdiga paket via [GitHub Actions](https://
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — officiellt installationspaket för Debian/Ubuntu (installerar binärfil, menyval och systemikoner):
     ```bash
-    sudo apt install ./quadfurn_0.2.3_amd64.deb
+    sudo apt install ./quadfurn_0.2.4_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portabelt Linux-arkiv.
 - **macOS (`Universellt: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — infödd `QuadFurn.app` med Retina-ikon.

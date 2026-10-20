@@ -276,7 +276,7 @@ QuadFurn 深度融合了三款经典工业设计软件的人机工程学优势�
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**：
   - `quadfurn_<版本号>_amd64.deb` — Debian/Ubuntu 官方安装包（自动配置系统二进制命令、启动菜单项以及高分辨率图标）：
     ```bash
-    sudo apt install ./quadfurn_0.2.3_amd64.deb
+    sudo apt install ./quadfurn_0.2.4_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — 绿色解压即用版 Linux 压缩包。
 - **macOS (`Universal 通用架构：Apple Silicon M1–M4 + Intel x86_64`)**：`QuadFurn-macos-universal.zip` — 原生封装的 `QuadFurn.app`，带 Retina `.icns` 矢量图标。
