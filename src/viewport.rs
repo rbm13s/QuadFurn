@@ -3931,8 +3931,8 @@ mod tests {
     }
 
     #[test]
-    fn test_shift_drag_constraint_photoshop() {
-        // Photoshop behavior: major displacement preserves axis, minor displacement is zeroed out
+    fn test_shift_drag_axis_constraint() {
+        // Shift axis constraint: major displacement preserves movement axis, minor displacement is zeroed out
         let constrain = |mut delta: Vec2, shift_held: bool| -> Vec2 {
             if shift_held {
                 if delta.x.abs() >= delta.y.abs() {
