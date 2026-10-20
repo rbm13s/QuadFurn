@@ -1146,10 +1146,16 @@ impl QuadViewportController {
         }
 
         painter.rect_filled(part_rect, 0.0, fill_color);
+        let stroke_w = if is_selected { 1.8 } else { 1.0 };
+        let stroke_rect = if part_rect.width() > stroke_w && part_rect.height() > stroke_w {
+            part_rect.shrink(stroke_w * 0.5)
+        } else {
+            part_rect
+        };
         painter.rect_stroke(
-            part_rect,
+            stroke_rect,
             0.0,
-            Stroke::new(if is_selected { 2.0 } else { 1.2 }, stroke_color),
+            Stroke::new(stroke_w, stroke_color),
         );
 
         // Display edge banding on part faces in 2D projections
@@ -1194,23 +1200,32 @@ impl QuadViewportController {
             Some(Stroke::new(w, c))
         };
 
-        // Map part sides (L1=Front/Bottom, L2=Back/Top, W1=Left/Bottom, W2=Right/Top) to the screen rectangle
+        // Map part sides (L1=Front/Bottom, L2=Back/Top, W1=Left/Bottom, W2=Right/Top) to the screen rectangle,
+        // insetting edge banding lines inside part_rect so they never bleed into adjacent parts.
         match (axis, part.orientation) {
             (OrthoAxis::TopXY, PartOrientation::HorizontalXY) => {
                 // Shelf in XY plan: Length along X, Width along Y.
                 // L1 = front face (top of screen +Y -> top), L2 = rear face (bottom of screen -Y -> bottom)
                 // W1 = left edge (left), W2 = right edge (right)
                 if let Some(s) = edge_stroke(part.edges.l1) {
-                    painter.line_segment([part_rect.left_top(), part_rect.right_top()], s);
+                    let inset = (s.width * 0.5).min(part_rect.height() * 0.5);
+                    let y = part_rect.top() + inset;
+                    painter.line_segment([Pos2::new(part_rect.left(), y), Pos2::new(part_rect.right(), y)], s);
                 }
                 if let Some(s) = edge_stroke(part.edges.l2) {
-                    painter.line_segment([part_rect.left_bottom(), part_rect.right_bottom()], s);
+                    let inset = (s.width * 0.5).min(part_rect.height() * 0.5);
+                    let y = part_rect.bottom() - inset;
+                    painter.line_segment([Pos2::new(part_rect.left(), y), Pos2::new(part_rect.right(), y)], s);
                 }
                 if let Some(s) = edge_stroke(part.edges.w1) {
-                    painter.line_segment([part_rect.left_top(), part_rect.left_bottom()], s);
+                    let inset = (s.width * 0.5).min(part_rect.width() * 0.5);
+                    let x = part_rect.left() + inset;
+                    painter.line_segment([Pos2::new(x, part_rect.top()), Pos2::new(x, part_rect.bottom())], s);
                 }
                 if let Some(s) = edge_stroke(part.edges.w2) {
-                    painter.line_segment([part_rect.right_top(), part_rect.right_bottom()], s);
+                    let inset = (s.width * 0.5).min(part_rect.width() * 0.5);
+                    let x = part_rect.right() - inset;
+                    painter.line_segment([Pos2::new(x, part_rect.top()), Pos2::new(x, part_rect.bottom())], s);
                 }
             }
             (OrthoAxis::SideYZ, PartOrientation::VerticalYZ) => {
@@ -1218,16 +1233,24 @@ impl QuadViewportController {
                 // L1 = front vertical face (+Y -> right), L2 = rear vertical face (-Y -> left)
                 // W1 = bottom edge (bottom), W2 = top edge (top)
                 if let Some(s) = edge_stroke(part.edges.l1) {
-                    painter.line_segment([part_rect.right_top(), part_rect.right_bottom()], s);
+                    let inset = (s.width * 0.5).min(part_rect.width() * 0.5);
+                    let x = part_rect.right() - inset;
+                    painter.line_segment([Pos2::new(x, part_rect.top()), Pos2::new(x, part_rect.bottom())], s);
                 }
                 if let Some(s) = edge_stroke(part.edges.l2) {
-                    painter.line_segment([part_rect.left_top(), part_rect.left_bottom()], s);
+                    let inset = (s.width * 0.5).min(part_rect.width() * 0.5);
+                    let x = part_rect.left() + inset;
+                    painter.line_segment([Pos2::new(x, part_rect.top()), Pos2::new(x, part_rect.bottom())], s);
                 }
                 if let Some(s) = edge_stroke(part.edges.w1) {
-                    painter.line_segment([part_rect.left_bottom(), part_rect.right_bottom()], s);
+                    let inset = (s.width * 0.5).min(part_rect.height() * 0.5);
+                    let y = part_rect.bottom() - inset;
+                    painter.line_segment([Pos2::new(part_rect.left(), y), Pos2::new(part_rect.right(), y)], s);
                 }
                 if let Some(s) = edge_stroke(part.edges.w2) {
-                    painter.line_segment([part_rect.left_top(), part_rect.right_top()], s);
+                    let inset = (s.width * 0.5).min(part_rect.height() * 0.5);
+                    let y = part_rect.top() + inset;
+                    painter.line_segment([Pos2::new(part_rect.left(), y), Pos2::new(part_rect.right(), y)], s);
                 }
             }
             (OrthoAxis::FrontXZ, PartOrientation::FrontalXZ) => {
@@ -1235,16 +1258,24 @@ impl QuadViewportController {
                 // L1 = left vertical face, L2 = right vertical face
                 // W1 = bottom edge, W2 = top edge
                 if let Some(s) = edge_stroke(part.edges.l1) {
-                    painter.line_segment([part_rect.left_top(), part_rect.left_bottom()], s);
+                    let inset = (s.width * 0.5).min(part_rect.width() * 0.5);
+                    let x = part_rect.left() + inset;
+                    painter.line_segment([Pos2::new(x, part_rect.top()), Pos2::new(x, part_rect.bottom())], s);
                 }
                 if let Some(s) = edge_stroke(part.edges.l2) {
-                    painter.line_segment([part_rect.right_top(), part_rect.right_bottom()], s);
+                    let inset = (s.width * 0.5).min(part_rect.width() * 0.5);
+                    let x = part_rect.right() - inset;
+                    painter.line_segment([Pos2::new(x, part_rect.top()), Pos2::new(x, part_rect.bottom())], s);
                 }
                 if let Some(s) = edge_stroke(part.edges.w1) {
-                    painter.line_segment([part_rect.left_bottom(), part_rect.right_bottom()], s);
+                    let inset = (s.width * 0.5).min(part_rect.height() * 0.5);
+                    let y = part_rect.bottom() - inset;
+                    painter.line_segment([Pos2::new(part_rect.left(), y), Pos2::new(part_rect.right(), y)], s);
                 }
                 if let Some(s) = edge_stroke(part.edges.w2) {
-                    painter.line_segment([part_rect.left_top(), part_rect.right_top()], s);
+                    let inset = (s.width * 0.5).min(part_rect.height() * 0.5);
+                    let y = part_rect.top() + inset;
+                    painter.line_segment([Pos2::new(part_rect.left(), y), Pos2::new(part_rect.right(), y)], s);
                 }
             }
             _ => {}
@@ -1341,12 +1372,14 @@ impl QuadViewportController {
                     if ax == vp.axis {
                         let mut uv = vp.screen_to_world(rect, mp);
                         let (u_cands, v_cands) = collect_snap_candidates_2d(project, vp.axis, None);
-                        let snap_thresh = 10.0 / vp.zoom_px_per_mm;
+                        let snap_thresh = 20.0 / vp.zoom_px_per_mm;
+                        let ctrl_cmd_held = ui.input(|i| i.modifiers.ctrl || i.modifiers.command);
+                        let edge_snap = self.edge_snap_enabled && !ctrl_cmd_held;
                         uv.x = snap_1d_edge(
                             uv.x,
                             &u_cands,
                             snap_thresh,
-                            self.edge_snap_enabled,
+                            edge_snap,
                             self.grid_snap_enabled,
                             self.grid_step_mm,
                         )
@@ -1355,7 +1388,7 @@ impl QuadViewportController {
                             uv.y,
                             &v_cands,
                             snap_thresh,
-                            self.edge_snap_enabled,
+                            edge_snap,
                             self.grid_snap_enabled,
                             self.grid_step_mm,
                         )
@@ -1394,12 +1427,14 @@ impl QuadViewportController {
                 if let Some(mp) = mouse_pos {
                     let mut uv = vp.screen_to_world(rect, mp);
                     let (u_cands, v_cands) = collect_snap_candidates_2d(project, vp.axis, None);
-                    let snap_thresh = 10.0 / vp.zoom_px_per_mm;
+                    let snap_thresh = 20.0 / vp.zoom_px_per_mm;
+                    let ctrl_cmd_held = ui.input(|i| i.modifiers.ctrl || i.modifiers.command);
+                    let edge_snap = self.edge_snap_enabled && !ctrl_cmd_held;
                     uv.x = snap_1d_edge(
                         uv.x,
                         &u_cands,
                         snap_thresh,
-                        self.edge_snap_enabled,
+                        edge_snap,
                         self.grid_snap_enabled,
                         self.grid_step_mm,
                     )
@@ -1408,7 +1443,7 @@ impl QuadViewportController {
                         uv.y,
                         &v_cands,
                         snap_thresh,
-                        self.edge_snap_enabled,
+                        edge_snap,
                         self.grid_snap_enabled,
                         self.grid_step_mm,
                     )
@@ -1422,12 +1457,14 @@ impl QuadViewportController {
                     if ax == vp.axis {
                         let mut uv = vp.screen_to_world(rect, mp);
                         let (u_cands, v_cands) = collect_snap_candidates_2d(project, vp.axis, None);
-                        let snap_thresh = 10.0 / vp.zoom_px_per_mm;
+                        let snap_thresh = 20.0 / vp.zoom_px_per_mm;
+                        let ctrl_cmd_held = ui.input(|i| i.modifiers.ctrl || i.modifiers.command);
+                        let edge_snap = self.edge_snap_enabled && !ctrl_cmd_held;
                         uv.x = snap_1d_edge(
                             uv.x,
                             &u_cands,
                             snap_thresh,
-                            self.edge_snap_enabled,
+                            edge_snap,
                             self.grid_snap_enabled,
                             self.grid_step_mm,
                         )
@@ -1436,7 +1473,7 @@ impl QuadViewportController {
                             uv.y,
                             &v_cands,
                             snap_thresh,
-                            self.edge_snap_enabled,
+                            edge_snap,
                             self.grid_snap_enabled,
                             self.grid_step_mm,
                         )
@@ -1765,7 +1802,7 @@ impl QuadViewportController {
             if let (Some(mp), Some(drag)) = (mouse_pos, self.active_drag.as_mut()) {
                 if drag.axis == vp.axis {
                     let cur_uv = vp.screen_to_world(rect, mp);
-                    let delta_uv = cur_uv - drag.start_mouse_uv;
+                    let mut delta_uv = cur_uv - drag.start_mouse_uv;
                     let exclude_ids: Vec<PartId> = if drag.group_orig_positions.len() > 1 {
                         drag.group_orig_positions.iter().map(|(id, _)| *id).collect()
                     } else {
@@ -1773,7 +1810,25 @@ impl QuadViewportController {
                     };
                     let (u_cands, v_cands) =
                         collect_snap_candidates_2d_excluding(project, vp.axis, &exclude_ids);
-                    let snap_thresh = 10.0 / vp.zoom_px_per_mm;
+                    let snap_thresh = 20.0 / vp.zoom_px_per_mm;
+
+                    let shift_held = ui.input(|i| i.modifiers.shift);
+                    let ctrl_cmd_held = ui.input(|i| i.modifiers.ctrl || i.modifiers.command);
+                    let alt_held = ui.input(|i| i.modifiers.alt);
+                    let edge_snap = self.edge_snap_enabled && !ctrl_cmd_held;
+
+                    if drag.handle == DragHandle2D::MoveWholeBlock {
+                        if alt_held {
+                            ui.ctx().set_cursor_icon(egui::CursorIcon::Copy);
+                        }
+                        if shift_held {
+                            if delta_uv.x.abs() >= delta_uv.y.abs() {
+                                delta_uv.y = 0.0;
+                            } else {
+                                delta_uv.x = 0.0;
+                            }
+                        }
+                    }
 
                     drag.active_guides_u.clear();
                     drag.active_guides_v.clear();
@@ -1790,35 +1845,73 @@ impl QuadViewportController {
                             let target_min_u = orig_min_uv.x + delta_uv.x;
                             let target_min_v = orig_min_uv.y + delta_uv.y;
 
-                            let su = snap_interval_move(
-                                target_min_u,
-                                orig_size_uv.x,
-                                &u_cands,
-                                snap_thresh,
-                                self.edge_snap_enabled,
-                                self.grid_snap_enabled,
-                                self.grid_step_mm,
-                            );
-                            let sv = snap_interval_move(
-                                target_min_v,
-                                orig_size_uv.y,
-                                &v_cands,
-                                snap_thresh,
-                                self.edge_snap_enabled,
-                                self.grid_snap_enabled,
-                                self.grid_step_mm,
-                            );
+                            if shift_held && delta_uv.y == 0.0 && delta_uv.x != 0.0 {
+                                // Locked to horizontal axis: snap U only, V stays at orig_min_uv.y
+                                let su = snap_interval_move(
+                                    target_min_u,
+                                    orig_size_uv.x,
+                                    &u_cands,
+                                    snap_thresh,
+                                    edge_snap,
+                                    self.grid_snap_enabled,
+                                    self.grid_step_mm,
+                                );
+                                new_min_uv.x = su.snapped_pos;
+                                new_max_uv.x = su.snapped_pos + orig_size_uv.x;
+                                new_min_uv.y = orig_min_uv.y;
+                                new_max_uv.y = orig_max_uv.y;
+                                if let Some(gu) = su.guide_line_pos {
+                                    drag.active_guides_u.push(gu);
+                                }
+                            } else if shift_held && delta_uv.x == 0.0 && delta_uv.y != 0.0 {
+                                // Locked to vertical axis: snap V only, U stays at orig_min_uv.x
+                                let sv = snap_interval_move(
+                                    target_min_v,
+                                    orig_size_uv.y,
+                                    &v_cands,
+                                    snap_thresh,
+                                    edge_snap,
+                                    self.grid_snap_enabled,
+                                    self.grid_step_mm,
+                                );
+                                new_min_uv.x = orig_min_uv.x;
+                                new_max_uv.x = orig_max_uv.x;
+                                new_min_uv.y = sv.snapped_pos;
+                                new_max_uv.y = sv.snapped_pos + orig_size_uv.y;
+                                if let Some(gv) = sv.guide_line_pos {
+                                    drag.active_guides_v.push(gv);
+                                }
+                            } else {
+                                let su = snap_interval_move(
+                                    target_min_u,
+                                    orig_size_uv.x,
+                                    &u_cands,
+                                    snap_thresh,
+                                    edge_snap,
+                                    self.grid_snap_enabled,
+                                    self.grid_step_mm,
+                                );
+                                let sv = snap_interval_move(
+                                    target_min_v,
+                                    orig_size_uv.y,
+                                    &v_cands,
+                                    snap_thresh,
+                                    edge_snap,
+                                    self.grid_snap_enabled,
+                                    self.grid_step_mm,
+                                );
 
-                            new_min_uv.x = su.snapped_pos;
-                            new_max_uv.x = su.snapped_pos + orig_size_uv.x;
-                            new_min_uv.y = sv.snapped_pos;
-                            new_max_uv.y = sv.snapped_pos + orig_size_uv.y;
+                                new_min_uv.x = su.snapped_pos;
+                                new_max_uv.x = su.snapped_pos + orig_size_uv.x;
+                                new_min_uv.y = sv.snapped_pos;
+                                new_max_uv.y = sv.snapped_pos + orig_size_uv.y;
 
-                            if let Some(gu) = su.guide_line_pos {
-                                drag.active_guides_u.push(gu);
-                            }
-                            if let Some(gv) = sv.guide_line_pos {
-                                drag.active_guides_v.push(gv);
+                                if let Some(gu) = su.guide_line_pos {
+                                    drag.active_guides_u.push(gu);
+                                }
+                                if let Some(gv) = sv.guide_line_pos {
+                                    drag.active_guides_v.push(gv);
+                                }
                             }
                         }
                         _ => {
@@ -1853,7 +1946,7 @@ impl QuadViewportController {
                                     orig_min_uv.x + delta_uv.x,
                                     &u_cands,
                                     snap_thresh,
-                                    self.edge_snap_enabled,
+                                    edge_snap,
                                     self.grid_snap_enabled,
                                     self.grid_step_mm,
                                 );
@@ -1867,7 +1960,7 @@ impl QuadViewportController {
                                     orig_max_uv.x + delta_uv.x,
                                     &u_cands,
                                     snap_thresh,
-                                    self.edge_snap_enabled,
+                                    edge_snap,
                                     self.grid_snap_enabled,
                                     self.grid_step_mm,
                                 );
@@ -1881,7 +1974,7 @@ impl QuadViewportController {
                                     orig_min_uv.y + delta_uv.y,
                                     &v_cands,
                                     snap_thresh,
-                                    self.edge_snap_enabled,
+                                    edge_snap,
                                     self.grid_snap_enabled,
                                     self.grid_step_mm,
                                 );
@@ -1895,7 +1988,7 @@ impl QuadViewportController {
                                     orig_max_uv.y + delta_uv.y,
                                     &v_cands,
                                     snap_thresh,
-                                    self.edge_snap_enabled,
+                                    edge_snap,
                                     self.grid_snap_enabled,
                                     self.grid_step_mm,
                                 );
@@ -1925,6 +2018,23 @@ impl QuadViewportController {
                             part.set_from_local_box_size(new_size_3d);
                         }
                     }
+
+                    // If Alt is held while moving parts, draw ghost silhouette of the original parts
+                    if alt_held && drag.handle == DragHandle2D::MoveWholeBlock {
+                        for &(orig_id, orig_pos) in &drag.group_orig_positions {
+                            if let Some(p) = project.parts.iter().find(|p| p.id == orig_id) {
+                                let thick = project.get_material_thickness(p.material_id);
+                                let size = p.local_box_size(thick);
+                                let omin_uv = vp.axis.project(orig_pos);
+                                let omax_uv = vp.axis.project(orig_pos + size);
+                                let s1 = vp.world_to_screen(rect, Vec2::new(omin_uv.x, omax_uv.y));
+                                let s2 = vp.world_to_screen(rect, Vec2::new(omax_uv.x, omin_uv.y));
+                                let o_rect = Rect::from_min_max(s1, s2);
+                                painter.rect_filled(o_rect, 0.0, Color32::from_rgba_unmultiplied(80, 180, 255, 30));
+                                painter.rect_stroke(o_rect, 0.0, Stroke::new(1.2, Color32::from_rgba_unmultiplied(90, 200, 255, 180)));
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -1951,6 +2061,36 @@ impl QuadViewportController {
         }
 
         if resp.drag_stopped_by(egui::PointerButton::Primary) {
+            if let Some(drag) = &self.active_drag {
+                let alt_held = ui.input(|i| i.modifiers.alt);
+                if alt_held && drag.handle == DragHandle2D::MoveWholeBlock {
+                    let cur_pos_opt = project.parts.iter().find(|p| p.id == drag.part_id).map(|p| p.position_mm);
+                    let orig_pos_opt = drag.group_orig_positions.iter().find(|(id, _)| *id == drag.part_id).map(|(_, pos)| *pos);
+                    if let (Some(cur_pos), Some(orig_pos)) = (cur_pos_opt, orig_pos_opt) {
+                        let delta_3d = cur_pos - orig_pos;
+                        if delta_3d.length() >= 1.0 {
+                            let mut new_clones = Vec::new();
+                            for &(pid, orig_pos) in &drag.group_orig_positions {
+                                if let Some(part) = project.parts.iter_mut().find(|p| p.id == pid) {
+                                    let mut clone = part.clone();
+                                    clone.name = format!("{} ({})", clone.name, self.lang.tr("копия", "copy"));
+                                    clone.position_mm = part.position_mm;
+                                    part.position_mm = orig_pos; // Restore original part
+                                    new_clones.push(clone);
+                                }
+                            }
+                            let mut new_ids = Vec::new();
+                            for mut clone in new_clones {
+                                clone.id = project.alloc_id();
+                                new_ids.push(clone.id);
+                                project.parts.push(clone);
+                            }
+                            self.selected_parts = new_ids;
+                            *selected_part = self.selected_parts.first().copied();
+                        }
+                    }
+                }
+            }
             self.active_drag = None;
             self.box_select_drag = None;
         }
@@ -3788,6 +3928,75 @@ mod tests {
         assert_eq!(get_allowed_handles_2d(dummy_r, PartViewMode2D::FaceOn).len(), 8);
         assert_eq!(get_allowed_handles_2d(dummy_r, PartViewMode2D::EdgeOnHorizontalThickness).len(), 2);
         assert_eq!(get_allowed_handles_2d(dummy_r, PartViewMode2D::EdgeOnVerticalThickness).len(), 2);
+    }
+
+    #[test]
+    fn test_shift_drag_constraint_photoshop() {
+        // Photoshop behavior: major displacement preserves axis, minor displacement is zeroed out
+        let constrain = |mut delta: Vec2, shift_held: bool| -> Vec2 {
+            if shift_held {
+                if delta.x.abs() >= delta.y.abs() {
+                    delta.y = 0.0;
+                } else {
+                    delta.x = 0.0;
+                }
+            }
+            delta
+        };
+
+        // Horizontal dominant
+        assert_eq!(constrain(Vec2::new(45.0, 12.0), true), Vec2::new(45.0, 0.0));
+        assert_eq!(constrain(Vec2::new(-30.0, -10.0), true), Vec2::new(-30.0, 0.0));
+
+        // Vertical dominant
+        assert_eq!(constrain(Vec2::new(15.0, 60.0), true), Vec2::new(0.0, 60.0));
+        assert_eq!(constrain(Vec2::new(-5.0, -40.0), true), Vec2::new(0.0, -40.0));
+
+        // Equal displacement -> defaults to horizontal
+        assert_eq!(constrain(Vec2::new(20.0, 20.0), true), Vec2::new(20.0, 0.0));
+
+        // Shift released -> free movement preserved
+        assert_eq!(constrain(Vec2::new(35.0, 22.0), false), Vec2::new(35.0, 22.0));
+    }
+
+    #[test]
+    fn test_ctrl_cmd_bypass_edge_snapping() {
+        let candidates = [100.0, 200.0, 300.0];
+        let snap_thresh = 20.0;
+
+        // Without Ctrl/Cmd: snaps to candidate at 105.0 -> 100.0
+        let normal_snap = snap_1d_edge(105.0, &candidates, snap_thresh, true, false, 10.0);
+        assert_eq!(normal_snap.snapped_pos, 100.0);
+        assert_eq!(normal_snap.guide_line_pos, Some(100.0));
+
+        // With Ctrl/Cmd: edge snap bypassed, stays at exact floating coordinate 105.0
+        let ctrl_bypass = snap_1d_edge(105.0, &candidates, snap_thresh, false, false, 10.0);
+        assert_eq!(ctrl_bypass.snapped_pos, 105.0);
+        assert_eq!(ctrl_bypass.guide_line_pos, None);
+    }
+
+    #[test]
+    fn test_inner_stroke_no_overlap_between_abutting_parts() {
+        // Two parts sharing seam at x = 782.0
+        let part_a = Rect::from_min_max(Pos2::new(18.0, 350.0), Pos2::new(782.0, 368.0));
+        let part_b = Rect::from_min_max(Pos2::new(782.0, 0.0), Pos2::new(800.0, 720.0));
+
+        let stroke_w = 1.0;
+        let stroke_a = part_a.shrink(stroke_w * 0.5);
+        let stroke_b = part_b.shrink(stroke_w * 0.5);
+
+        // Outer bounds of stroke for part A: right edge is at 782.0 - 0.5 + 0.5 = 782.0
+        assert_eq!(stroke_a.right(), 781.5);
+        let outer_right_a = stroke_a.right() + stroke_w * 0.5;
+        assert_eq!(outer_right_a, 782.0);
+
+        // Outer bounds of stroke for part B: left edge is at 782.0 + 0.5 - 0.5 = 782.0
+        assert_eq!(stroke_b.left(), 782.5);
+        let outer_left_b = stroke_b.left() - stroke_w * 0.5;
+        assert_eq!(outer_left_b, 782.0);
+
+        // Neither stroke extends past x = 782.0 -> zero overlap!
+        assert!(outer_right_a <= outer_left_b);
     }
 }
 
