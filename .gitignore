@@ -3,6 +3,19 @@
 **/*.rs.bk
 *.pdb
 
+# Release archives & packages (prevent accidental staging of local release builds)
+*.zip
+*.tar.gz
+*.deb
+*.dmg
+*.pkg
+
+# Executables & dynamic libraries (prevent accidental commit of local binaries outside target/)
+*.exe
+*.dll
+*.so
+*.dylib
+
 # WebAssembly & Trunk artifacts
 /dist/
 /.trunk/
@@ -30,6 +43,9 @@ quadfurn_settings.json
 *.swp
 *.swo
 *~
+*.tmp
+*.bak
+*.orig
 
 # OS metadata
 .DS_Store
