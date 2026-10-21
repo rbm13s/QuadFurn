@@ -1157,25 +1157,28 @@ impl eframe::App for QuadFurnApp {
 
         #[cfg(target_arch = "wasm32")]
         {
-            if let Some((_name, font_bytes)) = crate::web::take_pending_font() {
-                crate::web::set_installed_cjk_font(font_bytes);
+            let pending_fonts = crate::web::take_pending_fonts();
+            if !pending_fonts.is_empty() {
+                for (name, font_bytes) in pending_fonts {
+                    crate::web::set_installed_font(name, font_bytes);
+                }
                 configure_fonts(ctx);
                 self.status_msg = match self.language {
                     AppLanguage::Ja => "CJKフォントが正常に読み込まれました。".to_string(),
                     AppLanguage::ZhCn => "CJK中文字体已成功加载。".to_string(),
+                    AppLanguage::ZhTw => "CJK字體已成功加載。".to_string(),
                     AppLanguage::Ko => "CJK 한국어 글꼴이 성공적으로 로드되었습니다.".to_string(),
-                    _ => self.language.tr("CJK шрифты успешно загружены", "CJK fonts loaded successfully").to_string(),
+                    AppLanguage::Ka => "ქართული შრიფტი წარმატებით ჩაიტვირთა.".to_string(),
+                    AppLanguage::Hy => "Հայերեն տառատեսակը հաջողությամբ բեռնվեց:".to_string(),
+                    AppLanguage::Az => "Azərbaycan şrifti uğurla yükləndi.".to_string(),
+                    AppLanguage::Uz => "Oʻzbek shrifti muvaffaqiyatli yuklandi.".to_string(),
+                    _ => self.language.tr("Шрифты успешно загружены", "Fonts loaded successfully").to_string(),
                 };
                 ctx.request_repaint();
             }
 
-            if matches!(self.language, AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::ZhTw | AppLanguage::Ko) {
-                if crate::web::is_cjk_font_fetching_web() {
-                    ctx.request_repaint();
-                } else if !crate::web::is_cjk_font_loaded_web() {
-                    crate::web::fetch_cjk_font_web();
-                    ctx.request_repaint();
-                }
+            if crate::web::check_and_fetch_web_fonts(self.language) {
+                ctx.request_repaint();
             }
 
             if let Ok(mut uploads) = crate::web::PENDING_PROJECT_UPLOADS.lock() {
@@ -2551,17 +2554,17 @@ pub fn configure_fonts(ctx: &egui::Context) {
         }
     }
 
-    // 7. Dynamically downloaded CJK font for WebAssembly (Noto Sans CJK)
-    if let Some(cjk_bytes) = crate::web::get_installed_cjk_font() {
-        let ttf = crate::export::ensure_ttf_bytes(cjk_bytes);
+    // 7. Dynamically downloaded fonts for WebAssembly (CJK, Georgian, Armenian, Azerbaijani, Uzbek)
+    for (font_key, font_bytes) in crate::web::get_all_installed_fonts() {
+        let ttf = crate::export::ensure_ttf_bytes(font_bytes);
         fonts
             .font_data
-            .insert("cjk_dynamic".to_owned(), egui::FontData::from_owned(ttf));
+            .insert(font_key.clone(), egui::FontData::from_owned(ttf));
         if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
-            vec.push("cjk_dynamic".to_owned());
+            vec.push(font_key.clone());
         }
         if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
-            vec.push("cjk_dynamic".to_owned());
+            vec.push(font_key);
         }
     }
 

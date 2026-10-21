@@ -268,6 +268,29 @@ impl PdfTrueTypeFont {
             }
         }
 
+        // Web dynamic font fallback: if a dynamic font was installed in the browser session
+        let web_font_candidate = match lang {
+            AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::ZhTw | AppLanguage::Ko => {
+                crate::web::get_installed_font("cjk_noto_web")
+            }
+            AppLanguage::Ka => crate::web::get_installed_font("noto_sans_georgian"),
+            AppLanguage::Hy => crate::web::get_installed_font("noto_sans_armenian"),
+            AppLanguage::Az | AppLanguage::Uz => crate::web::get_installed_font("noto_sans_ext"),
+            _ => None,
+        };
+        if let Some(raw) = web_font_candidate {
+            let bytes = ensure_ttf_bytes(raw);
+            if let Ok(font) = FontArc::try_from_vec(bytes.clone()) {
+                let upm = font.units_per_em().unwrap_or(2048.0).max(1.0);
+                return Ok(Self {
+                    raw_bytes: bytes,
+                    font,
+                    upm,
+                    used_glyphs: BTreeMap::new(),
+                });
+            }
+        }
+
         // Embedded fallback: When no system fonts can be read from disk
         // (critical for WebAssembly in browsers where local filesystem is absent,
         // as well as containerized / minimal Linux environments),

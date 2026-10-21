@@ -472,53 +472,102 @@ pub fn init_web_keyboard_listener() {
 }
 
 #[cfg(target_arch = "wasm32")]
-pub static PENDING_FONT_LOAD: LazyLock<Mutex<Option<(String, Vec<u8>)>>> =
-    LazyLock::new(|| Mutex::new(None));
+pub static PENDING_FONT_LOADS: LazyLock<Mutex<Vec<(String, Vec<u8>)>>> =
+    LazyLock::new(|| Mutex::new(Vec::new()));
 
 #[cfg(target_arch = "wasm32")]
-static INSTALLED_CJK_FONT: LazyLock<Mutex<Option<Vec<u8>>>> =
-    LazyLock::new(|| Mutex::new(None));
+static INSTALLED_FONTS: LazyLock<Mutex<std::collections::BTreeMap<String, Vec<u8>>>> =
+    LazyLock::new(|| Mutex::new(std::collections::BTreeMap::new()));
 
 #[allow(dead_code)]
-pub fn get_installed_cjk_font() -> Option<Vec<u8>> {
+pub fn get_installed_font(name: &str) -> Option<Vec<u8>> {
     #[cfg(target_arch = "wasm32")]
     {
-        INSTALLED_CJK_FONT.lock().ok().and_then(|guard| guard.clone())
+        INSTALLED_FONTS.lock().ok().and_then(|guard| guard.get(name).cloned())
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
+        let _ = name;
         None
     }
 }
 
 #[allow(dead_code)]
-pub fn set_installed_cjk_font(bytes: Vec<u8>) {
+pub fn get_all_installed_fonts() -> Vec<(String, Vec<u8>)> {
     #[cfg(target_arch = "wasm32")]
     {
-        if let Ok(mut guard) = INSTALLED_CJK_FONT.lock() {
-            *guard = Some(bytes);
+        INSTALLED_FONTS
+            .lock()
+            .ok()
+            .map(|guard| guard.iter().map(|(k, v)| (k.clone(), v.clone())).collect())
+            .unwrap_or_default()
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        Vec::new()
+    }
+}
+
+#[allow(dead_code)]
+pub fn set_installed_font(name: String, bytes: Vec<u8>) {
+    #[cfg(target_arch = "wasm32")]
+    {
+        if let Ok(mut guard) = INSTALLED_FONTS.lock() {
+            guard.insert(name, bytes);
         }
     }
     #[cfg(not(target_arch = "wasm32"))]
     {
-        let _ = bytes;
+        let _ = (name, bytes);
+    }
+}
+
+#[allow(dead_code)]
+pub fn get_installed_cjk_font() -> Option<Vec<u8>> {
+    get_installed_font("cjk_noto_web")
+}
+
+#[allow(dead_code)]
+pub fn set_installed_cjk_font(bytes: Vec<u8>) {
+    set_installed_font("cjk_noto_web".to_string(), bytes);
+}
+
+#[allow(dead_code)]
+pub fn take_pending_fonts() -> Vec<(String, Vec<u8>)> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        PENDING_FONT_LOADS
+            .lock()
+            .ok()
+            .map(|mut guard| guard.drain(..).collect())
+            .unwrap_or_default()
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        Vec::new()
     }
 }
 
 #[allow(dead_code)]
 pub fn take_pending_font() -> Option<(String, Vec<u8>)> {
-    #[cfg(target_arch = "wasm32")]
-    {
-        PENDING_FONT_LOAD.lock().ok().and_then(|mut guard| guard.take())
-    }
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        None
+    take_pending_fonts().into_iter().next()
+}
+
+#[cfg(target_arch = "wasm32")]
+fn queue_pending_font(name: String, bytes: Vec<u8>) {
+    if let Ok(mut lock) = PENDING_FONT_LOADS.lock() {
+        lock.push((name, bytes));
     }
 }
 
 #[cfg(target_arch = "wasm32")]
 static CJK_FETCH_STATE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0); // 0 = not started, 1 = in progress, 2 = done
+#[cfg(target_arch = "wasm32")]
+static GEORGIAN_FETCH_STATE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+#[cfg(target_arch = "wasm32")]
+static ARMENIAN_FETCH_STATE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
+#[cfg(target_arch = "wasm32")]
+static EXTENDED_FETCH_STATE: std::sync::atomic::AtomicU8 = std::sync::atomic::AtomicU8::new(0);
 
 /// Returns true if CJK font is currently being fetched over network in WebAssembly.
 #[cfg(target_arch = "wasm32")]
@@ -569,14 +618,243 @@ pub fn fetch_cjk_font_web() {
 
         if let Some(bytes) = downloaded_bytes {
             CJK_FETCH_STATE.store(2, std::sync::atomic::Ordering::SeqCst);
-            if let Ok(mut lock) = PENDING_FONT_LOAD.lock() {
-                *lock = Some(("cjk_noto_web".to_string(), bytes));
-            }
+            queue_pending_font("cjk_noto_web".to_string(), bytes);
         } else {
             // Reset to 0 on failure so user can retry by switching language again
             CJK_FETCH_STATE.store(0, std::sync::atomic::Ordering::SeqCst);
         }
     });
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn fetch_cjk_font_web() {}
+
+/// Returns true if Georgian font is currently being fetched over network in WebAssembly.
+#[cfg(target_arch = "wasm32")]
+pub fn is_georgian_font_fetching_web() -> bool {
+    GEORGIAN_FETCH_STATE.load(std::sync::atomic::Ordering::SeqCst) == 1
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn is_georgian_font_fetching_web() -> bool {
+    false
+}
+
+/// Returns true if Georgian font has been downloaded and installed in WebAssembly.
+#[cfg(target_arch = "wasm32")]
+pub fn is_georgian_font_loaded_web() -> bool {
+    GEORGIAN_FETCH_STATE.load(std::sync::atomic::Ordering::SeqCst) == 2
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn is_georgian_font_loaded_web() -> bool {
+    false
+}
+
+/// Asynchronously fetches Noto Sans Georgian font bytes when Georgian (ka) language is selected.
+#[cfg(target_arch = "wasm32")]
+pub fn fetch_georgian_font_web() {
+    if GEORGIAN_FETCH_STATE.compare_exchange(0, 1, std::sync::atomic::Ordering::SeqCst, std::sync::atomic::Ordering::SeqCst).is_err() {
+        return;
+    }
+
+    wasm_bindgen_futures::spawn_local(async move {
+        let urls = [
+            "fonts/NotoSansGeorgian-Regular.ttf",
+            "https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSansGeorgian/NotoSansGeorgian-Regular.ttf",
+            "https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSansGeorgian/NotoSansGeorgian-Regular.ttf",
+        ];
+
+        let mut downloaded_bytes: Option<Vec<u8>> = None;
+        for url in urls {
+            if let Ok(bytes) = fetch_url_bytes(url).await {
+                if !bytes.is_empty() {
+                    downloaded_bytes = Some(bytes);
+                    break;
+                }
+            }
+        }
+
+        if let Some(bytes) = downloaded_bytes {
+            GEORGIAN_FETCH_STATE.store(2, std::sync::atomic::Ordering::SeqCst);
+            queue_pending_font("noto_sans_georgian".to_string(), bytes);
+        } else {
+            GEORGIAN_FETCH_STATE.store(0, std::sync::atomic::Ordering::SeqCst);
+        }
+    });
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn fetch_georgian_font_web() {}
+
+/// Returns true if Armenian font is currently being fetched over network in WebAssembly.
+#[cfg(target_arch = "wasm32")]
+pub fn is_armenian_font_fetching_web() -> bool {
+    ARMENIAN_FETCH_STATE.load(std::sync::atomic::Ordering::SeqCst) == 1
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn is_armenian_font_fetching_web() -> bool {
+    false
+}
+
+/// Returns true if Armenian font has been downloaded and installed in WebAssembly.
+#[cfg(target_arch = "wasm32")]
+pub fn is_armenian_font_loaded_web() -> bool {
+    ARMENIAN_FETCH_STATE.load(std::sync::atomic::Ordering::SeqCst) == 2
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn is_armenian_font_loaded_web() -> bool {
+    false
+}
+
+/// Asynchronously fetches Noto Sans Armenian font bytes when Armenian (hy) language is selected.
+#[cfg(target_arch = "wasm32")]
+pub fn fetch_armenian_font_web() {
+    if ARMENIAN_FETCH_STATE.compare_exchange(0, 1, std::sync::atomic::Ordering::SeqCst, std::sync::atomic::Ordering::SeqCst).is_err() {
+        return;
+    }
+
+    wasm_bindgen_futures::spawn_local(async move {
+        let urls = [
+            "fonts/NotoSansArmenian-Regular.ttf",
+            "https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSansArmenian/NotoSansArmenian-Regular.ttf",
+        ];
+
+        let mut downloaded_bytes: Option<Vec<u8>> = None;
+        for url in urls {
+            if let Ok(bytes) = fetch_url_bytes(url).await {
+                if !bytes.is_empty() {
+                    downloaded_bytes = Some(bytes);
+                    break;
+                }
+            }
+        }
+
+        if let Some(bytes) = downloaded_bytes {
+            ARMENIAN_FETCH_STATE.store(2, std::sync::atomic::Ordering::SeqCst);
+            queue_pending_font("noto_sans_armenian".to_string(), bytes);
+        } else {
+            ARMENIAN_FETCH_STATE.store(0, std::sync::atomic::Ordering::SeqCst);
+        }
+    });
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn fetch_armenian_font_web() {}
+
+/// Returns true if Extended Latin/Cyrillic font (Azerbaijani & Uzbek) is fetching in WebAssembly.
+#[cfg(target_arch = "wasm32")]
+pub fn is_extended_font_fetching_web() -> bool {
+    EXTENDED_FETCH_STATE.load(std::sync::atomic::Ordering::SeqCst) == 1
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn is_extended_font_fetching_web() -> bool {
+    false
+}
+
+/// Returns true if Extended font (Azerbaijani & Uzbek) is loaded in WebAssembly.
+#[cfg(target_arch = "wasm32")]
+pub fn is_extended_font_loaded_web() -> bool {
+    EXTENDED_FETCH_STATE.load(std::sync::atomic::Ordering::SeqCst) == 2
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn is_extended_font_loaded_web() -> bool {
+    false
+}
+
+/// Asynchronously fetches Noto Sans font bytes when Azerbaijani (az) or Uzbek (uz) language is selected.
+#[cfg(target_arch = "wasm32")]
+pub fn fetch_extended_font_web() {
+    if EXTENDED_FETCH_STATE.compare_exchange(0, 1, std::sync::atomic::Ordering::SeqCst, std::sync::atomic::Ordering::SeqCst).is_err() {
+        return;
+    }
+
+    wasm_bindgen_futures::spawn_local(async move {
+        let urls = [
+            "fonts/NotoSans-Regular.ttf",
+            "https://raw.githubusercontent.com/googlefonts/noto-fonts/main/hinted/ttf/NotoSans/NotoSans-Regular.ttf",
+            "https://cdn.jsdelivr.net/gh/googlefonts/noto-fonts@main/hinted/ttf/NotoSans/NotoSans-Regular.ttf",
+        ];
+
+        let mut downloaded_bytes: Option<Vec<u8>> = None;
+        for url in urls {
+            if let Ok(bytes) = fetch_url_bytes(url).await {
+                if !bytes.is_empty() {
+                    downloaded_bytes = Some(bytes);
+                    break;
+                }
+            }
+        }
+
+        if let Some(bytes) = downloaded_bytes {
+            EXTENDED_FETCH_STATE.store(2, std::sync::atomic::Ordering::SeqCst);
+            queue_pending_font("noto_sans_ext".to_string(), bytes);
+        } else {
+            EXTENDED_FETCH_STATE.store(0, std::sync::atomic::Ordering::SeqCst);
+        }
+    });
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[allow(dead_code)]
+pub fn fetch_extended_font_web() {}
+
+/// Checks if the current language requires a dynamic font on WebAssembly,
+/// and starts fetching it if not yet loaded.
+/// Returns true if any font is currently being fetched (useful for requesting repaint).
+#[allow(dead_code)]
+pub fn check_and_fetch_web_fonts(lang: crate::i18n::AppLanguage) -> bool {
+    #[cfg(target_arch = "wasm32")]
+    {
+        use crate::i18n::AppLanguage;
+        if matches!(lang, AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::ZhTw | AppLanguage::Ko) {
+            if is_cjk_font_fetching_web() {
+                return true;
+            } else if !is_cjk_font_loaded_web() {
+                fetch_cjk_font_web();
+                return true;
+            }
+        } else if lang == AppLanguage::Ka {
+            if is_georgian_font_fetching_web() {
+                return true;
+            } else if !is_georgian_font_loaded_web() {
+                fetch_georgian_font_web();
+                return true;
+            }
+        } else if lang == AppLanguage::Hy {
+            if is_armenian_font_fetching_web() {
+                return true;
+            } else if !is_armenian_font_loaded_web() {
+                fetch_armenian_font_web();
+                return true;
+            }
+        } else if matches!(lang, AppLanguage::Az | AppLanguage::Uz) {
+            if is_extended_font_fetching_web() {
+                return true;
+            } else if !is_extended_font_loaded_web() {
+                fetch_extended_font_web();
+                return true;
+            }
+        }
+        false
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let _ = lang;
+        false
+    }
 }
 
 #[cfg(target_arch = "wasm32")]
@@ -593,6 +871,42 @@ async fn fetch_url_bytes(url: &str) -> Result<Vec<u8>, wasm_bindgen::JsValue> {
     Ok(uint8_array.to_vec())
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-pub fn fetch_cjk_font_web() {}
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_web_fonts_files_and_glyphs() {
+        use ab_glyph::{Font, FontArc};
+
+        // Georgian font
+        let ka_bytes = std::fs::read("web/fonts/NotoSansGeorgian-Regular.ttf")
+            .expect("web/fonts/NotoSansGeorgian-Regular.ttf must exist");
+        let ka_font = FontArc::try_from_vec(ka_bytes).expect("NotoSansGeorgian must parse");
+        assert!(ka_font.glyph_id('ქ').0 > 0, "Must contain Georgian letter q");
+        assert!(ka_font.glyph_id('ა').0 > 0, "Must contain Georgian letter a");
+        assert!(ka_font.glyph_id('რ').0 > 0, "Must contain Georgian letter r");
+
+        // Armenian font
+        let hy_bytes = std::fs::read("web/fonts/NotoSansArmenian-Regular.ttf")
+            .expect("web/fonts/NotoSansArmenian-Regular.ttf must exist");
+        let hy_font = FontArc::try_from_vec(hy_bytes).expect("NotoSansArmenian must parse");
+        assert!(hy_font.glyph_id('Հ').0 > 0, "Must contain Armenian capital H");
+        assert!(hy_font.glyph_id('ա').0 > 0, "Must contain Armenian small a");
+        assert!(hy_font.glyph_id('յ').0 > 0, "Must contain Armenian small y");
+
+        // Extended Latin font (Azerbaijani & Uzbek)
+        let ext_bytes = std::fs::read("web/fonts/NotoSans-Regular.ttf")
+            .expect("web/fonts/NotoSans-Regular.ttf must exist");
+        let ext_font = FontArc::try_from_vec(ext_bytes).expect("NotoSans must parse");
+        // Azerbaijani
+        assert!(ext_font.glyph_id('ə').0 > 0, "Must contain schwa ə");
+        assert!(ext_font.glyph_id('Ə').0 > 0, "Must contain schwa Ə");
+        assert!(ext_font.glyph_id('ğ').0 > 0, "Must contain g-breve ğ");
+        assert!(ext_font.glyph_id('ı').0 > 0, "Must contain dotless i ı");
+        assert!(ext_font.glyph_id('ş').0 > 0, "Must contain s-cedilla ş");
+        // Uzbek
+        assert!(ext_font.glyph_id('ʻ').0 > 0, "Must contain modifier letter turned comma ʻ");
+        assert!(ext_font.glyph_id('ʼ').0 > 0, "Must contain modifier letter apostrophe ʼ");
+    }
+}
+
 
