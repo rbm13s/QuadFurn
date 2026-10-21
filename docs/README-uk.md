@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-теми-оформлення-та-локалізація-на-22-мови)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-теми-оформлення-та-локалізація-на-37-мов)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#швидкий-старт)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 **Українська** •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Вкладки виробів та буфер обміну між проєктами](#5-вкладки-виробів-та-буфер-обміну-між-проєктами)
   - [6. Експорт виробничого паспорта (векторний PDF, CSV Excel, буфер)](#6-експорт-виробничого-паспорта-векторний-pdf-csv-excel-буфер)
   - [7. Довідник листових матеріалів, текстур та крайок](#7-довідник-листових-матеріалів-текстур-та-крайок)
-  - [8. Теми оформлення та локалізація на 22 мови](#8-теми-оформлення-та-локалізація-на-22-мови)
+  - [8. Теми оформлення та локалізація на 37 мов](#8-теми-оформлення-та-локалізація-на-37-мов)
 - [Керування та гарячі клавіші](#керування-та-гарячі-клавіші)
 - [Швидкий старт](#швидкий-старт)
 - [Налаштування та формати файлів](#налаштування-та-формати-файлів)
@@ -105,10 +120,10 @@ QuadFurn поєднує найкращі практики трьох класи�
 
 ![Світла тема інтерфейсу](screenshots/uk/5lighttheme.png)
 
-### 6. 22 вбудовані мови (інтерфейс та експорт у PDF)
+### 6. 37 вбудованих мов (інтерфейс та експорт у PDF)
 Миттєве перемикання мови у верхньому меню через кнопку **`🌐`**, автовизначення мови ОС під час першого запуску та локалізований багатосторінковий експорт у PDF.
 
-![22 мови інтерфейсу](screenshots/uk/6languages.png)
+![37 мов інтерфейсу](screenshots/uk/6languages.png)
 
 ---
 
@@ -233,7 +248,7 @@ QuadFurn поєднує найкращі практики трьох класи�
 
 ---
 
-### 8. Теми оформлення та локалізація на 22 мови
+### 8. Теми оформлення та локалізація на 37 мов
 
 - **Колірні теми**: Перемикання між **🌙 Темною**, **☀ Світлою** та **🖥 Системною** темами у верхньому меню.
 - **22 вбудовані мови**:
@@ -277,7 +292,7 @@ QuadFurn поєднує найкращі практики трьох класи�
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — інсталяційний пакунок Debian/Ubuntu (встановлює бінарник, пункт у системному меню та іконку):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — портативний standalone-архів.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — нативний бандл `QuadFurn.app` з Retina-іконкою `.icns`.
@@ -340,7 +355,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Вихідне зображення логотипа для іконок Windows/Linux/macOS
 │   └── screenshots/           # Скріншоти інтерфейсу для документації
-├── docs/                      # Локалізована документація (22 мови)
+├── docs/                      # Локалізована документація (37 мов)
 ├── src/
 │   ├── main.rs                # Точка входу, вкладки виробів, стартова сторінка, налаштування та хоткеї
 │   ├── model.rs               # Структури даних (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
@@ -349,7 +364,7 @@ QuadFurn/
 │   ├── cutter.rs              # Групування специфікації, віднімання крайки та гільйотинний 2D-розкрій
 │   ├── export.rs              # Генератор багатосторінкового векторного PDF, експорт у CSV та списків розкрою
 │   ├── ui_panels.rs           # Верхня панель трансформації, інспектор деталей, вкладки специфікації, розкрою та матеріалів
-│   └── i18n.rs                # Словники локалізації на 22 мови та автовизначення мови ОС
+│   └── i18n.rs                # Словники локалізації на 37 мов та автовизначення мови ОС
 ├── build.rs                   # Конвертація assets/icon.jpeg у мультирозмірний ICO та вбудовування ресурсів PE
 ├── Cargo.toml                 # Маніфест пакунка та залежності
 └── LICENSE                    # Ліцензія MIT

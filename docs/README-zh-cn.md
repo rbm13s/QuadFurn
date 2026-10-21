@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-界面主题与-22-种语言本地化)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-界面主题与-37-种语言本地化)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#快速上手)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 **简体中文** •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. 多产品标签页与跨工程复制粘贴](#5-多产品标签页与跨工程复制粘贴)
   - [6. 生产工艺单导出（矢量 PDF、Excel CSV、剪贴板）](#6-生产工艺单导出矢量-pdfexcel-csv剪贴板)
   - [7. 板材原料、贴图材质与封边条库](#7-板材原料贴图材质与封边条库)
-  - [8. 界面主题与 22 种语言本地化](#8-界面主题与-22-种语言本地化)
+  - [8. 界面主题与 37 种语言本地化](#8-界面主题与-37-种语言本地化)
 - [操作指南与键盘快捷键](#操作指南与键盘快捷键)
 - [快速上手](#快速上手)
 - [设置与文件格式](#设置与文件格式)
@@ -108,7 +123,7 @@ QuadFurn 深度融合了三款经典工业设计软件的人机工程学优势�
 ### 6. 内置 22 种国际语言（界面与 PDF 导出）
 点击顶部工具栏的 **`🌐`** 图标即可无需重启瞬间切换语言，首次启动自动检测操作系统语言环境，并支持生成对应语言的矢量 PDF 工艺报告。
 
-![22 种界面语言](screenshots/zh-cn/6languages.png)
+![37 种界面语言](screenshots/zh-cn/6languages.png)
 
 ---
 
@@ -232,10 +247,10 @@ QuadFurn 深度融合了三款经典工业设计软件的人机工程学优势�
 
 ---
 
-### 8. 界面主题与 22 种语言本地化
+### 8. 界面主题与 37 种语言本地化
 
 - **界面色彩主题**：在顶部控制栏右侧可自由切换 **🌙 暗黑主题**、**☀ 明亮主题** 以及 **🖥 跟随系统**。
-- **内置 22 种语言**：
+- **内置 37 种语言**：
   `简体中文`、`English`、`Русский`、`Українська`、`Deutsch`、`Polski`、`Español`、`Français`、`Italiano`、`Português`、`Čeština`、`Slovenčina`、`Slovenščina`、`Nederlands`、`Dansk`、`Norsk`、`Svenska`、`Magyar`、`Română`、`Türkçe`、`日本語` 和 `한국어`。
 - **首次运行系统语言自动适配**：首次启动会自动识别操作系统的界面语言并直接应用对应语言包。用户偏好设置自动保存在 `%APPDATA%\QuadFurn\settings.json` 中。
 
@@ -276,7 +291,7 @@ QuadFurn 深度融合了三款经典工业设计软件的人机工程学优势�
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**：
   - `quadfurn_<版本号>_amd64.deb` — Debian/Ubuntu 官方安装包（自动配置系统二进制命令、启动菜单项以及高分辨率图标）：
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — 绿色解压即用版 Linux 压缩包。
 - **macOS (`Universal 通用架构：Apple Silicon M1–M4 + Intel x86_64`)**：`QuadFurn-macos-universal.zip` — 原生封装的 `QuadFurn.app`，带 Retina `.icns` 矢量图标。
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # 应用程序 Logo 及 Windows/Linux/macOS 原始图标资源
 │   └── screenshots/           # 软件说明文档截图
-├── docs/                      # 22 种语言的完整本地化文档
+├── docs/                      # 37 种语言的完整本地化文档
 ├── src/
 │   ├── main.rs                # 软件主入口、多标签工程管理器、启动页、全局快捷键与设置
 │   ├── model.rs               # 核心数据模型（Project, PartBlock, SheetMaterial, EdgeBanding, OBB 包围盒）
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # 2D 剪板机式排料引擎、封边扣除与下料清单分组
 │   ├── export.rs              # 多语言矢量 PDF 生产图纸生成器、Excel CSV 与开料清单格式导出
 │   ├── ui_panels.rs           # 顶部精准变换栏、属性检查器、明细表、排版与材质界面
-│   └── i18n.rs                # 22 种语言国际化翻译字典与操作系统语言环境自动识别
+│   └── i18n.rs                # 37 种语言国际化翻译字典与操作系统语言环境自动识别
 ├── build.rs                   # Windows 平台自动生成多分辨率 ICO 并嵌入 PE 资源
 ├── Cargo.toml                 # Cargo 包配置与依赖项清单
 └── LICENSE                    # MIT 开源授权协议

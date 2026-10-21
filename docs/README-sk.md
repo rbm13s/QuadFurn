@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-grafické-motívy-a-lokalizácia-do-22-jazykov)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-grafické-motívy-a-lokalizácia-do-22-jazykov)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#začíname)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 **Slovenčina** •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Záložky projektov a schránka medzi projektmi](#5-záložky-projektov-a-schránka-medzi-projektmi)
   - [6. Export výrobného pasu (vektorové PDF, CSV, schránka)](#6-export-výrobného-pasu-vektorové-pdf-csv-schránka)
   - [7. Katalóg plošných materiálov, textúr a hrán](#7-katalóg-plošných-materiálov-textúr-a-hrán)
-  - [8. Grafické motívy a lokalizácia do 22 jazykov](#8-grafické-motívy-a-lokalizácia-do-22-jazykov)
+  - [8. Grafické motívy a lokalizácia do 37 jazykov](#8-grafické-motívy-a-lokalizácia-do-22-jazykov)
 - [Ovládanie a klávesové skratky](#ovládanie-a-klávesové-skratky)
 - [Začíname](#začíname)
 - [Nastavenia a formáty súborov](#nastavenia-a-formáty-súborov)
@@ -108,7 +123,7 @@ Moderný svetlý motív s vysokým kontrastom popri tmavom motíve s možnosťou
 ### 6. 22 integrovaných jazykov (Rozhranie aj PDF export)
 Okamžité prepínanie jazykov bez reštartu tlačidlom **`🌐`** v hornej lište, automatická detekcia jazyka operačného systému pri prvom spustení a lokalizované viacstranové PDF výstupy.
 
-![22 jazykov rozhrania](screenshots/sk/6languages.png)
+![37 jazykov rozhrania](screenshots/sk/6languages.png)
 
 ---
 
@@ -232,7 +247,7 @@ V záložke **Materiály** (`🎨 4. Materiály`):
 
 ---
 
-### 8. Grafické motívy a lokalizácia do 22 jazykov
+### 8. Grafické motívy a lokalizácia do 37 jazykov
 
 - **Grafické motívy**: Jednoduché prepínanie medzi motívmi **🌙 Tmavý**, **☀ Svetlý** a **🖥 Systémový** v hornej lište.
 - **22 vstavaných jazykov**:
@@ -276,7 +291,7 @@ Každé zostavenie automaticky generuje hotové balíčky cez [GitHub Actions](h
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<verzia>_amd64.deb` — inštalačný balíček pre Debian/Ubuntu (nainštaluje spustiteľný súbor, položku v ponuke aj ikony):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — prenosný archív pre Linux.
 - **macOS (`Univerzálny: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — natívna aplikácia `QuadFurn.app` s Retina ikonou.
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # 2D optimalizátor nárezových plánov a odpočet hrán
 │   ├── export.rs              # Generátor vektorového PDF formátu A4 a export do formátu CSV
 │   ├── ui_panels.rs           # Transformačný panel, Inšpektor dielcov, Kusovník, Nárezový plán a Materiály
-│   └── i18n.rs                # Prekladové slovníky pre 22 jazykov a autodetekcia jazyka systému
+│   └── i18n.rs                # Prekladové slovníky pre 37 jazykov a autodetekcia jazyka systému
 ├── build.rs                   # Automatická konverzia ikony Windows ICO a PE zdroj
 ├── Cargo.toml                 # Konfigurácia balíka a závislosti
 └── LICENSE                    # Licencia MIT

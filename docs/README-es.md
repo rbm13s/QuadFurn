@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-temas-visuales-y-localización-en-22-idiomas)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-temas-visuales-y-localización-en-22-idiomas)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#primeros-pasos)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-**Español** •
 [Français](README-fr.md) •
+**Español** •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Pestañas de proyectos y portapapeles entre proyectos](#5-pestañas-de-proyectos-y-portapapeles-entre-proyectos)
   - [6. Exportación del pasaporte de producción (PDF vectorial, CSV, portapapeles)](#6-exportación-del-pasaporte-de-producción-pdf-vectorial-csv-portapapeles)
   - [7. Catálogo de tableros, texturas y cantos](#7-catálogo-de-tableros-texturas-y-cantos)
-  - [8. Temas visuales y localización en 22 idiomas](#8-temas-visuales-y-localización-en-22-idiomas)
+  - [8. Temas visuales y localización en 37 idiomas](#8-temas-visuales-y-localización-en-22-idiomas)
 - [Controles y atajos de teclado](#controles-y-atajos-de-teclado)
 - [Primeros pasos](#primeros-pasos)
 - [Configuración y formatos de archivo](#configuración-y-formatos-de-archivo)
@@ -105,10 +120,10 @@ Tema claro de alto contraste junto con tema oscuro y sincronización con el sist
 
 ![Tema claro](screenshots/es/5lighttheme.png)
 
-### 6. 22 idiomas integrados
+### 6. 37 idiomas integrados
 Cambio de idioma instantáneo desde la barra superior mediante el botón **`🌐`** y exportación de PDF multilingüe.
 
-![22 idiomas](screenshots/es/6languages.png)
+![37 idiomas](screenshots/es/6languages.png)
 
 ---
 
@@ -214,10 +229,10 @@ En la pestaña **Materiales** (`🎨 4. Materiales`):
 
 ---
 
-### 8. Temas visuales y localización en 22 idiomas
+### 8. Temas visuales y localización en 37 idiomas
 
 - **Temas**: **🌙 Oscuro**, **☀ Claro** y **🖥 Sistema**.
-- **22 idiomas integrados**: Localización completa de la interfaz y los documentos PDF.
+- **37 idiomas integrados**: Localización completa de la interfaz y los documentos PDF.
 - **Detección de idioma del SO**: Inicio automático en el idioma de su sistema operativo.
 
 ---
@@ -294,7 +309,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Icono del programa
 │   └── screenshots/           # Capturas de pantalla
-├── docs/                      # Documentación en 22 idiomas
+├── docs/                      # Documentación en 37 idiomas
 ├── src/
 │   ├── main.rs                # Punto de entrada, pestañas, interfaz
 │   ├── model.rs               # Estructuras de datos (Project, PartBlock, etc.)
@@ -303,7 +318,7 @@ QuadFurn/
 │   ├── cutter.rs              # Lista de corte y optimización 2D
 │   ├── export.rs              # Exportación PDF, CSV, listas de corte
 │   ├── ui_panels.rs           # Barras de herramientas, inspector
-│   └── i18n.rs                # Diccionarios en 22 idiomas
+│   └── i18n.rs                # Diccionarios en 37 idiomas
 ├── build.rs                   # Integración de iconos en Windows
 ├── Cargo.toml                 # Manifiesto de Rust
 └── LICENSE                    # Licencia MIT

@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-farbthemen--lokalisierung-in-22-sprachen)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-farbthemen--lokalisierung-in-37-sprachen)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#erste-schritte)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 **Deutsch** •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Produkt-Tabs & Projektübergreifendes Kopieren/Einfügen](#5-produkt-tabs--projektübergreifendes-kopiereneinfügen)
   - [6. Produktionspass-Export (Vektor-PDF, Excel CSV, Zwischenablage)](#6-produktionspass-export-vektor-pdf-excel-csv-zwischenablage)
   - [7. Plattenwerkstoffe, Texturen & Kantenkatalog](#7-plattenwerkstoffe-texturen--kantenkatalog)
-  - [8. Farbthemen & Lokalisierung in 22 Sprachen](#8-farbthemen--lokalisierung-in-22-sprachen)
+  - [8. Farbthemen & Lokalisierung in 37 Sprachen](#8-farbthemen--lokalisierung-in-37-sprachen)
 - [Bedienung & Tastenkombinationen](#bedienung--tastenkombinationen)
 - [Erste Schritte](#erste-schritte)
 - [Einstellungen & Dateiformate](#einstellungen--dateiformate)
@@ -105,10 +120,10 @@ Klares, kontrastreiches helles Design neben dem dunklen Design und automatischer
 
 ![Helle Benutzeroberfläche](screenshots/de/5lighttheme.png)
 
-### 6. 22 integrierte Sprachen (UI & PDF-Export)
+### 6. 37 integrierte Sprachen (UI & PDF-Export)
 Sofortige Umschaltung der Sprache über die Schaltfläche **`🌐`** in der oberen Symbolleiste, automatische Erkennung der Systemsprache beim ersten Start und lokalisierter PDF-Export.
 
-![22 Sprachen](screenshots/de/6languages.png)
+![37 Sprachen](screenshots/de/6languages.png)
 
 ---
 
@@ -221,10 +236,10 @@ Im Reiter **Materialien** (`🎨 4. Materialien`):
 
 ---
 
-### 8. Farbthemen & Lokalisierung in 22 Sprachen
+### 8. Farbthemen & Lokalisierung in 37 Sprachen
 
 - **Themen**: Wechsel zwischen **🌙 Dunkel**, **☀ Hell** und **🖥 System** in der oberen Leiste.
-- **22 Sprachen**: Vollständig lokalisierte Oberfläche und PDF-Generierung.
+- **37 Sprachen**: Vollständig lokalisierte Oberfläche und PDF-Generierung.
 - **Systemsprachenerkennung**: Startet automatisch in der Sprache Ihres Betriebssystems.
 
 ---
@@ -264,7 +279,7 @@ Automatisierte Builds bei jedem Commit über [GitHub Actions](https://github.com
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu-Installationspaket:
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portables Standalone-Archiv.
 - **macOS (`Universal: Apple Silicon + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` mit Retina-Icon.
@@ -321,7 +336,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Anwendungslogo
 │   └── screenshots/           # Screenshots für Dokumentation
-├── docs/                      # Lokalisierte Dokumentation (22 Sprachen)
+├── docs/                      # Lokalisierte Dokumentation (37 Sprachen)
 ├── src/
 │   ├── main.rs                # Einstiegspunkt, Fensterverwaltung, Tabs
 │   ├── model.rs               # Datenmodell (Project, PartBlock, SheetMaterial, EdgeBanding)

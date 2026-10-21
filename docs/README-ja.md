@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-テーマ設定と-22-言語の多言語対応)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-テーマ設定と-22-言語の多言語対応)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#はじめに)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 **日本語** •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. マルチプロジェクトタブとプロジェクト間コピー＆ペースト](#5-マルチプロジェクトタブとプロジェクト間コピーペースト)
   - [6. 製造指示書（加工パスポート）のエクスポート（ベクター PDF、CSV、クリップボード）](#6-製造指示書加工パスポートのエクスポートベクター-pdfcsvクリップボード)
   - [7. 原板・テクスチャ・木口テープカタログ](#7-原板テクスチャ木口テープカタログ)
-  - [8. テーマ設定と 22 言語の多言語対応](#8-テーマ設定と-22-言語の多言語対応)
+  - [8. テーマ設定と 37 言語の多言語対応](#8-テーマ設定と-22-言語の多言語対応)
 - [操作方法とキーボードショートカット](#操作方法とキーボードショートカット)
 - [はじめに](#はじめに)
 - [設定とファイル形式](#設定とファイル形式)
@@ -105,10 +120,10 @@
 
 ![ライトテーマ](screenshots/ja/5lighttheme.png)
 
-### 6. 22 言語のインターフェースと PDF 出力
+### 6. 37 言語のインターフェースと PDF 出力
 上部ツールバーの **`🌐`** アイコンから再起動なしで即座に言語を変更可能。初回起動時に OS の言語を自動検出し、多言語ベクター PDF を出力できます。
 
-![22 言語対応](screenshots/ja/6languages.png)
+![37 言語対応](screenshots/ja/6languages.png)
 
 ---
 
@@ -232,10 +247,10 @@
 
 ---
 
-### 8. テーマ設定と 22 言語の多言語対応
+### 8. テーマ設定と 37 言語の多言語対応
 
 - **カラーテーマ**: ツールバー右側から **🌙 ダーク**、**☀ ライト**、**🖥 システム** を自由に切り替え。
-- **22 言語内蔵**:
+- **37 言語内蔵**:
   `日本語`、`English`、`Русский`、`Українська`、`Deutsch`、`Polski`、`Español`、`Français`、`Italiano`、`Português`、`Čeština`、`Slovenčina`、`Slovenščina`、`Nederlands`、`Dansk`、`Norsk`、`Svenska`、`Magyar`、`Română`、`Türkçe`、`简体中文`、および `한국어`。
 - **初回起動時の OS 言語自動検出**: お使いのオペレーティングシステムの言語を自動認識し、その言語で起動します。設定は `%APPDATA%\QuadFurn\settings.json` に保存されます。
 
@@ -276,7 +291,7 @@
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu 公式インストーラー（バイナリ、メニュー項目、アイコンを自動登録）：
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — ポータブル Linux アーカイブ。
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — Retina アイコンを内蔵したネイティブ `QuadFurn.app`。
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # アプリケーションロゴおよびアイコン元画像
 │   └── screenshots/           # ドキュメント用スクリーンショット画像
-├── docs/                      # 22 言語の完全なローカライズドキュメント
+├── docs/                      # 37 言語の完全なローカライズドキュメント
 ├── src/
 │   ├── main.rs                # メインエントリポイント、タブ管理、スタート画面、ショートカット
 │   ├── model.rs               # データモデル（Project, PartBlock, SheetMaterial, EdgeBanding, OBB）
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # 2D ギロチン木取り最適化エンジン、エッジ厚控除
 │   ├── export.rs              # 多言語ベクター PDF 生成、CSV および木取りリストエクスポート
 │   ├── ui_panels.rs           # トランスフォームバー、プロパティインスペクタ、仕様表、木取り、材料 UI
-│   └── i18n.rs                # 22 言語対応翻訳辞書および OS 言語自動検出
+│   └── i18n.rs                # 37 言語対応翻訳辞書および OS 言語自動検出
 ├── build.rs                   # Windows 用 ICO アイコン変換および PE リソース埋め込み
 ├── Cargo.toml                 # パッケージ構成および依存ライブラリ
 └── LICENSE                    # MIT ライセンス

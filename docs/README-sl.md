@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-vizualne-teme-in-lokalizacija-v-22-jezikov)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-vizualne-teme-in-lokalizacija-v-22-jezikov)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#prvi-koraki)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 **Slovenščina** •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Zavihki projektov in odložišče med projekti](#5-zavihki-projektov-in-odložišče-med-projekti)
   - [6. Izvoz proizvodnega potnega lista (vektorski PDF, CSV, odložišče)](#6-izvoz-proizvodnega-potnega-lista-vektorski-pdf-csv-odložišče)
   - [7. Katalog ploskovnih materialov, tekstur in robnih trakov](#7-katalog-ploskovnih-materialov-tekstur-in-robnih-trakov)
-  - [8. Vizualne teme in lokalizacija v 22 jezikov](#8-vizualne-teme-in-lokalizacija-v-22-jezikov)
+  - [8. Vizualne teme in lokalizacija v 37 jezikov](#8-vizualne-teme-in-lokalizacija-v-22-jezikov)
 - [Krmiljenje in bližnjice na tipkovnici](#krmiljenje-in-bližnjice-na-tipkovnici)
 - [Prvi koraki](#prvi-koraki)
 - [Nastavitve in formati datotek](#nastavitve-in-formati-datotek)
@@ -105,10 +120,10 @@ Sodobna svetla tema z visokim kontrastom poleg temne teme in možnostjo samodejn
 
 ![Svetla tema](screenshots/sl/5lighttheme.png)
 
-### 6. 22 vgrajenih jezikov (Vmesnik in izvoz PDF)
+### 6. 37 vgrajenih jezikov (Vmesnik in izvoz PDF)
 Takojšnje preklapljanje med jeziki brez ponovnega zagona prek gumba **`🌐`** v zgornji orodni vrstici, samodejno zaznavanje jezika operacijskega sistema ob prvem zagonu in večstranski prevedeni PDF izvozi.
 
-![22 jezikov vmesnika](screenshots/sl/6languages.png)
+![37 jezikov vmesnika](screenshots/sl/6languages.png)
 
 ---
 
@@ -232,7 +247,7 @@ V zavihku **Materiali** (`🎨 4. Materiali`):
 
 ---
 
-### 8. Vizualne teme in lokalizacija v 22 jezikov
+### 8. Vizualne teme in lokalizacija v 37 jezikov
 
 - **Vizualne teme**: Preklapljanje med temami **🌙 Temna**, **☀ Svetla** in **🖥 Sistemska** v zgornji orodni vrstici.
 - **22 vgrajenih jezikov**:
@@ -276,7 +291,7 @@ Vsaka nova različica samodejno ustvari pakete prek storitve [GitHub Actions](ht
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<različica>_amd64.deb` — uradni paket za Debian/Ubuntu (namesti program, vnos v meni ter ikone):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — prenosni arhiv za Linux.
 - **macOS (`Univerzalno: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — nativna aplikacija `QuadFurn.app` z ikono Retina.
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # 2D gilotinski optimizator razreza in odštevanje robnih trakov
 │   ├── export.rs              # Izvoznik vektorskega PDF A4 ležeče in izvoznik CSV
 │   ├── ui_panels.rs           # Vrstica transformacij, Inšpektor elementov, Kosovnica, Razrez in Materiali
-│   └── i18n.rs                # Slovarji prevodov za 22 jezikov in samodejno zaznavanje sistema
+│   └── i18n.rs                # Slovarji prevodov za 37 jezikov in samodejno zaznavanje sistema
 ├── build.rs                   # Samodejna pretvorba ikone ICO za Windows in vir PE
 ├── Cargo.toml                 # Konfiguracija paketa in odvisnosti
 └── LICENSE                    # Licenca MIT

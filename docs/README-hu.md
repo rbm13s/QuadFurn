@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-vizuális-témák-és-lokalizáció-22-nyelven)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-vizuális-témák-és-lokalizáció-22-nyelven)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#első-lépések)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 **Magyar** •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Többlapos projektkezelés és projektek közötti vágólap](#5-többlapos-projektkezelés-és-projektek-közötti-vágólap)
   - [6. Gyártási útlevél exportálása (vektoros PDF, CSV, vágólap)](#6-gyártási-útlevél-exportálása-vektoros-pdf-csv-vágólap)
   - [7. Lapanyag-, textúra- és élzárókatalógus](#7-lapanyag--textúra--és-élzárókatalógus)
-  - [8. Vizuális témák és lokalizáció 22 nyelven](#8-vizuális-témák-és-lokalizáció-22-nyelven)
+  - [8. Vizuális témák és lokalizáció 37 nyelven](#8-vizuális-témák-és-lokalizáció-22-nyelven)
 - [Vezérlés és billentyűparancsok](#vezérlés-és-billentyűparancsok)
 - [Első lépések](#első-lépések)
 - [Beállítások és fájlformátumok](#beállítások-és-fájlformátumok)
@@ -105,10 +120,10 @@ Modern, kontrasztos világos téma a sötét téma mellett, valamint az operativ
 
 ![Világos téma](screenshots/hu/5lighttheme.png)
 
-### 6. 22 beépített nyelv (Felület és PDF export)
+### 6. 37 beépített nyelv (Felület és PDF export)
 Azonnali nyelvváltás újraindítás nélkül a felső eszköztár **`🌐`** gombjával, az operációs rendszer nyelvének automatikus észlelése és többnyelvű PDF dokumentáció.
 
-![22 nyelv](screenshots/hu/6languages.png)
+![37 nyelv](screenshots/hu/6languages.png)
 
 ---
 
@@ -232,7 +247,7 @@ Az **Anyagok** lapon (`🎨 4. Anyagok`):
 
 ---
 
-### 8. Vizuális témák és lokalizáció 22 nyelven
+### 8. Vizuális témák és lokalizáció 37 nyelven
 
 - **Vizuális témák**: Egyszerű váltás a **🌙 Sötét**, **☀ Világos** és **🖥 Rendszer** témák között a felső sávban.
 - **22 beépített nyelv**:
@@ -276,7 +291,7 @@ Minden kiadás automatikusan generál futtatásra kész csomagokat a [GitHub Act
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<verzió>_amd64.deb` — hivatalos Debian/Ubuntu csomag (telepíti a programot, a menübejegyzést és a rendszerikonokat):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — hordozható Linux archívum.
 - **macOS (`Univerzális: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — natív `QuadFurn.app` alkalmazás Retina ikonnal.
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Alkalmazáslogó és forrásikon
 │   └── screenshots/           # Képernyőképek a dokumentációhoz
-├── docs/                      # 22 nyelvre lefordított dokumentáció
+├── docs/                      # 37 nyelvre lefordított dokumentáció
 ├── src/
 │   ├── main.rs                # Belépési pont, lapfülek kezelése, kezdőoldal és gyorsbillentyűk
 │   ├── model.rs               # Adatmodell (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # 2D guillotine lapszabászat és élzárólevonás
 │   ├── export.rs              # Vektoros fekvő A4 PDF exportáló és CSV exportáló
 │   ├── ui_panels.rs           # Precíziós transzformációs sáv, Alkatrész-felügyelő, Specifikáció, Szabásterv és Anyagok
-│   └── i18n.rs                # Fordítási szótárak 22 nyelvre és operációs rendszer nyelvfelismerése
+│   └── i18n.rs                # Fordítási szótárak 37 nyelvre és operációs rendszer nyelvfelismerése
 ├── build.rs                   # Windows ICO ikon és PE erőforrás automatikus generálása
 ├── Cargo.toml                 # Csomagkonfiguráció és függőségek
 └── LICENSE                    # MIT nyílt forráskódú licenc

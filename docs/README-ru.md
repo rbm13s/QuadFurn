@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-темы-оформления-и-локализация-на-22-языка)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-темы-оформления-и-локализация-на-37-языков)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS_%7C_Web-0078D6)](#быстрый-старт)
 [![Web Demo](https://img.shields.io/badge/Онлайн_САПР-Запустить_в_браузере-success?logo=webassembly)](https://rbm13s.github.io/QuadFurn/app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
@@ -26,23 +26,38 @@
 [English](../README.md) •
 **Русский** •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -63,7 +78,7 @@
   - [5. Вкладки изделий и буфер обмена между проектами](#5-вкладки-изделий-и-буфер-обмена-между-проектами)
   - [6. Экспорт производственного паспорта (векторный PDF, CSV Excel, буфер)](#6-экспорт-производственного-паспорта-векторный-pdf-csv-excel-буфер)
   - [7. Справочник листовых материалов, текстур и кромок](#7-справочник-листовых-материалов-текстур-и-кромок)
-  - [8. Темы оформления и локализация на 22 языка](#8-темы-оформления-и-локализация-на-22-языка)
+  - [8. Темы оформления и локализация на 37 языков](#8-темы-оформления-и-локализация-на-37-языков)
 - [Управление и горячие клавиши](#управление-и-горячие-клавиши)
 - [Быстрый старт](#быстрый-старт)
 - [Настройки и форматы файлов](#настройки-и-форматы-файлов)
@@ -110,10 +125,10 @@ QuadFurn объединяет ключевые возможности проек
 
 ![Светлая тема интерфейса](screenshots/ru/5lighttheme.png)
 
-### 6. 22 встроенных языка (интерфейс и экспорт в PDF)
+### 6. 37 встроенных языков (интерфейс и экспорт в PDF)
 Мгновенное переключение языка в верхнем меню через кнопку **`🌐`**, автоопределение языка ОС при первом запуске и локализованный многостраничный экспорт в PDF.
 
-![22 языка интерфейса](screenshots/ru/6languages.png)
+![37 языков интерфейса](screenshots/ru/6languages.png)
 
 ---
 
@@ -240,10 +255,10 @@ QuadFurn объединяет ключевые возможности проек
 
 ---
 
-### 8. Темы оформления и локализация на 22 языка
+### 8. Темы оформления и локализация на 37 языков
 
 - **Цветовые темы**: Переключение между **🌙 Темной**, **☀ Светлой** и **🖥 Системной** темами в верхнем меню.
-- **22 встроенных языка**:
+- **37 встроенных языков**:
   `Русский`, `English`, `Українська`, `Deutsch`, `Polski`, `Español`, `Français`, `Italiano`, `Português`, `Čeština`, `Slovenčina`, `Slovenščina`, `Nederlands`, `Dansk`, `Norsk`, `Svenska`, `Magyar`, `Română`, `Türkçe`, `简体中文`, `日本語`, `한국어`.
 - **Автоопределение языка ОС**: При первом запуске QuadFurn автоматически определяет язык операционной системы. Выбранный язык и тема сохраняются в `%APPDATA%\QuadFurn\settings.json`.
 
@@ -284,7 +299,7 @@ QuadFurn объединяет ключевые возможности проек
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — установочный пакет Debian/Ubuntu (устанавливает бинарник, пункт в системном меню и иконку):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — портативный standalone-архив.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — нативный бандл `QuadFurn.app` с Retina-иконкой `.icns`.
@@ -347,7 +362,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Исходное изображение логотипа для иконок Windows/Linux/macOS
 │   └── screenshots/           # Скриншоты интерфейса для документации
-├── docs/                      # Локализованная документация (22 языка)
+├── docs/                      # Локализованная документация (37 языков)
 ├── src/
 │   ├── main.rs                # Точка входа, вкладки изделий, стартовая страница, настройки и хоткеи
 │   ├── model.rs               # Структуры данных (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
@@ -356,7 +371,7 @@ QuadFurn/
 │   ├── cutter.rs              # Группировка спецификации, вычет кромки и гильотинный 2D-раскрой
 │   ├── export.rs              # Генератор многостраничного векторного PDF, экспорт в CSV и списков раскроя
 │   ├── ui_panels.rs           # Верхняя панель трансформации, инспектор деталей, вкладки спецификации, раскроя и материалов
-│   └── i18n.rs                # Словари локализации на 22 языка и автоопределение языка ОС
+│   └── i18n.rs                # Словари локализации на 37 языков и автоопределение языка ОС
 ├── build.rs                   # Конвертация assets/icon.jpeg в мультиразмерный ICO и встраивание ресурсов PE
 ├── Cargo.toml                 # Манифест пакета и зависимости
 └── LICENSE                    # Лицензия MIT

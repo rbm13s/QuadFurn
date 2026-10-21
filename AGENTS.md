@@ -44,15 +44,18 @@ Before releasing a new version, ALWAYS follow this mandatory three-phase release
    - Verify that `docs/app/` contains the newly compiled `.wasm` and `.js` bundle for `vX.Y.Z`.
 2. **Synchronize All Markdown Documentation**:
    - Primary `README.md` at root.
-   - All 21 localized documentation files in `docs/`:
-     `docs/README-ru.md`, `docs/README-uk.md`, `docs/README-de.md`, `docs/README-pl.md`,
-     `docs/README-es.md`, `docs/README-fr.md`, `docs/README-it.md`, `docs/README-pt.md`,
-     `docs/README-cs.md`, `docs/README-sk.md`, `docs/README-sl.md`, `docs/README-nl.md`,
-     `docs/README-da.md`, `docs/README-no.md`, `docs/README-sv.md`, `docs/README-hu.md`,
-     `docs/README-ro.md`, `docs/README-tr.md`, `docs/README-zh-cn.md`, `docs/README-ja.md`,
-     `docs/README-ko.md`.
+   - All 36 localized documentation files in `docs/`:
+     `docs/README-ru.md`, `docs/README-uk.md`, `docs/README-be.md`, `docs/README-kk.md`,
+     `docs/README-ka.md`, `docs/README-hy.md`, `docs/README-az.md`, `docs/README-uz.md`,
+     `docs/README-de.md`, `docs/README-fr.md`, `docs/README-es.md`, `docs/README-it.md`,
+     `docs/README-pt.md`, `docs/README-pl.md`, `docs/README-cs.md`, `docs/README-sk.md`,
+     `docs/README-sl.md`, `docs/README-bg.md`, `docs/README-sr.md`, `docs/README-hr.md`,
+     `docs/README-nl.md`, `docs/README-da.md`, `docs/README-no.md`, `docs/README-sv.md`,
+     `docs/README-fi.md`, `docs/README-et.md`, `docs/README-lv.md`, `docs/README-lt.md`,
+     `docs/README-hu.md`, `docs/README-ro.md`, `docs/README-tr.md`, `docs/README-el.md`,
+     `docs/README-zh-cn.md`, `docs/README-zh-tw.md`, `docs/README-ja.md`, `docs/README-ko.md`.
 3. **Synchronize All HTML Pages**:
-   - Update version badges (e.g. `<span class="badge-ver">vX.Y.Z</span>`), hero banners, and download links in `docs/index.html` and all 21 localized HTML files (`docs/ru.html`, `docs/de.html`, etc.).
+   - Update version badges (e.g. `<span class="badge-ver">vX.Y.Z</span>`), hero banners, and download links in `docs/index.html` and all 36 localized HTML files (`docs/ru.html`, `docs/de.html`, etc.).
    - Verify that all platform download URLs point to the newly published release.
 4. **Commit & Push to Main**:
    - Commit the WebAssembly build and synchronized documentation:
@@ -64,6 +67,6 @@ Before releasing a new version, ALWAYS follow this mandatory three-phase release
 
 ## 2. Documentation Synchronization Rule
 Whenever any functionality, UI controls, hotkeys, algorithms, or architecture in QuadFurn are added or modified:
-1. Update `README.md` and all 21 localized documentation files in `docs/README-*.md`.
+1. Update `README.md` and all 36 localized documentation files in `docs/README-*.md`.
 2. Maintain cross-linking navigation between all languages at the top of every README file.
 3. Maintain documentation integrity and ensure all code comments across the codebase remain in English.

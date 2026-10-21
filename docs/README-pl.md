@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-motywy-graficzne-i-lokalizacja-na-22-języki)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-motywy-graficzne-i-lokalizacja-na-22-języki)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#pierwsze-kroki)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-**Polski** •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+**Polski** •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Zakładki projektów i schowek między projektami](#5-zakładki-projektów-i-schowek-między-projektami)
   - [6. Eksport paszportu produkcyjnego (wektorowy PDF, CSV Excel, schowek)](#6-eksport-paszportu-produkcyjnego-wektorowy-pdf-csv-excel-schowek)
   - [7. Katalog materiałów płytowych, tekstur i obrzeży](#7-katalog-materiałów-płytowych-tekstur-i-obrzeży)
-  - [8. Motywy graficzne i lokalizacja na 22 języki](#8-motywy-graficzne-i-lokalizacja-na-22-języki)
+  - [8. Motywy graficzne i lokalizacja na 37 języków](#8-motywy-graficzne-i-lokalizacja-na-22-języki)
 - [Sterowanie i skróty klawiszowe](#sterowanie-i-skróty-klawiszowe)
 - [Pierwsze kroki](#pierwsze-kroki)
 - [Ustawienia i formaty plików](#ustawienia-i-formaty-plików)
@@ -105,10 +120,10 @@ Czytelny, kontrastowy jasny motyw obok ciemnego oraz automatyczna synchronizacja
 
 ![Jasny motyw](screenshots/pl/5lighttheme.png)
 
-### 6. 22 wbudowane języki
+### 6. 37 wbudowanych języków
 Przełączanie języka w czasie rzeczywistym przyciskiem **`🌐`**, automatyczne wykrywanie języka systemu oraz zlokalizowany eksport do PDF.
 
-![22 języki](screenshots/pl/6languages.png)
+![37 języków](screenshots/pl/6languages.png)
 
 ---
 
@@ -221,10 +236,10 @@ W zakładce **Materiały** (`🎨 4. Materiały`):
 
 ---
 
-### 8. Motywy graficzne i lokalizacja na 22 języki
+### 8. Motywy graficzne i lokalizacja na 37 języków
 
 - **Motywy**: Przełączanie między **🌙 Ciemnym**, **☀ Jasnym** a **🖥 Systemowym**.
-- **22 języki**: Kompletna lokalizacja interfejsu i generowania plików PDF.
+- **37 języków**: Kompletna lokalizacja interfejsu i generowania plików PDF.
 - **Automatyczne wykrywanie języka systemu**: Program uruchamia się w języku Twojego systemu operacyjnego.
 
 ---
@@ -264,7 +279,7 @@ Automatyczne kompilacje przy każdym wydaniu na [GitHub Actions](https://github.
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — pakiet instalacyjny Debian/Ubuntu:
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — archiwum przenośne.
 - **macOS (`Universal: Apple Silicon + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — aplikacja `QuadFurn.app`.
@@ -330,7 +345,7 @@ QuadFurn/
 │   ├── cutter.rs              # Zestawienia i rozkrój gilotynowy 2D
 │   ├── export.rs              # Eksport PDF, CSV, list rozkroju
 │   ├── ui_panels.rs           # Paski narzędzi, inspektor, dialogi
-│   └── i18n.rs                # Słowniki 22 języków
+│   └── i18n.rs                # Słowniki 37 języków
 ├── build.rs                   # Osadzanie ikony w systemie Windows
 ├── Cargo.toml                 # Manifest pakietu
 └── LICENSE                    # Licencja MIT

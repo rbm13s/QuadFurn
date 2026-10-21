@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-thèmes-visuels-et-localisation-en-22-langues)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-thèmes-visuels-et-localisation-en-22-langues)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#premiers-pas)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 **Français** •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Onglets multi-projets et presse-papiers inter-projets](#5-onglets-multi-projets-et-presse-papiers-inter-projets)
   - [6. Exportation du passeport technique (PDF vectoriel, CSV, presse-papiers)](#6-exportation-du-passeport-technique-pdf-vectoriel-csv-presse-papiers)
   - [7. Catalogue de panneaux, textures et chants](#7-catalogue-de-panneaux-textures-et-chants)
-  - [8. Thèmes visuels et localisation en 22 langues](#8-thèmes-visuels-et-localisation-en-22-langues)
+  - [8. Thèmes visuels et localisation en 37 langues](#8-thèmes-visuels-et-localisation-en-22-langues)
 - [Contrôles et raccourcis clavier](#contrôles-et-raccourcis-clavier)
 - [Premiers pas](#premiers-pas)
 - [Paramètres et formats de fichiers](#paramètres-et-formats-de-fichiers)
@@ -105,10 +120,10 @@ Thème clair moderne et contrasté aux côtés du Thème Sombre et de la synchro
 
 ![Interface en Thème Clair](screenshots/fr/5lighttheme.png)
 
-### 6. 22 langues intégrées (Interface et export PDF)
+### 6. 37 langues intégrées (Interface et export PDF)
 Changement de langue instantané sans redémarrage via le sélecteur **`🌐`** dans la barre d'outils, détection automatique de la langue de l'OS au premier lancement et exportations PDF localisées.
 
-![22 langues d'interface](screenshots/fr/6languages.png)
+![37 langues d'interface](screenshots/fr/6languages.png)
 
 ---
 
@@ -232,10 +247,10 @@ Dans l'onglet **Matériaux** (`🎨 4. Matériaux`) :
 
 ---
 
-### 8. Thèmes visuels et localisation en 22 langues
+### 8. Thèmes visuels et localisation en 37 langues
 
 - **Thèmes de couleurs** : Basculez entre **🌙 Sombre**, **☀ Clair** et **🖥 Système** depuis la barre supérieure.
-- **22 langues intégrées** :
+- **37 langues intégrées** :
   `Français`, `English`, `Русский`, `Українська`, `Deutsch`, `Polski`, `Español`, `Italiano`, `Português`, `Čeština`, `Slovenčina`, `Slovenščina`, `Nederlands`, `Dansk`, `Norsk`, `Svenska`, `Magyar`, `Română`, `Türkçe`, `简体中文`, `日本語` et `한국어`.
 - **Détection automatique au premier lancement** : Détecte la langue de votre système d'exploitation et l'applique immédiatement. Vos préférences sont conservées dans `%APPDATA%\QuadFurn\settings.json`.
 
@@ -276,7 +291,7 @@ Chaque version produit automatiquement des paquets exécutables via [GitHub Acti
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)** :
   - `quadfurn_<version>_amd64.deb` — paquet d'installation officiel Debian/Ubuntu (installe l'exécutable, l'entrée de menu et les icônes de bureau) :
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — archive Linux autonome portable.
 - **macOS (`Universel : Apple Silicon M1–M4 + Intel x86_64`)** : `QuadFurn-macos-universal.zip` — bundle `QuadFurn.app` natif avec icône Retina.
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Logo et icône source multi-résolutions
 │   └── screenshots/           # Captures d'écran pour la documentation
-├── docs/                      # Documentation localisée en 22 langues
+├── docs/                      # Documentation localisée en 37 langues
 ├── src/
 │   ├── main.rs                # Point d'entrée, gestionnaire multi-onglets, page d'accueil et raccourcis
 │   ├── model.rs               # Modèle de données (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # Moteur d'imbrication 2D et déduction des chants au sciage
 │   ├── export.rs              # Générateur de PDF vectoriel A4 Paysage localisé et export CSV
 │   ├── ui_panels.rs           # Barre de transformation, Inspecteur de pièces, Spécification, Calepinage et Matériaux
-│   └── i18n.rs                # Dictionnaires de traduction pour 22 langues et détection de l'OS
+│   └── i18n.rs                # Dictionnaires de traduction pour 37 langues et détection de l'OS
 ├── build.rs                   # Conversion automatique d'icône Windows ICO et ressource PE
 ├── Cargo.toml                 # Dépendances et configuration du paquet
 └── LICENSE                    # Licence MIT

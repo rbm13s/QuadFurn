@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-themes--22-language-localization)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-themes--37-language-localization)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS_%7C_Web-0078D6)](#getting-started)
 [![Web Demo](https://img.shields.io/badge/Online_CAD-Try_in_Browser-success?logo=webassembly)](https://rbm13s.github.io/QuadFurn/app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -26,23 +26,38 @@
 **English** •
 [Русский](docs/README-ru.md) •
 [Українська](docs/README-uk.md) •
+[Беларуская](docs/README-be.md) •
+[Қазақша](docs/README-kk.md) •
+[ქართული](docs/README-ka.md) •
+[Հայերեն](docs/README-hy.md) •
+[Azərbaycan](docs/README-az.md) •
+[Oʻzbekcha](docs/README-uz.md) •
 [Deutsch](docs/README-de.md) •
-[Polski](docs/README-pl.md) •
-[Español](docs/README-es.md) •
 [Français](docs/README-fr.md) •
+[Español](docs/README-es.md) •
 [Italiano](docs/README-it.md) •
 [Português](docs/README-pt.md) •
+[Polski](docs/README-pl.md) •
 [Čeština](docs/README-cs.md) •
 [Slovenčina](docs/README-sk.md) •
 [Slovenščina](docs/README-sl.md) •
+[Български](docs/README-bg.md) •
+[Српски](docs/README-sr.md) •
+[Hrvatski](docs/README-hr.md) •
 [Nederlands](docs/README-nl.md) •
 [Dansk](docs/README-da.md) •
 [Norsk](docs/README-no.md) •
 [Svenska](docs/README-sv.md) •
+[Suomi](docs/README-fi.md) •
+[Eesti](docs/README-et.md) •
+[Latviešu](docs/README-lv.md) •
+[Lietuvių](docs/README-lt.md) •
 [Magyar](docs/README-hu.md) •
 [Română](docs/README-ro.md) •
 [Türkçe](docs/README-tr.md) •
+[Ελληνικά](docs/README-el.md) •
 [简体中文](docs/README-zh-cn.md) •
+[繁體中文](docs/README-zh-tw.md) •
 [日本語](docs/README-ja.md) •
 [한국어](docs/README-ko.md)
 
@@ -63,7 +78,7 @@
   - [5. Multi-Product Tabs & Cross-Project Copy/Paste](#5-multi-product-tabs--cross-project-copypaste)
   - [6. Production Passport Export (Vector PDF, Excel CSV, Clipboard)](#6-production-passport-export-vector-pdf-excel-csv-clipboard)
   - [7. Sheet Materials, Textures & Edge Banding Catalog](#7-sheet-materials-textures--edge-banding-catalog)
-  - [8. Themes & 22-Language Localization](#8-themes--22-language-localization)
+  - [8. Themes & 37-Language Localization](#8-themes--37-language-localization)
 - [Controls & Keyboard Shortcuts](#controls--keyboard-shortcuts)
 - [Getting Started](#getting-started)
 - [Settings & File Formats](#settings--file-formats)
@@ -109,10 +124,10 @@ Clean high-contrast Light Theme alongside Dark Theme and automatic Windows Syste
 
 ![Light Theme Interface](docs/screenshots/en/5lighttheme.png)
 
-### 6. 22 Built-in Languages (UI & PDF Export)
+### 6. 37 Built-in Languages (UI & PDF Export)
 Instant runtime language switching via the **`🌐`** selector in the top toolbar, with automatic OS language detection on first launch and localized multi-page PDF exports.
 
-![22 Interface Languages](docs/screenshots/en/6languages.png)
+![37 Interface Languages](docs/screenshots/en/6languages.png)
 
 ---
 
@@ -239,10 +254,10 @@ In the **Materials** tab (`🎨 4. Materials`):
 
 ---
 
-### 8. Themes & 22-Language Localization
+### 8. Themes & 37-Language Localization
 
 - **Color Themes**: Switch between **🌙 Dark**, **☀ Light**, and **🖥 System** themes from the top bar.
-- **22 Built-in Languages**:
+- **37 Built-in Languages**:
   `Čeština`, `Dansk`, `Deutsch`, `English`, `Español`, `Français`, `Italiano`, `Korean (한국어)`, `Magyar`, `Nederlands`, `Norsk (Bokmål)`, `Polski`, `Português`, `Română`, `Russian (Русский)`, `Slovenski`, `Slovenský`, `Svenska`, `Türkçe`, `Українська (Ukrainian)`, `简体中文 (Chinese Simplified)`, and `日本語 (Japanese)`.
 - **First-Launch OS Language Detection**: On first launch, QuadFurn detects your operating system's UI language and starts in that language automatically (falling back to `English` if the OS language is not in the supported list). Both your chosen language and theme are saved automatically in `%APPDATA%\QuadFurn\settings.json`.
 
@@ -283,7 +298,7 @@ Every push and release automatically builds ready-to-run packages via [GitHub Ac
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu installer package (installs binary, desktop menu entry, and application icon):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portable standalone Linux archive.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` bundle with Retina `.icns` icon.

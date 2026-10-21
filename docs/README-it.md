@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-temi-visivi-e-localizzazione-in-22-lingue)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-temi-visivi-e-localizzazione-in-22-lingue)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#guida-introduttiva)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 **Italiano** •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Schede multi-progetto e appunti tra progetti](#5-schede-multi-progetto-e-appunti-tra-progetti)
   - [6. Esportazione del passaporto di produzione (PDF vettoriale, CSV, appunti)](#6-esportazione-del-passaporto-di-produzione-pdf-vettoriale-csv-appunti)
   - [7. Catalogo materiali, texture e bordature](#7-catalogo-materiali-texture-e-bordature)
-  - [8. Temi visivi e localizzazione in 22 lingue](#8-temi-visivi-e-localizzazione-in-22-lingue)
+  - [8. Temi visivi e localizzazione in 37 lingue](#8-temi-visivi-e-localizzazione-in-22-lingue)
 - [Controlli e scorciatoie da tastiera](#controlli-e-scorciatoie-da-tastiera)
 - [Guida introduttiva](#guida-introduttiva)
 - [Impostazioni e formati di file](#impostazioni-e-formati-di-file)
@@ -105,10 +120,10 @@ Tema chiaro nitido ad alto contrasto affiancato al Tema Scuro e alla sincronizza
 
 ![Interfaccia con Tema Chiaro](screenshots/it/5lighttheme.png)
 
-### 6. 22 lingue integrate (Interfaccia ed esportazione PDF)
+### 6. 37 lingue integrate (Interfaccia ed esportazione PDF)
 Cambio istantaneo della lingua senza riavvio tramite il selettore **`🌐`** nella barra superiore, rilevamento automatico della lingua del sistema operativo al primo avvio ed esportazioni PDF multilingue.
 
-![22 lingue disponibili](screenshots/it/6languages.png)
+![37 lingue disponibili](screenshots/it/6languages.png)
 
 ---
 
@@ -232,10 +247,10 @@ Nella scheda **Materiali** (`🎨 4. Materiali`):
 
 ---
 
-### 8. Temi visivi e localizzazione in 22 lingue
+### 8. Temi visivi e localizzazione in 37 lingue
 
 - **Temi grafici**: Passa facilmente tra i temi **🌙 Scuro**, **☀ Chiaro** e **🖥 Sistema** dalla barra degli strumenti.
-- **22 lingue integrate**:
+- **37 lingue integrate**:
   `Italiano`, `English`, `Русский`, `Українська`, `Deutsch`, `Polski`, `Español`, `Français`, `Português`, `Čeština`, `Slovenčina`, `Slovenščina`, `Nederlands`, `Dansk`, `Norsk`, `Svenska`, `Magyar`, `Română`, `Türkçe`, `简体中文`, `日本語` e `한국어`.
 - **Rilevamento automatico della lingua di sistema**: Al primo avvio QuadFurn individua la lingua del sistema operativo e la imposta automaticamente. Le impostazioni vengono conservate in `%APPDATA%\QuadFurn\settings.json`.
 
@@ -276,7 +291,7 @@ Per ogni release vengono generati pacchetti pronti all'uso tramite [GitHub Actio
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versione>_amd64.deb` — pacchetto d'installazione Debian/Ubuntu (installa binario, voce di menu e icone):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — archivio portatile autonomo.
 - **macOS (`Universale: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — applicazione nativa `QuadFurn.app` con icona Retina.
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Logo dell'applicazione e icona sorgente ad alta risoluzione
 │   └── screenshots/           # Schermate per la documentazione
-├── docs/                      # Documentazione localizzata in 22 lingue
+├── docs/                      # Documentazione localizzata in 37 lingue
 ├── src/
 │   ├── main.rs                # Punto d'ingresso, gestione schede multi-progetto, pagina iniziale e scorciatoie
 │   ├── model.rs               # Modello dati (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # Motore di taglio lastre a ghigliottina e detrazione bordi
 │   ├── export.rs              # Generatore di PDF vettoriali A4 Orizzontale localizzati ed esportatore CSV
 │   ├── ui_panels.rs           # Barra di trasformazione, Ispettore elementi, Distinta base, Taglio e Materiali
-│   └── i18n.rs                # Tabelle di localizzazione per 22 lingue e autorilevamento lingua OS
+│   └── i18n.rs                # Tabelle di localizzazione per 37 lingue e autorilevamento lingua OS
 ├── build.rs                   # Generazione automatica dell'icona ICO per Windows e risorsa PE
 ├── Cargo.toml                 # Manifest e dipendenze del pacchetto
 └── LICENSE                    # Licenza open-source MIT

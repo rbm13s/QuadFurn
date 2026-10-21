@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-teme-vizuale-și-localizare-în-22-de-limbi)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-teme-vizuale-și-localizare-în-37-de-limbi)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#primii-pași)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 **Română** •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. File de proiecte multiple și clipboard între proiecte](#5-file-de-proiecte-multiple-și-clipboard-între-proiecte)
   - [6. Exportul pașaportului de producție (PDF vectorial, CSV, clipboard)](#6-exportul-pașaportului-de-producție-pdf-vectorial-csv-clipboard)
   - [7. Catalog de plăci, texturi și canturi](#7-catalog-de-plăci-texturi-și-canturi)
-  - [8. Teme vizuale și localizare în 22 de limbi](#8-teme-vizuale-și-localizare-în-22-de-limbi)
+  - [8. Teme vizuale și localizare în 37 de limbi](#8-teme-vizuale-și-localizare-în-37-de-limbi)
 - [Comenzi și scurtături de tastatură](#comenzi-și-scurtături-de-tastatură)
 - [Primii pași](#primii-pași)
 - [Setări și formate de fișiere](#setări-și-formate-de-fișiere)
@@ -105,10 +120,10 @@ Temă luminoasă modernă cu contrast ridicat alături de tema întunecată, cu 
 
 ![Temă luminoasă](screenshots/ro/5lighttheme.png)
 
-### 6. 22 de limbi integrate (Interfață și export PDF)
+### 6. 37 de limbi integrate (Interfață și export PDF)
 Schimbare instantanee a limbii fără repornire prin butonul **`🌐`** din bara superioară, detectare automată a limbii sistemului la prima pornire și exporturi PDF traduse.
 
-![22 de limbi](screenshots/ro/6languages.png)
+![37 de limbi](screenshots/ro/6languages.png)
 
 ---
 
@@ -232,10 +247,10 @@ Fila **Plan de debitare** (`🪚 3. Plan de debitare`) calculează așezarea ide
 
 ---
 
-### 8. Teme vizuale și localizare în 22 de limbi
+### 8. Teme vizuale și localizare în 37 de limbi
 
 - **Teme vizuale**: Comutați ușor între **🌙 Întunecat**, **☀ Luminos** și **🖥 Sistem** din bara superioară.
-- **22 de limbi disponibile**:
+- **37 de limbi disponibile**:
   `Română`, `English`, `Русский`, `Українська`, `Deutsch`, `Polski`, `Español`, `Français`, `Italiano`, `Português`, `Čeština`, `Slovenčina`, `Slovenščina`, `Nederlands`, `Dansk`, `Norsk`, `Svenska`, `Magyar`, `Türkçe`, `简体中文`, `日本語` și `한국어`.
 - **Detectare automată la prima pornire**: Identifică limba sistemului dvs. de operare și o configurează automat. Opțiunea se salvează în `%APPDATA%\QuadFurn\settings.json`.
 
@@ -276,7 +291,7 @@ Fiecare versiune generează automat pachete executabile prin [GitHub Actions](ht
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versiune>_amd64.deb` — pachet oficial pentru Debian/Ubuntu (instalează executabilul, intrarea în meniu și pictogramele de sistem):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — arhivă portabilă pentru Linux.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — aplicație nativă `QuadFurn.app` cu pictogramă Retina.
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Sigla aplicației și pictograma sursă
 │   └── screenshots/           # Capturi de ecran pentru documentație
-├── docs/                      # Documentație tradusă în 22 de limbi
+├── docs/                      # Documentație tradusă în 37 de limbi
 ├── src/
 │   ├── main.rs                # Punct de intrare, gestionare file de proiecte, ecran de start și scurtături
 │   ├── model.rs               # Model de date (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # Optimizator 2D de croire ghilotină și deducere canturi
 │   ├── export.rs              # Generator de PDF vectorial A4 Landscape și exportator CSV
 │   ├── ui_panels.rs           # Bară de transformare, Inspector de piese, Specificație, Debitarea plăcilor și Materiale
-│   └── i18n.rs                # Dicționare de traducere pentru 22 de limbi și detecție automată a limbii
+│   └── i18n.rs                # Dicționare de traducere pentru 37 de limbi și detecție automată a limbii
 ├── build.rs                   # Conversie automată a pictogramei ICO pentru Windows și resursă PE
 ├── Cargo.toml                 # Configurația pachetului și dependențe
 └── LICENSE                    # Licență liberă MIT

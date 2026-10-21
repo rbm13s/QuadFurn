@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-테마-설정-및-22개-언어-다국어-지원)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-테마-설정-및-22개-언어-다국어-지원)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#시작하기)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 **한국어**
 
@@ -58,7 +73,7 @@
   - [5. 멀티 프로젝트 탭 및 프로젝트 간 복사/붙여넣기](#5-멀티-프로젝트-탭-및-프로젝트-간-복사붙여넣기)
   - [6. 생산 공정서 내보내기 (벡터 PDF, Excel CSV, 클립보드)](#6-생산-공정서-내보내기-벡터-pdf-excel-csv-클립보드)
   - [7. 판재 원자재, 텍스처 및 에지 밴딩 카탈로그](#7-판재-원자재-텍스처-및-에지-밴딩-카탈로그)
-  - [8. 테마 설정 및 22개 언어 다국어 지원](#8-테마-설정-및-22개-언어-다국어-지원)
+  - [8. 테마 설정 및 37개 언어 다국어 지원](#8-테마-설정-및-22개-언어-다국어-지원)
 - [조작 방법 및 키보드 단축키](#조작-방법-및-키보드-단축키)
 - [시작하기](#시작하기)
 - [설정 및 파일 형식](#설정-및-파일-형식)
@@ -105,10 +120,10 @@ QuadFurn은 널리 검증된 3가지 전문 도구의 장점을 결합하여 설
 
 ![라이트 테마](screenshots/ko/5lighttheme.png)
 
-### 6. 22개 언어 다국어 지원 (UI 및 PDF 내보내기)
+### 6. 37개 언어 다국어 지원 (UI 및 PDF 내보내기)
 상단 툴바의 **`🌐`** 아이콘을 클릭하여 재시작 없이 즉시 언어를 변경할 수 있으며, 첫 실행 시 OS 언어를 자동 감지하고 다국어 벡터 PDF 공정서를 생성합니다.
 
-![22개 언어 지원](screenshots/ko/6languages.png)
+![37개 언어 지원](screenshots/ko/6languages.png)
 
 ---
 
@@ -232,10 +247,10 @@ QuadFurn은 널리 검증된 3가지 전문 도구의 장점을 결합하여 설
 
 ---
 
-### 8. 테마 설정 및 22개 언어 다국어 지원
+### 8. 테마 설정 및 37개 언어 다국어 지원
 
 - **시각 테마**: 상단 바에서 **🌙 다크**, **☀ 라이트**, **🖥 시스템** 테마를 자유롭게 전환.
-- **22개 언어 기본 탑재**:
+- **37개 언어 기본 탑재**:
   `한국어`, `English`, `Русский`, `Українська`, `Deutsch`, `Polski`, `Español`, `Français`, `Italiano`, `Português`, `Čeština`, `Slovenčina`, `Slovenščina`, `Nederlands`, `Dansk`, `Norsk`, `Svenska`, `Magyar`, `Română`, `Türkçe`, `简体中文` 및 `日本語`.
 - **첫 실행 시 OS 언어 자동 감지**: 운영체제의 언어를 자동으로 인식하여 기본값으로 설정합니다. 사용자 환경설정은 `%APPDATA%\QuadFurn\settings.json`에 영구 보관됩니다.
 
@@ -276,7 +291,7 @@ QuadFurn은 널리 검증된 3가지 전문 도구의 장점을 결합하여 설
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<버전>_amd64.deb` — 공식 Debian/Ubuntu 설치 패키지 (실행 바이너리, 메뉴 등록 및 시스템 아이콘 자동 구성):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — 독립 실행형 포터블 Linux 압축 파일.
 - **macOS (`Universal 통합 아키텍처: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — Retina 아이콘이 포함된 네이티브 `QuadFurn.app`.
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # 애플리케이션 로고 및 원본 아이콘 이미지
 │   └── screenshots/           # 문서용 공식 스크린샷 이미지
-├── docs/                      # 22개 언어 완역 로컬라이제이션 문서
+├── docs/                      # 37개 언어 완역 로컬라이제이션 문서
 ├── src/
 │   ├── main.rs                # 진입점, 프로젝트 탭 관리, 시작 페이지, 글로벌 단축키 및 설정
 │   ├── model.rs               # 핵심 데이터 모델 (Project, PartBlock, SheetMaterial, EdgeBanding, OBB 바운딩 박스)
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # 2D 길로틴 재단 최적화 엔진, 엣지 두께 공제 및 목록 그룹화
 │   ├── export.rs              # 다국어 벡터 PDF 생산 도면 생성기, Excel CSV 및 재단 목록 형식 내보내기
 │   ├── ui_panels.rs           # 상단 변환 바, 부품 인스펙터, 명세서, 재단 배치도, 자재 UI
-│   └── i18n.rs                # 22개 언어 번역 사전 및 운영체제 로캘 자동 감지
+│   └── i18n.rs                # 37개 언어 번역 사전 및 운영체제 로캘 자동 감지
 ├── build.rs                   # Windows ICO 다중 해상도 아이콘 생성 및 PE 리소스 링크
 ├── Cargo.toml                 # Cargo 패키지 매니페스트 및 의존성 라이브러리 목록
 └── LICENSE                    # MIT 오픈소스 라이선스

@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-visuelle-temaer-og-lokalisering-på-22-språk)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-visuelle-temaer-og-lokalisering-på-22-språk)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#komme-i-gang)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 **Norsk** •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Prosjektfaner og utklippstavle på tvers av prosjekter](#5-prosjektfaner-og-utklippstavle-på-tvers-av-prosjekter)
   - [6. Eksport av produksjonspass (vektor-PDF, CSV, utklippstavle)](#6-eksport-av-produksjonspass-vektor-pdf-csv-utklippstavle)
   - [7. Plate-, tekstur- og kantlistkatalog](#7-plate--tekstur--og-kantlistkatalog)
-  - [8. Visuelle temaer og lokalisering på 22 språk](#8-visuelle-temaer-og-lokalisering-på-22-språk)
+  - [8. Visuelle temaer og lokalisering på 37 språk](#8-visuelle-temaer-og-lokalisering-på-22-språk)
 - [Styring og hurtigtaster](#styring-og-hurtigtaster)
 - [Komme i gang](#komme-i-gang)
 - [Innstillinger og filformater](#innstillinger-og-filformater)
@@ -105,10 +120,10 @@ Moderne lyst tema med høy kontrast side om side med det mørke temaet, inkluder
 
 ![Lyst tema](screenshots/no/5lighttheme.png)
 
-### 6. 22 innebygde språk (Brukergrensesnitt og PDF-eksport)
+### 6. 37 innebygde språk (Brukergrensesnitt og PDF-eksport)
 Umiddelbart språkbytte uten omstart via **`🌐`**-knappen i verktøylinjen, automatisk gjenkjenning av systemspråk ved første oppstart og flerspråklige PDF-rapporter.
 
-![22 språk](screenshots/no/6languages.png)
+![37 språk](screenshots/no/6languages.png)
 
 ---
 
@@ -232,7 +247,7 @@ I fanen **Materialer** (`🎨 4. Materialer`):
 
 ---
 
-### 8. Visuelle temaer og lokalisering på 22 språk
+### 8. Visuelle temaer og lokalisering på 37 språk
 
 - **Visuelle temaer**: Bytt enkelt mellom **🌙 Mørkt**, **☀ Lyst** og **🖥 Systemtema** i den øvre verktøylinjen.
 - **22 innebygde språk**:
@@ -276,7 +291,7 @@ Hver utgivelse genererer automatisk installasjonspakker via [GitHub Actions](htt
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versjon>_amd64.deb` — offisiell installasjonspakke for Debian/Ubuntu (installerer programfil, menyoppføring og systemikoner):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — bærbar Linux-arkivfil.
 - **macOS (`Universell: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — nativ `QuadFurn.app` med Retina-ikon.
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Programikon og kildebilde
 │   └── screenshots/           # Skjermbilder til dokumentasjonen
-├── docs/                      # Dokumentasjon oversatt til 22 språk
+├── docs/                      # Dokumentasjon oversatt til 37 språk
 ├── src/
 │   ├── main.rs                # Inngangspunkt, håndtering av prosjektfaner, startside og hurtigtaster
 │   ├── model.rs               # Datamodell (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # 2D giljotin kappeoptimalisering og fradrag for kantlister
 │   ├── export.rs              # Vektoriell PDF A4 Liggende eksportør og CSV-eksportør
 │   ├── ui_panels.rs           # Transformeringslinje, Elementinspektør, Stykkliste, Kappeskjema og Materialer
-│   └── i18n.rs                # Oversettelsesordbøker for 22 språk og automatisk gjenkjenning av OS-språk
+│   └── i18n.rs                # Oversettelsesordbøker for 37 språk og automatisk gjenkjenning av OS-språk
 ├── build.rs                   # Automatisk konvertering av ICO-ikon for Windows og PE-ressurs
 ├── Cargo.toml                 # Pakkekonfigurasjon og avhengigheter
 └── LICENSE                    # MIT-lisens

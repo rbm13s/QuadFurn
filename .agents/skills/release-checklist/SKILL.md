@@ -82,11 +82,11 @@ This skill provides step-by-step guidance for safely releasing a new version of 
 
 2. **Update Markdown Documentation**:
    - Primary `README.md` at root
-   - All 21 localized files in `docs/README-*.md`
+   - All 36 localized files in `docs/README-*.md`
    Ensure badges, headers, and links reflect `vX.Y.Z`.
 
 3. **Update HTML Website Pages**:
-   - `docs/index.html` and all 21 localized HTML files in `docs/*.html`.
+   - `docs/index.html` and all 36 localized HTML files in `docs/*.html`.
    - Update:
      - Version badge: `<span class="badge-ver">vX.Y.Z</span>`
      - Hero banner: `vX.Y.Z Available • ...`

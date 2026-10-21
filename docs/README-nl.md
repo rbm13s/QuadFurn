@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-visuele-themas-en-lokalisatie-in-22-talen)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-visuele-themas-en-lokalisatie-in-22-talen)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#aan-de-slag)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 **Nederlands** •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 [Türkçe](README-tr.md) •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -58,7 +73,7 @@
   - [5. Projecttabbladen en klembord tussen projecten](#5-projecttabbladen-en-klembord-tussen-projecten)
   - [6. Export van productiepaspoort (vector-PDF, CSV, klembord)](#6-export-van-productiepaspoort-vector-pdf-csv-klembord)
   - [7. Platen-, texturen- en kantenbandcatalogus](#7-platen--texturen--en-kantenbandcatalogus)
-  - [8. Visuele thema's en lokalisatie in 22 talen](#8-visuele-themas-en-lokalisatie-in-22-talen)
+  - [8. Visuele thema's en lokalisatie in 37 talen](#8-visuele-themas-en-lokalisatie-in-22-talen)
 - [Bediening en sneltoetsen](#bediening-en-sneltoetsen)
 - [Aan de slag](#aan-de-slag)
 - [Instellingen en bestandsformaten](#instellingen-en-bestandsformaten)
@@ -105,10 +120,10 @@ Modern licht thema met hoog contrast naast het donkere thema, inclusief automati
 
 ![Licht thema](screenshots/nl/5lighttheme.png)
 
-### 6. 22 ingebouwde talen (Interface & PDF-export)
+### 6. 37 ingebouwde talen (Interface & PDF-export)
 Direct wisselen van taal zonder herstart via de knop **`🌐`** in de bovenbalk, automatische taaldetectie van het besturingssysteem bij de eerste start en gelokaliseerde PDF-exports.
 
-![22 talen](screenshots/nl/6languages.png)
+![37 talen](screenshots/nl/6languages.png)
 
 ---
 
@@ -232,7 +247,7 @@ In het tabblad **Materialen** (`🎨 4. Materialen`):
 
 ---
 
-### 8. Visuele thema's en lokalisatie in 22 talen
+### 8. Visuele thema's en lokalisatie in 37 talen
 
 - **Thema's**: Wissel eenvoudig tussen **🌙 Donker**, **☀ Licht** en **🖥 Systeemthema** in de bovenste menubalk.
 - **22 ingebouwde talen**:
@@ -276,7 +291,7 @@ Elke release bouwt automatisch direct te gebruiken pakketten via [GitHub Actions
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versie>_amd64.deb` — officieel installatiepakket voor Debian/Ubuntu (installeert het programma, menukoppeling en systeemiconen):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — draagbaar Linux-archief.
 - **macOS (`Universeel: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` met Retina-pictogram.
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Toepassingslogo en bronpictogram
 │   └── screenshots/           # Schermafbeeldingen voor documentatie
-├── docs/                      # Gelokaliseerde documentatie in 22 talen
+├── docs/                      # Gelokaliseerde documentatie in 37 talen
 ├── src/
 │   ├── main.rs                # Startpunt, beheer van projecttabbladen, startpagina en sneltoetsen
 │   ├── model.rs               # Datamodel (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # 2D guillotine zaagoptimalisatie en kantenbandaftrek
 │   ├── export.rs              # Gelokaliseerde vector-PDF A4 Liggend exporteur en CSV-exporteur
 │   ├── ui_panels.rs           # Transformatiebalk, Onderdeleninspecteur, Stuklijst, Zaagplan en Materialen
-│   └── i18n.rs                # Vertaalwoordenboeken voor 22 talen en OS-taaldetectie
+│   └── i18n.rs                # Vertaalwoordenboeken voor 37 talen en OS-taaldetectie
 ├── build.rs                   # Automatische conversie van ICO-pictogram voor Windows en PE-bron
 ├── Cargo.toml                 # Pakketconfiguratie en afhankelijkheden
 └── LICENSE                    # Open-source MIT-licentie

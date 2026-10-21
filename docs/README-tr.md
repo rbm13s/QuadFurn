@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -11,7 +11,7 @@
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
 [![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
-[![Languages](https://img.shields.io/badge/Languages-22_Locales-purple)](#8-görsel-temalar-ve-22-dil-desteği)
+[![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-görsel-temalar-ve-22-dil-desteği)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#başlarken)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
 
@@ -21,23 +21,38 @@
 [English](../README.md) •
 [Русский](README-ru.md) •
 [Українська](README-uk.md) •
+[Беларуская](README-be.md) •
+[Қазақша](README-kk.md) •
+[ქართული](README-ka.md) •
+[Հայերեն](README-hy.md) •
+[Azərbaycan](README-az.md) •
+[Oʻzbekcha](README-uz.md) •
 [Deutsch](README-de.md) •
-[Polski](README-pl.md) •
-[Español](README-es.md) •
 [Français](README-fr.md) •
+[Español](README-es.md) •
 [Italiano](README-it.md) •
 [Português](README-pt.md) •
+[Polski](README-pl.md) •
 [Čeština](README-cs.md) •
 [Slovenčina](README-sk.md) •
 [Slovenščina](README-sl.md) •
+[Български](README-bg.md) •
+[Српски](README-sr.md) •
+[Hrvatski](README-hr.md) •
 [Nederlands](README-nl.md) •
 [Dansk](README-da.md) •
 [Norsk](README-no.md) •
 [Svenska](README-sv.md) •
+[Suomi](README-fi.md) •
+[Eesti](README-et.md) •
+[Latviešu](README-lv.md) •
+[Lietuvių](README-lt.md) •
 [Magyar](README-hu.md) •
 [Română](README-ro.md) •
 **Türkçe** •
+[Ελληνικά](README-el.md) •
 [简体中文](README-zh-cn.md) •
+[繁體中文](README-zh-tw.md) •
 [日本語](README-ja.md) •
 [한국어](README-ko.md)
 
@@ -276,7 +291,7 @@ Her sürüm [GitHub Actions](https://github.com/rbm13s/QuadFurn/actions) aracıl
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<sürüm>_amd64.deb` — resmi Debian/Ubuntu paketi (uygulamayı, menü girdisini ve simgeleri kurar):
     ```bash
-    sudo apt install ./quadfurn_0.2.4_amd64.deb
+    sudo apt install ./quadfurn_0.2.5_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — taşınabilir Linux arşivi.
 - **macOS (`Evrensel: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — Retina simgeli yerel `QuadFurn.app`.
@@ -339,7 +354,7 @@ QuadFurn/
 ├── assets/
 │   ├── icon.jpeg              # Uygulama logosu ve kaynak simgesi
 │   └── screenshots/           # Dokümantasyon ekran görüntüleri
-├── docs/                      # 22 dile çevrilmiş dokümantasyon
+├── docs/                      # 37 dile çevrilmiş dokümantasyon
 ├── src/
 │   ├── main.rs                # Giriş noktası, sekme yönetimi, başlangıç sayfası ve kısayollar
 │   ├── model.rs               # Veri modeli (Project, PartBlock, SheetMaterial, EdgeBanding, OBB)
@@ -348,7 +363,7 @@ QuadFurn/
 │   ├── cutter.rs              # 2D giyotin kesim optimizasyonu ve kenar bandı düşümü
 │   ├── export.rs              # Vektörel A4 Yatay PDF ve CSV dışa aktarıcı
 │   ├── ui_panels.rs           # Dönüşüm çubuğu, Parça Denetçisi, Şartname, Kesim Şeması ve Malzemeler
-│   └── i18n.rs                # 22 dil için çeviri sözlükleri ve sistem dili algılama
+│   └── i18n.rs                # 37 dil için çeviri sözlükleri ve sistem dili algılama
 ├── build.rs                   # Windows ICO simge dönüşümü ve PE kaynağı
 ├── Cargo.toml                 # Paket yapılandırması ve bağımlılıklar
 └── LICENSE                    # MIT Açık Kaynak Lisansı
