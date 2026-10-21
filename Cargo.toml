@@ -6,6 +6,7 @@ description = "3D Furniture & Cabinet CAD (4-viewport designer + guillotine shee
 license = "MIT"
 repository = "https://github.com/rbm13s/QuadFurn"
 authors = ["rbm13s <rbm13s@gmail.com>"]
+default-run = "quadfurn"
 readme = "README.md"
 
 [dependencies]

@@ -11,7 +11,7 @@ fn encode_ico_dib_entry(img: &image::DynamicImage, sz: u32) -> Vec<u8> {
     let rgba = resized.to_rgba8();
 
     let xor_bytes = (sz * sz * 4) as usize;
-    let and_row_bytes = (((sz + 31) / 32) * 4) as usize;
+    let and_row_bytes = (sz.div_ceil(32) * 4) as usize;
     let and_bytes = and_row_bytes * (sz as usize);
     let mut buf = Vec::with_capacity(40 + xor_bytes + and_bytes);
 
@@ -88,7 +88,7 @@ fn write_res_entry(
 
     out.extend_from_slice(&header);
     out.extend_from_slice(data);
-    while out.len() % 4 != 0 {
+    while !out.len().is_multiple_of(4) {
         out.push(0);
     }
 }

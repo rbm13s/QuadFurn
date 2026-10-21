@@ -307,7 +307,8 @@ impl PdfTrueTypeFont {
 
     fn load_for_lang(lang: AppLanguage, bold: bool) -> Result<Self, String> {
         let candidates: &[&str] = match (lang, bold) {
-            (AppLanguage::ZhCn, false) => &[
+            (AppLanguage::ZhCn | AppLanguage::ZhTw, false) => &[
+                "C:\\Windows\\Fonts\\msjh.ttc",
                 "C:\\Windows\\Fonts\\msyh.ttc",
                 "C:\\Windows\\Fonts\\simhei.ttf",
                 "C:\\Windows\\Fonts\\malgun.ttf",
@@ -322,7 +323,9 @@ impl PdfTrueTypeFont {
                 "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
                 "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
             ],
-            (AppLanguage::ZhCn, true) => &[
+            (AppLanguage::ZhCn | AppLanguage::ZhTw, true) => &[
+                "C:\\Windows\\Fonts\\msjhbd.ttc",
+                "C:\\Windows\\Fonts\\msjh.ttc",
                 "C:\\Windows\\Fonts\\msyhbd.ttc",
                 "C:\\Windows\\Fonts\\msyh.ttc",
                 "C:\\Windows\\Fonts\\malgunbd.ttf",
@@ -336,6 +339,22 @@ impl PdfTrueTypeFont {
                 "/System/Library/Fonts/Helvetica.ttc",
                 "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
                 "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+            ],
+            (AppLanguage::Ka | AppLanguage::Hy, false) => &[
+                "C:\\Windows\\Fonts\\sylfaen.ttf",
+                "C:\\Windows\\Fonts\\segoeui.ttf",
+                "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                "C:\\Windows\\Fonts\\arial.ttf",
+            ],
+            (AppLanguage::Ka | AppLanguage::Hy, true) => &[
+                "C:\\Windows\\Fonts\\sylfaen.ttf",
+                "C:\\Windows\\Fonts\\seguisb.ttf",
+                "C:\\Windows\\Fonts\\segoeuib.ttf",
+                "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                "C:\\Windows\\Fonts\\arialbd.ttf",
             ],
             (AppLanguage::Ja, false) => &[
                 "C:\\Windows\\Fonts\\YuGothM.ttc",
@@ -2087,8 +2106,13 @@ mod tests {
             AppLanguage::Uk,
             AppLanguage::De,
             AppLanguage::ZhCn,
+            AppLanguage::ZhTw,
             AppLanguage::Ja,
             AppLanguage::Ko,
+            AppLanguage::Ka,
+            AppLanguage::Hy,
+            AppLanguage::El,
+            AppLanguage::Kk,
         ] {
             let bytes = generate_spec_pdf_bytes(&proj, lang)
                 .unwrap_or_else(|e| panic!("PDF generation failed for {:?}: {}", lang, e));

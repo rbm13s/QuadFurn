@@ -1169,7 +1169,7 @@ impl eframe::App for QuadFurnApp {
                 ctx.request_repaint();
             }
 
-            if matches!(self.language, AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::Ko) {
+            if matches!(self.language, AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::ZhTw | AppLanguage::Ko) {
                 if crate::web::is_cjk_font_fetching_web() {
                     ctx.request_repaint();
                 } else if !crate::web::is_cjk_font_loaded_web() {
@@ -1609,65 +1609,79 @@ impl eframe::App for QuadFurnApp {
                     &btn_resp,
                     egui::PopupCloseBehavior::CloseOnClickOutside,
                     |ui| {
-                        ui.set_min_width(210.0);
+                        ui.set_min_width(600.0);
+                        ui.set_max_width(640.0);
                         ui.label(
                             RichText::new(self.language.tr(
                                 "🌐 Выберите язык интерфейса:",
                                 "🌐 Select interface language:",
                             ))
                             .strong()
-                            .size(12.5),
+                            .size(13.0),
                         );
                         ui.separator();
                         egui::ScrollArea::vertical()
                             .id_salt("language_selector_scroll")
-                            .max_height(380.0)
+                            .max_height(480.0)
                             .show(ui, |ui| {
-                                for candidate in AppLanguage::ALL {
-                                    if ui
-                                        .selectable_value(
-                                            &mut self.language,
-                                            candidate,
-                                            format!("🌐 {}", candidate.label()),
-                                        )
-                                        .clicked()
-                                    {
-                                        let app_ver = env!("CARGO_PKG_VERSION");
-                                        let win_title = self.language.dict().window_title.replacen("QuadFurn CAD", &format!("QuadFurn CAD v{}", app_ver), 1);
-                                        ctx.send_viewport_cmd(egui::ViewportCommand::Title(win_title));
-                                        if matches!(self.language, AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::Ko) && !crate::web::is_cjk_font_loaded_web() {
-                                            crate::web::fetch_cjk_font_web();
+                                egui::Grid::new("language_grid_selector")
+                                    .num_columns(3)
+                                    .spacing([12.0, 3.0])
+                                    .show(ui, |ui| {
+                                        let all = AppLanguage::ALL;
+                                        let total = all.len();
+                                        let rows = total.div_ceil(3);
+                                        for r in 0..rows {
+                                            for c in 0..3 {
+                                                let idx = r + c * rows;
+                                                if idx < total {
+                                                    let candidate = all[idx];
+                                                    let is_selected = self.language == candidate;
+                                                    let label = format!("🌐 {}", candidate.label());
+                                                    if ui.selectable_label(is_selected, label).clicked() {
+                                                        self.language = candidate;
+                                                        let app_ver = env!("CARGO_PKG_VERSION");
+                                                        let win_title = self.language.dict().window_title.replacen("QuadFurn CAD", &format!("QuadFurn CAD v{}", app_ver), 1);
+                                                        ctx.send_viewport_cmd(egui::ViewportCommand::Title(win_title));
+                                                        if matches!(self.language, AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::ZhTw | AppLanguage::Ko) && !crate::web::is_cjk_font_loaded_web() {
+                                                            crate::web::fetch_cjk_font_web();
+                                                        }
+                                                        if self.new_product_name_buf == "Новое изделие 1"
+                                                            || self.new_product_name_buf == "New Product 1"
+                                                        {
+                                                            self.new_product_name_buf = self
+                                                                .language
+                                                                .tr("Новое изделие 1", "New Product 1")
+                                                                .to_string();
+                                                        }
+                                                        if let Ok(saved_path) = self.save_settings() {
+                                                            self.status_msg = match self.language {
+                                                                AppLanguage::Ru => format!(
+                                                                    "Язык интерфейса изменён на «{}» (сохранено в {})",
+                                                                    self.language.label(),
+                                                                    saved_path.display()
+                                                                ),
+                                                                AppLanguage::Uk => format!(
+                                                                    "Мову інтерфейсу змінено на «{}» (збережено в {})",
+                                                                    self.language.label(),
+                                                                    saved_path.display()
+                                                                ),
+                                                                _ => format!(
+                                                                    "Interface language changed to \"{}\" (saved in {})",
+                                                                    self.language.label(),
+                                                                    saved_path.display()
+                                                                ),
+                                                            };
+                                                        }
+                                                        ui.close_menu();
+                                                    }
+                                                } else {
+                                                    ui.label("");
+                                                }
+                                            }
+                                            ui.end_row();
                                         }
-                                        if self.new_product_name_buf == "Новое изделие 1"
-                                            || self.new_product_name_buf == "New Product 1"
-                                        {
-                                            self.new_product_name_buf = self
-                                                .language
-                                                .tr("Новое изделие 1", "New Product 1")
-                                                .to_string();
-                                        }
-                                        if let Ok(saved_path) = self.save_settings() {
-                                            self.status_msg = match self.language {
-                                                AppLanguage::Ru => format!(
-                                                    "Язык интерфейса изменён на «{}» (сохранено в {})",
-                                                    self.language.label(),
-                                                    saved_path.display()
-                                                ),
-                                                AppLanguage::Uk => format!(
-                                                    "Мову інтерфейсу змінено на «{}» (збережено в {})",
-                                                    self.language.label(),
-                                                    saved_path.display()
-                                                ),
-                                                _ => format!(
-                                                    "Interface language changed to \"{}\" (saved in {})",
-                                                    self.language.label(),
-                                                    saved_path.display()
-                                                ),
-                                            };
-                                        }
-                                        ui.close_menu();
-                                    }
-                                }
+                                    });
                             });
                     },
                 );
@@ -2495,8 +2509,10 @@ pub fn configure_fonts(ctx: &egui::Context) {
         }
     }
 
-    // 6. CJK support (Korean 한국어, Simplified Chinese 简体中文, Japanese 日本語) on Windows, macOS, and Linux
+    // 6. CJK and Caucasus (Georgian / Armenian) support on Windows, macOS, and Linux
     for (font_key, path) in [
+        ("caucasus_sylfaen", "C:\\Windows\\Fonts\\sylfaen.ttf"),
+        ("cjk_msjh", "C:\\Windows\\Fonts\\msjh.ttc"),
         ("cjk_msyh", "C:\\Windows\\Fonts\\msyh.ttc"),
         ("cjk_malgun", "C:\\Windows\\Fonts\\malgun.ttf"),
         ("cjk_mac_pingfang", "/System/Library/Fonts/PingFang.ttc"),
@@ -2505,12 +2521,20 @@ pub fn configure_fonts(ctx: &egui::Context) {
             "/System/Library/Fonts/AppleSDGothicNeo.ttc",
         ),
         (
+            "cjk_mac_arial_unicode",
+            "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+        ),
+        (
             "cjk_linux_noto_ttc",
             "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
         ),
         (
             "cjk_linux_wqy",
             "/usr/share/fonts/truetype/wqy/wqy-microhei.ttc",
+        ),
+        (
+            "caucasus_linux_dejavu",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
         ),
     ] {
         if let Some(raw) = crate::export::read_system_font_bytes(path) {
@@ -2648,9 +2672,11 @@ fn main() -> eframe::Result<()> {
                 } else if arg == "--lang" {
                     let _ = iter.next();
                 } else if arg == "--batch-screenshots" {
-                    if let Some(target) = iter.next() {
-                        app.batch_screenshots_dir = Some(std::path::PathBuf::from(target));
-                    }
+                    let dir = match iter.next() {
+                        Some(target) if !target.starts_with("--") => std::path::PathBuf::from(target),
+                        _ => std::path::PathBuf::from("docs/screenshots"),
+                    };
+                    app.batch_screenshots_dir = Some(dir);
                 } else if arg == "--screenshot" {
                     if let Some(target) = iter.next() {
                         app.screenshot_target = Some(std::path::PathBuf::from(target));
