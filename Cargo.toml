@@ -1,6 +1,6 @@
 [package]
 name = "quadfurn"
-version = "0.2.5"
+version = "0.2.6"
 edition = "2021"
 description = "3D Furniture & Cabinet CAD (4-viewport designer + guillotine sheet cutting optimizer)"
 license = "MIT"
