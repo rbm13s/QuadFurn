@@ -298,7 +298,7 @@ Every push and release automatically builds ready-to-run packages via [GitHub Ac
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu installer package (installs binary, desktop menu entry, and application icon):
     ```bash
-    sudo apt install ./quadfurn_0.2.5_amd64.deb
+    sudo apt install ./quadfurn_0.2.6_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portable standalone Linux archive.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` bundle with Retina `.icns` icon.

@@ -291,7 +291,7 @@ Každé sestavení automaticky generuje hotové balíčky přes [GitHub Actions]
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<verze>_amd64.deb` — instalační balíček pro Debian/Ubuntu (nainstaluje spustitelný soubor, položku v nabídce i ikony):
     ```bash
-    sudo apt install ./quadfurn_0.2.5_amd64.deb
+    sudo apt install ./quadfurn_0.2.6_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — přenosný archiv pro Linux.
 - **macOS (`Univerzální: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — nativní aplikace `QuadFurn.app` s Retina ikonou.

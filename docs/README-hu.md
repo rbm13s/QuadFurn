@@ -291,7 +291,7 @@ Minden kiadás automatikusan generál futtatásra kész csomagokat a [GitHub Act
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<verzió>_amd64.deb` — hivatalos Debian/Ubuntu csomag (telepíti a programot, a menübejegyzést és a rendszerikonokat):
     ```bash
-    sudo apt install ./quadfurn_0.2.5_amd64.deb
+    sudo apt install ./quadfurn_0.2.6_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — hordozható Linux archívum.
 - **macOS (`Univerzális: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — natív `QuadFurn.app` alkalmazás Retina ikonnal.

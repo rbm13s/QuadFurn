@@ -291,7 +291,7 @@ Per ogni release vengono generati pacchetti pronti all'uso tramite [GitHub Actio
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versione>_amd64.deb` — pacchetto d'installazione Debian/Ubuntu (installa binario, voce di menu e icone):
     ```bash
-    sudo apt install ./quadfurn_0.2.5_amd64.deb
+    sudo apt install ./quadfurn_0.2.6_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — archivio portatile autonomo.
 - **macOS (`Universale: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — applicazione nativa `QuadFurn.app` con icona Retina.

@@ -291,7 +291,7 @@ Her sürüm [GitHub Actions](https://github.com/rbm13s/QuadFurn/actions) aracıl
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<sürüm>_amd64.deb` — resmi Debian/Ubuntu paketi (uygulamayı, menü girdisini ve simgeleri kurar):
     ```bash
-    sudo apt install ./quadfurn_0.2.5_amd64.deb
+    sudo apt install ./quadfurn_0.2.6_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — taşınabilir Linux arşivi.
 - **macOS (`Evrensel: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — Retina simgeli yerel `QuadFurn.app`.

@@ -291,7 +291,7 @@ Chaque version produit automatiquement des paquets exécutables via [GitHub Acti
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)** :
   - `quadfurn_<version>_amd64.deb` — paquet d'installation officiel Debian/Ubuntu (installe l'exécutable, l'entrée de menu et les icônes de bureau) :
     ```bash
-    sudo apt install ./quadfurn_0.2.5_amd64.deb
+    sudo apt install ./quadfurn_0.2.6_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — archive Linux autonome portable.
 - **macOS (`Universel : Apple Silicon M1–M4 + Intel x86_64`)** : `QuadFurn-macos-universal.zip` — bundle `QuadFurn.app` natif avec icône Retina.

@@ -234,9 +234,9 @@ QuadFurn спалучае тры важныя вытворчыя інструм�
 ### Гатовыя зборкі (GitHub Actions / Рэлізы)
 - **Windows (`x86_64`)**: `QuadFurn-windows-x86_64.zip` — партатыўны выканальны файл `QuadFurn.exe` з убудаванай іконкай.
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
-  - `quadfurn_0.2.5_amd64.deb` — установачны пакет для Debian / Ubuntu:
+  - `quadfurn_0.2.6_amd64.deb` — установачны пакет для Debian / Ubuntu:
     ```bash
-    sudo apt install ./quadfurn_0.2.5_amd64.deb
+    sudo apt install ./quadfurn_0.2.6_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — партатыўны архіў.
 - **macOS (`Universal: Apple Silicon + Intel`)**: `QuadFurn-macos-universal.zip` — натыўны бандл `QuadFurn.app`.

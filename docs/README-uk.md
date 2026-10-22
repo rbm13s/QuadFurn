@@ -292,7 +292,7 @@ QuadFurn поєднує найкращі практики трьох класи�
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — інсталяційний пакунок Debian/Ubuntu (встановлює бінарник, пункт у системному меню та іконку):
     ```bash
-    sudo apt install ./quadfurn_0.2.5_amd64.deb
+    sudo apt install ./quadfurn_0.2.6_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — портативний standalone-архів.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — нативний бандл `QuadFurn.app` з Retina-іконкою `.icns`.
