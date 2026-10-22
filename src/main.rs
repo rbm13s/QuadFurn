@@ -8,6 +8,7 @@ mod snapping;
 mod ui_panels;
 mod viewport;
 mod batch_screenshot;
+pub mod glossary;
 mod web;
 
 use crate::i18n::AppLanguage;
@@ -340,32 +341,11 @@ impl FurnitureDocument {
                 match std::fs::write(&path, json) {
                     Ok(()) => {
                         let is_embedded = self.project.embed_textures;
-                        *status_msg = if is_embedded {
-                            match lang {
-                                AppLanguage::Ru => format!(
-                                    "Изделие сохранено (с упакованными текстурами): {}",
-                                    path.display()
-                                ),
-                                AppLanguage::Uk => format!(
-                                    "Виріб збережено (із запакованими текстурами): {}",
-                                    path.display()
-                                ),
-                                _ => format!(
-                                    "Saved product (with embedded textures): {}",
-                                    path.display()
-                                ),
-                            }
-                        } else {
-                            match lang {
-                                AppLanguage::Ru => {
-                                    format!("Изделие сохранено: {}", path.display())
-                                }
-                                AppLanguage::Uk => {
-                                    format!("Виріб збережено: {}", path.display())
-                                }
-                                _ => format!("Saved product: {}", path.display()),
-                            }
-                        };
+                        *status_msg = crate::glossary::format_saved_product(
+                            lang,
+                            is_embedded,
+                            &path,
+                        );
                         self.mark_saved(Some(path.clone()));
                         return Some(path);
                     }
@@ -1658,24 +1638,13 @@ impl eframe::App for QuadFurnApp {
                                                                 .to_string();
                                                         }
                                                         if let Ok(saved_path) = self.save_settings() {
-                                                            self.status_msg = match self.language {
-                                                                AppLanguage::Ru => format!(
-                                                                    "Язык интерфейса изменён на «{}» (сохранено в {})",
-                                                                    self.language.label(),
-                                                                    saved_path.display()
-                                                                ),
-                                                                AppLanguage::Uk => format!(
-                                                                    "Мову інтерфейсу змінено на «{}» (збережено в {})",
-                                                                    self.language.label(),
-                                                                    saved_path.display()
-                                                                ),
-                                                                _ => format!(
-                                                                    "Interface language changed to \"{}\" (saved in {})",
-                                                                    self.language.label(),
-                                                                    saved_path.display()
-                                                                ),
-                                                            };
+                                                            self.status_msg = crate::glossary::format_status_lang_changed(
+                                                                self.language,
+                                                                self.language.label(),
+                                                                &saved_path,
+                                                            );
                                                         }
+                                                        ui.memory_mut(|m| m.close_popup());
                                                         ui.close_menu();
                                                     }
                                                 } else {
@@ -2287,23 +2256,11 @@ impl eframe::App for QuadFurnApp {
             ui.horizontal(|ui| {
                 ui.label(&self.status_msg);
                 ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    let right_footer = match lang {
-                        AppLanguage::Ru => format!(
-                            "Изделие: «{}» | Деталей: {} шт. | Все размеры в мм",
-                            doc.project.name,
-                            doc.project.parts.len()
-                        ),
-                        AppLanguage::Uk => format!(
-                            "Виріб: «{}» | Деталей: {} шт. | Усі розміри в мм",
-                            doc.project.name,
-                            doc.project.parts.len()
-                        ),
-                        _ => format!(
-                            "Product: \"{}\" | Parts: {} pcs | All dimensions in mm",
-                            doc.project.name,
-                            doc.project.parts.len()
-                        ),
-                    };
+                    let right_footer = crate::glossary::format_product_parts_footer(
+                        lang,
+                        &doc.project.name,
+                        doc.project.parts.len(),
+                    );
                     ui.label(RichText::new(right_footer).color(Color32::GRAY));
                 });
             });

@@ -1658,23 +1658,7 @@ pub fn ui_materials_manager_tab(
             let id = project.alloc_id();
             project.materials.push(Material {
                 id,
-                name: match lang {
-                    AppLanguage::Ru => {
-                        format!("ЛДСП Новый декор {}", project.materials.len() + 1)
-                    }
-                    AppLanguage::Uk => {
-                        format!("ЛДСП Новий декор {}", project.materials.len() + 1)
-                    }
-                    AppLanguage::De => {
-                        format!("Spanplatte Neues Dekor {}", project.materials.len() + 1)
-                    }
-                    AppLanguage::Pl => {
-                        format!("Płyta wiórowa Nowy dekor {}", project.materials.len() + 1)
-                    }
-                    _ => {
-                        format!("Chipboard New Decor {}", project.materials.len() + 1)
-                    }
-                },
+                name: crate::glossary::format_new_material_name(lang, project.materials.len() + 1),
                 thickness_mm: 18.0,
                 color_rgb: [200, 175, 145],
                 texture_path: None,
@@ -1693,11 +1677,7 @@ pub fn ui_materials_manager_tab(
             let id = project.alloc_id();
             project.edge_bandings.push(crate::model::EdgeBanding {
                 id,
-                name: match lang {
-                    AppLanguage::Ru | AppLanguage::Uk => "ПВХ".to_string(),
-                    AppLanguage::Pl => "PCV".to_string(),
-                    _ => "PVC".to_string(),
-                },
+                name: crate::glossary::format_new_edge_name(lang, project.edge_bandings.len() + 1),
                 thickness_mm: 1.0,
                 color_rgb: [180, 100, 240],
             });
@@ -1939,28 +1919,11 @@ pub fn ui_materials_manager_tab(
         .anchor(egui::Align2::CENTER_CENTER, EguiVec2::ZERO)
         .show(ui.ctx(), |ui| {
             ui.add_space(4.0);
-            let q_txt = match lang {
-                AppLanguage::Ru => format!("Точно удалить материал «{}»?", mat_name),
-                AppLanguage::Uk => format!("Точно видалити матеріал «{}»?", mat_name),
-                _ => format!("Are you sure you want to delete material \"{}\"?", mat_name),
-            };
+            let q_txt = crate::glossary::format_material_delete_confirm(lang, &mat_name);
             ui.label(RichText::new(q_txt).strong().size(15.0));
             if used_parts_count > 0 {
                 ui.add_space(4.0);
-                let warn_txt = match lang {
-                    AppLanguage::Ru => format!(
-                        "Внимание: этот материал используется у {} деталей (им будет назначен первый доступный материал проекта).",
-                        used_parts_count
-                    ),
-                    AppLanguage::Uk => format!(
-                        "Увага: цей матеріал використовується у {} деталей (їм буде призначено перший доступний матеріал проєкту).",
-                        used_parts_count
-                    ),
-                    _ => format!(
-                        "Warning: this material is used by {} parts (they will be reassigned to the first available material).",
-                        used_parts_count
-                    ),
-                };
+                let warn_txt = crate::glossary::format_material_delete_warn(lang, used_parts_count);
                 ui.colored_label(Color32::from_rgb(240, 175, 50), warn_txt);
             }
             ui.add_space(12.0);
@@ -1995,11 +1958,7 @@ pub fn ui_materials_manager_tab(
                     p.material_id = fallback_id;
                 }
             }
-            *status_msg = match lang {
-                AppLanguage::Ru => format!("Материал «{}» удален.", mat_name),
-                AppLanguage::Uk => format!("Матеріал «{}» видалено.", mat_name),
-                _ => format!("Material \"{}\" deleted.", mat_name),
-            };
+            *status_msg = crate::glossary::format_material_deleted(lang, &mat_name);
         }
 
         if close_dialog {
@@ -2085,30 +2044,11 @@ pub fn ui_materials_manager_tab(
         .anchor(egui::Align2::CENTER_CENTER, EguiVec2::ZERO)
         .show(ui.ctx(), |ui| {
             ui.add_space(4.0);
-            let q_txt = match lang {
-                AppLanguage::Ru => format!("Точно удалить кромку «{}»?", edge_name),
-                AppLanguage::Uk => format!("Точно видалити крайку «{}»?", edge_name),
-                _ => {
-                    format!("Are you sure you want to delete edge banding \"{}\"?", edge_name)
-                }
-            };
+            let q_txt = crate::glossary::format_edge_delete_confirm(lang, &edge_name);
             ui.label(RichText::new(q_txt).strong().size(15.0));
             if used_sides_count > 0 {
                 ui.add_space(4.0);
-                let warn_txt = match lang {
-                    AppLanguage::Ru => format!(
-                        "Внимание: эта кромка назначена на {} гранях деталей (при удалении эти грани станут без кромки).",
-                        used_sides_count
-                    ),
-                    AppLanguage::Uk => format!(
-                        "Увага: ця крайка призначена на {} гранях деталей (при видаленні ці грані стануть без крайки).",
-                        used_sides_count
-                    ),
-                    _ => format!(
-                        "Warning: this edge banding is assigned to {} part edges (they will be cleared upon deletion).",
-                        used_sides_count
-                    ),
-                };
+                let warn_txt = crate::glossary::format_edge_delete_warn(lang, used_sides_count);
                 ui.colored_label(Color32::from_rgb(240, 175, 50), warn_txt);
             }
             ui.add_space(12.0);
@@ -2147,11 +2087,7 @@ pub fn ui_materials_manager_tab(
                     p.edges.w2 = None;
                 }
             }
-            *status_msg = match lang {
-                AppLanguage::Ru => format!("Кромка «{}» удалена.", edge_name),
-                AppLanguage::Uk => format!("Крайка «{}» видалена.", edge_name),
-                _ => format!("Edge banding \"{}\" deleted.", edge_name),
-            };
+            *status_msg = crate::glossary::format_edge_deleted(lang, &edge_name);
         }
 
         if close_edge_dialog {
@@ -2612,11 +2548,7 @@ pub fn ui_cutting_layout_tab(
 
     if !report.unplaced_parts.is_empty() {
         for err in &report.unplaced_parts {
-            let err_msg = match lang {
-                AppLanguage::Ru => format!("⚠ Деталь не помещается на лист: {}", err.format_message(lang)),
-                AppLanguage::Uk => format!("⚠ Деталь не вміщується на лист: {}", err.format_message(lang)),
-                _ => format!("⚠ Part does not fit on sheet: {}", err.format_message(lang)),
-            };
+            let err_msg = crate::glossary::format_unplaced_warning(lang, &err.format_message(lang));
             ui.colored_label(Color32::from_rgb(255, 95, 95), err_msg);
         }
         ui.separator();
@@ -2625,59 +2557,32 @@ pub fn ui_cutting_layout_tab(
     // Summary statistics of cutting layout and edge banding lengths
     ui.horizontal_wrapped(|ui| {
         let d = lang.dict();
-        let sheets_txt = match lang {
-            AppLanguage::Ru => format!("Всего листов: {} {}", report.total_sheets_count, d.unit_pcs),
-            AppLanguage::Uk => format!("Всього листів: {} {}", report.total_sheets_count, d.unit_pcs),
-            _ => format!("Total sheets: {} {}", report.total_sheets_count, d.unit_pcs),
-        };
+        let sheets_txt = crate::glossary::format_cutting_total_sheets(lang, report.total_sheets_count, d.unit_pcs);
         ui.label(
             RichText::new(sheets_txt)
                 .strong()
                 .color(Color32::from_rgb(255, 215, 90)),
         );
         ui.separator();
-        let area_txt = match lang {
-            AppLanguage::Ru => format!(
-                "Площадь деталей: {:.2} {} из {:.2} {} (КПИ: {:.1}%)",
-                report.total_parts_area_m2,
-                d.unit_m2,
-                report.total_sheets_area_m2,
-                d.unit_m2,
-                report.overall_utilization_percent
-            ),
-            AppLanguage::Uk => format!(
-                "Площа деталей: {:.2} {} з {:.2} {} (КВМ: {:.1}%)",
-                report.total_parts_area_m2,
-                d.unit_m2,
-                report.total_sheets_area_m2,
-                d.unit_m2,
-                report.overall_utilization_percent
-            ),
-            _ => format!(
-                "Parts area: {:.2} {} of {:.2} {} (Yield: {:.1}%)",
-                report.total_parts_area_m2,
-                d.unit_m2,
-                report.total_sheets_area_m2,
-                d.unit_m2,
-                report.overall_utilization_percent
-            ),
-        };
+        let area_txt = crate::glossary::format_cutting_parts_area(
+            lang,
+            report.total_parts_area_m2 as f64,
+            report.total_sheets_area_m2 as f64,
+            report.overall_utilization_percent as f64,
+            d.unit_m2,
+        );
         ui.label(area_txt);
         ui.separator();
-        let cut_len_txt = match lang {
-            AppLanguage::Ru => format!("Длина реза: {:.1} {}", report.total_cut_length_m, d.unit_mp),
-            AppLanguage::Uk => format!("Довжина різу: {:.1} {}", report.total_cut_length_m, d.unit_mp),
-            _ => format!("Cut length: {:.1} {}", report.total_cut_length_m, d.unit_mp),
-        };
+        let cut_len_txt = crate::glossary::format_cutting_cut_length(
+            lang,
+            report.total_cut_length_m as f64,
+            d.unit_mp,
+        );
         ui.label(cut_len_txt);
 
         for (ename, meters, rgb) in &report.edge_banding_totals_m {
             ui.separator();
-            let edge_tot_txt = match lang {
-                AppLanguage::Ru => format!("Кромка {}: {:.2} {}", ename, meters, d.unit_mp),
-                AppLanguage::Uk => format!("Крайка {}: {:.2} {}", ename, meters, d.unit_mp),
-                _ => format!("Edge {}: {:.2} {}", ename, meters, d.unit_mp),
-            };
+            let edge_tot_txt = format!("{}: {:.2} {}", ename, meters, d.unit_mp);
             ui.colored_label(Color32::from_rgb(rgb[0], rgb[1], rgb[2]), edge_tot_txt);
         }
     });
