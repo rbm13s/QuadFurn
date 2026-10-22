@@ -197,7 +197,7 @@ Alle numeriske indtastningsfelter understøtter matematiske formler:
 
 Fanen **Skæreplan** (`🪚 3. Skæreplan`) beregner den mest fordelagtige fordeling af pladeelementer på råpladerne:
 - **Justerbare savparametre**:
-  - **Savklingens snitbredde** (standard `4.0 mm`).
+  - **Savklingens snitbredde** (standard `6.0 mm`).
   - **Renskæring af pladekanter** (`Venstre`, `Højre`, `Top`, `Bund`, standard `10 mm`) til bortskæring af fabriksskader.
 - **Overholdelse af træets åreretning**:
   - Elementer med **Låst åreretning (`🌲`)**: fastholdes strengt parallelt med pladens længderetning (`Pladelængde L`).

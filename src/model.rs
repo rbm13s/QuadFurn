@@ -332,8 +332,9 @@ impl PartBlock {
 
 /// Guillotine sheet cutting settings.
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(default)]
 pub struct CuttingSettings {
-    /// Blade / router cutter kerf width (mm).
+    /// Blade / router cutter kerf width (mm). Default is 6.0 mm (industry standard).
     pub kerf_mm: f32,
     /// Left trim margin of sheet (mm).
     pub trim_left_mm: f32,
@@ -350,7 +351,7 @@ pub struct CuttingSettings {
 impl Default for CuttingSettings {
     fn default() -> Self {
         Self {
-            kerf_mm: 4.0,
+            kerf_mm: 6.0,
             trim_left_mm: 10.0,
             trim_right_mm: 10.0,
             trim_top_mm: 10.0,
@@ -1033,5 +1034,17 @@ mod tests {
         // Legacy repeated copy name -> collapses to "Полка (copy 3)"
         let name3_legacy = proj.generate_copy_name("Полка (copy) (copy)", "copy");
         assert_eq!(name3_legacy, "Полка (copy 3)");
+    }
+
+    #[test]
+    fn test_cutting_settings_default_kerf_6() {
+        let cs = CuttingSettings::default();
+        assert_eq!(cs.kerf_mm, 6.0);
+
+        // Deserializing empty JSON object should default to 6.0 mm kerf
+        let empty_json = "{}";
+        let deserialized: CuttingSettings = serde_json::from_str(empty_json).expect("Must deserialize default settings");
+        assert_eq!(deserialized.kerf_mm, 6.0);
+        assert_eq!(deserialized.trim_left_mm, 10.0);
     }
 }

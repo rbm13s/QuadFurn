@@ -197,7 +197,7 @@ W produkcji mebli grubość obrzeża musi zostać odliczona od gotowego wymiaru 
 ### 4. Optymalizacja rozkroju gilotynowego 2D
 
 Zakładka **Rozkrój** (`🪚 3. Rozkrój`) automatycznie rozmieszcza wszystkie widoczne elementy na arkuszach:
-- **Parametry cięcia**: Rzaz piły (domyślnie `4.0 mm`), marginesy obrzynania arkusza (domyślnie `10 mm` z 4 stron).
+- **Parametry cięcia**: Rzaz piły (domyślnie `6.0 mm`), marginesy obrzynania arkusza (domyślnie `10 mm` z 4 stron).
 - **Usłojenie**: Formatki ze stałym usłojeniem (`🌲`) nigdy nie są obracane w poprzek włókien arkusza. Formatki ze swobodnym usłojeniem mogą być obracane w celu maksymalizacji wykorzystania płyty.
 - **Mapy rozkroju i odpady użytkowe**: Linie cięć gilotynowych, numery formatek `#1..#N`, wymiary cięcia i oznaczone użyteczne resztki płyt.
 

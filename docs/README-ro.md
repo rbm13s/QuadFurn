@@ -197,7 +197,7 @@ Toate casetele de introducere numerică permit utilizarea formulelor:
 
 Fila **Plan de debitare** (`🪚 3. Plan de debitare`) calculează așezarea ideală a pieselor pe plăci:
 - **Parametri de tăiere ajustabili**:
-  - **Lățimea pânzei de circular** (implicit `4.0 mm`).
+  - **Lățimea pânzei de circular** (implicit `6.0 mm`).
   - **Margini de îndreptare a plăcii** (`Stânga`, `Dreapta`, `Sus`, `Jos`, implicit `10 mm`) pentru eliminarea defectelor de fabrică.
 - **Respectarea orientării fibrei**:
   - Piese cu **Fibră blocată (`🌲`)**: rămân obligatoriu paralele cu lungimea plăcii (`Lungime L`).

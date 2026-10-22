@@ -197,7 +197,7 @@ Alle numerieke velden ondersteunen wiskundige bewerkingen:
 
 Het tabblad **Zaagplan** (`🪚 3. Zaagplan`) berekent de optimale verdeling van alle panelen over de beschikbare platen:
 - **Instelbare zaagparameters**:
-  - **Zaagsnededikte van het zaagblad** (standaard `4.0 mm`).
+  - **Zaagsnededikte van het zaagblad** (standaard `6.0 mm`).
   - **Afkantsneden van de plaat** (`Links`, `Rechts`, `Boven`, `Onder`, standaard `10 mm`) om fabrieksranden zuiver te zagen.
 - **Behoud van nerfrichting**:
   - Panelen met **Vergrendelde nerf (`🌲`)**: blijven strikt evenwijdig aan de lengterichting van de plaat (`Plaatlengte L`).

@@ -197,7 +197,7 @@ Všetky číselné polia v programe umožňujú zadávanie matematických výraz
 
 Záložka **Nárezový plán** (`🪚 3. Nárezový plán`) vypočíta optimálne rozloženie dielcov na veľkoplošné dosky:
 - **Nastaviteľné parametre rezania**:
-  - **Šírka prerezu pílového kotúča** (predvolená `4.0 mm`).
+  - **Šírka prerezu pílového kotúča** (predvolená `6.0 mm`).
   - **Formátovací orez okrajov dosky** (`Vľavo`, `Vpravo`, `Hore`, `Dole`, predvolená `10 mm`) na začistenie hrán z výroby.
 - **Rešpektovanie smeru štruktúry dreva**:
   - Dielce so **Zamknutou štruktúrou (`🌲`)**: nesmú byť otočené o $90^\circ$ proti smeru letokruhov dosky (`Dĺžka L`).

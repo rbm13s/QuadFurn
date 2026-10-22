@@ -202,7 +202,7 @@ In furniture manufacturing, edge banding thickness must be subtracted from the f
 
 The **Cutting Layout** tab (`🪚 3. Cutting Layout`) automatically packs all visible parts onto sheets of their respective materials:
 - **Configurable Saw Parameters**:
-  - **Saw Kerf Width** (default `4.0 mm`)
+  - **Saw Kerf Width** (default `6.0 mm`)
   - **Sheet Edge Trim Margins** (`Left`, `Right`, `Top`, `Bottom`, default `10 mm`) to clean factory board edges before cutting.
 - **Grain Direction Enforcement**:
   - Parts with **Locked Grain (`🌲`)** are never rotated $90^\circ$ against the sheet's grain direction (`Sheet Length L`).

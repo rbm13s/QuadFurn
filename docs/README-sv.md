@@ -197,7 +197,7 @@ Samtliga sifferfält i programmet hanterar matematiska beräkningar:
 
 Fliken **Skivoptimeringsplan** (`🪚 3. Skivoptimeringsplan`) räknar ut bästa möjliga fördelning av komponenterna på råskivorna:
 - **Justerbara sågparametrar**:
-  - **Sågklingans snittbredd** (standard `4.0 mm`).
+  - **Sågklingans snittbredd** (standard `6.0 mm`).
   - **Renkapningsmarginaler på råskivan** (`Vänster`, `Höger`, `Överkant`, `Nederkant`, standard `10 mm`) för att kapa bort transportskador.
 - **Hänsyn till träets ådringsriktning**:
   - Komponenter med **Låst ådring (`🌲`)**: hålls strikt parallella med skivans längdriktning (`Skivlängd L`).

@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -191,7 +191,7 @@ En la fabricación de muebles, el espesor del canto debe descontarse del tamaño
 ### 4. Optimización de corte 2D por guillotina
 
 La pestaña **Corte** (`🪚 3. Corte`) anida las piezas en tableros de sus materiales:
-- **Parámetros de corte**: Grosor de sierra (por defecto `4.0 mm`), márgenes de refilado en los 4 bordes (por defecto `10 mm`).
+- **Parámetros de corte**: Grosor de sierra (por defecto `6.0 mm`), márgenes de refilado en los 4 bordes (por defecto `10 mm`).
 - **Respeto de la veta**: Las piezas con veta fija (`🌲`) no se rotan transversalmente.
 - **Planos de corte y retales**: Planos con líneas de corte continuo, números de piezas y retales reutilizables etiquetados.
 

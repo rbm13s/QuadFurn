@@ -197,7 +197,7 @@ Alle numeriske inndatafelt støtter matematiske formler:
 
 Fanen **Kappeskjema** (`🪚 3. Kappeskjema`) beregner den mest optimale fordelingen av plateelementer på råplatene:
 - **Justerbare sagparametere**:
-  - **Sagbladets kuttbredde** (standard `4.0 mm`).
+  - **Sagbladets kuttbredde** (standard `6.0 mm`).
   - **Renskjæring av råplatekanter** (`Venstre`, `Høyre`, `Topp`, `Bunn`, standard `10 mm`) for å fjerne transportskader.
 - **Overholdelse av treretning**:
   - Elementer med **Låst treretning (`🌲`)**: holdes strengt parallelle med platens lengderetning (`Platelengde L`).

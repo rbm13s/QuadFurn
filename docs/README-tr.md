@@ -197,7 +197,7 @@ Programdaki tüm sayısal giriş kutuları matematiksel ifadeleri destekler:
 
 **Kesim Şeması** sekmesi (`🪚 3. Kesim Şeması`) tüm parçaları levhalara en verimli şekilde yerleştirir:
 - **Ayarlanabilir Kesim Parametreleri**:
-  - **Testere Bıçağı Kalınlığı** (varsayılan `4.0 mm`).
+  - **Testere Bıçağı Kalınlığı** (varsayılan `6.0 mm`).
   - **Levha Kenar Tıraşlama Payları** (`Sol`, `Sağ`, `Üst`, `Alt`, varsayılan `10 mm`) fabrika kenar hatalarını temizlemek için.
 - **Ahşap Desen Yönüne Uyumluluk**:
   - **Deseni Kilitli (`🌲`) Parçalar**: Levha boyuna (`Levha Boyu L`) kesinlikle paralel kalır.

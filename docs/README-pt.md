@@ -197,7 +197,7 @@ Todos os campos numéricos da aplicação aceitam fórmulas aritméticas:
 
 O separador **Plano de corte** (`🪚 3. Plano de corte`) calcula a melhor distribuição de peças nas chapas:
 - **Parâmetros de corte ajustáveis**:
-  - **Espessura do corte da serra** (padrão `4.0 mm`).
+  - **Espessura do corte da serra** (padrão `6.0 mm`).
   - **Margens de refilo da chapa** (`Esquerda`, `Direita`, `Superior`, `Inferior`, padrão `10 mm`) para aparar imperfeições de fábrica.
 - **Respeito pelo veio da madeira**:
   - Peças com **Veio bloqueado (`🌲`)**: mantidas sempre paralelas ao comprimento da chapa (`Comprimento L`).

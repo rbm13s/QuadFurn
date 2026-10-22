@@ -197,7 +197,7 @@ A program összes számmezője támogatja a matematikai műveleteket:
 
 A **Szabásterv** lap (`🪚 3. Szabásterv`) kiszámítja az alkatrészek legoptimálisabb elhelyezését az alapanyag lapokon:
 - **Testreszabható fűrészelési paraméterek**:
-  - **Fűrészlap vágási szélessége** (alapértelmezett `4.0 mm`).
+  - **Fűrészlap vágási szélessége** (alapértelmezett `6.0 mm`).
   - **Lap szélezési levágásai** (`Bal`, `Jobb`, `Fent`, `Lent`, alapértelmezett `10 mm`) a gyári sérülések eltávolításához.
 - **A fa szálirányának tiszteletben tartása**:
   - **Rögzített szálirányú (`🌲`) alkatrészek**: szigorúan párhuzamosak maradnak a lap hosszméretével (`Laphossz L`).

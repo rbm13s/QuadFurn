@@ -197,7 +197,7 @@ Všechna číselná pole v programu umožňují zadávání matematických výra
 
 Záložka **Nářezový plán** (`🪚 3. Nářezový plán`) vypočítá optimální rozložení dílců na velkoplošné desky:
 - **Nastavitelné parametry řezání**:
-  - **Šířka prořezu pilového kotouče** (výchozí `4.0 mm`).
+  - **Šířka prořezu pilového kotouče** (výchozí `6.0 mm`).
   - **Formátovací ořez okrajů desky** (`Vlevo`, `Vpravo`, `Nahoře`, `Dole`, výchozí `10 mm`) pro začištění hran z výroby.
 - **Respektování směru struktury dřeva**:
   - Dílce se **Zamknutou strukturou (`🌲`)**: nesmí být otočeny o $90^\circ$ proti směru letokruhů desky (`Délka L`).

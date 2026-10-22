@@ -980,7 +980,7 @@ pub fn get_localized_cabinet_project(lang: AppLanguage) -> Project {
             },
         ],
         cutting_settings: CuttingSettings {
-            kerf_mm: 4.0,
+            kerf_mm: 6.0,
             trim_left_mm: 10.0,
             trim_right_mm: 10.0,
             trim_top_mm: 10.0,

@@ -197,7 +197,7 @@ Tous les champs numériques supportent les formules mathématiques :
 
 L'onglet **Plan de découpe** (`🪚 3. Plan de découpe`) optimise le calepinage de l'ensemble des panneaux :
 - **Paramètres de sciage réglables** :
-  - **Épaisseur du trait de scie** (par défaut `4.0 mm`).
+  - **Épaisseur du trait de scie** (par défaut `6.0 mm`).
   - **Délignage d'équarrissage des bords** (`Gauche`, `Droite`, `Haut`, `Bas`, par défaut `10 mm`).
 - **Respect du veinage du bois** :
   - Pièces à **Fil verrouillé (`🌲`)** : maintenues impérativement parallèles à la longueur du panneau d'origine.

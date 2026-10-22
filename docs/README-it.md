@@ -197,7 +197,7 @@ Tutti i campi di input numerici supportano formule aritmetiche:
 
 La scheda **Schema di taglio** (`🪚 3. Schema di taglio`) ottimizza la disposizione di tutte le parti sui pannelli:
 - **Parametri di taglio configurabili**:
-  - **Spessore della lama** (predefinito `4.0 mm`).
+  - **Spessore della lama** (predefinito `6.0 mm`).
   - **Margini di rifilo perimetrale** (`Sinistra`, `Destra`, `Superiore`, `Inferiore`, predefinito `10 mm`) per eliminare sbeccature o bordi grezzi di fabbrica.
 - **Rispetto dell'orientamento della venatura**:
   - Parti con **Venatura bloccata (`🌲`)**: mantenute rigorosamente allineate alla lunghezza della lastra (`Lunghezza L`).

@@ -197,7 +197,7 @@ Vsa številska polja v programu podpirajo neposreden vnos matematičnih formul:
 
 Zavihek **Načrt razreza** (`🪚 3. Načrt razreza`) izračuna najugodnejšo razporeditev elementov na surove plošče:
 - **Nastavljivi parametri razreza**:
-  - **Širina reza žaginega lista** (privzeto `4.0 mm`).
+  - **Širina reza žaginega lista** (privzeto `6.0 mm`).
   - **Robni obrezi plošče** (`Levo`, `Desno`, `Zgoraj`, `Spodaj`, privzeto `10 mm`) za odstranitev poškodovanih robov.
 - **Upoštevanje usmerjenosti lesnih vlaken**:
   - Elementi z **Zaklenjenimi vlakni (`🌲`)**: ostanejo strogo vzporedni z dolžino plošče (`Dolžina L`).

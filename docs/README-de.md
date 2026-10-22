@@ -197,7 +197,7 @@ In der Möbelfertigung muss die Kantenstärke vor dem Zuschnitt vom Fertigmaß a
 ### 4. Guillotinen-2D-Plattenzuschnitt-Optimierung
 
 Der Reiter **Zuschnitt** (`🪚 3. Zuschnitt`) verschachtelt alle sichtbaren Bauteile automatisch auf Platten:
-- **Sägeparameter**: Sägeblattbreite (Standard `4.0 mm`), Besäumschnitt an allen 4 Plattenrändern (Standard `10 mm`).
+- **Sägeparameter**: Sägeblattbreite (Standard `6.0 mm`), Besäumschnitt an allen 4 Plattenrändern (Standard `10 mm`).
 - **Faserrichtung**: Bauteile mit fester Maserung (`🌲`) werden niemals quer zur Plattenfaser gedreht. Bauteile mit freier Maserung dreht der Algorithmus zur optimalen Ausnutzung.
 - **Schnittpläne & Reststücke**: Anzeige durchgehender Schnittlinien, Bauteilnummern `#1..#N`, Zuschnittmaße und beschrifteter Restplatten.
 
