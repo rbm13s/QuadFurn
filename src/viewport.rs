@@ -205,6 +205,8 @@ pub struct Camera3D {
     pub show_edge_banding_3d: bool,
     /// Whether precise camera Z-order depth sorting is enabled (subdivided per-tile depth sorting)
     pub z_order: bool,
+    /// Last timestamp when flight mode was toggled (seconds), used for debouncing key events
+    pub last_toggle_time: f64,
 }
 
 impl Default for Camera3D {
@@ -219,7 +221,8 @@ impl Default for Camera3D {
             fly_speed_mm_per_sec: 1200.0,
             wireframe_overlay: true,
             show_edge_banding_3d: true,
-            z_order: false,
+            z_order: true,
+            last_toggle_time: 0.0,
         };
         cam.sync_eye_from_orbit();
         cam
@@ -2624,7 +2627,9 @@ impl QuadViewportController {
                     && !i.modifiers.alt
                     && !i.modifiers.command
             }) || (web_z && !ui.input(|i| i.modifiers.ctrl || i.modifiers.alt || i.modifiers.command));
-            if pure_z_pressed {
+            let cur_time = ui.input(|i| i.time);
+            if pure_z_pressed && (cur_time - self.cam_3d.last_toggle_time).abs() > 0.25 {
+                self.cam_3d.last_toggle_time = cur_time;
                 self.cam_3d.noclip_active = !self.cam_3d.noclip_active;
                 if self.cam_3d.noclip_active {
                     Self::set_noclip_cursor_grab(ui.ctx(), true, rect.center());
@@ -2634,6 +2639,7 @@ impl QuadViewportController {
                 }
             }
             if self.cam_3d.noclip_active && ui.input(|i| i.key_pressed(Key::Escape)) {
+                self.cam_3d.last_toggle_time = cur_time;
                 self.cam_3d.noclip_active = false;
                 self.cam_3d.sync_orbit_from_eye();
                 Self::set_noclip_cursor_grab(ui.ctx(), false, rect.center());
@@ -3727,19 +3733,18 @@ impl QuadViewportController {
 
     /// Manages grab and visibility of the system cursor in first-person Z-Noclip mode
     pub fn set_noclip_cursor_grab(ctx: &egui::Context, active: bool, center_pos: Pos2) {
+        crate::web::set_web_noclip_active(active);
         if active {
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorGrab(
                 egui::CursorGrab::Locked,
             ));
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorVisible(false));
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorPosition(center_pos));
-            crate::web::request_web_pointer_lock();
         } else {
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorGrab(
                 egui::CursorGrab::None,
             ));
             ctx.send_viewport_cmd(egui::ViewportCommand::CursorVisible(true));
-            crate::web::exit_web_pointer_lock();
         }
     }
 }

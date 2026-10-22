@@ -9,6 +9,7 @@ mod ui_panels;
 mod viewport;
 mod batch_screenshot;
 pub mod glossary;
+pub mod update_checker;
 mod web;
 
 use crate::i18n::AppLanguage;
@@ -56,6 +57,10 @@ impl ThemeChoice {
     }
 }
 
+fn default_true() -> bool {
+    true
+}
+
 /// Program settings (saved on disk in `%APPDATA%\QuadFurn\settings.json`)
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct AppSettings {
@@ -64,7 +69,7 @@ pub struct AppSettings {
     pub language: AppLanguage,
     #[serde(default)]
     pub recent_projects: Vec<std::path::PathBuf>,
-    #[serde(default)]
+    #[serde(default = "default_true")]
     pub z_order: bool,
 }
 
@@ -74,7 +79,7 @@ impl Default for AppSettings {
             theme_choice: ThemeChoice::Dark,
             language: AppLanguage::detect_system_or_en(),
             recent_projects: Vec::new(),
-            z_order: false,
+            z_order: true,
         }
     }
 }
@@ -418,6 +423,9 @@ pub struct QuadFurnApp {
     pub batch_startup_delay: usize,
     pub force_open_lang_menu: bool,
     pub z_order: bool,
+    #[cfg(not(target_arch = "wasm32"))]
+    pub update_receiver: Option<std::sync::mpsc::Receiver<String>>,
+    pub available_update: Option<String>,
 }
 
 impl Default for QuadFurnApp {
@@ -457,6 +465,9 @@ impl Default for QuadFurnApp {
             batch_startup_delay: 0,
             force_open_lang_menu: false,
             z_order: settings.z_order,
+            #[cfg(not(target_arch = "wasm32"))]
+            update_receiver: update_checker::start_background_check(),
+            available_update: None,
         }
     }
 }
@@ -1135,6 +1146,15 @@ impl eframe::App for QuadFurnApp {
             self.active_doc_idx = self.documents.len() - 1;
         }
 
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(ref rx) = self.update_receiver {
+            if let Ok(newer_ver) = rx.try_recv() {
+                self.available_update = Some(newer_ver);
+                self.update_receiver = None;
+                ctx.request_repaint();
+            }
+        }
+
         #[cfg(target_arch = "wasm32")]
         {
             let pending_fonts = crate::web::take_pending_fonts();
@@ -1658,6 +1678,23 @@ impl eframe::App for QuadFurnApp {
                     },
                 );
                 btn_resp.on_hover_text(self.language.switcher_hover_tooltip());
+
+                if let Some(ref newer_ver) = self.available_update {
+                    ui.add_space(3.0);
+                    let update_text = RichText::new("☁ ⬇ Update")
+                        .color(Color32::from_rgb(100, 225, 255))
+                        .strong()
+                        .size(12.5);
+                    let update_btn = egui::Button::new(update_text)
+                        .fill(Color32::from_rgb(28, 55, 88));
+                    let ru_tooltip = format!("Доступна новая версия {}", newer_ver);
+                    let en_tooltip = format!("New version {} is available", newer_ver);
+                    let tooltip = self.language.tr(&ru_tooltip, &en_tooltip);
+                    let resp = ui.add(update_btn).on_hover_text(tooltip);
+                    if resp.clicked() {
+                        ctx.open_url(egui::OpenUrl::new_tab("https://rbm13s.github.io/QuadFurn/"));
+                    }
+                }
             });
         });
 

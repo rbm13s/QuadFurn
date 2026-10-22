@@ -172,10 +172,21 @@ static WEB_MOUSE_DELTA_Y: std::sync::atomic::AtomicI32 = std::sync::atomic::Atom
 static WEB_POINTER_LOCKED: AtomicBool = AtomicBool::new(false);
 #[allow(dead_code)]
 static WEB_POINTER_LOCK_LOST: AtomicBool = AtomicBool::new(false);
+static WEB_NOCLIP_ACTIVE: AtomicBool = AtomicBool::new(false);
 
 #[allow(dead_code)]
 pub fn is_web_pointer_locked() -> bool {
     WEB_POINTER_LOCKED.load(Ordering::SeqCst)
+}
+
+pub fn set_web_noclip_active(active: bool) {
+    WEB_NOCLIP_ACTIVE.store(active, Ordering::SeqCst);
+    if active {
+        WEB_POINTER_LOCK_LOST.store(false, Ordering::SeqCst);
+        request_web_pointer_lock();
+    } else {
+        exit_web_pointer_lock();
+    }
 }
 
 pub fn check_and_clear_pointer_lock_lost() -> bool {
@@ -336,6 +347,7 @@ pub fn init_web_keyboard_listener() {
                         match code.as_str() {
                             "KeyZ" => {
                                 WEB_NOCLIP_TOGGLE_TRIGGERED.store(true, Ordering::SeqCst);
+                                event.prevent_default();
                             }
                             "KeyV" => {
                                 WEB_TOOL_V_TRIGGERED.store(true, Ordering::SeqCst);
@@ -348,7 +360,10 @@ pub fn init_web_keyboard_listener() {
                             }
                             _ => {
                                 match key.as_str() {
-                                    "я" | "Я" | "z" | "Z" => WEB_NOCLIP_TOGGLE_TRIGGERED.store(true, Ordering::SeqCst),
+                                    "я" | "Я" | "z" | "Z" => {
+                                        WEB_NOCLIP_TOGGLE_TRIGGERED.store(true, Ordering::SeqCst);
+                                        event.prevent_default();
+                                    }
                                     "м" | "М" | "v" | "V" => WEB_TOOL_V_TRIGGERED.store(true, Ordering::SeqCst),
                                     "и" | "И" | "b" | "B" => WEB_TOOL_B_TRIGGERED.store(true, Ordering::SeqCst),
                                     "ь" | "Ь" | "m" | "M" => WEB_TOOL_M_TRIGGERED.store(true, Ordering::SeqCst),
@@ -437,7 +452,7 @@ pub fn init_web_keyboard_listener() {
         // 4. Mousemove listener for Pointer Lock camera deltas
         let mousemove_closure = wasm_bindgen::closure::Closure::<dyn FnMut(web_sys::MouseEvent)>::new(
             move |event: web_sys::MouseEvent| {
-                if WEB_POINTER_LOCKED.load(Ordering::SeqCst) {
+                if WEB_POINTER_LOCKED.load(Ordering::SeqCst) || WEB_NOCLIP_ACTIVE.load(Ordering::SeqCst) {
                     let dx = event.movement_x();
                     let dy = event.movement_y();
                     if dx != 0 || dy != 0 {
@@ -457,8 +472,8 @@ pub fn init_web_keyboard_listener() {
                     if let Some(w) = web_sys::window() {
                         if let Some(d) = w.document() {
                             let locked = d.pointer_lock_element().is_some();
-                            WEB_POINTER_LOCKED.store(locked, Ordering::SeqCst);
-                            if !locked {
+                            let was_locked = WEB_POINTER_LOCKED.swap(locked, Ordering::SeqCst);
+                            if was_locked && !locked && WEB_NOCLIP_ACTIVE.load(Ordering::SeqCst) {
                                 WEB_POINTER_LOCK_LOST.store(true, Ordering::SeqCst);
                             }
                         }

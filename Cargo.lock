@@ -2720,6 +2720,7 @@ dependencies = [
  "rfd",
  "serde",
  "serde_json",
+ "ureq",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "web-sys",

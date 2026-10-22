@@ -25,6 +25,7 @@ log = "0.4"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 eframe = { version = "0.29", default-features = false, features = ["wgpu", "accesskit", "x11", "wayland"] }
+ureq = { version = "2.10", default-features = false, features = ["tls"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 eframe = { version = "0.29", default-features = false, features = ["glow"] }
