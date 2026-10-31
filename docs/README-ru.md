@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
@@ -299,7 +299,7 @@ QuadFurn объединяет ключевые возможности проек
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — установочный пакет Debian/Ubuntu (устанавливает бинарник, пункт в системном меню и иконку):
     ```bash
-    sudo apt install ./quadfurn_0.2.6_amd64.deb
+    sudo apt install ./quadfurn_0.2.7_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — портативный standalone-архив.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — нативный бандл `QuadFurn.app` с Retina-иконкой `.icns`.
