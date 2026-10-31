@@ -229,6 +229,8 @@ impl Default for Camera3D {
     }
 }
 
+const NEAR_CLIP_MM: f32 = 12.0;
+
 impl Camera3D {
     /// Unit forward direction vector of camera in world coordinates (X right, Y inward, Z up)
     pub fn forward_dir(&self) -> Vec3 {
@@ -284,6 +286,19 @@ impl Camera3D {
         let sx = rect.center().x + ndc_x * (rect.width() * 0.5);
         let sy = rect.center().y - ndc_y * (rect.height() * 0.5);
         Some((Pos2::new(sx, sy), clip.w))
+    }
+
+    /// Computes the exact unit ray direction from `eye_mm` through screen point `scr_pt` in `rect`.
+    /// Uses the analytical camera basis directly without inverting the perspective matrix.
+    pub fn ray_from_screen_point(&self, scr_pt: Pos2, rect: Rect) -> Vec3 {
+        let aspect = (rect.width() / rect.height().max(1.0)).max(0.1);
+        let ndc_x = (scr_pt.x - rect.center().x) / (rect.width() * 0.5).max(1.0);
+        let ndc_y = -(scr_pt.y - rect.center().y) / (rect.height() * 0.5).max(1.0);
+        let half_tan = (45.0_f32.to_radians() * 0.5).tan();
+        (self.forward_dir()
+            + self.right_dir() * (ndc_x * aspect * half_tan)
+            + self.up_dir() * (ndc_y * half_tan))
+            .normalize_or_zero()
     }
 }
 
@@ -1120,11 +1135,11 @@ impl QuadViewportController {
             let poly: Vec<Pos2> = (0..4)
                 .map(|i| vp.world_to_screen(rect, Vec2::new(verts[i].x, verts[i].y)))
                 .collect();
-            painter.add(Shape::convex_polygon(
-                poly.clone(),
-                fill_color,
-                Stroke::new(if is_selected { 2.0 } else { 1.2 }, stroke_color),
-            ));
+            draw_solid_polygon(painter, &poly, fill_color);
+            let stroke = Stroke::new(if is_selected { 2.0 } else { 1.2 }, stroke_color);
+            for i in 0..poly.len() {
+                painter.line_segment([poly[i], poly[(i + 1) % poly.len()]], stroke);
+            }
             let center_scr = vp.world_to_screen(
                 rect,
                 Vec2::new(part.world_center(thick).x, part.world_center(thick).y),
@@ -2592,7 +2607,7 @@ impl QuadViewportController {
 
         let id = ui.id().with("pane_3d_view");
         let resp = ui.interact(rect, id, Sense::click_and_drag());
-        let painter = ui.painter_at(rect);
+        let painter = ui.painter().with_clip_rect(rect);
 
         // 3D scene background
         painter.rect_filled(rect, 0.0, Color32::from_rgb(22, 26, 32));
@@ -2761,44 +2776,18 @@ impl QuadViewportController {
         // 1. Render floor grid Z=0 in 3D
         self.draw_3d_floor_grid(&painter, rect, &vp_mat);
 
-        // 2. Collect all 3D block faces with internal abutment culling,
-        // adaptive subdivision, and Newell's separating plane visibility sort
-        // to completely eliminate Z-fighting and overlap artifacts between shelves, uprights, and back panels!
-        #[derive(Clone)]
-        struct Face3DToDraw {
-            part_id: PartId,
-            material_id: MaterialId,
-            world_verts: [Vec3; 4],
-            world_norm: Vec3,
-            plane_d: f32,
-            screen_pts: [Pos2; 4],
-            screen_bbox: Rect,
-            avg_depth: f32,
-            z_depth: f32,
-            min_depth: f32,
-            max_depth: f32,
-            min_z: f32,
-            max_z: f32,
-            fill_color: Color32,
-            stroke_color: Color32,
-            is_selected: bool,
-            /// Exact UV coordinates of the 4 tile corners (taking grain orientation and physical edge scale into account)
-            uv_corners: [Pos2; 4],
-            /// Which of the 4 edges of this tile lie on the outer boundary of the part (for outline and edge banding)
-            outer_edges: [bool; 4],
-            edge_strokes: [Option<Stroke>; 4],
-            grain_segment: Option<(Pos2, Pos2)>,
-        }
-
-        let mut faces_to_draw: Vec<Face3DToDraw> = Vec::new();
+        // 2. Collect 3D block faces grouped by part with internal abutment culling,
+        // near-plane 3D clipping, and screen-rect 2D clipping.
+        let mut parts_to_draw: Vec<PartDrawData> = Vec::new();
         let light_dir = Vec3::new(-0.45, -0.65, 0.62).normalize();
         let eye = self.cam_3d.eye_mm;
+        let fwd = self.cam_3d.forward_dir();
 
-        // Pre-collect AABB bounds of all visible parts for internal abutment culling (e.g. shelf edge touching an upright)
+        // Pre-collect AABB bounds of all visible axis-aligned parts for internal abutment culling
         let part_aabbs: Vec<(PartId, Vec3, Vec3)> = project
             .parts
             .iter()
-            .filter(|p| project.is_part_visible(p))
+            .filter(|p| project.is_part_visible(p) && p.yaw_deg.abs() < 0.05)
             .map(|p| {
                 let t = project.get_material_thickness(p.material_id);
                 let (bmin, bmax) = p.world_aabb(t);
@@ -2828,8 +2817,11 @@ impl QuadViewportController {
             let base_rgb = mat.map(|m| m.color_rgb).unwrap_or([210, 210, 210]);
             let is_sel = self.is_part_selected(*selected_part, part.id);
 
+            let (bmin, bmax) = part.world_aabb(thick);
             let verts = part.world_vertices(thick);
             let rot_mat = part.rotation_matrix();
+
+            let mut part_faces: Vec<Face3DToDraw> = Vec::with_capacity(6);
 
             for (f_idx, (v_indices, local_norm)) in cube_faces.iter().enumerate() {
                 let world_norm = (rot_mat * (*local_norm)).normalize_or_zero();
@@ -2846,28 +2838,29 @@ impl QuadViewportController {
                 }
 
                 // 2) Internal Abutment Culling:
-                // If this face is flush against another part (and the part is not selected),
-                // skip rendering this internal edge to prevent Z-fighting through uprights or tops!
-                if !is_sel && part.yaw_deg.abs() < 0.05 {
+                // Only cull narrow edge faces (thickness edges) if they are strictly flush against another part.
+                // Never cull the main face of a part (front/back/top/bottom of wide panels) to avoid accidental holes!
+                let is_edge_face = !self.is_main_face(part.orientation, f_idx);
+                if is_edge_face && !is_sel && part.yaw_deg.abs() < 0.05 {
                     let probe_pt = face_center + world_norm * 0.4;
                     let sample_pts = [
                         probe_pt,
-                        (q0 + face_center) * 0.5 + world_norm * 0.4,
-                        (q1 + face_center) * 0.5 + world_norm * 0.4,
-                        (q2 + face_center) * 0.5 + world_norm * 0.4,
-                        (q3 + face_center) * 0.5 + world_norm * 0.4,
+                        q0 + world_norm * 0.4,
+                        q1 + world_norm * 0.4,
+                        q2 + world_norm * 0.4,
+                        q3 + world_norm * 0.4,
                     ];
                     let occluded_by_neighbor = part_aabbs.iter().any(|&(other_id, bmin, bmax)| {
                         if other_id == part.id {
                             return false;
                         }
                         sample_pts.iter().all(|pt| {
-                            pt.x >= bmin.x - 0.5
-                                && pt.x <= bmax.x + 0.5
-                                && pt.y >= bmin.y - 0.5
-                                && pt.y <= bmax.y + 0.5
-                                && pt.z >= bmin.z - 0.5
-                                && pt.z <= bmax.z + 0.5
+                            pt.x >= bmin.x - 0.1
+                                && pt.x <= bmax.x + 0.1
+                                && pt.y >= bmin.y - 0.1
+                                && pt.y <= bmax.y + 0.1
+                                && pt.z >= bmin.z - 0.1
+                                && pt.z <= bmax.z + 0.1
                         })
                     });
                     if occluded_by_neighbor {
@@ -2916,18 +2909,9 @@ impl QuadViewportController {
                     }
                 }
 
-                // Adaptive grid subdivision of large faces (e.g. side panel / shelf / backing)
-                // when Z-order is enabled, so T-junctions sort correctly per tile!
-                let is_z_order = self.cam_3d.z_order;
                 let len_u = q0.distance(q1);
                 let len_v = q1.distance(q2);
-                let (div_u, div_v) = if is_z_order {
-                    let u_divs = ((len_u / 220.0).ceil() as usize).clamp(1, 12);
-                    let v_divs = ((len_v / 220.0).ceil() as usize).clamp(1, 12);
-                    (u_divs, v_divs)
-                } else {
-                    (1, 1)
-                };
+                let (div_u, div_v) = (1, 1);
 
                 // Compute physical UV scale on this face (so textures on narrow 18 mm edges aren't compressed 40x)
                 // and orient texture U axis strictly along the part grain direction!
@@ -2951,8 +2935,6 @@ impl QuadViewportController {
                     PartOrientation::VerticalYZ | PartOrientation::FrontalXZ => !part.grain_along_width,
                 };
 
-                let plane_d = world_norm.dot(q0);
-
                 for iu in 0..div_u {
                     let u0 = iu as f32 / div_u as f32;
                     let u1 = (iu + 1) as f32 / div_u as f32;
@@ -2973,49 +2955,53 @@ impl QuadViewportController {
                             bilerp(u0, v1),
                         ];
 
-                        let mut scr_pts = [Pos2::ZERO; 4];
-                        let mut valid = true;
-                        let mut min_sx = f32::MAX;
-                        let mut min_sy = f32::MAX;
-                        let mut max_sx = f32::MIN;
-                        let mut max_sy = f32::MIN;
+                        // Clip the 3D tile against the camera near plane so faces extending partly behind
+                        // the camera are smoothly clipped instead of disappearing or projecting to infinity!
+                        let clipped_world_verts =
+                            clip_3d_polygon_near_plane(&w_verts, eye, fwd, NEAR_CLIP_MM);
+                        if clipped_world_verts.len() < 3 {
+                            continue;
+                        }
 
-                        for i in 0..4 {
-                            if let Some((sp, _)) =
-                                self.cam_3d.project_point(&vp_mat, rect, w_verts[i])
-                            {
-                                scr_pts[i] = sp;
-                                min_sx = min_sx.min(sp.x);
-                                min_sy = min_sy.min(sp.y);
-                                max_sx = max_sx.max(sp.x);
-                                max_sy = max_sy.max(sp.y);
+                        let mut unclipped_scr_pts = Vec::with_capacity(clipped_world_verts.len());
+                        let mut valid = true;
+                        for &wv in &clipped_world_verts {
+                            if let Some((sp, _)) = self.cam_3d.project_point(&vp_mat, rect, wv) {
+                                unclipped_scr_pts.push(sp);
                             } else {
                                 valid = false;
                                 break;
                             }
                         }
-                        if !valid {
+                        if !valid || unclipped_scr_pts.len() < 3 {
                             continue;
                         }
 
-                        let sub_center =
-                            (w_verts[0] + w_verts[1] + w_verts[2] + w_verts[3]) * 0.25;
-                        let dist_to_cam = eye.distance(sub_center);
-                        let d0 = eye.distance(w_verts[0]);
-                        let d1 = eye.distance(w_verts[1]);
-                        let d2 = eye.distance(w_verts[2]);
-                        let d3 = eye.distance(w_verts[3]);
-                        let min_depth = d0.min(d1).min(d2).min(d3);
-                        let max_depth = d0.max(d1).max(d2).max(d3);
+                        // 2D clip against screen rect (with 10px tolerance) so coordinates never explode offscreen
+                        let scr_pts = clip_2d_polygon_rect(&unclipped_scr_pts, rect.expand(10.0));
+                        if scr_pts.len() < 3 {
+                            continue;
+                        }
 
-                        let fwd = self.cam_3d.forward_dir();
-                        let z0 = (w_verts[0] - eye).dot(fwd);
-                        let z1 = (w_verts[1] - eye).dot(fwd);
-                        let z2 = (w_verts[2] - eye).dot(fwd);
-                        let z3 = (w_verts[3] - eye).dot(fwd);
-                        let z_depth = (sub_center - eye).dot(fwd);
-                        let min_z = z0.min(z1).min(z2).min(z3);
-                        let max_z = z0.max(z1).max(z2).max(z3);
+                        let mut min_sx = f32::MAX;
+                        let mut min_sy = f32::MAX;
+                        let mut max_sx = f32::MIN;
+                        let mut max_sy = f32::MIN;
+                        for sp in &scr_pts {
+                            min_sx = min_sx.min(sp.x);
+                            min_sy = min_sy.min(sp.y);
+                            max_sx = max_sx.max(sp.x);
+                            max_sy = max_sy.max(sp.y);
+                        }
+
+                        let mut sub_center = Vec3::ZERO;
+                        for &wv in &clipped_world_verts {
+                            sub_center += wv;
+                        }
+                        sub_center /= clipped_world_verts.len() as f32;
+                        let dist_to_cam = eye.distance(sub_center);
+                        let _ = dist_to_cam;
+                        let z_depth: f32 = (sub_center - eye).dot(fwd);
 
                         let outer_edges = [
                             iv == 0,         // edge 0..1 (top along V)
@@ -3026,43 +3012,22 @@ impl QuadViewportController {
 
                         // Draw grain direction arrow only on the center tile of the main face
                         let is_center_tile = iu == div_u / 2 && iv == div_v / 2;
-                        let grain_segment = if is_center_tile
+                        let grain_segment_3d = if is_center_tile
                             && part.grain_fixed
                             && self.is_main_face(part.orientation, f_idx)
                         {
                             let (mid_a, mid_b) = if !grain_along_v {
                                 (
-                                    Pos2::new(
-                                        (scr_pts[0].x + scr_pts[3].x) * 0.5,
-                                        (scr_pts[0].y + scr_pts[3].y) * 0.5,
-                                    ),
-                                    Pos2::new(
-                                        (scr_pts[1].x + scr_pts[2].x) * 0.5,
-                                        (scr_pts[1].y + scr_pts[2].y) * 0.5,
-                                    ),
+                                    (w_verts[0] + w_verts[3]) * 0.5,
+                                    (w_verts[1] + w_verts[2]) * 0.5,
                                 )
                             } else {
                                 (
-                                    Pos2::new(
-                                        (scr_pts[0].x + scr_pts[1].x) * 0.5,
-                                        (scr_pts[0].y + scr_pts[1].y) * 0.5,
-                                    ),
-                                    Pos2::new(
-                                        (scr_pts[3].x + scr_pts[2].x) * 0.5,
-                                        (scr_pts[3].y + scr_pts[2].y) * 0.5,
-                                    ),
+                                    (w_verts[0] + w_verts[1]) * 0.5,
+                                    (w_verts[3] + w_verts[2]) * 0.5,
                                 )
                             };
-                            Some((
-                                Pos2::new(
-                                    mid_a.x * 0.75 + mid_b.x * 0.25,
-                                    mid_a.y * 0.75 + mid_b.y * 0.25,
-                                ),
-                                Pos2::new(
-                                    mid_a.x * 0.25 + mid_b.x * 0.75,
-                                    mid_a.y * 0.25 + mid_b.y * 0.75,
-                                ),
-                            ))
+                            Some((mid_a.lerp(mid_b, 0.25), mid_a.lerp(mid_b, 0.75)))
                         } else {
                             None
                         };
@@ -3087,253 +3052,223 @@ impl QuadViewportController {
                             ]
                         };
 
-                        faces_to_draw.push(Face3DToDraw {
+                        part_faces.push(Face3DToDraw {
                             part_id: part.id,
                             material_id: part.material_id,
                             world_verts: w_verts,
-                            world_norm,
-                            plane_d,
                             screen_pts: scr_pts,
                             screen_bbox: Rect::from_min_max(
                                 Pos2::new(min_sx, min_sy),
                                 Pos2::new(max_sx, max_sy),
                             ),
-                            avg_depth: dist_to_cam,
                             z_depth,
-                            min_depth,
-                            max_depth,
-                            min_z,
-                            max_z,
                             fill_color: Color32::from_rgb(r, g, b),
                             stroke_color: stroke_col,
                             is_selected: is_sel,
                             uv_corners,
                             outer_edges,
                             edge_strokes: base_edge_strokes,
-                            grain_segment,
+                            grain_segment_3d,
                         });
+                    }
+                }
+            }
+
+            if !part_faces.is_empty() {
+                let mut p_min_sx = f32::MAX;
+                let mut p_min_sy = f32::MAX;
+                let mut p_max_sx = f32::MIN;
+                let mut p_max_sy = f32::MIN;
+                let mut max_depth = f32::MIN;
+
+                for f in &part_faces {
+                    p_min_sx = p_min_sx.min(f.screen_bbox.min.x);
+                    p_min_sy = p_min_sy.min(f.screen_bbox.min.y);
+                    p_max_sx = p_max_sx.max(f.screen_bbox.max.x);
+                    p_max_sy = p_max_sy.max(f.screen_bbox.max.y);
+                    max_depth = max_depth.max(f.z_depth);
+                }
+
+                parts_to_draw.push(PartDrawData {
+                    part_id: part.id,
+                    bmin,
+                    bmax,
+                    yaw_deg: part.yaw_deg,
+                    screen_bbox: Rect::from_min_max(
+                        Pos2::new(p_min_sx, p_min_sy),
+                        Pos2::new(p_max_sx, p_max_sy),
+                    ),
+                    max_depth,
+                    faces: part_faces,
+                });
+            }
+        }
+
+        // Topological sort parts from back to front using Kahn's algorithm
+        let n_parts = parts_to_draw.len();
+        let mut graph = vec![Vec::new(); n_parts];
+        let mut in_degree = vec![0usize; n_parts];
+
+        for i in 0..n_parts {
+            for j in (i + 1)..n_parts {
+                if !parts_to_draw[i].screen_bbox.intersects(parts_to_draw[j].screen_bbox) {
+                    continue;
+                }
+                if let Some(i_in_front) = does_part_a_occlude_part_b(
+                    &parts_to_draw[i],
+                    &parts_to_draw[j],
+                    eye,
+                    &self.cam_3d,
+                    rect,
+                ) {
+                    if i_in_front {
+                        // Part j is behind Part i -> Part j must be drawn BEFORE Part i (j -> i)
+                        graph[j].push(i);
+                        in_degree[i] += 1;
+                    } else {
+                        // Part i is behind Part j -> Part i must be drawn BEFORE Part j (i -> j)
+                        graph[i].push(j);
+                        in_degree[j] += 1;
                     }
                 }
             }
         }
 
-        // Sort descending by distance to camera first (far to near)
-        let is_z_order = self.cam_3d.z_order;
-        if is_z_order {
-            faces_to_draw.sort_by(|a, b| {
+        // Ready queue holds parts with in_degree == 0.
+        // Sorted ascending so pop() retrieves the part with largest max_depth (farthest from camera).
+        let mut ready: Vec<usize> = (0..n_parts).filter(|&i| in_degree[i] == 0).collect();
+        ready.sort_by(|&a, &b| {
+            parts_to_draw[a]
+                .max_depth
+                .partial_cmp(&parts_to_draw[b].max_depth)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        let mut sorted_parts = Vec::with_capacity(n_parts);
+        let mut visited = vec![false; n_parts];
+
+        while sorted_parts.len() < n_parts {
+            if let Some(curr) = ready.pop() {
+                if visited[curr] {
+                    continue;
+                }
+                visited[curr] = true;
+                sorted_parts.push(curr);
+
+                for &dep in &graph[curr] {
+                    if in_degree[dep] > 0 {
+                        in_degree[dep] -= 1;
+                        if in_degree[dep] == 0 && !visited[dep] {
+                            ready.push(dep);
+                            ready.sort_by(|&a, &b| {
+                                parts_to_draw[a]
+                                    .max_depth
+                                    .partial_cmp(&parts_to_draw[b].max_depth)
+                                    .unwrap_or(std::cmp::Ordering::Equal)
+                            });
+                        }
+                    }
+                }
+            } else {
+                // Break cycle if any: pick unvisited part with largest max_depth
+                let mut best = None;
+                let mut best_depth = f32::MIN;
+                for i in 0..n_parts {
+                    if !visited[i] && parts_to_draw[i].max_depth > best_depth {
+                        best_depth = parts_to_draw[i].max_depth;
+                        best = Some(i);
+                    }
+                }
+                if let Some(i) = best {
+                    visited[i] = true;
+                    sorted_parts.push(i);
+                    for &dep in &graph[i] {
+                        if in_degree[dep] > 0 {
+                            in_degree[dep] -= 1;
+                            if in_degree[dep] == 0 && !visited[dep] {
+                                ready.push(dep);
+                            }
+                        }
+                    }
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // 3. Render parts from back to front
+        let mut all_drawn_faces: Vec<Face3DToDraw> = Vec::new();
+
+        for &part_idx in &sorted_parts {
+            let part_data = &parts_to_draw[part_idx];
+            // Sort faces within part descending by view depth (farthest first)
+            let mut faces = part_data.faces.clone();
+            faces.sort_by(|a, b| {
                 b.z_depth
                     .partial_cmp(&a.z_depth)
                     .unwrap_or(std::cmp::Ordering::Equal)
             });
-        } else {
-            faces_to_draw.sort_by(|a, b| {
-                b.avg_depth
-                    .partial_cmp(&a.avg_depth)
-                    .unwrap_or(std::cmp::Ordering::Equal)
-            });
-        }
 
-        // Refine order using Topological Depth Sorting:
-        // Detects exact 2D screen overlap between quad faces, casts ray through overlap point,
-        // and establishes directed dependency edges (B -> A means B must be drawn before A).
-        let n_faces = faces_to_draw.len();
-        if n_faces > 1 {
-            let inv_vp = vp_mat.inverse();
-            let mut adj: Vec<Vec<usize>> = vec![Vec::new(); n_faces];
-            let mut in_degree: Vec<usize> = vec![0; n_faces];
-
-            for i in 0..n_faces {
-                let fa = &faces_to_draw[i];
-                for j in (i + 1)..n_faces {
-                    let fb = &faces_to_draw[j];
-                    if fa.part_id == fb.part_id {
-                        continue;
-                    }
-
-                    // Test 1: Screen bounding boxes MUST intersect!
-                    // If faces don't overlap on screen, they cannot occlude each other; never create fake dependency edges!
-                    if !fa.screen_bbox.intersects(fb.screen_bbox) {
-                        continue;
-                    }
-
-                    // Test 2: If depth ranges do not overlap, the one strictly farther must be drawn first
-                    if is_z_order {
-                        if fa.min_z >= fb.max_z + 0.1 {
-                            adj[i].push(j);
-                            in_degree[j] += 1;
-                            continue;
-                        }
-                        if fb.min_z >= fa.max_z + 0.1 {
-                            adj[j].push(i);
-                            in_degree[i] += 1;
-                            continue;
-                        }
+            for face in faces {
+                let is_enhanced = self.cam_3d.z_order;
+                if is_enhanced {
+                    if let Some(tex) = loaded_textures.get(&face.material_id) {
+                        self.draw_perspective_correct_textured_quad(
+                            &painter,
+                            rect,
+                            &vp_mat,
+                            tex.id(),
+                            &face.world_verts,
+                            &face.uv_corners,
+                            face.screen_bbox,
+                            face.fill_color,
+                        );
                     } else {
-                        if fa.min_depth >= fb.max_depth + 0.1 {
-                            adj[i].push(j);
-                            in_degree[j] += 1;
+                        draw_solid_polygon(&painter, &face.screen_pts, face.fill_color);
+                    }
+                } else {
+                    // Normal mode: fast flat solid polygons with lighting, zero texture fetches
+                    draw_solid_polygon(&painter, &face.screen_pts, face.fill_color);
+                }
+
+                if self.cam_3d.wireframe_overlay || face.is_selected {
+                    for i in 0..4 {
+                        if !face.outer_edges[i] {
                             continue;
                         }
-                        if fb.min_depth >= fa.max_depth + 0.1 {
-                            adj[j].push(i);
-                            in_degree[i] += 1;
-                            continue;
+                        let w1 = face.world_verts[i];
+                        let w2 = face.world_verts[(i + 1) % 4];
+                        if let Some((p1, p2)) =
+                            self.project_clipped_segment_3d(&vp_mat, rect, eye, fwd, w1, w2)
+                        {
+                            let st = face.edge_strokes[i].unwrap_or_else(|| {
+                                Stroke::new(
+                                    if face.is_selected { 2.0 } else { 1.0 },
+                                    face.stroke_color,
+                                )
+                            });
+                            painter.line_segment([p1, p2], st);
                         }
                     }
+                }
 
-                    // Detailed test 3: Find point in 2D quad overlap and test ray depths
-                    if let Some(inter_pt) = find_point_in_quad_intersection(&fa.screen_pts, &fb.screen_pts) {
-                        if let Some(ray_dir) = ray_from_screen_point(inter_pt, rect, &inv_vp) {
-                            let t_a = ray_plane_distance(eye, ray_dir, fa.world_norm, fa.plane_d);
-                            let t_b = ray_plane_distance(eye, ray_dir, fb.world_norm, fb.plane_d);
-                            if let (Some(ta), Some(tb)) = (t_a, t_b) {
-                                if ta + 0.2 < tb {
-                                    // A is closer than B at this screen pixel -> B must be drawn BEFORE A (B -> A)
-                                    adj[j].push(i);
-                                    in_degree[i] += 1;
-                                } else if tb + 0.2 < ta {
-                                    // B is closer than A at this screen pixel -> A must be drawn BEFORE B (A -> B)
-                                    adj[i].push(j);
-                                    in_degree[j] += 1;
-                                }
+                if is_enhanced {
+                    if let Some((gs_w, ge_w)) = face.grain_segment_3d {
+                        if let Some((gs, ge)) =
+                            self.project_clipped_segment_3d(&vp_mat, rect, eye, fwd, gs_w, ge_w)
+                        {
+                            let dist: f32 = gs.distance(ge);
+                            if dist > 12.0 {
+                                painter.line_segment(
+                                    [gs, ge],
+                                    Stroke::new(1.1, Color32::from_rgba_unmultiplied(60, 40, 20, 120)),
+                                );
                             }
                         }
                     }
                 }
-            }
 
-            // Kahn's algorithm with priority queue ordered by descending depth (farthest first)
-            use std::collections::BinaryHeap;
-            #[derive(PartialEq)]
-            struct HeapItem {
-                depth: f32,
-                idx: usize,
-            }
-            impl Eq for HeapItem {}
-            impl PartialOrd for HeapItem {
-                fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-                    Some(self.cmp(other))
-                }
-            }
-            impl Ord for HeapItem {
-                fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-                    self.depth.partial_cmp(&other.depth).unwrap_or(std::cmp::Ordering::Equal)
-                }
-            }
-
-            let get_depth = |idx: usize| -> f32 {
-                if is_z_order {
-                    faces_to_draw[idx].z_depth
-                } else {
-                    faces_to_draw[idx].avg_depth
-                }
-            };
-
-            let mut heap = BinaryHeap::new();
-            for (idx, &deg) in in_degree.iter().enumerate() {
-                if deg == 0 {
-                    heap.push(HeapItem {
-                        depth: get_depth(idx),
-                        idx,
-                    });
-                }
-            }
-
-            let mut sorted_indices = Vec::with_capacity(n_faces);
-            let mut visited = vec![false; n_faces];
-
-            while sorted_indices.len() < n_faces {
-                if let Some(HeapItem { idx: u, .. }) = heap.pop() {
-                    if visited[u] {
-                        continue;
-                    }
-                    visited[u] = true;
-                    sorted_indices.push(u);
-
-                    for &v in &adj[u] {
-                        if in_degree[v] > 0 {
-                            in_degree[v] -= 1;
-                            if in_degree[v] == 0 && !visited[v] {
-                                heap.push(HeapItem {
-                                    depth: get_depth(v),
-                                    idx: v,
-                                });
-                            }
-                        }
-                    }
-                } else {
-                    // Heap is empty but unvisited nodes remain -> cycle detected in graph.
-                    // Break the cycle gracefully: pick the unvisited node farthest from the camera and continue.
-                    let mut best_idx = None;
-                    let mut best_depth = f32::MIN;
-                    for (idx, &vis) in visited.iter().enumerate() {
-                        let d = get_depth(idx);
-                        if !vis && d > best_depth {
-                            best_depth = d;
-                            best_idx = Some(idx);
-                        }
-                    }
-                    if let Some(idx) = best_idx {
-                        heap.push(HeapItem {
-                            depth: best_depth,
-                            idx,
-                        });
-                    } else {
-                        break;
-                    }
-                }
-            }
-
-            let mut reordered = Vec::with_capacity(n_faces);
-            for idx in sorted_indices {
-                reordered.push(faces_to_draw[idx].clone());
-            }
-            faces_to_draw = reordered;
-        }
-
-        // 3. Render faces (with perspective-correct 3D subdivision for textures without PS1 affine distortion, or solid material color)
-        for face in &faces_to_draw {
-            if let Some(tex) = loaded_textures.get(&face.material_id) {
-                self.draw_perspective_correct_textured_quad(
-                    &painter,
-                    rect,
-                    &vp_mat,
-                    tex.id(),
-                    &face.world_verts,
-                    &face.uv_corners,
-                    face.screen_bbox,
-                    face.fill_color,
-                );
-            } else {
-                painter.add(Shape::convex_polygon(
-                    face.screen_pts.to_vec(),
-                    face.fill_color,
-                    Stroke::new(0.4, face.fill_color), // Hides anti-aliasing seams between adjacent tiles of the same face
-                ));
-            }
-
-            if self.cam_3d.wireframe_overlay || face.is_selected {
-                for i in 0..4 {
-                    // Draw outlines and edge banding only on outer part boundaries (skip internal tile subdivision edges)
-                    if !face.outer_edges[i] {
-                        continue;
-                    }
-                    let p1 = face.screen_pts[i];
-                    let p2 = face.screen_pts[(i + 1) % 4];
-                    let st = face.edge_strokes[i].unwrap_or_else(|| {
-                        Stroke::new(if face.is_selected { 2.0 } else { 1.0 }, face.stroke_color)
-                    });
-                    painter.line_segment([p1, p2], st);
-                }
-            }
-
-            if let Some((gs, ge)) = face.grain_segment {
-                if gs.distance(ge) > 12.0 {
-                    painter.line_segment(
-                        [gs, ge],
-                        Stroke::new(1.1, Color32::from_rgba_unmultiplied(60, 40, 20, 120)),
-                    );
-                }
+                all_drawn_faces.push(face);
             }
         }
 
@@ -3347,8 +3282,8 @@ impl QuadViewportController {
             if ui.input(|i| i.pointer.button_pressed(egui::PointerButton::Primary)) {
                 let crosshair_pos = rect.center();
                 let mut hit_part = None;
-                for face in faces_to_draw.iter().rev() {
-                    if point_in_quad(crosshair_pos, &face.screen_pts) {
+                for face in all_drawn_faces.iter().rev() {
+                    if point_in_convex_polygon(crosshair_pos, &face.screen_pts) {
                         hit_part = Some(face.part_id);
                         break;
                     }
@@ -3366,8 +3301,8 @@ impl QuadViewportController {
         } else if resp.clicked_by(egui::PointerButton::Primary) {
             if let Some(click_pos) = ui.input(|i| i.pointer.interact_pos()) {
                 let mut hit_part = None;
-                for face in faces_to_draw.iter().rev() {
-                    if point_in_quad(click_pos, &face.screen_pts) {
+                for face in all_drawn_faces.iter().rev() {
+                    if point_in_convex_polygon(click_pos, &face.screen_pts) {
                         hit_part = Some(face.part_id);
                         break;
                     }
@@ -3477,12 +3412,12 @@ impl QuadViewportController {
             };
         }
 
-        // Bottom-right "Z-order" toggle checkbox
+        // Bottom-right "Enhanced / Normal" quality toggle checkbox
         let zorder_rect = Rect::from_min_size(
-            Pos2::new(rect.right() - 86.0, rect.bottom() - 28.0),
-            EguiVec2::new(80.0, 22.0),
+            Pos2::new(rect.right() - 92.0, rect.bottom() - 28.0),
+            EguiVec2::new(86.0, 22.0),
         );
-        let z_resp = ui.interact(zorder_rect, ui.id().with("z_order_toggle_3d"), Sense::click());
+        let z_resp = ui.interact(zorder_rect, ui.id().with("hq_render_toggle_3d"), Sense::click());
         if z_resp.clicked() {
             self.cam_3d.z_order = !self.cam_3d.z_order;
         }
@@ -3504,7 +3439,7 @@ impl QuadViewportController {
                 if self.cam_3d.z_order {
                     Color32::from_rgb(80, 170, 255)
                 } else {
-                    Color32::from_gray(60)
+                    Color32::from_gray(70)
                 },
             ),
         );
@@ -3539,20 +3474,25 @@ impl QuadViewportController {
                 Stroke::new(1.5, Color32::WHITE),
             );
         }
+        let label_text = if self.cam_3d.z_order {
+            "Enhanced"
+        } else {
+            "Normal"
+        };
         painter.text(
             Pos2::new(box_rect.right() + 6.0, zorder_rect.center().y),
             egui::Align2::LEFT_CENTER,
-            "Z-order",
+            label_text,
             FontId::proportional(11.0),
             if self.cam_3d.z_order {
                 Color32::WHITE
             } else {
-                Color32::from_gray(200)
+                Color32::from_gray(210)
             },
         );
         z_resp.on_hover_text(self.lang.tr(
-            "Включить точную Z-сортировку граней (разбиение панелей и учет глубины)",
-            "Enable precise Z-order face sorting (panel subdivision & depth testing)",
+            "Режим отображения:\n• Enhanced (Улучшенный): фотореалистичные текстуры с перспективной коррекцией и сглаживанием.\n• Normal (Обычный): быстрые чистые заливки без текстур для слабых видеокарт и максимального FPS.",
+            "Display mode:\n• Enhanced: photorealistic textures with perspective correction and anti-aliasing.\n• Normal: fast flat solid shading without textures for weak GPUs and maximum FPS.",
         ));
     }
 
@@ -3575,12 +3515,19 @@ impl QuadViewportController {
         let mut max_w = f32::MIN;
         for v in w_verts {
             let clip = *vp_mat * v.extend(1.0);
-            min_w = min_w.min(clip.w.max(10.0));
-            max_w = max_w.max(clip.w.max(10.0));
+            min_w = min_w.min(clip.w.max(NEAR_CLIP_MM));
+            max_w = max_w.max(clip.w.max(NEAR_CLIP_MM));
         }
-        let depth_ratio = (max_w / min_w.max(10.0)).clamp(1.0, 4.0);
-        let sub_u = (((screen_bbox.width() * depth_ratio) / 26.0).ceil() as usize).clamp(3, 8);
-        let sub_v = (((screen_bbox.height() * depth_ratio) / 26.0).ceil() as usize).clamp(3, 8);
+        let (sub_u, sub_v) = if self.cam_3d.z_order {
+            let depth_ratio = (max_w / min_w.max(NEAR_CLIP_MM)).clamp(1.0, 4.0);
+            (
+                (((screen_bbox.width() * depth_ratio) / 26.0).ceil() as usize).clamp(3, 8),
+                (((screen_bbox.height() * depth_ratio) / 26.0).ceil() as usize).clamp(3, 8),
+            )
+        } else {
+            // Fast mode for lower-end hardware: single quad per face (2 triangles)
+            (1, 1)
+        };
 
         let bilerp_3d = |s: f32, t: f32| -> Vec3 {
             let top = w_verts[0].lerp(w_verts[1], s);
@@ -3595,64 +3542,159 @@ impl QuadViewportController {
             Pos2::new(top_x + (bot_x - top_x) * t, top_y + (bot_y - top_y) * t)
         };
 
+        let eye = self.cam_3d.eye_mm;
+        let fwd = self.cam_3d.forward_dir();
+
+        // For each micro-cell, clip against near-plane and build triangles
         let mut mesh = egui::Mesh::with_texture(tex_id);
-        let cols = sub_u + 1;
-        let mut grid_scr = Vec::with_capacity(cols * (sub_v + 1));
 
-        for iv in 0..=sub_v {
-            let t = iv as f32 / sub_v as f32;
-            for iu in 0..=sub_u {
-                let s = iu as f32 / sub_u as f32;
-                let p3d = bilerp_3d(s, t);
-                let uv = bilerp_uv(s, t);
-                let Some((scr, _)) = self.cam_3d.project_point(vp_mat, rect, p3d) else {
-                    return;
-                };
-                grid_scr.push((scr, uv));
-            }
-        }
-
-        // Add grid nodes to vertex buffer
-        for &(pos, uv) in &grid_scr {
-            mesh.vertices.push(egui::epaint::Vertex {
-                pos,
-                uv,
-                color: tint_color,
-            });
-        }
-
-        // For each micro-cell, add its true 3D-projected center and build 4 symmetric triangles (X-split)
-        // to eliminate diagonal texture creasing!
         for iv in 0..sub_v {
+            let t0 = iv as f32 / sub_v as f32;
+            let t1 = (iv + 1) as f32 / sub_v as f32;
             let t_mid = (iv as f32 + 0.5) / sub_v as f32;
+
             for iu in 0..sub_u {
+                let s0 = iu as f32 / sub_u as f32;
+                let s1 = (iu + 1) as f32 / sub_u as f32;
                 let s_mid = (iu as f32 + 0.5) / sub_u as f32;
-                let p_mid_3d = bilerp_3d(s_mid, t_mid);
-                let uv_mid = bilerp_uv(s_mid, t_mid);
-                let Some((scr_mid, _)) = self.cam_3d.project_point(vp_mat, rect, p_mid_3d) else {
-                    continue;
-                };
 
-                let i00 = (iv * cols + iu) as u32;
-                let i10 = (iv * cols + iu + 1) as u32;
-                let i11 = ((iv + 1) * cols + iu + 1) as u32;
-                let i01 = ((iv + 1) * cols + iu) as u32;
-                let i_mid = mesh.vertices.len() as u32;
+                let cell_3d = [
+                    bilerp_3d(s0, t0),
+                    bilerp_3d(s1, t0),
+                    bilerp_3d(s1, t1),
+                    bilerp_3d(s0, t1),
+                ];
+                let cell_uv = [
+                    bilerp_uv(s0, t0),
+                    bilerp_uv(s1, t0),
+                    bilerp_uv(s1, t1),
+                    bilerp_uv(s0, t1),
+                ];
 
-                mesh.vertices.push(egui::epaint::Vertex {
-                    pos: scr_mid,
-                    uv: uv_mid,
-                    color: tint_color,
-                });
+                // Check how many vertices of this micro-cell are in front of near-plane
+                let in_front = cell_3d
+                    .iter()
+                    .all(|&p| (p - eye).dot(fwd) >= NEAR_CLIP_MM);
 
-                mesh.add_triangle(i00, i10, i_mid);
-                mesh.add_triangle(i10, i11, i_mid);
-                mesh.add_triangle(i11, i01, i_mid);
-                mesh.add_triangle(i01, i00, i_mid);
+                if in_front {
+                    let mut scr = [Pos2::ZERO; 4];
+                    let mut ok = true;
+                    for k in 0..4 {
+                        if let Some((p, _)) = self.cam_3d.project_point(vp_mat, rect, cell_3d[k]) {
+                            scr[k] = p;
+                        } else {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    let p_mid_3d = bilerp_3d(s_mid, t_mid);
+                    let uv_mid = bilerp_uv(s_mid, t_mid);
+                    let scr_mid = self.cam_3d.project_point(vp_mat, rect, p_mid_3d);
+
+                    if ok {
+                        if let Some((sm, _)) = scr_mid {
+                            let base_idx = mesh.vertices.len() as u32;
+                            mesh.vertices.push(egui::epaint::Vertex {
+                                pos: scr[0],
+                                uv: cell_uv[0],
+                                color: tint_color,
+                            });
+                            mesh.vertices.push(egui::epaint::Vertex {
+                                pos: scr[1],
+                                uv: cell_uv[1],
+                                color: tint_color,
+                            });
+                            mesh.vertices.push(egui::epaint::Vertex {
+                                pos: scr[2],
+                                uv: cell_uv[2],
+                                color: tint_color,
+                            });
+                            mesh.vertices.push(egui::epaint::Vertex {
+                                pos: scr[3],
+                                uv: cell_uv[3],
+                                color: tint_color,
+                            });
+                            mesh.vertices.push(egui::epaint::Vertex {
+                                pos: sm,
+                                uv: uv_mid,
+                                color: tint_color,
+                            });
+
+                            mesh.add_triangle(base_idx, base_idx + 1, base_idx + 4);
+                            mesh.add_triangle(base_idx + 1, base_idx + 2, base_idx + 4);
+                            mesh.add_triangle(base_idx + 2, base_idx + 3, base_idx + 4);
+                            mesh.add_triangle(base_idx + 3, base_idx, base_idx + 4);
+                            continue;
+                        }
+                    }
+                }
+
+                // If cell intersects near-plane, clip the cell polygon and interpolate UVs
+                let mut poly_3d_uv = Vec::with_capacity(6);
+                let dist = |p: Vec3| -> f32 { (p - eye).dot(fwd) - NEAR_CLIP_MM };
+                for k in 0..4 {
+                    let cur_p = cell_3d[k];
+                    let cur_uv = cell_uv[k];
+                    let prev_idx = if k == 0 { 3 } else { k - 1 };
+                    let prev_p = cell_3d[prev_idx];
+                    let prev_uv = cell_uv[prev_idx];
+
+                    let d_cur = dist(cur_p);
+                    let d_prev = dist(prev_p);
+
+                    if d_cur >= 0.0 {
+                        if d_prev < 0.0 {
+                            let t = d_prev / (d_prev - d_cur);
+                            let inter_p = prev_p.lerp(cur_p, t);
+                            let inter_uv = Pos2::new(
+                                prev_uv.x + t * (cur_uv.x - prev_uv.x),
+                                prev_uv.y + t * (cur_uv.y - prev_uv.y),
+                            );
+                            poly_3d_uv.push((inter_p, inter_uv));
+                        }
+                        poly_3d_uv.push((cur_p, cur_uv));
+                    } else if d_prev >= 0.0 {
+                        let t = d_prev / (d_prev - d_cur);
+                        let inter_p = prev_p.lerp(cur_p, t);
+                        let inter_uv = Pos2::new(
+                            prev_uv.x + t * (cur_uv.x - prev_uv.x),
+                            prev_uv.y + t * (cur_uv.y - prev_uv.y),
+                        );
+                        poly_3d_uv.push((inter_p, inter_uv));
+                    }
+                }
+
+                if poly_3d_uv.len() >= 3 {
+                    let mut scr_uv = Vec::with_capacity(poly_3d_uv.len());
+                    let mut ok = true;
+                    for (p3d, uv) in &poly_3d_uv {
+                        if let Some((sp, _)) = self.cam_3d.project_point(vp_mat, rect, *p3d) {
+                            scr_uv.push((sp, *uv));
+                        } else {
+                            ok = false;
+                            break;
+                        }
+                    }
+                    if ok && scr_uv.len() >= 3 {
+                        let base_idx = mesh.vertices.len() as u32;
+                        for (pos, uv) in &scr_uv {
+                            mesh.vertices.push(egui::epaint::Vertex {
+                                pos: *pos,
+                                uv: *uv,
+                                color: tint_color,
+                            });
+                        }
+                        for i in 1..(scr_uv.len() - 1) {
+                            mesh.add_triangle(base_idx, base_idx + i as u32, base_idx + (i + 1) as u32);
+                        }
+                    }
+                }
             }
         }
 
-        painter.add(Shape::Mesh(mesh));
+        if !mesh.is_empty() {
+            painter.add(Shape::Mesh(mesh));
+        }
     }
 
     fn draw_3d_floor_grid(&self, painter: &Painter, rect: Rect, vp_mat: &Mat4) {
@@ -3694,6 +3736,33 @@ impl QuadViewportController {
                 painter.line_segment([o, pz], Stroke::new(2.2, Color32::from_rgb(80, 150, 250)));
             }
         }
+    }
+
+    /// Clips a 3D line segment against the camera near plane and projects it to 2D screen coordinates.
+    pub fn project_clipped_segment_3d(
+        &self,
+        vp_mat: &Mat4,
+        rect: Rect,
+        eye: Vec3,
+        fwd: Vec3,
+        mut p1: Vec3,
+        mut p2: Vec3,
+    ) -> Option<(Pos2, Pos2)> {
+        let d1 = (p1 - eye).dot(fwd) - NEAR_CLIP_MM;
+        let d2 = (p2 - eye).dot(fwd) - NEAR_CLIP_MM;
+        if d1 < 0.0 && d2 < 0.0 {
+            return None;
+        }
+        if d1 < 0.0 {
+            let t = d1 / (d1 - d2);
+            p1 = p1.lerp(p2, t);
+        } else if d2 < 0.0 {
+            let t = d2 / (d2 - d1);
+            p2 = p2.lerp(p1, t);
+        }
+        let (s1, _) = self.cam_3d.project_point(vp_mat, rect, p1)?;
+        let (s2, _) = self.cam_3d.project_point(vp_mat, rect, p2)?;
+        Some((s1, s2))
     }
 
     /// Checks if face `f_idx` (0:-Z, 1:+Z, 2:-Y, 3:+Y, 4:-X, 5:+X) matches one of the 4 edge-banded sides of the part
@@ -3749,104 +3818,391 @@ impl QuadViewportController {
     }
 }
 
-/// Test if a 2D point is inside a convex quad
-fn point_in_quad(pt: Pos2, quad: &[Pos2; 4]) -> bool {
-    let mut pos = 0;
-    let mut neg = 0;
-    for i in 0..4 {
-        let a = quad[i];
-        let b = quad[(i + 1) % 4];
-        let cross = (b.x - a.x) * (pt.y - a.y) - (b.y - a.y) * (pt.x - a.x);
-        if cross > 0.0 {
-            pos += 1;
-        } else if cross < 0.0 {
-            neg += 1;
+/// Clips a 3D convex polygon against the camera near plane `(P - eye) . fwd >= near_d`
+/// using the Sutherland-Hodgman polygon clipping algorithm.
+fn clip_3d_polygon_near_plane(verts: &[Vec3], eye: Vec3, fwd: Vec3, near_d: f32) -> Vec<Vec3> {
+    if verts.is_empty() {
+        return Vec::new();
+    }
+    let mut out = Vec::with_capacity(verts.len() + 2);
+    let dist = |p: Vec3| -> f32 { (p - eye).dot(fwd) - near_d };
+
+    for i in 0..verts.len() {
+        let cur = verts[i];
+        let prev = if i == 0 { verts[verts.len() - 1] } else { verts[i - 1] };
+        let d_cur = dist(cur);
+        let d_prev = dist(prev);
+
+        if d_cur >= 0.0 {
+            if d_prev < 0.0 {
+                let t = d_prev / (d_prev - d_cur);
+                out.push(prev.lerp(cur, t));
+            }
+            out.push(cur);
+        } else if d_prev >= 0.0 {
+            let t = d_prev / (d_prev - d_cur);
+            out.push(prev.lerp(cur, t));
         }
     }
-    pos == 0 || neg == 0
+    out
 }
 
-fn line_segment_intersection_2d(p1: Pos2, p2: Pos2, q1: Pos2, q2: Pos2) -> Option<Pos2> {
-    let d = (p2.x - p1.x) * (q2.y - q1.y) - (p2.y - p1.y) * (q2.x - q1.x);
-    if d.abs() < 1e-5 {
-        return None;
+/// Renders a solid 2D polygon with a triangle fan using `Mesh::default()`.
+/// Avoids `Shape::convex_polygon` whose stroke feathering can explode into spikes.
+fn draw_solid_polygon(painter: &Painter, pts: &[Pos2], color: Color32) {
+    if pts.len() < 3 {
+        return;
     }
-    let t = ((q1.x - p1.x) * (q2.y - q1.y) - (q1.y - p1.y) * (q2.x - q1.x)) / d;
-    let u = ((q1.x - p1.x) * (p2.y - p1.y) - (q1.y - p1.y) * (p2.x - p1.x)) / d;
-    if (0.0..=1.0).contains(&t) && (0.0..=1.0).contains(&u) {
-        Some(Pos2::new(
-            p1.x + t * (p2.x - p1.x),
-            p1.y + t * (p2.y - p1.y),
-        ))
+    let mut mesh = egui::Mesh::default();
+    mesh.reserve_vertices(pts.len());
+    mesh.reserve_triangles(pts.len() - 2);
+
+    for &pos in pts {
+        mesh.vertices.push(egui::epaint::Vertex {
+            pos,
+            uv: Pos2::ZERO,
+            color,
+        });
+    }
+    for i in 1..(pts.len() - 1) {
+        mesh.add_triangle(0, i as u32, (i + 1) as u32);
+    }
+    painter.add(Shape::Mesh(mesh));
+}
+
+/// Checks if point `pt` is inside a 2D convex polygon
+fn point_in_convex_polygon(pt: Pos2, poly: &[Pos2]) -> bool {
+    if poly.len() < 3 {
+        return false;
+    }
+    let mut has_pos = false;
+    let mut has_neg = false;
+    for i in 0..poly.len() {
+        let a = poly[i];
+        let b = poly[(i + 1) % poly.len()];
+        let cross = (b.x - a.x) * (pt.y - a.y) - (b.y - a.y) * (pt.x - a.x);
+        if cross > 1e-4 {
+            has_pos = true;
+        } else if cross < -1e-4 {
+            has_neg = true;
+        }
+        if has_pos && has_neg {
+            return false;
+        }
+    }
+    true
+}
+
+#[derive(Clone)]
+pub struct Face3DToDraw {
+    pub part_id: PartId,
+    pub material_id: MaterialId,
+    pub world_verts: [Vec3; 4],
+    pub screen_pts: Vec<Pos2>,
+    pub screen_bbox: Rect,
+    pub z_depth: f32,
+    pub fill_color: Color32,
+    pub stroke_color: Color32,
+    pub is_selected: bool,
+    pub uv_corners: [Pos2; 4],
+    pub outer_edges: [bool; 4],
+    pub edge_strokes: [Option<Stroke>; 4],
+    pub grain_segment_3d: Option<(Vec3, Vec3)>,
+}
+
+#[derive(Clone)]
+#[allow(dead_code)]
+pub struct PartDrawData {
+    #[allow(dead_code)]
+    pub part_id: PartId,
+    pub bmin: Vec3,
+    pub bmax: Vec3,
+    pub yaw_deg: f32,
+    pub screen_bbox: Rect,
+    pub max_depth: f32,
+    pub faces: Vec<Face3DToDraw>,
+}
+
+/// Tests whether box A is separated from box B along a single axis, and if so,
+/// whether box A is on the camera's side of the separating plane (closer to eye).
+/// Returns `Some(true)` if A is closer to eye (A in front of B).
+/// Returns `Some(false)` if B is closer to eye (B in front of A).
+/// Returns `None` if not separated along this axis or camera is between the boxes.
+#[allow(dead_code)]
+pub fn test_axis_separation(
+    min_a: f32,
+    max_a: f32,
+    min_b: f32,
+    max_b: f32,
+    eye_c: f32,
+    eps: f32,
+) -> Option<bool> {
+    if max_a <= min_b + eps {
+        // A is below/left/behind B along this axis
+        if eye_c <= max_a {
+            Some(true)
+        } else if eye_c >= min_b {
+            Some(false)
+        } else {
+            None
+        }
+    } else if max_b <= min_a + eps {
+        // B is below/left/behind A along this axis
+        if eye_c <= max_b {
+            Some(false)
+        } else if eye_c >= min_a {
+            Some(true)
+        } else {
+            None
+        }
     } else {
         None
     }
 }
 
-fn find_point_in_quad_intersection(quad_a: &[Pos2; 4], quad_b: &[Pos2; 4]) -> Option<Pos2> {
-    let mut pts = Vec::with_capacity(8);
-    for &pa in quad_a {
-        if point_in_quad(pa, quad_b) {
-            pts.push(pa);
+/// Computes the intersection distance `t >= 0` along ray `eye + t * dir` into an AABB.
+/// Returns `None` if the ray misses the AABB or the box is behind the ray origin.
+#[allow(dead_code)]
+pub fn ray_aabb_distance(eye: Vec3, dir: Vec3, bmin: Vec3, bmax: Vec3) -> Option<f32> {
+    let mut tmin = f32::MIN;
+    let mut tmax = f32::MAX;
+    for i in 0..3 {
+        let (e, d, min_v, max_v) = match i {
+            0 => (eye.x, dir.x, bmin.x, bmax.x),
+            1 => (eye.y, dir.y, bmin.y, bmax.y),
+            _ => (eye.z, dir.z, bmin.z, bmax.z),
+        };
+        if d.abs() > 1e-6 {
+            let mut t1 = (min_v - e) / d;
+            let mut t2 = (max_v - e) / d;
+            if t1 > t2 {
+                std::mem::swap(&mut t1, &mut t2);
+            }
+            tmin = tmin.max(t1);
+            tmax = tmax.min(t2);
+            if tmin > tmax {
+                return None;
+            }
+        } else if e < min_v || e > max_v {
+            return None;
         }
     }
-    for &pb in quad_b {
-        if point_in_quad(pb, quad_a) {
-            pts.push(pb);
-        }
+    if tmax < 0.0 {
+        return None;
     }
-    for i in 0..4 {
-        let a1 = quad_a[i];
-        let a2 = quad_a[(i + 1) % 4];
-        for j in 0..4 {
-            let b1 = quad_b[j];
-            let b2 = quad_b[(j + 1) % 4];
-            if let Some(inter) = line_segment_intersection_2d(a1, a2, b1, b2) {
-                pts.push(inter);
+    Some(tmin.max(0.0))
+}
+
+/// Computes the intersection distance `t >= 0` along ray `eye + t * dir` into a planar 3D quad.
+/// Returns `None` if the ray is parallel or the intersection point is behind the ray origin.
+pub fn ray_quad_distance(eye: Vec3, dir: Vec3, quad: &[Vec3; 4]) -> Option<f32> {
+    let edge1 = quad[1] - quad[0];
+    let edge2 = quad[3] - quad[0];
+    let norm = edge1.cross(edge2);
+    let denom = norm.dot(dir);
+    if denom.abs() < 1e-6 {
+        return None;
+    }
+    let t = (quad[0] - eye).dot(norm) / denom;
+    if t < 0.0 {
+        return None;
+    }
+    Some(t)
+}
+
+/// Determines whether Part A occludes Part B on screen.
+/// Returns:
+/// - `Some(true)` if Part A is in front of Part B (Part A occludes Part B, so B must be drawn before A).
+/// - `Some(false)` if Part B is in front of Part A (Part B occludes Part A, so A must be drawn before B).
+/// - `None` if the parts do not occlude each other on screen (no dependency needed).
+pub fn does_part_a_occlude_part_b(
+    a: &PartDrawData,
+    b: &PartDrawData,
+    eye: Vec3,
+    cam_3d: &Camera3D,
+    rect: Rect,
+) -> Option<bool> {
+    // 1. If screen bounding boxes don't overlap by at least 1.5 pixels, they cannot occlude each other
+    let overlap = a.screen_bbox.intersect(b.screen_bbox);
+    if overlap.width() < 1.5 || overlap.height() < 1.5 {
+        return None;
+    }
+
+    // 2. Test visible faces of Part A against visible faces of Part B using the exact
+    // 2D convex intersection polygon of their screen projections.
+    for fa in &a.faces {
+        for fb in &b.faces {
+            let f_overlap = fa.screen_bbox.intersect(fb.screen_bbox);
+            if f_overlap.width() < 1.0 || f_overlap.height() < 1.0 {
+                continue;
+            }
+
+            let inter = clip_convex_polygon(&fa.screen_pts, &fb.screen_pts);
+            if inter.len() < 3 || polygon_area_abs(&inter) < 2.0 {
+                // Faces only touch along an edge or a corner -> no real occlusion
+                continue;
+            }
+
+            // Sample the centroid (always strictly inside a convex polygon) plus points pulled
+            // from each vertex towards the centroid, so the ray hits both faces' interiors.
+            let mut centroid = Pos2::ZERO;
+            for p in &inter {
+                centroid.x += p.x;
+                centroid.y += p.y;
+            }
+            centroid.x /= inter.len() as f32;
+            centroid.y /= inter.len() as f32;
+
+            let mut sample_pts = Vec::with_capacity(inter.len() + 1);
+            sample_pts.push(centroid);
+            for p in &inter {
+                sample_pts.push(centroid.lerp(*p, 0.6));
+            }
+
+            for pt in sample_pts {
+                let ray_dir = cam_3d.ray_from_screen_point(pt, rect);
+                let dist_a = ray_quad_distance(eye, ray_dir, &fa.world_verts);
+                let dist_b = ray_quad_distance(eye, ray_dir, &fb.world_verts);
+                if let (Some(da), Some(db)) = (dist_a, dist_b) {
+                    if (da - db).abs() > 0.05 {
+                        return Some(da < db);
+                    }
+                }
             }
         }
     }
-    if pts.is_empty() {
-        return None;
-    }
-    let mut sum_x = 0.0;
-    let mut sum_y = 0.0;
-    for p in &pts {
-        sum_x += p.x;
-        sum_y += p.y;
-    }
-    Some(Pos2::new(sum_x / pts.len() as f32, sum_y / pts.len() as f32))
+
+    // No true geometric occlusion on screen -> no dependency edge needed!
+    None
 }
 
-fn ray_from_screen_point(scr_pt: Pos2, rect: Rect, inv_vp: &Mat4) -> Option<Vec3> {
-    let ndc_x = (scr_pt.x - rect.center().x) / (rect.width() * 0.5).max(1.0);
-    let ndc_y = -(scr_pt.y - rect.center().y) / (rect.height() * 0.5).max(1.0);
-    let clip_near = Vec4::new(ndc_x, ndc_y, -1.0, 1.0);
-    let world_near_h = *inv_vp * clip_near;
-    if world_near_h.w.abs() < 1e-6 {
-        return None;
+/// Signed-area-agnostic absolute area of a 2D polygon (shoelace formula).
+fn polygon_area_abs(pts: &[Pos2]) -> f32 {
+    let mut s = 0.0;
+    for i in 0..pts.len() {
+        let a = pts[i];
+        let b = pts[(i + 1) % pts.len()];
+        s += a.x * b.y - b.x * a.y;
     }
-    let world_near = world_near_h.truncate() / world_near_h.w;
-    let clip_far = Vec4::new(ndc_x, ndc_y, 1.0, 1.0);
-    let world_far_h = *inv_vp * clip_far;
-    if world_far_h.w.abs() < 1e-6 {
-        return None;
-    }
-    let world_far = world_far_h.truncate() / world_far_h.w;
-    Some((world_far - world_near).normalize())
+    (s * 0.5).abs()
 }
 
-fn ray_plane_distance(eye: Vec3, ray_dir: Vec3, norm: Vec3, plane_d: f32) -> Option<f32> {
-    let denom = norm.dot(ray_dir);
-    if denom.abs() < 1e-5 {
-        return None;
+/// Intersects two convex 2D polygons (Sutherland-Hodgman, `subject` clipped by `clip`).
+/// Works for either winding order of `clip`.
+pub fn clip_convex_polygon(subject: &[Pos2], clip: &[Pos2]) -> Vec<Pos2> {
+    if subject.len() < 3 || clip.len() < 3 {
+        return Vec::new();
     }
-    let t = (plane_d - norm.dot(eye)) / denom;
-    if t > 0.0 {
-        Some(t)
-    } else {
-        None
+    // Orientation of the clip polygon: +1 for CCW (in screen coords), -1 for CW
+    let mut signed = 0.0;
+    for i in 0..clip.len() {
+        let a = clip[i];
+        let b = clip[(i + 1) % clip.len()];
+        signed += a.x * b.y - b.x * a.y;
     }
+    if signed.abs() < 1e-6 {
+        return Vec::new();
+    }
+    let orient = signed.signum();
+
+    let side = |a: Pos2, b: Pos2, p: Pos2| -> f32 {
+        ((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x)) * orient
+    };
+
+    let mut output = subject.to_vec();
+    for i in 0..clip.len() {
+        if output.len() < 3 {
+            return Vec::new();
+        }
+        let ca = clip[i];
+        let cb = clip[(i + 1) % clip.len()];
+        let input = std::mem::take(&mut output);
+        for j in 0..input.len() {
+            let cur = input[j];
+            let prev = input[(j + input.len() - 1) % input.len()];
+            let s_cur = side(ca, cb, cur);
+            let s_prev = side(ca, cb, prev);
+            if s_cur >= 0.0 {
+                if s_prev < 0.0 {
+                    let t = s_prev / (s_prev - s_cur);
+                    output.push(prev.lerp(cur, t));
+                }
+                output.push(cur);
+            } else if s_prev >= 0.0 {
+                let t = s_prev / (s_prev - s_cur);
+                output.push(prev.lerp(cur, t));
+            }
+        }
+    }
+    output
+}
+
+/// Clips a 2D convex polygon against an axis-aligned `Rect` using Sutherland-Hodgman clipping.
+pub fn clip_2d_polygon_rect(pts: &[Pos2], rect: Rect) -> Vec<Pos2> {
+    if pts.len() < 3 {
+        return Vec::new();
+    }
+    let mut poly = pts.to_vec();
+    poly = clip_2d_polygon_axis(&poly, rect.min.x, true, true);
+    if poly.len() < 3 {
+        return Vec::new();
+    }
+    poly = clip_2d_polygon_axis(&poly, rect.max.x, false, true);
+    if poly.len() < 3 {
+        return Vec::new();
+    }
+    poly = clip_2d_polygon_axis(&poly, rect.min.y, true, false);
+    if poly.len() < 3 {
+        return Vec::new();
+    }
+    poly = clip_2d_polygon_axis(&poly, rect.max.y, false, false);
+    poly
+}
+
+fn clip_2d_polygon_axis(pts: &[Pos2], bound: f32, is_min: bool, is_x: bool) -> Vec<Pos2> {
+    let mut out = Vec::with_capacity(pts.len() + 2);
+    let is_inside = |p: Pos2| -> bool {
+        let v = if is_x { p.x } else { p.y };
+        if is_min {
+            v >= bound
+        } else {
+            v <= bound
+        }
+    };
+    for i in 0..pts.len() {
+        let cur = pts[i];
+        let prev = if i == 0 {
+            pts[pts.len() - 1]
+        } else {
+            pts[i - 1]
+        };
+        let in_cur = is_inside(cur);
+        let in_prev = is_inside(prev);
+
+        if in_cur {
+            if !in_prev {
+                let (v_prev, v_cur) = if is_x { (prev.x, cur.x) } else { (prev.y, cur.y) };
+                let denom = v_cur - v_prev;
+                let t = if denom.abs() > 1e-6 {
+                    (bound - v_prev) / denom
+                } else {
+                    0.5
+                };
+                out.push(prev.lerp(cur, t.clamp(0.0, 1.0)));
+            }
+            out.push(cur);
+        } else if in_prev {
+            let (v_prev, v_cur) = if is_x { (prev.x, cur.x) } else { (prev.y, cur.y) };
+            let denom = v_cur - v_prev;
+            let t = if denom.abs() > 1e-6 {
+                (bound - v_prev) / denom
+            } else {
+                0.5
+            };
+            out.push(prev.lerp(cur, t.clamp(0.0, 1.0)));
+        }
+    }
+    out
 }
 
 #[cfg(test)]
@@ -4198,6 +4554,143 @@ mod tests {
 
         // Upright is closer along camera forward view direction than the shelf behind it
         assert!(z_upright < z_shelf, "Upright must have smaller view depth than shelf: {} < {}", z_upright, z_shelf);
+    }
+
+    #[test]
+    fn test_clip_3d_polygon_near_plane_preserves_visible_geometry() {
+        let eye = Vec3::new(0.0, 0.0, 0.0);
+        let fwd = Vec3::new(0.0, 1.0, 0.0);
+        let near_d = 10.0;
+
+        // Quad straddling near plane (y goes from -5.0 behind camera to +20.0 in front)
+        let quad = [
+            Vec3::new(-10.0, -5.0, 0.0),
+            Vec3::new(10.0, -5.0, 0.0),
+            Vec3::new(10.0, 20.0, 0.0),
+            Vec3::new(-10.0, 20.0, 0.0),
+        ];
+
+        let clipped = clip_3d_polygon_near_plane(&quad, eye, fwd, near_d);
+        assert_eq!(clipped.len(), 4);
+        for pt in &clipped {
+            assert!((pt - eye).dot(fwd) >= near_d - 1e-4);
+        }
+    }
+
+    #[test]
+    fn test_point_in_convex_polygon_inside_and_outside() {
+        let poly = [
+            Pos2::new(10.0, 10.0),
+            Pos2::new(50.0, 10.0),
+            Pos2::new(50.0, 50.0),
+            Pos2::new(10.0, 50.0),
+        ];
+        assert!(point_in_convex_polygon(Pos2::new(30.0, 30.0), &poly));
+        assert!(!point_in_convex_polygon(Pos2::new(5.0, 30.0), &poly));
+        assert!(!point_in_convex_polygon(Pos2::new(60.0, 30.0), &poly));
+    }
+
+    #[test]
+    fn test_axis_separation_shelf_and_back_panel_from_front_and_rear() {
+        // Back panel: Y from 0.0 to 18.0
+        let back_min_y = 0.0;
+        let back_max_y = 18.0;
+        // Shelf in front: Y from 18.0 to 550.0
+        let shelf_min_y = 18.0;
+        let shelf_max_y = 550.0;
+
+        // From front: eye_y = 1500.0 (in front of shelf)
+        let eye_y_front = 1500.0;
+        let shelf_in_front = test_axis_separation(
+            shelf_min_y,
+            shelf_max_y,
+            back_min_y,
+            back_max_y,
+            eye_y_front,
+            0.5,
+        );
+        // Shelf should be in front of back panel when camera is in front
+        assert_eq!(shelf_in_front, Some(true));
+
+        // From rear: eye_y = -1000.0 (behind back panel)
+        let eye_y_rear = -1000.0;
+        let shelf_in_front_rear = test_axis_separation(
+            shelf_min_y,
+            shelf_max_y,
+            back_min_y,
+            back_max_y,
+            eye_y_rear,
+            0.5,
+        );
+        // Shelf should be behind back panel (false) when camera is at the rear
+        assert_eq!(shelf_in_front_rear, Some(false));
+    }
+
+    #[test]
+    fn test_clip_convex_polygon_overlap_and_edge_touch() {
+        let a = [
+            Pos2::new(0.0, 0.0),
+            Pos2::new(10.0, 0.0),
+            Pos2::new(10.0, 10.0),
+            Pos2::new(0.0, 10.0),
+        ];
+        // Overlapping square (opposite winding)
+        let b = [
+            Pos2::new(5.0, 5.0),
+            Pos2::new(5.0, 15.0),
+            Pos2::new(15.0, 15.0),
+            Pos2::new(15.0, 5.0),
+        ];
+        let inter = clip_convex_polygon(&a, &b);
+        assert!((polygon_area_abs(&inter) - 25.0).abs() < 1e-3);
+
+        // Square touching only along the edge x = 10 -> zero area
+        let c = [
+            Pos2::new(10.0, 0.0),
+            Pos2::new(20.0, 0.0),
+            Pos2::new(20.0, 10.0),
+            Pos2::new(10.0, 10.0),
+        ];
+        let touch = clip_convex_polygon(&a, &c);
+        assert!(touch.len() < 3 || polygon_area_abs(&touch) < 1e-3);
+    }
+
+    #[test]
+    fn test_clip_2d_polygon_rect_constrains_extreme_coordinates() {
+        let rect = Rect::from_min_max(Pos2::new(0.0, 0.0), Pos2::new(800.0, 600.0));
+        // Quad with vertices extending to 20,000 pixels
+        let extreme_poly = [
+            Pos2::new(-20000.0, 300.0),
+            Pos2::new(400.0, -15000.0),
+            Pos2::new(25000.0, 300.0),
+            Pos2::new(400.0, 20000.0),
+        ];
+
+        let clipped = clip_2d_polygon_rect(&extreme_poly, rect);
+        assert!(clipped.len() >= 3);
+        for pt in &clipped {
+            assert!(pt.x >= rect.min.x - 1e-3 && pt.x <= rect.max.x + 1e-3);
+            assert!(pt.y >= rect.min.y - 1e-3 && pt.y <= rect.max.y + 1e-3);
+        }
+    }
+
+    #[test]
+    fn test_ray_aabb_distance_hits_closer_box_first() {
+        let eye = Vec3::new(300.0, 1500.0, 500.0);
+        let dir = Vec3::new(0.0, -1.0, 0.0); // pointing straight in -Y direction
+
+        // Box A (front door/shelf) at Y in [500, 518]
+        let a_min = Vec3::new(200.0, 500.0, 400.0);
+        let a_max = Vec3::new(400.0, 518.0, 600.0);
+
+        // Box B (back wall) at Y in [0, 18]
+        let b_min = Vec3::new(200.0, 0.0, 400.0);
+        let b_max = Vec3::new(400.0, 18.0, 600.0);
+
+        let dist_a = ray_aabb_distance(eye, dir, a_min, a_max).expect("Ray should hit box A");
+        let dist_b = ray_aabb_distance(eye, dir, b_min, b_max).expect("Ray should hit box B");
+
+        assert!(dist_a < dist_b, "Front box must have smaller hit distance than back box: {} < {}", dist_a, dist_b);
     }
 }
 
