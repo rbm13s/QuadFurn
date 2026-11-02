@@ -35,7 +35,7 @@ QuadFurn/
 ├── .agents/skills/
 │   └── release-checklist/         # Mandatory 3-phase release protocol instructions
 ├── assets/
-│   ├── icon.jpeg                  # Master application logo
+│   ├── icon_256.jpg                  # Master application logo
 │   └── icon.ico                   # Generated multi-resolution Windows icon
 ├── docs/                          # GitHub Pages landing site (index.html + 36 localized HTML pages)
 │   ├── app/                       # Compiled WebAssembly CAD bundle (deployed via Trunk)
