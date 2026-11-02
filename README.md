@@ -207,7 +207,7 @@ The **Cutting Layout** tab (`🪚 3. Cutting Layout`) automatically packs all vi
   - **Minimize Remnants**: optimizes part arrangement to minimize the total count of offcut scraps.
   - **Minimize Toolpath / Cuts**: optimizes cut lines to minimize the total linear blade travel distance.
 - **Configurable Saw Parameters & Cost Calculation**:
-  - **Saw Kerf Width** (default `4.0 mm` / configurable).
+  - **Saw Kerf Width** (default `6.0 mm` / configurable).
   - **Unified & Separate Trim Margins**: Default single input (e.g. `10 mm`) for all 4 edges, with an optional "Separate margins" toggle for distinct Left, Right, Top, and Bottom margins.
   - **Cutting Cost Calculation**: Real-time project cut cost calculation based on configurable cost per linear meter (`Cost per linear meter`).
 - **Grain Direction Enforcement**:
