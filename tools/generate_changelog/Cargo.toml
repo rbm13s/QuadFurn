@@ -1,0 +1,8 @@
+[package]
+name = "generate_changelog"
+version = "0.1.0"
+edition = "2021"
+description = "Lightweight tool to generate structured release notes from git commits"
+
+[dependencies]
+# Standard library only - zero external dependencies for instant compilation

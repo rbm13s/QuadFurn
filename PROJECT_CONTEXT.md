@@ -63,10 +63,11 @@ QuadFurn/
 │   ├── update_checker.rs          # Asynchronous GitHub Releases version checker (desktop)
 │   ├── web.rs                     # WASM-specific helpers (file upload/download, pointer lock, dynamic font fetch)
 │   ├── batch_screenshot.rs        # Automated headless/windowed screenshot generator for all 37 locales
-│   └── bin/generate_changelog.rs  # CI helper for structured release notes generation
+├── tools/
+│   └── generate_changelog/        # Standalone lightweight CI tool for structured release notes (0 external deps)
 ├── web/index.html                 # Trunk HTML template for the WebAssembly build
 ├── build.rs                       # Windows PE icon resource compiler
-└── Cargo.toml                     # Package manifest (current version: 0.2.7)
+└── Cargo.toml                     # Package manifest (current version: 0.3.0)
 ```
 
 ---

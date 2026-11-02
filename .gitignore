@@ -1,9 +1,11 @@
 # Rust build artifacts
-/target/
+target/
+**/target/
 **/*.rs.bk
 *.pdb
 
 # Release archives & packages (prevent accidental staging of local release builds)
+release_notes.md
 *.zip
 *.tar.gz
 *.deb
