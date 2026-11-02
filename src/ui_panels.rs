@@ -354,58 +354,171 @@ pub fn ui_left_tools_dock(
     mut on_before_mutate: impl FnMut(&Project),
 ) {
     let lang = viewport_ctrl.lang;
-    let mm_suffix = lang.t(" mm");
-    let btn_w = 42.0;
-    let btn_h = 36.0;
+    let btn_w = 38.0;
+    let btn_h = 34.0;
+    let cols = if *two_columns { 2 } else { 1 };
+
+    let is_dark = ui.visuals().dark_mode;
 
     // Dock header with 1-col / 2-col switcher button
     ui.horizontal(|ui| {
-        let header_lbl = if *two_columns {
-            lang.t("tools.header")
+        if *two_columns {
+            ui.label(RichText::new(lang.t("tools.header")).size(11.0).strong())
+                .on_hover_text(lang.t("tools.header"));
+            ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                if ui
+                    .small_button("«")
+                    .on_hover_text(lang.t("tools.toggle_columns_tip"))
+                    .clicked()
+                {
+                    *two_columns = !*two_columns;
+                    on_toggle_columns();
+                }
+            });
         } else {
-            "🛠"
-        };
-        ui.label(RichText::new(header_lbl).size(11.5).strong())
-            .on_hover_text(lang.t("tools.header"));
-        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-            let toggle_icon = if *two_columns { "«" } else { "»" };
-            if ui
-                .small_button(toggle_icon)
-                .on_hover_text(lang.t("tools.toggle_columns_tip"))
-                .clicked()
-            {
+            let (rect, resp) = ui.allocate_exact_size(EguiVec2::new(btn_w, 20.0), Sense::click());
+            let painter = ui.painter();
+            if resp.hovered() {
+                let hover_bg = if is_dark {
+                    Color32::from_white_alpha(20)
+                } else {
+                    Color32::from_black_alpha(15)
+                };
+                painter.rect_filled(rect, egui::Rounding::same(4.0), hover_bg);
+            }
+            let toggle_col = if resp.hovered() {
+                if is_dark {
+                    Color32::WHITE
+                } else {
+                    Color32::from_gray(20)
+                }
+            } else if is_dark {
+                Color32::from_gray(170)
+            } else {
+                Color32::from_gray(90)
+            };
+            painter.text(
+                rect.center(),
+                egui::Align2::CENTER_CENTER,
+                "»",
+                FontId::proportional(13.0),
+                toggle_col,
+            );
+            let clicked = resp.clicked();
+            resp.on_hover_text(lang.t("tools.toggle_columns_tip"));
+            if clicked {
                 *two_columns = !*two_columns;
                 on_toggle_columns();
             }
-        });
+        }
     });
-    ui.separator();
+
+    let draw_dock_divider = |ui: &mut egui::Ui| {
+        ui.add_space(4.0);
+        let avail_w = ui.available_width();
+        let (rect, _) = ui.allocate_exact_size(EguiVec2::new(avail_w, 1.0), Sense::hover());
+        let div_col = if is_dark {
+            Color32::from_white_alpha(22)
+        } else {
+            Color32::from_black_alpha(25)
+        };
+        ui.painter().rect_filled(rect, 0.0, div_col);
+        ui.add_space(4.0);
+    };
+
+    draw_dock_divider(ui);
 
     egui::ScrollArea::vertical()
         .id_salt("left_tools_scroll")
         .auto_shrink([false, false])
         .show(ui, |ui| {
-            let cols = if *two_columns { 2 } else { 1 };
-
-            // Helper closure to render a styled tool/action button in the dock grid
+            // Helper closure to render a sleek icon button
             let draw_dock_btn = |ui: &mut egui::Ui,
                                  icon: &str,
-                                 short_txt: &str,
+                                 is_text: bool,
                                  selected: bool,
                                  enabled: bool,
                                  tooltip: &str|
              -> bool {
-                let text = format!("{}\n{}", icon, short_txt);
-                let rt = RichText::new(text).size(10.5);
-                let btn = egui::Button::new(if selected { rt.strong() } else { rt })
-                    .selected(selected)
-                    .min_size(EguiVec2::new(btn_w, btn_h));
-                ui.add_enabled(enabled, btn)
-                    .on_hover_text(tooltip)
-                    .clicked()
+                let (rect, resp) = ui.allocate_exact_size(
+                    EguiVec2::new(btn_w, btn_h),
+                    if enabled { Sense::click() } else { Sense::hover() },
+                );
+                let rounding = egui::Rounding::same(6.0);
+                let painter = ui.painter();
+
+                if selected {
+                    painter.rect_filled(rect, rounding, Color32::from_rgb(0, 122, 204));
+                    if resp.hovered() {
+                        painter.rect_filled(rect, rounding, Color32::from_white_alpha(30));
+                    }
+                } else if enabled {
+                    if resp.is_pointer_button_down_on() {
+                        let press_bg = if is_dark {
+                            Color32::from_white_alpha(42)
+                        } else {
+                            Color32::from_black_alpha(30)
+                        };
+                        painter.rect_filled(rect, rounding, press_bg);
+                    } else if resp.hovered() {
+                        let hover_bg = if is_dark {
+                            Color32::from_white_alpha(24)
+                        } else {
+                            Color32::from_black_alpha(18)
+                        };
+                        let hover_stroke = if is_dark {
+                            Stroke::new(1.0, Color32::from_white_alpha(45))
+                        } else {
+                            Stroke::new(1.0, Color32::from_black_alpha(40))
+                        };
+                        painter.rect_filled(rect, rounding, hover_bg);
+                        painter.rect_stroke(rect, rounding, hover_stroke);
+                    }
+                }
+
+                let text_color = if !enabled {
+                    if is_dark {
+                        Color32::from_white_alpha(55)
+                    } else {
+                        Color32::from_black_alpha(55)
+                    }
+                } else if selected {
+                    Color32::WHITE
+                } else if resp.hovered() {
+                    if is_dark {
+                        Color32::WHITE
+                    } else {
+                        Color32::from_gray(15)
+                    }
+                } else if is_dark {
+                    Color32::from_gray(215)
+                } else {
+                    Color32::from_gray(50)
+                };
+
+                let font_id = if is_text {
+                    FontId::proportional(11.5)
+                } else {
+                    FontId::proportional(15.0)
+                };
+
+                painter.text(
+                    rect.center(),
+                    egui::Align2::CENTER_CENTER,
+                    icon,
+                    font_id,
+                    text_color,
+                );
+
+                let clicked = resp.clicked();
+                if !tooltip.is_empty() {
+                    resp.on_hover_text(tooltip);
+                }
+
+                enabled && clicked
             };
 
-            // 1. Editor Tools (Select V, Create B, Measure M)
+            // 1. Primary Editor Tools (Select V, Create Box B, Tape Measure M)
             egui::Grid::new("left_dock_editor_tools")
                 .num_columns(cols)
                 .spacing([4.0, 4.0])
@@ -415,7 +528,7 @@ pub fn ui_left_tools_dock(
                     if draw_dock_btn(
                         ui,
                         FA_POINTER,
-                        "V",
+                        false,
                         *active_tab == AppTab::Designer4View
                             && viewport_ctrl.tool == EditorTool::SelectAndMove,
                         true,
@@ -436,7 +549,7 @@ pub fn ui_left_tools_dock(
                     if draw_dock_btn(
                         ui,
                         FA_CUBE,
-                        "B",
+                        false,
                         *active_tab == AppTab::Designer4View
                             && viewport_ctrl.tool == EditorTool::CreateBlock,
                         true,
@@ -457,7 +570,7 @@ pub fn ui_left_tools_dock(
                     if draw_dock_btn(
                         ui,
                         FA_RULER,
-                        "M",
+                        false,
                         *active_tab == AppTab::Designer4View
                             && viewport_ctrl.tool == EditorTool::MeasureTape,
                         true,
@@ -470,12 +583,17 @@ pub fn ui_left_tools_dock(
                         *active_tab = AppTab::Designer4View;
                         viewport_ctrl.tool = EditorTool::MeasureTape;
                     }
-                    ui.end_row();
+                    col_idx += 1;
+                    if col_idx % cols != 0 {
+                        ui.end_row();
+                    } else {
+                        ui.end_row();
+                    }
                 });
 
-            ui.separator();
+            draw_dock_divider(ui);
 
-            // 2. Quick Add Part (+XY Shelf, +YZ Side, +XZ Front)
+            // 2. Quick Add Panels (+XY Shelf, +YZ Side, +XZ Front)
             egui::Grid::new("left_dock_quick_parts")
                 .num_columns(cols)
                 .spacing([4.0, 4.0])
@@ -484,8 +602,8 @@ pub fn ui_left_tools_dock(
 
                     if draw_dock_btn(
                         ui,
-                        "➕",
-                        "XY",
+                        "+XY",
+                        true,
                         false,
                         true,
                         &format!(
@@ -512,8 +630,8 @@ pub fn ui_left_tools_dock(
 
                     if draw_dock_btn(
                         ui,
-                        "➕",
-                        "YZ",
+                        "+YZ",
+                        true,
                         false,
                         true,
                         &format!(
@@ -540,8 +658,8 @@ pub fn ui_left_tools_dock(
 
                     if draw_dock_btn(
                         ui,
-                        "➕",
-                        "XZ",
+                        "+XZ",
+                        true,
                         false,
                         true,
                         &format!(
@@ -561,81 +679,17 @@ pub fn ui_left_tools_dock(
                         *selected_part = Some(id);
                         viewport_ctrl.selected_parts = vec![id];
                     }
-                    ui.end_row();
+                    col_idx += 1;
+                    if col_idx % cols != 0 {
+                        ui.end_row();
+                    } else {
+                        ui.end_row();
+                    }
                 });
 
-            ui.separator();
+            draw_dock_divider(ui);
 
-            // 3. Active Material Swatch Button (opens popup selector)
-            let (mat_rgb, mat_thick, mat_full_name) = project
-                .get_material(*active_material_id)
-                .map(|m| {
-                    (
-                        m.color_rgb,
-                        m.thickness_mm,
-                        format!("{} ({:.0}{})", m.name, m.thickness_mm, mm_suffix),
-                    )
-                })
-                .unwrap_or(([190, 170, 140], 18.0, lang.t("Select...").to_string()));
-
-            let swatch_w = if *two_columns { btn_w * 2.0 + 4.0 } else { btn_w };
-            let (swatch_rect, swatch_resp) =
-                ui.allocate_exact_size(EguiVec2::new(swatch_w, 28.0), Sense::click());
-            let swatch_col = Color32::from_rgb(mat_rgb[0], mat_rgb[1], mat_rgb[2]);
-            ui.painter().rect_filled(swatch_rect, 4.0, swatch_col);
-            ui.painter().rect_stroke(
-                swatch_rect,
-                4.0,
-                Stroke::new(
-                    if swatch_resp.hovered() { 1.8 } else { 1.0 },
-                    Color32::from_gray(220),
-                ),
-            );
-            let lum = 0.299 * (mat_rgb[0] as f32)
-                + 0.587 * (mat_rgb[1] as f32)
-                + 0.114 * (mat_rgb[2] as f32);
-            let txt_col = if lum > 140.0 {
-                Color32::from_rgb(20, 20, 24)
-            } else {
-                Color32::WHITE
-            };
-            ui.painter().text(
-                swatch_rect.center(),
-                egui::Align2::CENTER_CENTER,
-                format!("{:.0}{}", mat_thick, lang.dict().unit_mm),
-                FontId::proportional(10.5),
-                txt_col,
-            );
-            let mat_pop_id = ui.make_persistent_id("left_dock_mat_popup");
-            if swatch_resp.clicked() {
-                ui.memory_mut(|m| m.toggle_popup(mat_pop_id));
-            }
-            egui::popup_below_widget(
-                ui,
-                mat_pop_id,
-                &swatch_resp,
-                egui::PopupCloseBehavior::CloseOnClickOutside,
-                |ui| {
-                    ui.set_min_width(210.0);
-                    ui.label(RichText::new(lang.t("Material:")).strong());
-                    ui.separator();
-                    for m in &project.materials {
-                        let label = format!("{} ({:.0}{})", m.name, m.thickness_mm, mm_suffix);
-                        if ui
-                            .selectable_label(*active_material_id == m.id, label)
-                            .clicked()
-                        {
-                            *active_material_id = m.id;
-                            ui.memory_mut(|mem| mem.close_popup());
-                        }
-                    }
-                },
-            );
-            swatch_resp.on_hover_text(format!("{} {}", lang.t("Material:"), mat_full_name));
-
-            ui.separator();
-
-            // 4. Quick Edit & View Actions
+            // 3. Selection Actions (Rotate 90°, Dup, Copy, Paste, Delete)
             let has_sel = selected_part.is_some() || !viewport_ctrl.selected_parts.is_empty();
             egui::Grid::new("left_dock_actions")
                 .num_columns(cols)
@@ -645,8 +699,51 @@ pub fn ui_left_tools_dock(
 
                     if draw_dock_btn(
                         ui,
+                        FA_ROTATE,
+                        false,
+                        false,
+                        selected_part.is_some(),
+                        lang.t("menu.edit.rotate_90"),
+                    ) {
+                        if let Some(sel_id) = *selected_part {
+                            if let Some(idx) = project.parts.iter().position(|p| p.id == sel_id) {
+                                on_before_mutate(project);
+                                project.parts[idx].yaw_deg =
+                                    (project.parts[idx].yaw_deg + 90.0) % 360.0;
+                            }
+                        }
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_CLONE,
+                        false,
+                        false,
+                        has_sel,
+                        &crate::i18n::adapt_shortcuts(lang.t("📋 Duplicate (Ctrl+D)")),
+                    ) {
+                        perform_duplicate_selection(
+                            project,
+                            selected_part,
+                            &mut viewport_ctrl.selected_parts,
+                            status_msg,
+                            lang,
+                            &mut on_before_mutate,
+                        );
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
                         FA_COPY,
-                        "Copy",
+                        false,
                         false,
                         has_sel,
                         &crate::i18n::adapt_shortcuts(lang.t("📄 Copy (Ctrl+C)")),
@@ -669,7 +766,7 @@ pub fn ui_left_tools_dock(
                     if draw_dock_btn(
                         ui,
                         FA_PASTE,
-                        "Paste",
+                        false,
                         false,
                         !clipboard.is_empty(),
                         &crate::i18n::adapt_shortcuts(lang.t("📥 Paste (Ctrl+V)")),
@@ -691,51 +788,8 @@ pub fn ui_left_tools_dock(
 
                     if draw_dock_btn(
                         ui,
-                        FA_CLONE,
-                        "Dup",
-                        false,
-                        has_sel,
-                        &crate::i18n::adapt_shortcuts(lang.t("📋 Duplicate (Ctrl+D)")),
-                    ) {
-                        perform_duplicate_selection(
-                            project,
-                            selected_part,
-                            &mut viewport_ctrl.selected_parts,
-                            status_msg,
-                            lang,
-                            &mut on_before_mutate,
-                        );
-                    }
-                    col_idx += 1;
-                    if col_idx % cols == 0 {
-                        ui.end_row();
-                    }
-
-                    if draw_dock_btn(
-                        ui,
-                        FA_ROTATE,
-                        "90°",
-                        false,
-                        selected_part.is_some(),
-                        lang.t("menu.edit.rotate_90"),
-                    ) {
-                        if let Some(sel_id) = *selected_part {
-                            if let Some(idx) = project.parts.iter().position(|p| p.id == sel_id) {
-                                on_before_mutate(project);
-                                project.parts[idx].yaw_deg =
-                                    (project.parts[idx].yaw_deg + 90.0) % 360.0;
-                            }
-                        }
-                    }
-                    col_idx += 1;
-                    if col_idx % cols == 0 {
-                        ui.end_row();
-                    }
-
-                    if draw_dock_btn(
-                        ui,
                         FA_TRASH,
-                        "Del",
+                        false,
                         false,
                         has_sel,
                         lang.t("🗑 Delete (Del)"),
@@ -750,14 +804,26 @@ pub fn ui_left_tools_dock(
                         );
                     }
                     col_idx += 1;
-                    if col_idx % cols == 0 {
+                    if col_idx % cols != 0 {
+                        ui.end_row();
+                    } else {
                         ui.end_row();
                     }
+                });
+
+            draw_dock_divider(ui);
+
+            // 4. Viewport Management (4x Equal Views, Fit to Window)
+            egui::Grid::new("left_dock_views")
+                .num_columns(cols)
+                .spacing([4.0, 4.0])
+                .show(ui, |ui| {
+                    let mut col_idx = 0;
 
                     if draw_dock_btn(
                         ui,
                         FA_TABLE_CELLS_LARGE,
-                        "4x",
+                        false,
                         false,
                         true,
                         lang.t("⊞ Equal Views"),
@@ -773,7 +839,7 @@ pub fn ui_left_tools_dock(
                     if draw_dock_btn(
                         ui,
                         FA_EXPAND,
-                        "Fit",
+                        false,
                         false,
                         true,
                         lang.t("📐 Fit to Window"),
@@ -781,7 +847,12 @@ pub fn ui_left_tools_dock(
                         *active_tab = AppTab::Designer4View;
                         viewport_ctrl.fit_all_to_window(project);
                     }
-                    ui.end_row();
+                    col_idx += 1;
+                    if col_idx % cols != 0 {
+                        ui.end_row();
+                    } else {
+                        ui.end_row();
+                    }
                 });
         });
 }
@@ -2349,7 +2420,12 @@ pub fn ui_materials_manager_tab(
                         } else {
                             lang.t("✔ Texture active")
                         };
-                        ui.label(RichText::new(active_label).color(Color32::GREEN));
+                        let active_col = if ui.visuals().dark_mode {
+                            Color32::from_rgb(110, 235, 145)
+                        } else {
+                            Color32::from_rgb(25, 140, 60)
+                        };
+                        ui.label(RichText::new(active_label).color(active_col).strong());
                         if let Some(warn) = texture_warnings.get(&m.id) {
                             ui.label(
                                 RichText::new(format!("⚠️ {}", warn))
@@ -2885,16 +2961,23 @@ pub fn ui_specification_tab(
                 .num_columns(12)
                 .spacing([14.0, 6.0])
                 .show(ui, |ui| {
+                    let is_dark = ui.visuals().dark_mode;
+                    let full_dim_color = if is_dark {
+                        Color32::from_rgb(110, 235, 145)
+                    } else {
+                        Color32::from_rgb(25, 140, 60)
+                    };
+
                     ui.label(RichText::new("№").strong());
                     ui.label(RichText::new(lang.t("Group")).strong());
                     ui.label(RichText::new(lang.t("Part Name")).strong());
                     ui.label(RichText::new(lang.t("Material")).strong());
-                    ui.label(RichText::new(lang.t("Full L×W (mm)")).strong());
                     ui.label(
-                        RichText::new(lang.t("CUT L×W (mm)"))
+                        RichText::new(lang.t("Full L×W (mm)"))
                             .strong()
-                            .color(Color32::from_rgb(110, 235, 145)),
+                            .color(full_dim_color),
                     );
+                    ui.label(RichText::new(lang.t("CUT L×W (mm)")).strong());
                     ui.label(RichText::new(lang.t("Qty")).strong());
                     ui.label(RichText::new(lang.t("Grain")).strong());
                     ui.label(RichText::new(lang.t("Edge L1")).strong());
@@ -2911,15 +2994,15 @@ pub fn ui_specification_tab(
                             "{} ({:.0}{})",
                             r.material_name, r.thickness_mm, mm_unit
                         ));
-                        ui.label(format!("{:.1} × {:.1}", r.full_length_mm, r.full_width_mm));
                         ui.label(
-                            RichText::new(format!(
-                                "{:.1} × {:.1}",
-                                r.cut_length_mm, r.cut_width_mm
-                            ))
-                            .strong()
-                            .color(Color32::from_rgb(110, 235, 145)),
+                            RichText::new(format!("{:.1} × {:.1}", r.full_length_mm, r.full_width_mm))
+                                .strong()
+                                .color(full_dim_color),
                         );
+                        ui.label(format!(
+                            "{:.1} × {:.1}",
+                            r.cut_length_mm, r.cut_width_mm
+                        ));
                         let qty_lbl = format!("{} {}", r.quantity, lang.dict().unit_pcs);
                         ui.label(RichText::new(qty_lbl).strong());
                         ui.label(if r.grain_fixed {

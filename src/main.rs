@@ -2898,12 +2898,18 @@ impl eframe::App for QuadFurnApp {
         // =========================================================================
         // LEFT TOOLS DOCK (Visible ONLY in Designer tab)
         // =========================================================================
-        let left_dock_width = if self.tools_two_columns { 104.0 } else { 56.0 };
+        let left_dock_width = if self.tools_two_columns { 96.0 } else { 52.0 };
         let mut save_settings_after_dock = false;
         if self.active_tab == AppTab::Designer4View {
+            let dock_margin = if self.tools_two_columns {
+                egui::Margin::symmetric(8.0, 8.0)
+            } else {
+                egui::Margin::symmetric(7.0, 8.0)
+            };
             egui::SidePanel::left("left_tools_dock")
                 .resizable(false)
                 .exact_width(left_dock_width)
+                .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(dock_margin))
                 .show(ctx, |ui| {
                     let doc = &mut self.documents[self.active_doc_idx];
                     doc.viewport_ctrl.lang = lang;
@@ -3424,6 +3430,8 @@ fn main() -> eframe::Result<()> {
                         _ => std::path::PathBuf::from("docs/screenshots"),
                     };
                     app.batch_screenshots_dir = Some(dir);
+                } else if arg == "--tools-two-columns" {
+                    app.tools_two_columns = true;
                 } else if arg == "--screenshot" {
                     if let Some(target) = iter.next() {
                         app.screenshot_target = Some(std::path::PathBuf::from(target));
