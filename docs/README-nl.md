@@ -153,7 +153,7 @@ Het tabblad **Ontwerper** (`📐 1. Ontwerper`) bestaat uit drie hoofdgebieden:
 
 1. **Bovenste werkbalken**:
    - **Teken- en bewerkgereedschappen**:
-     - `↖ Selecteren / Verplaatsen (V)`: Klik op een onderdeel om het te selecteren, sleep om te verplaatsen, of gebruik de formaatgrepen (8 handgrepen bij vooraanzicht & 2 randgrepen bij kopse kant). Sleep in de lege ruimte voor een selectiekader. Tijdens slepen in 2D: houd **`Shift`** ingedrukt om verplaatsing vast te zetten op de horizontale of verticale as, houd **`Ctrl` (`Cmd`)** ingedrukt om magnetisch vastklikken aan randen te omzeilen, en houd **`Alt`** ingedrukt om het onderdeel bij loslaten te dupliceren.
+     - `↖ Selecteren / Verplaatsen (V)`: Klik op een onderdeel om het te selecteren, sleep om te verplaatsen, of gebruik de formaatgrepen (8 handgrepen bij vooraanzicht & 2 randgrepen bij kopse kant). Sleep in de lege ruimte voor een selectiekader. Tijdens slepen in 2D: houd **`Shift`** ingedrukt om verplaatsing vast te zetten op de horizontale of verticale as, houd **`Ctrl` (`Command вЊ`)** ingedrukt om magnetisch vastklikken aan randen te omzeilen, en houd **`Alt`** ingedrukt om het onderdeel bij loslaten te dupliceren.
      - `➕ Onderdeel maken via kader (B)`: Sleep een rechthoek in een 2D-aanzicht (`Boven XY`, `Voor XZ` of `Zij YZ`) om direct een paneel in dat vlak te plaatsen.
      - `📏 Rolmaat (M)`: Meet afstanden van punt tot punt (`ΔX`, `ΔY`, `L`) in millimeters.
    - **Snelle invoeging**: Knoppen voor het snel toevoegen van legplanken (`+ Legplank (XY)`), zijwanden (`+ Zijwand (YZ)`) of deuren/achterwanden (`+ Deur/Achterwand (XZ)`).
@@ -265,19 +265,19 @@ In het tabblad **Materialen** (`🎨 4. Materialen`):
 | **`M`** | Activeer **Rolmaat** in 2D-aanzichten |
 | **Slepen `Linkermuisknop` (2D)** | Panelen verplaatsen, afmetingen aanpassen via greep of kaderselectie in de vrije ruimte |
 | **`Shift + Linkermuisknop` Slepen (2D)** | Verplaatsing strikt beperken tot horizontale of verticale as |
-| **`Ctrl / Cmd + Linkermuisknop` Slepen (2D)** | Magnetisch vastklikken aan paneelranden tijdelijk uitschakelen |
+| **`Ctrl / Command (вЊ) + Linkermuisknop` Slepen (2D)** | Magnetisch vastklikken aan paneelranden tijdelijk uitschakelen |
 | **`Alt + Linkermuisknop` Slepen (2D)** | Geselecteerd(e) onderdeel(en) direct dupliceren naar doelpositie bij loslaten |
-| **`Shift / Ctrl (Cmd) + Linkermuisknop` (2D)** | Onderdeel toevoegen aan of verwijderen uit meervoudige selectie |
+| **`Shift / Ctrl (Command вЊ) + Linkermuisknop` (2D)** | Onderdeel toevoegen aan of verwijderen uit meervoudige selectie |
 | **Slepen `Rechter` / `Middelste muisknop` (2D)** | Weergave verschuiven (Pan 2D) |
 | **`Muiswiel` (2D / 3D)** | In- en uitzoomen gecentreerd op de cursor |
 | **Slepen `Rechter` / `Middelste muisknop` (3D)** | Orbitale rotatie van de 3D-camera |
 | **`Z` (boven het 3D-venster)** | In-/uitschakelen van **Eerstepersoons Vrije Vlucht (Noclip)** |
-| **`W` `A` `S` `D` / `Spatie` / `Ctrl (Cmd)`** | Vliegen naar voor/links/achter/rechts/omhoog/omlaag in 3D (`Shift` versnelt) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Huidig meubel opslaan (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Laatste bewerking ongedaan maken (geschiedenis tot 40 stappen) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Geselecteerde onderdelen naar het klembord kopiëren |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Onderdelen plakken (werkt ook tussen tabbladen) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Geselecteerde onderdelen dupliceren |
+| **`W` `A` `S` `D` / `Spatie` / `Ctrl (Command вЊ)`** | Vliegen naar voor/links/achter/rechts/omhoog/omlaag in 3D (`Shift` versnelt) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Huidig meubel opslaan (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Laatste bewerking ongedaan maken (geschiedenis tot 40 stappen) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Geselecteerde onderdelen naar het klembord kopiëren |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Onderdelen plakken (werkt ook tussen tabbladen) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Geselecteerde onderdelen dupliceren |
 | **`Delete` / `Backspace`** | Geselecteerde onderdelen verwijderen |
 | **`←` `→` `↑` `↓` (2D-weergaven)** | Geselecteerde onderdelen verplaatsen met geselecteerde rasterstap (`Shift` voor dubbele stap) |
 

@@ -153,7 +153,7 @@ A **Szerkesztő** lap (`📐 1. Szerkesztő`) három fő területből áll:
 
 1. **Felső eszköztárak**:
    - **Rajzeszközök**:
-     - `↖ Kijelölés / Mozgatás (V)`: Kattintással kiválasztja az elemet, húzással mozgatja, vagy a fogantyúkkal (8 fogantyú lapján és 2 élfogantyú élből nézve) átméretezi. Üres területen húzva téglalapos többszörös kijelölést indít. 2D mozgatás közben: tartsa lenyomva a **`Shift`** gombot a mozgás vízszintes vagy függőleges tengelyre korlátozásához, a **`Ctrl` (`Cmd`)** gombot a mágneses élillesztés mellőzéséhez, és az **`Alt`** gombot az alkatrész másolásához elengedéskor.
+     - `↖ Kijelölés / Mozgatás (V)`: Kattintással kiválasztja az elemet, húzással mozgatja, vagy a fogantyúkkal (8 fogantyú lapján és 2 élfogantyú élből nézve) átméretezi. Üres területen húzva téglalapos többszörös kijelölést indít. 2D mozgatás közben: tartsa lenyomva a **`Shift`** gombot a mozgás vízszintes vagy függőleges tengelyre korlátozásához, a **`Ctrl` (`Command вЊ`)** gombot a mágneses élillesztés mellőzéséhez, és az **`Alt`** gombot az alkatrész másolásához elengedéskor.
      - `➕ Alkatrész rajzolása kerettel (B)`: Téglalap húzásával a 2D nézetekben (`Felülnézet XY`, `Elölnézet XZ` vagy `Oldalnézet YZ`) közvetlenül az adott síknak megfelelő lapot hoz létre.
      - `📏 Mérőszalag (M)`: Pontos távolságmérés ponttól pontig (`ΔX`, `ΔY`, `L`) milliméterben.
    - **Gyors beillesztés**: Gombok polc (`+ Polc (XY)`), oldalfal (`+ Oldallap (YZ)`) vagy ajtó/hátfal (`+ Ajtó/Hátfal (XZ)`) azonnali elhelyezésére.
@@ -265,19 +265,19 @@ Az **Anyagok** lapon (`🎨 4. Anyagok`):
 | **`M`** | **Mérőszalag** eszköz a 2D nézetekben |
 | **Húzás `Bal egérgombbal` (2D)** | Elemek mozgatása, méretezése fogantyúval vagy kijelölő keret üres helyen |
 | **`Shift + Bal klikk` Húzás (2D)** | Alkatrész mozgatásának rögzítése szigorúan vízszintes vagy függőleges tengelyre |
-| **`Ctrl / Cmd + Bal klikk` Húzás (2D)** | Élekhez való mágneses igazítás ideiglenes kikapcsolása mozgatáskor |
+| **`Ctrl / Command (вЊ) + Bal klikk` Húzás (2D)** | Élekhez való mágneses igazítás ideiglenes kikapcsolása mozgatáskor |
 | **`Alt + Bal klikk` Húzás (2D)** | Kijelölt alkatrész(ek) azonnali duplázása a célhelyre elengedéskor |
-| **`Shift / Ctrl (Cmd) + Bal egérgomb` (2D)** | Elem hozzáadása vagy elvétele a kijelölésből |
+| **`Shift / Ctrl (Command вЊ) + Bal egérgomb` (2D)** | Elem hozzáadása vagy elvétele a kijelölésből |
 | **Húzás `Jobb` / `Középső gombbal` (2D)** | Nézet mozgatása (2D pásztázás) |
 | **`Egérgörgő` (2D / 3D)** | Nagyítás / kicsinyítés a mutató pozíciójára |
 | **Húzás `Jobb` / `Középső gombbal` (3D)** | 3D kamera körbeforgatása |
 | **`Z` (a 3D ablak felett)** | **Belső nézetes szabad repülés (Noclip)** ki-/bekapcsolása |
-| **`W` `A` `S` `D` / `Szóköz` / `Ctrl (Cmd)`** | Repülés előre/balra/hátra/jobbra/fel/le a 3D-ben (`Shift` gyorsít) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Aktuális bútor mentése (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Utolsó művelet visszavonása (akár 40 lépésig) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Kijelölt alkatrészek másolása a vágólapra |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Alkatrészek beillesztése (fülek között is működik) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Kijelölt elemek megkettőzése |
+| **`W` `A` `S` `D` / `Szóköz` / `Ctrl (Command вЊ)`** | Repülés előre/balra/hátra/jobbra/fel/le a 3D-ben (`Shift` gyorsít) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Aktuális bútor mentése (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Utolsó művelet visszavonása (akár 40 lépésig) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Kijelölt alkatrészek másolása a vágólapra |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Alkatrészek beillesztése (fülek között is működik) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Kijelölt elemek megkettőzése |
 | **`Delete` / `Backspace`** | Kijelölt elemek törlése |
 | **`←` `→` `↑` `↓` (2D nézetek)** | Kijelölt alkatrészek mozgatása a rácslépésköz szerint (`Shift` a duplázáshoz) |
 

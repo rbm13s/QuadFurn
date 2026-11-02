@@ -153,7 +153,7 @@ Fliken **Konstruktör** (`📐 1. Konstruktör`) omfattar tre huvuddelar:
 
 1. **Övre verktygsrader**:
    - **Ritverktyg**:
-     - `↖ Välj / Flytta (V)`: Klicka för att välja ett element, dra för att flytta, eller använd handtagen (8 storlekshandtag på ytan och 2 kanthandtag från kanten). Dra i tomt utrymme för att öppna en markeringsrektangel. Under förflyttning i 2D: håll ned **`Shift`** för att låsa rörelsen till horisontell eller vertikal axel, håll **`Ctrl` (`Cmd`)** för att kringgå magnetsnäppning, och håll **`Alt`** för att duplicera detaljen vid släpp.
+     - `↖ Välj / Flytta (V)`: Klicka för att välja ett element, dra för att flytta, eller använd handtagen (8 storlekshandtag på ytan och 2 kanthandtag från kanten). Dra i tomt utrymme för att öppna en markeringsrektangel. Under förflyttning i 2D: håll ned **`Shift`** för att låsa rörelsen till horisontell eller vertikal axel, håll **`Ctrl` (`Command вЊ`)** för att kringgå magnetsnäppning, och håll **`Alt`** för att duplicera detaljen vid släpp.
      - `➕ Skapa komponent med ram (B)`: Dra en rektangel i en 2D-vy (`Plan XY`, `Front XZ` eller `Sida YZ`) för att skapa en skiva i det planet.
      - `📏 Måttband (M)`: Mät exakta avstånd från punkt till punkt (`ΔX`, `ΔY`, `L`) i millimeter.
    - **Snabbinsättning**: Knappar för snabb placering av hyllplan (`+ Hyllplan (XY)`), gavlar (`+ Gavel (YZ)`) eller luckor/ryggar (`+ Lucka/Rygg (XZ)`).
@@ -265,19 +265,19 @@ I fliken **Material** (`🎨 4. Material`):
 | **`M`** | Aktivera **Måttband** i 2D-vyer |
 | **Dra med `Vänster musknapp` (2D)** | Flytta komponenter, justera handtag eller dra markeringsram i tomt utrymme |
 | **`Shift + Vänsterklick` Dra (2D)** | Begränsa detaljens förflyttning strikt till horisontell eller vertikal axel |
-| **`Ctrl / Cmd + Vänsterklick` Dra (2D)** | Inaktivera magnetisk snäppning mot kanter tillfälligt under dragning |
+| **`Ctrl / Command (вЊ) + Vänsterklick` Dra (2D)** | Inaktivera magnetisk snäppning mot kanter tillfälligt under dragning |
 | **`Alt + Vänsterklick` Dra (2D)** | Duplicera markerad(e) del(ar) till målpositionen när musknappen släpps |
 | **`Skift / Ctrl (Cmd) + Vänster musknapp` (2D)** | Lägg till eller ta bort komponent från flerval |
 | **Dra med `Höger` / `Mittenmusknapp` (2D)** | Panorera vyn (2D pan) |
 | **`Rullhjul på mus` (2D / 3D)** | Zooma in/ut centrerat kring markören |
 | **Dra med `Höger` / `Mittenmusknapp` (3D)** | Orbit-rotation av 3D-kameran |
 | **`Z` (över 3D-rutan)** | Slå på/av **Förstaperson flygläge (Noclip)** |
-| **`W` `A` `S` `D` / `Mellanslag` / `Ctrl (Cmd)`** | Flyg fram/vänster/bakåt/höger/upp/ner i 3D (`Skift` för högre fart) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Spara den aktiva möbeln (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Ångra senaste åtgärd (historik upp till 40 steg) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopiera markerade delar till urklipp |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Klistra in delar (fungerar mellan olika flikar) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplicera markerade komponenter |
+| **`W` `A` `S` `D` / `Mellanslag` / `Ctrl (Command вЊ)`** | Flyg fram/vänster/bakåt/höger/upp/ner i 3D (`Skift` för högre fart) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Spara den aktiva möbeln (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Ångra senaste åtgärd (historik upp till 40 steg) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Kopiera markerade delar till urklipp |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Klistra in delar (fungerar mellan olika flikar) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Duplicera markerade komponenter |
 | **`Delete` / `Backspace`** | Ta bort markerade komponenter |
 | **`←` `→` `↑` `↓` (2D-vyer)** | Flytta markerade delar med valt rutnätssteg (`Shift` för dubbelt steg) |
 

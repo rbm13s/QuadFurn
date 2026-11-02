@@ -153,7 +153,7 @@ Zavihek **Načrtovalec** (`📐 1. Načrtovalec`) obsega tri poglavitna območja
 
 1. **Zgornje orodne vrstice**:
    - **Orodja za risanje**:
-     - `↖ Izberi / Premakni (V)`: Kliknite element za izbiro, povlecite za premik, ali uporabite ročice (8 ročic za elemente plosko in 2 ročici z roba). Vlečenje po praznem prostoru odpre izbirni pravokotnik za več elementov. Med vlečenjem v 2D: držite **`Shift`**, da premikanje zaklenete na vodoravno ali navpično os, **`Ctrl` (`Cmd`)**, da začasno izklopite magnetno pritrjevanje na robove, in **`Alt`**, da ustvarite kopijo kosa ob spustu.
+     - `↖ Izberi / Premakni (V)`: Kliknite element za izbiro, povlecite za premik, ali uporabite ročice (8 ročic za elemente plosko in 2 ročici z roba). Vlečenje po praznem prostoru odpre izbirni pravokotnik za več elementov. Med vlečenjem v 2D: držite **`Shift`**, da premikanje zaklenete na vodoravno ali navpično os, **`Ctrl` (`Command вЊ`)**, da začasno izklopite magnetno pritrjevanje na robove, in **`Alt`**, da ustvarite kopijo kosa ob spustu.
      - `➕ Ustvari element z okvirjem (B)`: Povlecite pravokotnik v 2D pogledu (`Tloris XY`, `Naris XZ` ali `Stranski ris YZ`), da ustvarite ploščo, usmerjeno v tej ravnini.
      - `📏 Merilni trak (M)`: Natančno merjenje razdalj od točke do točke (`ΔX`, `ΔY`, `L`) v milimetrih.
    - **Hitro vstavljanje**: Gumbi za hitro dodajanje polic (`+ Polica (XY)`), stranic (`+ Stranica (YZ)`) ali ličnic/hrbtišč (`+ Ličnica/Hrbet (XZ)`).
@@ -265,19 +265,19 @@ V zavihku **Materiali** (`🎨 4. Materiali`):
 | **`M`** | Vključi orodje **Merilni trak** v 2D pogledih |
 | **Vlečenje z `Levim gumbom` (2D)** | Premik elementov, spreminjanje velikosti z ročico ali risanje izbirnega okvirja na praznem |
 | **`Shift + Levi klik` Vlečenje (2D)** | Omejitev premikanja kosa strogo na vodoravno ali navpično os |
-| **`Ctrl / Cmd + Levi klik` Vlečenje (2D)** | Izklop magnetnega pritrjevanja na robove med vlečenjem |
+| **`Ctrl / Command (вЊ) + Levi klik` Vlečenje (2D)** | Izklop magnetnega pritrjevanja na robove med vlečenjem |
 | **`Alt + Levi klik` Vlečenje (2D)** | Podvajanje izbranega kosa na ciljno mesto ob spustu miške |
-| **`Shift / Ctrl (Cmd) + Levi gumb` (2D)** | Dodajanje ali odstranjevanje elementa iz večkratne izbire |
+| **`Shift / Ctrl (Command вЊ) + Levi gumb` (2D)** | Dodajanje ali odstranjevanje elementa iz večkratne izbire |
 | **Vlečenje z `Desnim` / `Srednjim gumbom` (2D)** | Premik pogleda (Panoramski 2D pomik) |
 | **`Kolesce miške` (2D / 3D)** | Približevanje / oddaljevanje pogleda glede na kazalec |
 | **Vlečenje z `Desnim` / `Srednjim gumbom` (3D)** | Orbitalno vrtenje 3D kamere |
 | **`Z` (nad 3D oknom)** | Vklop / izklop **Načina prostega leta iz prve osebe (Noclip)** |
-| **`W` `A` `S` `D` / `Preslednica` / `Ctrl (Cmd)`** | Letenje naprej/levo/nazaj/desno/gor/dol v 3D pogledu (`Shift` pospeši) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Shrani trenutno pohištvo (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Razveljavi zadnje dejanje (zgodovina do 40 korakov) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopiraj izbrane elemente v odložišče |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Prilepi elemente (deluje tudi med različnimi zavihki) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Podvoji izbrane elemente |
+| **`W` `A` `S` `D` / `Preslednica` / `Ctrl (Command вЊ)`** | Letenje naprej/levo/nazaj/desno/gor/dol v 3D pogledu (`Shift` pospeši) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Shrani trenutno pohištvo (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Razveljavi zadnje dejanje (zgodovina do 40 korakov) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Kopiraj izbrane elemente v odložišče |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Prilepi elemente (deluje tudi med različnimi zavihki) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Podvoji izbrane elemente |
 | **`Delete` / `Backspace`** | Izbriši izbrane elemente |
 | **`←` `→` `↑` `↓` (2D pogledi)** | Premik izbranih delov za korak izbrane mreže (`Shift` za dvojni korak) |
 

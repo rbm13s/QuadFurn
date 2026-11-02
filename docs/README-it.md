@@ -153,7 +153,7 @@ La scheda **Progettista** (`📐 1. Progettista`) include tre aree principali:
 
 1. **Barre degli strumenti superiori**:
    - **Strumenti di disegno**:
-     - `↖ Seleziona / Sposta (V)`: Clicca su un elemento per selezionarlo, trascina per spostarlo, o manipola le maniglie (8 maniglie per pezzi frontali e 2 per pezzi di taglio). Trascina sull'area vuota per disegnare un riquadro di selezione multipla. Durante il trascinamento 2D: tieni premuto **`Shift`** per vincolare il movimento all'asse orizzontale o verticale, **`Ctrl` (`Cmd`)** per disattivare l'aggancio magnetico ai bordi e **`Alt`** per duplicare la parte al rilascio.
+     - `↖ Seleziona / Sposta (V)`: Clicca su un elemento per selezionarlo, trascina per spostarlo, o manipola le maniglie (8 maniglie per pezzi frontali e 2 per pezzi di taglio). Trascina sull'area vuota per disegnare un riquadro di selezione multipla. Durante il trascinamento 2D: tieni premuto **`Shift`** per vincolare il movimento all'asse orizzontale o verticale, **`Ctrl` (`Command вЊ`)** per disattivare l'aggancio magnetico ai bordi e **`Alt`** per duplicare la parte al rilascio.
      - `➕ Crea elemento con riquadro (B)`: Traccia un rettangolo in una vista 2D (`Dall'alto XY`, `Frontale XZ` o `Laterale YZ`) per inserire un pannello orientato secondo quel piano.
      - `📏 Metro a nastro (M)`: Misura distanze punto-punto esatte (`ΔX`, `ΔY`, `L`) in millimetri.
    - **Inserimento rapido**: Pulsanti per aggiungere con un clic ripiani (`+ Ripiano (XY)`), montanti (`+ Montante (YZ)`) o frontali/schienali (`+ Frontale/Schienale (XZ)`).
@@ -265,19 +265,19 @@ Nella scheda **Materiali** (`🎨 4. Materiali`):
 | **`M`** | Attiva lo strumento **Metro a nastro** nelle viste 2D |
 | **Trascina `Tasto sinistro` (2D)** | Sposta le parti selezionate, ridimensiona con maniglia o crea riquadro di selezione su spazio vuoto |
 | **`Shift + Clic sin.` Trascina (2D)** | Vincola lo spostamento rigorosamente all'asse orizzontale o verticale |
-| **`Ctrl / Cmd + Clic sin.` Trascina (2D)** | Disattiva l'aggancio magnetico ai bordi durante il trascinamento |
+| **`Ctrl / Command (вЊ) + Clic sin.` Trascina (2D)** | Disattiva l'aggancio magnetico ai bordi durante il trascinamento |
 | **`Alt + Clic sin.` Trascina (2D)** | Duplica le parti selezionate nella posizione di destinazione al rilascio |
 | **`Maiusc / Ctrl (Cmd) + Tasto sinistro` (2D)** | Aggiunge o rimuove una parte dalla selezione multipla |
 | **Trascina `Tasto destro` / `Tasto centrale` (2D)** | Panoramica della vista 2D |
 | **`Rotellina mouse` (2D / 3D)** | Zoom avanti e indietro rispetto al cursore |
 | **Trascina `Tasto destro` / `Tasto centrale` (3D)** | Rotazione orbitale della telecamera 3D |
 | **`Z` (sopra la vista 3D)** | Attiva / disattiva la **Modalità Volo Libero in Prima Persona (Noclip)** |
-| **`W` `A` `S` `D` / `Spazio` / `Ctrl (Cmd)`** | Movimento avanti/sinistra/indietro/destra/alto/basso in volo 3D (`Maiusc` per accelerare) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Salva il mobile corrente (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Annulla l'ultima azione (cronologia fino a 40 passaggi) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Copia i pezzi selezionati negli appunti |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Incolla i pezzi (funziona tra schede diverse) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplica le parti selezionate |
+| **`W` `A` `S` `D` / `Spazio` / `Ctrl (Command вЊ)`** | Movimento avanti/sinistra/indietro/destra/alto/basso in volo 3D (`Maiusc` per accelerare) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Salva il mobile corrente (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Annulla l'ultima azione (cronologia fino a 40 passaggi) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Copia i pezzi selezionati negli appunti |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Incolla i pezzi (funziona tra schede diverse) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Duplica le parti selezionate |
 | **`Canc` / `Backspace`** | Elimina le parti selezionate |
 | **`←` `→` `↑` `↓` (viste 2D)** | Sposta le parti selezionate del passo della griglia (`Shift` per raddoppiare) |
 

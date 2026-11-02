@@ -4,7 +4,7 @@
 
 # QuadFurn CAD
 
-**CAD de muebles de paneles y aglomerado — Disenador espacial de 4 vistas + Optimizador de corte de tableros por guillotina**
+**CAD de muebles de paneles y aglomerado ï¿½ Disenador espacial de 4 vistas + Optimizador de corte de tableros por guillotina**
 
 [![Build & Release](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml/badge.svg)](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml)
 [![Downloads](https://img.shields.io/github/downloads/rbm13s/QuadFurn/total?logo=github&color=blue)](https://github.com/rbm13s/QuadFurn/releases)
@@ -17,43 +17,43 @@
 
 <br/>
 
-**Languages / ßçûêè / Ìîâè / Sprachen:**<br/>
-[English](../README.md) •
-[Ðóññêèé](README-ru.md) •
-[Óêðà¿íñüêà](README-uk.md) •
-[Áåëàðóñêàÿ](README-be.md) •
-[?àçà?øà](README-kk.md) •
-[???????](README-ka.md) •
-[???????](README-hy.md) •
-[Az?rbaycan](README-az.md) •
-[O?zbekcha](README-uz.md) •
-[Deutsch](README-de.md) •
-[Francais](README-fr.md) •
-**Espanol** •
-[Italiano](README-it.md) •
-[Portugues](README-pt.md) •
-[Polski](README-pl.md) •
-[Cestina](README-cs.md) •
-[Slovencina](README-sk.md) •
-[Slovenscina](README-sl.md) •
-[Áúëãàðñêè](README-bg.md) •
-[Ñðïñêè](README-sr.md) •
-[Hrvatski](README-hr.md) •
-[Nederlands](README-nl.md) •
-[Dansk](README-da.md) •
-[Norsk](README-no.md) •
-[Svenska](README-sv.md) •
-[Suomi](README-fi.md) •
-[Eesti](README-et.md) •
-[Latviesu](README-lv.md) •
-[Lietuviu](README-lt.md) •
-[Magyar](README-hu.md) •
-[Romana](README-ro.md) •
-[Turkce](README-tr.md) •
-[????????](README-el.md) •
-[????](README-zh-cn.md) •
-[????](README-zh-tw.md) •
-[???](README-ja.md) •
+**Languages / ï¿½ï¿½ï¿½ï¿½ï¿½ / ï¿½ï¿½ï¿½ï¿½ / Sprachen:**<br/>
+[English](../README.md) ï¿½
+[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½](README-ru.md) ï¿½
+[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½](README-uk.md) ï¿½
+[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½](README-be.md) ï¿½
+[?ï¿½ï¿½ï¿½?ï¿½ï¿½](README-kk.md) ï¿½
+[???????](README-ka.md) ï¿½
+[???????](README-hy.md) ï¿½
+[Az?rbaycan](README-az.md) ï¿½
+[O?zbekcha](README-uz.md) ï¿½
+[Deutsch](README-de.md) ï¿½
+[Francais](README-fr.md) ï¿½
+**Espanol** ï¿½
+[Italiano](README-it.md) ï¿½
+[Portugues](README-pt.md) ï¿½
+[Polski](README-pl.md) ï¿½
+[Cestina](README-cs.md) ï¿½
+[Slovencina](README-sk.md) ï¿½
+[Slovenscina](README-sl.md) ï¿½
+[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½](README-bg.md) ï¿½
+[ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½](README-sr.md) ï¿½
+[Hrvatski](README-hr.md) ï¿½
+[Nederlands](README-nl.md) ï¿½
+[Dansk](README-da.md) ï¿½
+[Norsk](README-no.md) ï¿½
+[Svenska](README-sv.md) ï¿½
+[Suomi](README-fi.md) ï¿½
+[Eesti](README-et.md) ï¿½
+[Latviesu](README-lv.md) ï¿½
+[Lietuviu](README-lt.md) ï¿½
+[Magyar](README-hu.md) ï¿½
+[Romana](README-ro.md) ï¿½
+[Turkce](README-tr.md) ï¿½
+[????????](README-el.md) ï¿½
+[????](README-zh-cn.md) ï¿½
+[????](README-zh-tw.md) ï¿½
+[???](README-ja.md) ï¿½
 [???](README-ko.md)
 
 </div>
@@ -151,7 +151,7 @@ Cambio de idioma instantaneo desde la barra superior mediante el boton **`??`** 
 La pestana **Disenador** (`?? 1. Disenador`) se divide en tres areas principales:
 
 1. **Barra de herramientas superior**:
-   - `? Seleccionar / Mover (V)`: Seleccionar piezas, mover arrastrando, o modificar tamano con los tiradores (8 tiradores en cara y 2 en cantos). Arrastrar en espacio vacio crea un **recuadro de seleccion**. Al arrastrar en 2D: mantenga presionado **`Shift`** para restringir el movimiento al eje horizontal o vertical, **`Ctrl` (`Cmd`)** para desactivar el ajuste magnetico a bordes y **`Alt`** para duplicar la pieza en la posicion de destino.
+   - `? Seleccionar / Mover (V)`: Seleccionar piezas, mover arrastrando, o modificar tamano con los tiradores (8 tiradores en cara y 2 en cantos). Arrastrar en espacio vacio crea un **recuadro de seleccion**. Al arrastrar en 2D: mantenga presionado **`Shift`** para restringir el movimiento al eje horizontal o vertical, **`Ctrl` (`Command Ð²ÐŠÂ˜`)** para desactivar el ajuste magnetico a bordes y **`Alt`** para duplicar la pieza en la posicion de destino.
    - `? Crear pieza mediante recuadro (B)`: Dibujar un rectangulo en cualquier vista 2D crea una pieza orientada a ese plano (`Balda XY`, `Lateral YZ`, `Frontal/Trasera XZ`).
    - `?? Cinta metrica (M)`: Medicion milimetrica precisa en vistas 2D.
    - **Insercion rapida**: Botones de un clic (`+ Balda (XY)`, `+ Lateral (YZ)`, `+ Frontal (XZ)`).
@@ -172,9 +172,9 @@ La pestana **Disenador** (`?? 1. Disenador`) se divide en tres areas principales
 ### 2. Expresiones aritmeticas en campos numericos
 
 Todos los campos numericos admiten formulas matematicas directas:
-- **Sumas y restas**: Haga clic en un campo con `600`, escriba `600+100` (o `600-4`) y presione `Enter` — el valor se calcula al instante en `700` (o `596`).
+- **Sumas y restas**: Haga clic en un campo con `600`, escriba `600+100` (o `600-4`) y presione `Enter` ï¿½ el valor se calcula al instante en `700` (o `596`).
 - **Multiplicacion, division y parentesis**: Formulas como `(800-36)/2` o `18*2` se calculan automaticamente.
-- Admite tanto punto `.` como coma `,`, y las unidades (`mm`, `°`) se omiten automaticamente.
+- Admite tanto punto `.` como coma `,`, y las unidades (`mm`, `ï¿½`) se omiten automaticamente.
 
 ---
 
@@ -201,7 +201,7 @@ La pestana **Corte** (`?? 3. Corte`) anida las piezas en tableros de sus materia
 
 - **Pagina de inicio**: Acceso a proyectos vacios, plantillas de muebles y **10 proyectos recientes**.
 - **Multiples pestanas**: Trabajo simultaneo en varios muebles (doble clic para renombrar).
-- **Copiado inter-proyectos (`Ctrl+C` / `Ctrl+V`)**: Copie piezas entre pestanas — los materiales y cantos se sincronizan automaticamente.
+- **Copiado inter-proyectos (`Ctrl+C` / `Ctrl+V`)**: Copie piezas entre pestanas ï¿½ los materiales y cantos se sincronizan automaticamente.
 
 ---
 
@@ -246,19 +246,19 @@ En la pestana **Materiales** (`?? 4. Materiales`):
 | **`M`** | Herramienta **Cinta metrica** en 2D |
 | **Arrastrar `Click Izq` (2D)** | Mover piezas, arrastrar manejadores o recuadro de seleccion |
 | **`Shift + Clic izq.` Arrastrar (2D)** | Restringir el movimiento estrictamente al eje horizontal o vertical |
-| **`Ctrl / Cmd + Clic izq.` Arrastrar (2D)** | Desactivar el ajuste magnetico a los bordes durante el arrastre |
+| **`Ctrl / Command (Ð²ÐŠÂ˜) + Clic izq.` Arrastrar (2D)** | Desactivar el ajuste magnetico a los bordes durante el arrastre |
 | **`Alt + Clic izq.` Arrastrar (2D)** | Duplicar la(s) pieza(s) en la posicion de destino al soltar |
-| **`Shift / Ctrl (Cmd) + Click Izq` (2D)** | Anadir o quitar pieza de la seleccion multiple |
+| **`Shift / Ctrl (Command Ð²ÐŠÂ˜) + Click Izq` (2D)** | Anadir o quitar pieza de la seleccion multiple |
 | **Arrastrar `Click Der` / `Medio` (2D)** | Encuadre (Pan) de la camara 2D |
 | **`Rueda del raton` (2D / 3D)** | Zoom de la camara |
 | **Arrastrar `Click Der` / `Medio` (3D)** | Rotacion orbital 3D |
 | **`Z` (sobre ventana 3D)** | Alternar **Modo de vuelo libre 3D (Noclip)** |
-| **`W` `A` `S` `D` / `Espacio` / `Ctrl (Cmd)`** | Movimiento en modo vuelo (`Shift` acelera) |
-| **`Ctrl + S` / `Cmd (?) + S`** | Guardar proyecto actual (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (?) + Z`** | Deshacer ultima accion (hasta 40 pasos) |
-| **`Ctrl + C` / `Cmd (?) + C`** | Copiar piezas seleccionadas al portapapeles |
-| **`Ctrl + V` / `Cmd (?) + V`** | Pegar piezas (funciona entre diferentes pestanas) |
-| **`Ctrl + D` / `Cmd (?) + D`** | Duplicar piezas seleccionadas |
+| **`W` `A` `S` `D` / `Espacio` / `Ctrl (Command Ð²ÐŠÂ˜)`** | Movimiento en modo vuelo (`Shift` acelera) |
+| **`Ctrl + S` / `Command (Ð²ÐŠÂ˜) + S`** | Guardar proyecto actual (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (Ð²ÐŠÂ˜) + Z`** | Deshacer ultima accion (hasta 40 pasos) |
+| **`Ctrl + C` / `Command (Ð²ÐŠÂ˜) + C`** | Copiar piezas seleccionadas al portapapeles |
+| **`Ctrl + V` / `Command (Ð²ÐŠÂ˜) + V`** | Pegar piezas (funciona entre diferentes pestanas) |
+| **`Ctrl + D` / `Command (Ð²ÐŠÂ˜) + D`** | Duplicar piezas seleccionadas |
 | **`Delete` / `Backspace`** | Eliminar piezas seleccionadas |
 | **`<` `>` `^` `v` (vistas 2D)** | Desplazar las piezas seleccionadas segun el paso de cuadricula (`Shift` para duplicar) |
 
@@ -267,9 +267,9 @@ En la pestana **Materiales** (`?? 4. Materiales`):
 ## Primeros pasos
 
 ### Paquetes precompilados (GitHub Releases)
-- **Windows (`x86_64`)**: `QuadFurn-windows-x86_64.zip` — ejecutable portatil `QuadFurn.exe`.
+- **Windows (`x86_64`)**: `QuadFurn-windows-x86_64.zip` ï¿½ ejecutable portatil `QuadFurn.exe`.
 - **Linux (`Debian / Ubuntu x86_64`)**: `quadfurn_<version>_amd64.deb` o archivo tar.gz.
-- **macOS (`Universal`)**: `QuadFurn-macos-universal.zip` — paquete `QuadFurn.app`.
+- **macOS (`Universal`)**: `QuadFurn-macos-universal.zip` ï¿½ paquete `QuadFurn.app`.
 
 ---
 
@@ -304,21 +304,21 @@ cargo test
 ```text
 QuadFurn/
 +-- .github/
-¦   L-- workflows/
-¦       L-- build.yml          # CI/CD GitHub Actions
+ï¿½   L-- workflows/
+ï¿½       L-- build.yml          # CI/CD GitHub Actions
 +-- assets/
-¦   +-- icon_256.jpg              # Icono del programa
-¦   L-- screenshots/           # Capturas de pantalla
+ï¿½   +-- icon_256.jpg              # Icono del programa
+ï¿½   L-- screenshots/           # Capturas de pantalla
 +-- docs/                      # Documentacion en 37 idiomas
 +-- src/
-¦   +-- main.rs                # Punto de entrada, pestanas, interfaz
-¦   +-- model.rs               # Estructuras de datos (Project, PartBlock, etc.)
-¦   +-- viewport.rs            # Controlador 4 vistas, renderizado 2D/3D
-¦   +-- snapping.rs            # Atraccion magnetica y cotas
-¦   +-- cutter.rs              # Lista de corte y optimizacion 2D
-¦   +-- export.rs              # Exportacion PDF, CSV, listas de corte
-¦   +-- ui_panels.rs           # Barras de herramientas, inspector
-¦   L-- i18n.rs                # Diccionarios en 37 idiomas
+ï¿½   +-- main.rs                # Punto de entrada, pestanas, interfaz
+ï¿½   +-- model.rs               # Estructuras de datos (Project, PartBlock, etc.)
+ï¿½   +-- viewport.rs            # Controlador 4 vistas, renderizado 2D/3D
+ï¿½   +-- snapping.rs            # Atraccion magnetica y cotas
+ï¿½   +-- cutter.rs              # Lista de corte y optimizacion 2D
+ï¿½   +-- export.rs              # Exportacion PDF, CSV, listas de corte
+ï¿½   +-- ui_panels.rs           # Barras de herramientas, inspector
+ï¿½   L-- i18n.rs                # Diccionarios en 37 idiomas
 +-- build.rs                   # Integracion de iconos en Windows
 +-- Cargo.toml                 # Manifiesto de Rust
 L-- LICENSE                    # Licencia MIT
@@ -328,6 +328,6 @@ L-- LICENSE                    # Licencia MIT
 
 ## Licencia
 
-Distribuido bajo la [Licencia MIT](../LICENSE) — libre para uso comercial y personal.
+Distribuido bajo la [Licencia MIT](../LICENSE) ï¿½ libre para uso comercial y personal.
 
 

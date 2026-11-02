@@ -153,7 +153,7 @@ Záložka **Konstruktér** (`📐 1. Konstruktér`) se skládá ze tří hlavní
 
 1. **Horní nástrojové lišty**:
    - **Kreslicí nástroje**:
-     - `↖ Vybrat / Posunout (V)`: Kliknutím vyberete dílec, tažením posouváte, nebo měníte rozměry pomocí úchopů (8 úchopů pro dílce naplocho a 2 pro dílce z hrany). Tažením v prázdném prostoru vytvoříte obdélníkový výběr více dílců. Při přetahování ve 2D: přidržením **`Shift`** omezíte pohyb pouze na vodorovnou nebo svislou osu, **`Ctrl` (`Cmd`)** deaktivujete magnetické přichytávání k hranám a **`Alt`** vytvoříte kopii dílu v místě puštění.
+     - `↖ Vybrat / Posunout (V)`: Kliknutím vyberete dílec, tažením posouváte, nebo měníte rozměry pomocí úchopů (8 úchopů pro dílce naplocho a 2 pro dílce z hrany). Tažením v prázdném prostoru vytvoříte obdélníkový výběr více dílců. Při přetahování ve 2D: přidržením **`Shift`** omezíte pohyb pouze na vodorovnou nebo svislou osu, **`Ctrl` (`Command вЊ`)** deaktivujete magnetické přichytávání k hranám a **`Alt`** vytvoříte kopii dílu v místě puštění.
      - `➕ Vytvořit dílec rámečkem (B)`: Tažením obdélníku ve 2D pohledu (`Půdorys XY`, `Nárys XZ` nebo `Bokorys YZ`) vytvoříte novou desku odpovídající dané rovině.
      - `📏 Měřicí pásmo (M)`: Měření přesných vzdáleností bod od bodu (`ΔX`, `ΔY`, `L`) v milimetrech.
    - **Rychlé vkládání dílců**: Tlačítka pro vložení police (`+ Police (XY)`), boku (`+ Bok (YZ)`) nebo dvířek/zad (`+ Dvířka/Záda (XZ)`).
@@ -265,19 +265,19 @@ V záložce **Materiály** (`🎨 4. Materiály`):
 | **`M`** | Aktivovat nástroj **Měřicí pásmo** ve 2D pohledech |
 | **Tažení `Levým tlačítkem` (2D)** | Posunout vybrané dílce, upravit rozměr úchopem nebo táhnout výběrový rámeček v prázdnu |
 | **`Shift + Levé tl.` Přetažení (2D)** | Omezení pohybu dílu striktně na vodorovnou nebo svislou osu |
-| **`Ctrl / Cmd + Levé tl.` Přetažení (2D)** | Deaktivace magnetického přichytávání k hranám během přetahování |
+| **`Ctrl / Command (вЊ) + Levé tl.` Přetažení (2D)** | Deaktivace magnetického přichytávání k hranám během přetahování |
 | **`Alt + Levé tl.` Přetažení (2D)** | Duplikování vybraného dílu do cílového místa při puštění |
-| **`Shift / Ctrl (Cmd) + Levým tlačítkem` (2D)** | Přidat nebo odebrat dílec z vícenásobného výběru |
+| **`Shift / Ctrl (Command вЊ) + Levým tlačítkem` (2D)** | Přidat nebo odebrat dílec z vícenásobného výběru |
 | **Tažení `Pravým` / `Prostředním tlačítkem` (2D)** | Posun zobrazení (Panoráma 2D) |
 | **`Kolečko myši` (2D / 3D)** | Přiblížení / oddálení pohledu na pozici kurzoru |
 | **Tažení `Pravým` / `Prostředním tlačítkem` (3D)** | Orbitální rotace 3D kamery |
 | **`Z` (nad 3D oknem)** | Zapnout / vypnout **Režim volného letu (Noclip)** |
-| **`W` `A` `S` `D` / `Mezerník` / `Ctrl (Cmd)`** | Pohyb dopředu/doleva/dozadu/doprava/nahoru/dolů ve 3D letu (`Shift` zrychluje) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Uložit aktuální výrobek (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Vrátit zpět poslední krok (historie až 40 kroků) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopírovat vybrané dílce do schránky |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Vložit vybrané dílce (funguje mezi různými záložkami) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplikovat vybrané dílce |
+| **`W` `A` `S` `D` / `Mezerník` / `Ctrl (Command вЊ)`** | Pohyb dopředu/doleva/dozadu/doprava/nahoru/dolů ve 3D letu (`Shift` zrychluje) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Uložit aktuální výrobek (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Vrátit zpět poslední krok (historie až 40 kroků) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Kopírovat vybrané dílce do schránky |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Vložit vybrané dílce (funguje mezi různými záložkami) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Duplikovat vybrané dílce |
 | **`Delete` / `Backspace`** | Smazat vybrané dílce |
 | **`←` `→` `↑` `↓` (2D pohledy)** | Posun vybraných dílů o krok zvolené mřížky (`Shift` pro dvojnásobný krok) |
 

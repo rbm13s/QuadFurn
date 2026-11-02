@@ -153,7 +153,7 @@ Fanen **Designer** (`📐 1. Designer`) består af tre primære sektioner:
 
 1. **Øverste værktøjslinjer**:
    - **Tegneværktøjer**:
-     - `↖ Vælg / Flyt (V)`: Klik for at vælge et element, træk for at flytte, eller brug håndtagene (8 håndtag på fladen og 2 kanthåndtag fra siden). Træk i tomt rum for at oprette en markeringsramme. Under træk i 2D: hold **`Shift`** nede for at låse bevægelsen til vandret eller lodret akse, hold **`Ctrl` (`Cmd`)** for at ignorere kantfastgørelse, og hold **`Alt`** for at duplikere delen ved slip.
+     - `↖ Vælg / Flyt (V)`: Klik for at vælge et element, træk for at flytte, eller brug håndtagene (8 håndtag på fladen og 2 kanthåndtag fra siden). Træk i tomt rum for at oprette en markeringsramme. Under træk i 2D: hold **`Shift`** nede for at låse bevægelsen til vandret eller lodret akse, hold **`Ctrl` (`Command вЊ`)** for at ignorere kantfastgørelse, og hold **`Alt`** for at duplikere delen ved slip.
      - `➕ Opret element med ramme (B)`: Træk et rektangel i en 2D-visning (`Plan XY`, `Front XZ` eller `Side YZ`) for at indsætte en plade i det plan.
      - `📏 Målebånd (M)`: Mål nøjagtige afstande punkt til punkt (`ΔX`, `ΔY`, `L`) i millimeter.
    - **Hurtig indsættelse**: Knapper til at indsætte hylder (`+ Hylde (XY)`), sider (`+ Side (YZ)`) eller låger/bagbeklædning (`+ Låge/Bagplade (XZ)`).
@@ -265,19 +265,19 @@ I fanen **Materialer** (`🎨 4. Materialer`):
 | **`M`** | Aktivér **Målebånd** i 2D-visninger |
 | **Træk med `Venstre museknap` (2D)** | Flyt elementer, justér håndtag eller træk markeringsramme i tomt rum |
 | **`Shift + Venstreklik` Træk (2D)** | Lås delens bevægelse strengt til vandret eller lodret akse |
-| **`Ctrl / Cmd + Venstreklik` Træk (2D)** | Deaktiver magnetisk kantfastgørelse midlertidigt under træk |
+| **`Ctrl / Command (вЊ) + Venstreklik` Træk (2D)** | Deaktiver magnetisk kantfastgørelse midlertidigt under træk |
 | **`Alt + Venstreklik` Træk (2D)** | Dupliker valgte del(e) til destinationspositionen ved slip |
 | **`Skift / Ctrl (Cmd) + Venstre museknap` (2D)** | Tilføj eller fjern element fra flervalgsmarkeringen |
 | **Træk med `Højre` / `Midterste museknap` (2D)** | Panorér visningen (2D pan) |
 | **`Rullehjul på mus` (2D / 3D)** | Zoom ind/ud centreret på markøren |
 | **Træk med `Højre` / `Midterste museknap` (3D)** | Orbit-rotation af 3D-kameraet |
 | **`Z` (over 3D-ruden)** | Slå **Førstepersons Flyvetilstand (Noclip)** til/fra |
-| **`W` `A` `S` `D` / `Mellemrum` / `Ctrl (Cmd)`** | Flyv frem/venstre/tilbage/højre/op/ned i 3D (`Skift` for højere fart) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Gem det aktive møbel (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Fortryd sidste handling (historik på op til 40 trin) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Kopiér markerede dele til udklipsholderen |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Indsæt dele (fungerer på tværs af faner) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplikér markerede elementer |
+| **`W` `A` `S` `D` / `Mellemrum` / `Ctrl (Command вЊ)`** | Flyv frem/venstre/tilbage/højre/op/ned i 3D (`Skift` for højere fart) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Gem det aktive møbel (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Fortryd sidste handling (historik på op til 40 trin) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Kopiér markerede dele til udklipsholderen |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Indsæt dele (fungerer på tværs af faner) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Duplikér markerede elementer |
 | **`Delete` / `Backspace`** | Slet markerede elementer |
 | **`←` `→` `↑` `↓` (2D-visninger)** | Flyt valgte dele med det valgte gittertrin (`Shift` for dobbelt trin) |
 

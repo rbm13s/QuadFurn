@@ -153,7 +153,7 @@ Fila **Proiectant** (`📐 1. Proiectant`) este compusă din trei zone principal
 
 1. **Bare de instrumente superioare**:
    - **Instrumente de desen**:
-     - `↖ Selectare / Mutare (V)`: Click pe o piesă pentru selectare, trageți pentru mutare sau folosiți mânerele (8 mânere pentru piesele din față și 2 pe cant). Trageți pe fundal liber pentru a deschide un dreptunghi de selecție multiplă. În timpul tragerii 2D: țineți apăsat **`Shift`** pentru a bloca deplasarea pe axa orizontală sau verticală, **`Ctrl` (`Cmd`)** pentru a dezactiva alinierea la muchii și **`Alt`** pentru a duplica piesa la eliberare.
+     - `↖ Selectare / Mutare (V)`: Click pe o piesă pentru selectare, trageți pentru mutare sau folosiți mânerele (8 mânere pentru piesele din față și 2 pe cant). Trageți pe fundal liber pentru a deschide un dreptunghi de selecție multiplă. În timpul tragerii 2D: țineți apăsat **`Shift`** pentru a bloca deplasarea pe axa orizontală sau verticală, **`Ctrl` (`Command вЊ`)** pentru a dezactiva alinierea la muchii și **`Alt`** pentru a duplica piesa la eliberare.
      - `➕ Creare piesă prin cadru (B)`: Trageți un dreptunghi într-o vedere 2D (`Sus XY`, `Față XZ` sau `Lateral YZ`) pentru a crea un panou orientat în planul respectiv.
      - `📏 Ruletă de măsurare (M)`: Măsurați distanțe exacte punct la punct (`ΔX`, `ΔY`, `L`) în milimetri.
    - **Inserare rapidă**: Butoane pentru adăugarea unei polițe (`+ Poliță (XY)`), a unui perete lateral (`+ Perete lateral (YZ)`) sau a unei uși/spate (`+ Ușă/Spate (XZ)`).
@@ -265,19 +265,19 @@ Fila **Plan de debitare** (`🪚 3. Plan de debitare`) calculează așezarea ide
 | **`M`** | Activează **Ruleta de măsurare** în vederile 2D |
 | **Trage cu `Click stânga` (2D)** | Mută piesele, ajustează dimensiunea de un punct sau deschide cadru pe spațiul liber |
 | **`Shift + Clic stânga` Trage (2D)** | Restrânge deplasarea piesei strict pe axa orizontală sau verticală |
-| **`Ctrl / Cmd + Clic stânga` Trage (2D)** | Dezactivează alinierea magnetică la muchii în timpul tragerii |
+| **`Ctrl / Command (вЊ) + Clic stânga` Trage (2D)** | Dezactivează alinierea magnetică la muchii în timpul tragerii |
 | **`Alt + Clic stânga` Trage (2D)** | Duplică piesa/piesele selectate la poziția țintă la eliberarea mouse-ului |
-| **`Shift / Ctrl (Cmd) + Click stânga` (2D)** | Adaugă sau elimină piesa din selecția multiplă |
+| **`Shift / Ctrl (Command вЊ) + Click stânga` (2D)** | Adaugă sau elimină piesa din selecția multiplă |
 | **Trage cu `Click dreapta` / `Click mijloc` (2D)** | Deplasează vederea (Panoramare 2D) |
 | **`Rotiță mouse` (2D / 3D)** | Mărire / micșorare centrată pe cursor |
 | **Trage cu `Click dreapta` / `Click mijloc` (3D)** | Rotație orbitală a camerei 3D |
 | **`Z` (deasupra ferestrei 3D)** | Activează / dezactivează **Modul de zbor liber (Noclip)** |
-| **`W` `A` `S` `D` / `Spațiu` / `Ctrl (Cmd)`** | Zbor înainte/stânga/înapoi/dreapta/sus/jos în 3D (`Shift` mărește viteza) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Salvează corpul curent (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Anulează ultima acțiune (istoric de până la 40 de pași) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Copiază piesele selectate în clipboard |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Lipește piesele (funcționează între file) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplică piesele selectate |
+| **`W` `A` `S` `D` / `Spațiu` / `Ctrl (Command вЊ)`** | Zbor înainte/stânga/înapoi/dreapta/sus/jos în 3D (`Shift` mărește viteza) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Salvează corpul curent (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Anulează ultima acțiune (istoric de până la 40 de pași) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Copiază piesele selectate în clipboard |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Lipește piesele (funcționează între file) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Duplică piesele selectate |
 | **`Delete` / `Backspace`** | Șterge piesele selectate |
 | **`←` `→` `↑` `↓` (vederi 2D)** | Deplasare piese selectate cu pasul grilei selectate (`Shift` pentru pas dublu) |
 

@@ -153,7 +153,7 @@ L'onglet **Concepteur** (`📐 1. Concepteur`) comprend trois zones :
 
 1. **Barres d'outils supérieures** :
    - **Outils d'édition** :
-     - `↖ Sélectionner / Déplacer (V)` : Clic pour sélectionner, glisser pour déplacer, ou manipuler les poignées (8 poignées de face et 2 poignées de chant). Glisser sur le vide trace un cadre de sélection multiple. Lors du glissement 2D : maintenez **`Maj`** pour contraindre le mouvement à l'axe horizontal ou vertical, **`Ctrl` (`Cmd`)** pour désactiver l'aimantation aux arêtes, et **`Alt`** pour dupliquer la pièce à la position de dépôt.
+     - `↖ Sélectionner / Déplacer (V)` : Clic pour sélectionner, glisser pour déplacer, ou manipuler les poignées (8 poignées de face et 2 poignées de chant). Glisser sur le vide trace un cadre de sélection multiple. Lors du glissement 2D : maintenez **`Maj`** pour contraindre le mouvement à l'axe horizontal ou vertical, **`Ctrl` (`Command вЊ`)** pour désactiver l'aimantation aux arêtes, et **`Alt`** pour dupliquer la pièce à la position de dépôt.
      - `➕ Créer une pièce par rectangle (B)` : Tracer un rectangle dans une vue 2D (`Haut XY`, `Face XZ` ou `Côté YZ`) pour insérer un panneau orienté selon ce plan.
      - `📏 Mètre ruban (M)` : Mesurer les cotes exactes point à point (`ΔX`, `ΔY`, `L`) en millimètres.
    - **Insertion rapide** : Boutons d'ajout rapide (`+ Étagère (XY)`, `+ Montant (YZ)`, `+ Façade/Fond (XZ)`).
@@ -265,19 +265,19 @@ Dans l'onglet **Matériaux** (`🎨 4. Matériaux`) :
 | **`M`** | Activer le **Mètre ruban** dans les vues 2D |
 | **Glisser `Clic gauche` (2D)** | Déplacer la pièce, ajuster une poignée ou tracer un cadre de sélection dans le vide |
 | **`Maj + Clic gche` Glisser (2D)** | Contraindre le déplacement strictement à l'axe horizontal ou vertical |
-| **`Ctrl / Cmd + Clic gche` Glisser (2D)** | Désactiver l'aimantation magnétique aux arêtes pendant le glissement |
+| **`Ctrl / Command (вЊ) + Clic gche` Glisser (2D)** | Désactiver l'aimantation magnétique aux arêtes pendant le glissement |
 | **`Alt + Clic gche` Glisser (2D)** | Dupliquer la ou les pièces à la position de destination en relâchant |
 | **`Maj / Ctrl (Cmd) + Clic gauche` (2D)** | Ajouter / retirer une pièce de la sélection multiple |
 | **Glisser `Clic droit` / `Clic central` (2D)** | Déplacer la vue (Panoramique 2D) |
 | **`Molette souris` (2D / 3D)** | Zoom avant / arrière centré sur le curseur |
 | **Glisser `Clic droit` / `Clic central` (3D)** | Rotation orbitale de la caméra 3D |
 | **`Z` (au-dessus de la vue 3D)** | Activer / désactiver le **Mode Vol Libre Première Personne (Noclip)** |
-| **`Z` `Q` `S` `D` / `Espace` / `Ctrl (Cmd)`** | Voler en avant/gauche/arrière/droite/haut/bas en vue 3D (`Maj` pour accélérer) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Enregistrer le meuble actif (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Annuler la dernière action (historique jusqu'à 40 étapes) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Copier les pièces sélectionnées dans le presse-papiers |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Coller les pièces (fonctionne entre onglets) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Dupliquer les pièces sélectionnées |
+| **`Z` `Q` `S` `D` / `Espace` / `Ctrl (Command вЊ)`** | Voler en avant/gauche/arrière/droite/haut/bas en vue 3D (`Maj` pour accélérer) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Enregistrer le meuble actif (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Annuler la dernière action (historique jusqu'à 40 étapes) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Copier les pièces sélectionnées dans le presse-papiers |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Coller les pièces (fonctionne entre onglets) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Dupliquer les pièces sélectionnées |
 | **`Suppr` / `Retour arrière`** | Supprimer les pièces sélectionnées |
 | **`←` `→` `↑` `↓` (vues 2D)** | Déplacer les pièces sélectionnées du pas de grille choisi (`Shift` pour doubler le pas) |
 

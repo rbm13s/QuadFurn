@@ -153,7 +153,7 @@ O separador **Modelador** (`📐 1. Modelador`) divide-se em três áreas fundam
 
 1. **Barras de ferramentas superiores**:
    - **Ferramentas de desenho**:
-     - `↖ Selecionar / Mover (V)`: Clique numa peça para selecioná-la, arraste para movê-la, ou use os manipuladores (8 pegas em vista frontal e 2 em vista de topo). Arraste no espaço vazio para abrir uma caixa de seleção múltipla. Ao arrastar em 2D: segure **`Shift`** para restringir o movimento ao eixo horizontal ou vertical, **`Ctrl` (`Cmd`)** para desativar o encaixe magnético e **`Alt`** para duplicar a peça na posição de destino.
+     - `↖ Selecionar / Mover (V)`: Clique numa peça para selecioná-la, arraste para movê-la, ou use os manipuladores (8 pegas em vista frontal e 2 em vista de topo). Arraste no espaço vazio para abrir uma caixa de seleção múltipla. Ao arrastar em 2D: segure **`Shift`** para restringir o movimento ao eixo horizontal ou vertical, **`Ctrl` (`Command вЊ`)** para desativar o encaixe magnético e **`Alt`** para duplicar a peça na posição de destino.
      - `➕ Criar peça por retângulo (B)`: Desenhe um retângulo numa vista 2D (`Planta XY`, `Frontal XZ` ou `Lateral YZ`) para inserir um painel correspondente àquele plano.
      - `📏 Fita métrica (M)`: Meça distâncias precisas ponto a ponto (`ΔX`, `ΔY`, `L`) em milímetros.
    - **Inserção rápida de peças**: Botões para adicionar com um clique prateleiras (`+ Prateleira (XY)`), laterais (`+ Lateral (YZ)`) ou portas/fundos (`+ Porta/Fundo (XZ)`).
@@ -265,19 +265,19 @@ No separador **Materiais** (`🎨 4. Materiais`):
 | **`M`** | Ativar ferramenta **Fita métrica** nas vistas 2D |
 | **Arrastar `Botão esquerdo` (2D)** | Mover peças selecionadas, redimensionar ou abrir caixa de seleção múltipla em espaço vazio |
 | **`Shift + Botão esq.` Arrastar (2D)** | Restringir o movimento estritamente ao eixo horizontal ou vertical |
-| **`Ctrl / Cmd + Botão esq.` Arrastar (2D)** | Desativar o encaixe magnético às bordas durante o arrasto |
+| **`Ctrl / Command (вЊ) + Botão esq.` Arrastar (2D)** | Desativar o encaixe magnético às bordas durante o arrasto |
 | **`Alt + Botão esq.` Arrastar (2D)** | Duplicar a(s) peça(s) selecionada(s) na posição de destino ao soltar |
-| **`Shift / Ctrl (Cmd) + Botão esquerdo` (2D)** | Adicionar ou remover peças da seleção |
+| **`Shift / Ctrl (Command вЊ) + Botão esquerdo` (2D)** | Adicionar ou remover peças da seleção |
 | **Arrastar `Botão direito` / `Botão central` (2D)** | Mover a vista (Panorâmica 2D) |
 | **`Roda do rato` (2D / 3D)** | Zoom de aproximação/afastamento centrado no cursor |
 | **Arrastar `Botão direito` / `Botão central` (3D)** | Rotação orbital da câmara 3D |
 | **`Z` (com o cursor na vista 3D)** | Ativar / desativar **Modo Voo Livre em Primeira Pessoa (Noclip)** |
-| **`W` `A` `S` `D` / `Espaço` / `Ctrl (Cmd)`** | Movimento para a frente/esquerda/trás/direita/cima/baixo em voo 3D (`Shift` acelera) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Guardar o móvel atual (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Desfazer a última ação (histórico até 40 passos) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Copiar peças selecionadas para a área de transferência |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Colar peças (funciona entre diferentes separadores) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplicar peças selecionadas |
+| **`W` `A` `S` `D` / `Espaço` / `Ctrl (Command вЊ)`** | Movimento para a frente/esquerda/trás/direita/cima/baixo em voo 3D (`Shift` acelera) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Guardar o móvel atual (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Desfazer a última ação (histórico até 40 passos) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Copiar peças selecionadas para a área de transferência |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Colar peças (funciona entre diferentes separadores) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Duplicar peças selecionadas |
 | **`Delete` / `Backspace`** | Eliminar peças selecionadas |
 | **`←` `→` `↑` `↓` (vistas 2D)** | Mover as peças selecionadas pelo passo da grade (`Shift` para duplicar) |
 

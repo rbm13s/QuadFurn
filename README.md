@@ -157,7 +157,7 @@ The **Designer** tab (`📐 1. Designer`) is divided into three main areas:
 
 1. **Top Toolbars**:
    - **Editor Tools**:
-     - `↖ Select / Move (V)`: Click a part to select it, drag inside to move it, or drag any of the resize handles (8 handles on face-on parts & 2 edge handles on edge-on parts) in 2D views to resize it in place. Drag on empty space to draw a **marquee selection box** for multi-part selection. During 2D dragging: hold **`Shift`** to constrain movement strictly to horizontal or vertical axis, hold **`Ctrl` (`Cmd`)** to bypass magnetic edge snapping, and hold **`Alt`** to duplicate the part at the drop position.
+     - `↖ Select / Move (V)`: Click a part to select it, drag inside to move it, or drag any of the resize handles (8 handles on face-on parts & 2 edge handles on edge-on parts) in 2D views to resize it in place. Drag on empty space to draw a **marquee selection box** for multi-part selection. During 2D dragging: hold **`Shift`** to constrain movement strictly to horizontal or vertical axis, hold **`Ctrl` (`Command вЊ`)** to bypass magnetic edge snapping, and hold **`Alt`** to duplicate the part at the drop position.
      - `➕ Create Part by Box (B)`: Drag a rectangle in any 2D view (`Top XY`, `Front XZ`, or `Side YZ`) to create a new board oriented to that plane (`Shelf XY`, `Side Panel YZ`, or `Front/Back XZ`).
      - `📏 Tape Measure (M)`: Measure exact point-to-point distances (`ΔX`, `ΔY`, `L`) in millimeters in any 2D view.
    - **Quick Part Insertion**: One-click buttons (`+ Shelf (XY)`, `+ Side Panel (YZ)`, `+ Front/Back (XZ)`) to drop standard panels into the workspace.
@@ -282,19 +282,19 @@ In the **Materials** tab (`🎨 4. Materials`):
 | **`M`** | Activate **Tape Measure** tool in 2D viewports |
 | **`LMB` Drag (2D View)** | Move selected part(s), drag resize handles, or draw marquee selection box on empty space |
 | **`Shift + LMB` Drag (2D View)** | Constrain part movement strictly along horizontal or vertical axis |
-| **`Ctrl / Cmd + LMB` Drag (2D View)** | Bypass magnetic edge snapping while dragging part(s) |
+| **`Ctrl / Command (вЊ) + LMB` Drag (2D View)** | Bypass magnetic edge snapping while dragging part(s) |
 | **`Alt + LMB` Drag (2D View)** | Duplicate selected part(s) at destination (leaves original in place) |
-| **`Shift / Ctrl (Cmd) + LMB` (2D View)** | Toggle part in/out of current multi-selection group |
+| **`Shift / Ctrl (Command вЊ) + LMB` (2D View)** | Toggle part in/out of current multi-selection group |
 | **`RMB` / `MMB` Drag (2D View)** | Pan 2D orthographic camera |
 | **`Mouse Wheel` (2D / 3D)** | Zoom camera in/out around cursor |
 | **`RMB` / `MMB` Drag (3D View)** | Orbit 3D camera around target |
 | **`Z` (hovering 3D View)** | Toggle **3D First-Person Fly Mode (Noclip)** (layout-independent) |
-| **`W` `A` `S` `D` / `Space` / `Ctrl (Cmd)`** | Fly forward/left/back/right/up/down in 3D Fly Mode (`Shift` for speed boost) |
-| **`Ctrl + S` / `Cmd (⌘) + S`** | Save current furniture product (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Cmd (⌘) + Z`** | Undo last action in active product tab (up to 40 steps, layout-independent) |
-| **`Ctrl + C` / `Cmd (⌘) + C`** | Copy selected part(s) to shared clipboard |
-| **`Ctrl + V` / `Cmd (⌘) + V`** | Paste selected part(s) (works across different product tabs) |
-| **`Ctrl + D` / `Cmd (⌘) + D`** | Duplicate selected part(s) |
+| **`W` `A` `S` `D` / `Space` / `Ctrl (Command вЊ)`** | Fly forward/left/back/right/up/down in 3D Fly Mode (`Shift` for speed boost) |
+| **`Ctrl + S` / `Command (вЊ) + S`** | Save current furniture product (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (вЊ) + Z`** | Undo last action in active product tab (up to 40 steps, layout-independent) |
+| **`Ctrl + C` / `Command (вЊ) + C`** | Copy selected part(s) to shared clipboard |
+| **`Ctrl + V` / `Command (вЊ) + V`** | Paste selected part(s) (works across different product tabs) |
+| **`Ctrl + D` / `Command (вЊ) + D`** | Duplicate selected part(s) |
 | **`Delete` / `Backspace`** | Delete selected part(s) |
 | **`←` `→` `↑` `↓` (2D View)** | Nudge selected part(s) by current grid step (`Shift` for double step) |
 
