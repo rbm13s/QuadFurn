@@ -796,12 +796,53 @@ pub fn get_localized_cabinet_project(lang: AppLanguage) -> Project {
                 sheet_length_mm: 2800.0,
                 sheet_width_mm: 2070.0,
                 default_grain_fixed: false,
-            }
+                price_per_sheet: 4200.0,
+            },
+            Material {
+                id: 2,
+                name: "Дуб Галифакс".to_string(),
+                thickness_mm: 18.0,
+                color_rgb: crate::model::generate_next_material_color(&[Material { id: 1, color_rgb: [235, 238, 242], ..Default::default() }], 2),
+                texture_path: None,
+                texture_relative_path: None,
+                texture_base64: None,
+                sheet_length_mm: 2800.0,
+                sheet_width_mm: 2070.0,
+                default_grain_fixed: true,
+                price_per_sheet: 5600.0,
+            },
+            Material {
+                id: 3,
+                name: "Антрацит матовый".to_string(),
+                thickness_mm: 18.0,
+                color_rgb: crate::model::generate_next_material_color(&[
+                    Material { id: 1, color_rgb: [235, 238, 242], ..Default::default() },
+                    Material { id: 2, color_rgb: [205, 160, 115], ..Default::default() },
+                ], 3),
+                texture_path: None,
+                texture_relative_path: None,
+                texture_base64: None,
+                sheet_length_mm: 2800.0,
+                sheet_width_mm: 2070.0,
+                default_grain_fixed: false,
+                price_per_sheet: 6100.0,
+            },
         ],
         edge_bandings: vec![
-            EdgeBanding { id: 10, name: names.edge_2.to_string(), thickness_mm: 2.0, color_rgb: [235, 85, 45] },
-            EdgeBanding { id: 11, name: names.edge_1.to_string(), thickness_mm: 1.0, color_rgb: [50, 195, 95] },
-            EdgeBanding { id: 12, name: names.edge_05.to_string(), thickness_mm: 0.5, color_rgb: [65, 150, 245] },
+            EdgeBanding { id: 10, name: names.edge_2.to_string(), thickness_mm: 2.0, color_rgb: [235, 85, 45], price_per_m: 85.0 },
+            EdgeBanding { id: 11, name: names.edge_1.to_string(), thickness_mm: 1.0, color_rgb: [40, 190, 95], price_per_m: 45.0 },
+            EdgeBanding { id: 12, name: names.edge_05.to_string(), thickness_mm: 0.5, color_rgb: [35, 135, 245], price_per_m: 25.0 },
+            EdgeBanding {
+                id: 13,
+                name: "ПВХ 1.0 мм Пурпур".to_string(),
+                thickness_mm: 1.0,
+                color_rgb: crate::model::generate_next_edge_color(&[
+                    EdgeBanding { id: 10, color_rgb: [235, 85, 45], ..Default::default() },
+                    EdgeBanding { id: 11, color_rgb: [40, 190, 95], ..Default::default() },
+                    EdgeBanding { id: 12, color_rgb: [35, 135, 245], ..Default::default() },
+                ], 13),
+                price_per_m: 48.0,
+            },
         ],
         groups: vec![
             PartGroup { id: 100, name: names.grp_carcass.to_string(), visible: true, locked: false, expanded: true },
@@ -985,7 +1026,11 @@ pub fn get_localized_cabinet_project(lang: AppLanguage) -> Project {
             trim_right_mm: 10.0,
             trim_top_mm: 10.0,
             trim_bottom_mm: 10.0,
+            separate_trim_margins: false,
+            algorithm: crate::model::CuttingAlgorithm::default(),
+            cut_price_per_m: 0.0,
             group_identical_parts: true,
+            show_textures_on_sheet: false,
         },
         next_id: 2011,
         embed_textures: false,
@@ -1018,11 +1063,7 @@ pub fn handle_batch_screenshot_step(app: &mut QuadFurnApp, ctx: &egui::Context) 
         let mut doc = FurnitureDocument::new(proj);
         let virtual_path = PathBuf::from(r"C:\Users\liqui\Desktop\cabinet_18mm.qfurn");
         doc.mark_saved(Some(virtual_path.clone()));
-        app.status_msg = match lang {
-            AppLanguage::Ru => format!("Изделие открыто: {}", virtual_path.display()),
-            AppLanguage::Uk => format!("Виріб відкрито: {}", virtual_path.display()),
-            _ => format!("{}: {}", lang.tr("Изделие открыто", "Product opened"), virtual_path.display()),
-        };
+        app.status_msg = format!("{}: {}", lang.t("Product opened"), virtual_path.display());
 
         for m in &mut doc.project.materials {
             if m.texture_path.is_some() || m.texture_base64.is_some() || m.texture_relative_path.is_some() {

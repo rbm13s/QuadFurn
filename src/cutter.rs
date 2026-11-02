@@ -1,5 +1,5 @@
 use crate::i18n::AppLanguage;
-use crate::model::{EdgeBanding, MaterialId, PartEdges, PartId, Project};
+use crate::model::{CuttingAlgorithm, EdgeBanding, MaterialId, PartEdges, PartId, Project};
 
 /// Row in summary parts specification (accounting for optional grouping of identical parts).
 #[derive(Clone, Debug)]
@@ -64,13 +64,13 @@ pub fn build_specification_i18n(project: &Project, lang: AppLanguage) -> Vec<Spe
         let mat = project.get_material(part.material_id);
         let mat_name = mat
             .map(|m| m.name.clone())
-            .unwrap_or_else(|| lang.tr("Неизвестный", "Unknown").to_string());
+            .unwrap_or_else(|| lang.t("Unknown").to_string());
         let thick = mat.map(|m| m.thickness_mm).unwrap_or(18.0);
         let grp_name = part
             .group_id
             .and_then(|gid| project.groups.iter().find(|g| g.id == gid))
             .map(|g| g.name.clone())
-            .unwrap_or_else(|| lang.tr("Без группы", "Ungrouped").to_string());
+            .unwrap_or_else(|| lang.t("Ungrouped").to_string());
 
         // If grain_along_width == true, swap effective length and width along texture
         let (full_l, full_w, edges) = if part.grain_along_width {
@@ -209,38 +209,15 @@ impl UnplacedPart {
     /// Formats localized diagnostic message explaining why the part could not be placed.
     pub fn format_message(&self, lang: AppLanguage) -> String {
         let mm = lang.dict().unit_mm;
-        match lang {
-            AppLanguage::Ru => format!(
-                "{} ({:.1} x {:.1} {} > рабочего поля листа {:.0} x {:.0} {})",
-                self.name,
-                self.cut_length_mm,
-                self.cut_width_mm,
-                mm,
-                self.work_width_mm,
-                self.work_height_mm,
-                mm
-            ),
-            AppLanguage::Uk => format!(
-                "{} ({:.1} x {:.1} {} > робочого поля листа {:.0} x {:.0} {})",
-                self.name,
-                self.cut_length_mm,
-                self.cut_width_mm,
-                mm,
-                self.work_width_mm,
-                self.work_height_mm,
-                mm
-            ),
-            _ => format!(
-                "{} ({:.1} x {:.1} {} > sheet usable area {:.0} x {:.0} {})",
-                self.name,
-                self.cut_length_mm,
-                self.cut_width_mm,
-                mm,
-                self.work_width_mm,
-                self.work_height_mm,
-                mm
-            ),
-        }
+        let cl = format!("{:.1}", self.cut_length_mm);
+        let cw = format!("{:.1}", self.cut_width_mm);
+        let wl = format!("{:.0}", self.work_width_mm);
+        let ww = format!("{:.0}", self.work_height_mm);
+        let sheet_word = lang.dict().pdf_sheet_word;
+        lang.tf(
+            "fmt.unplaced_part_msg",
+            &[&self.name, &cl, &cw, &mm, &sheet_word, &wl, &ww],
+        )
     }
 }
 
@@ -270,6 +247,51 @@ pub struct CuttingReport {
     pub total_cut_length_m: f32,
     /// Total edge banding run per type: (Edge name, linear meters without waste).
     pub edge_banding_totals_m: Vec<(String, f32, [u8; 3])>,
+}
+
+fn evaluate_placement_score(
+    algo: CuttingAlgorithm,
+    rect: &SheetRemnant,
+    pw: f32,
+    ph: f32,
+    work_x0: f32,
+    work_y0: f32,
+) -> f32 {
+    let leftover_w = (rect.w_mm - pw).abs();
+    let leftover_h = (rect.h_mm - ph).abs();
+
+    match algo {
+        CuttingAlgorithm::MinimizeRemnants => {
+            // Best Short Side Fit: minimize the smallest leftover dimension
+            leftover_w.min(leftover_h) + leftover_w.max(leftover_h) * 0.05
+        }
+        CuttingAlgorithm::MinimizeToolpath => {
+            // Prioritize matching edge dimensions to share cut lines and minimize tool travel
+            let mut score = leftover_w.min(leftover_h) * 1.5;
+            if leftover_w < 1.0 {
+                score -= 400.0;
+            }
+            if leftover_h < 1.0 {
+                score -= 400.0;
+            }
+            score + (rect.x_mm - work_x0) * 0.02 + (rect.y_mm - work_y0) * 0.02
+        }
+        CuttingAlgorithm::LargeUsableOffcut => {
+            // Pack parts tightly towards origin corner (work_x0, work_y0),
+            // maximizing the size of remaining continuous offcut rectangle
+            let max_extent_x = (rect.x_mm + pw) - work_x0;
+            let max_extent_y = (rect.y_mm + ph) - work_y0;
+            max_extent_x.max(max_extent_y) * 2.0 + (rect.x_mm - work_x0) + (rect.y_mm - work_y0)
+        }
+        CuttingAlgorithm::StripCutting => {
+            // Favor filling the current strip along X, penalizing starting a new Y strip
+            let mut score = (rect.y_mm - work_y0) * 8.0 + (rect.x_mm - work_x0);
+            if leftover_h < 2.0 {
+                score -= 300.0;
+            }
+            score
+        }
+    }
 }
 
 /// Executes 2D guillotine cutting optimization for all project materials.
@@ -335,17 +357,57 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
             continue;
         }
 
-        // Sort parts descending by area and longer dimension (standard cutting heuristic)
-        items_to_pack.sort_by(|a, b| {
-            let max_a = a.cut_length_mm.max(a.cut_width_mm);
-            let max_b = b.cut_length_mm.max(b.cut_width_mm);
-            let area_a = a.cut_length_mm * a.cut_width_mm;
-            let area_b = b.cut_length_mm * b.cut_width_mm;
-            area_b
-                .partial_cmp(&area_a)
-                .unwrap_or(std::cmp::Ordering::Equal)
-                .then_with(|| max_b.partial_cmp(&max_a).unwrap_or(std::cmp::Ordering::Equal))
-        });
+        // Sort parts based on chosen cutting algorithm strategy
+        match settings.algorithm {
+            CuttingAlgorithm::MinimizeRemnants => {
+                items_to_pack.sort_by(|a, b| {
+                    let max_a = a.cut_length_mm.max(a.cut_width_mm);
+                    let max_b = b.cut_length_mm.max(b.cut_width_mm);
+                    let area_a = a.cut_length_mm * a.cut_width_mm;
+                    let area_b = b.cut_length_mm * b.cut_width_mm;
+                    area_b
+                        .partial_cmp(&area_a)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                        .then_with(|| max_b.partial_cmp(&max_a).unwrap_or(std::cmp::Ordering::Equal))
+                });
+            }
+            CuttingAlgorithm::MinimizeToolpath => {
+                // Group by common width or length to produce aligned saw passes
+                items_to_pack.sort_by(|a, b| {
+                    let w_a = a.cut_width_mm;
+                    let w_b = b.cut_width_mm;
+                    w_b.partial_cmp(&w_a)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                        .then_with(|| b.cut_length_mm.partial_cmp(&a.cut_length_mm).unwrap_or(std::cmp::Ordering::Equal))
+                });
+            }
+            CuttingAlgorithm::LargeUsableOffcut => {
+                // Sort by maximum dimension, packing largest parts in the corner
+                items_to_pack.sort_by(|a, b| {
+                    let max_a = a.cut_length_mm.max(a.cut_width_mm);
+                    let max_b = b.cut_length_mm.max(b.cut_width_mm);
+                    max_b.partial_cmp(&max_a)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                        .then_with(|| {
+                            let area_a = a.cut_length_mm * a.cut_width_mm;
+                            let area_b = b.cut_length_mm * b.cut_width_mm;
+                            area_b.partial_cmp(&area_a).unwrap_or(std::cmp::Ordering::Equal)
+                        })
+                });
+            }
+            CuttingAlgorithm::StripCutting => {
+                // Group into uniform width bands for rip cutting on sliding table saws
+                items_to_pack.sort_by(|a, b| {
+                    let band_a = (a.cut_width_mm / 50.0).floor() as i32;
+                    let band_b = (b.cut_width_mm / 50.0).floor() as i32;
+                    band_b.cmp(&band_a).then_with(|| {
+                        b.cut_length_mm
+                            .partial_cmp(&a.cut_length_mm)
+                            .unwrap_or(std::cmp::Ordering::Equal)
+                    })
+                });
+            }
+        }
 
         let work_x0 = settings.trim_left_mm;
         let work_y0 = settings.trim_top_mm;
@@ -405,7 +467,7 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
             let mut next_remaining = Vec::new();
 
             for mut item in remaining {
-                // Find best free rectangle (Best Short Side Fit / Guillotine Split)
+                // Find best free rectangle based on the selected cutting algorithm
                 let mut best_rect_idx: Option<usize> = None;
                 let mut best_rot = false;
                 let mut best_score = f32::MAX;
@@ -415,9 +477,14 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
                     if item.cut_length_mm <= rect.w_mm + 0.01
                         && item.cut_width_mm <= rect.h_mm + 0.01
                     {
-                        let leftover_w = (rect.w_mm - item.cut_length_mm).abs();
-                        let leftover_h = (rect.h_mm - item.cut_width_mm).abs();
-                        let score = leftover_w.min(leftover_h) + leftover_w.max(leftover_h) * 0.05;
+                        let score = evaluate_placement_score(
+                            settings.algorithm,
+                            rect,
+                            item.cut_length_mm,
+                            item.cut_width_mm,
+                            work_x0,
+                            work_y0,
+                        );
                         if score < best_score {
                             best_score = score;
                             best_rect_idx = Some(r_idx);
@@ -430,9 +497,14 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
                         && item.cut_width_mm <= rect.w_mm + 0.01
                         && item.cut_length_mm <= rect.h_mm + 0.01
                     {
-                        let leftover_w = (rect.w_mm - item.cut_width_mm).abs();
-                        let leftover_h = (rect.h_mm - item.cut_length_mm).abs();
-                        let score = leftover_w.min(leftover_h) + leftover_w.max(leftover_h) * 0.05;
+                        let score = evaluate_placement_score(
+                            settings.algorithm,
+                            rect,
+                            item.cut_width_mm,
+                            item.cut_length_mm,
+                            work_x0,
+                            work_y0,
+                        );
                         if score < best_score {
                             best_score = score;
                             best_rect_idx = Some(r_idx);
@@ -461,8 +533,28 @@ pub fn compute_cutting_layout(project: &Project) -> CuttingReport {
                     let right_w = rect.w_mm - pw - kerf;
                     let bottom_h = rect.h_mm - ph - kerf;
 
-                    // Choose guillotine cut direction (along longer offcut, typical for panel saws)
-                    if right_w * rect.h_mm > bottom_h * rect.w_mm {
+                    let split_vertical = match settings.algorithm {
+                        CuttingAlgorithm::MinimizeRemnants => {
+                            right_w * rect.h_mm > bottom_h * rect.w_mm
+                        }
+                        CuttingAlgorithm::MinimizeToolpath => {
+                            let leftover_w = (rect.w_mm - pw).abs();
+                            let leftover_h = (rect.h_mm - ph).abs();
+                            if leftover_w < 1.0 {
+                                false
+                            } else if leftover_h < 1.0 {
+                                true
+                            } else {
+                                right_w * rect.h_mm > bottom_h * rect.w_mm
+                            }
+                        }
+                        CuttingAlgorithm::LargeUsableOffcut => {
+                            right_w * rect.h_mm > bottom_h * rect.w_mm
+                        }
+                        CuttingAlgorithm::StripCutting => false,
+                    };
+
+                    if split_vertical {
                         // First vertical cut across entire strip height rect.h_mm
                         if right_w > 1.0 {
                             cut_lines.push(CutLine {
@@ -627,5 +719,59 @@ mod tests {
                 }
             }
         }
+    }
+
+    #[test]
+    fn test_all_cutting_algorithms_produce_valid_layouts() {
+        let mut proj = Project::new_demo_cabinet();
+        for &algo in &CuttingAlgorithm::ALL {
+            proj.cutting_settings.algorithm = algo;
+            let report = compute_cutting_layout(&proj);
+            assert!(
+                report.unplaced_parts.is_empty(),
+                "Algorithm {:?} produced unplaced parts",
+                algo
+            );
+            assert!(
+                report.total_sheets_count >= 1,
+                "Algorithm {:?} must produce sheets",
+                algo
+            );
+            for sh in &report.sheets {
+                assert!(
+                    !sh.placed_parts.is_empty(),
+                    "Each sheet must have parts in algorithm {:?}",
+                    algo
+                );
+                for p in &sh.placed_parts {
+                    if p.grain_fixed {
+                        assert!(
+                            !p.rotated_90,
+                            "Fixed grain violated in algorithm {:?}",
+                            algo
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_large_usable_offcut_produces_valid_layout_and_large_remnant() {
+        let mut proj = Project::new_demo_cabinet();
+        // Unfix grain for all parts
+        for p in &mut proj.parts {
+            p.grain_fixed = false;
+        }
+        proj.cutting_settings.algorithm = CuttingAlgorithm::LargeUsableOffcut;
+        let report = compute_cutting_layout(&proj);
+        assert!(report.unplaced_parts.is_empty());
+
+        let sh0 = &report.sheets[0];
+        assert!(!sh0.placed_parts.is_empty());
+
+        // Must produce at least one large contiguous usable offcut
+        let has_large_remnant = sh0.remnants.iter().any(|r| r.w_mm >= 1000.0 || r.h_mm >= 1000.0);
+        assert!(has_large_remnant, "LargeUsableOffcut should leave at least one large remnant (>1000mm)");
     }
 }
