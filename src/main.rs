@@ -1,64 +1,41 @@
 #![cfg_attr(all(not(test), target_os = "windows"), windows_subsystem = "windows")]
 
+mod batch_screenshot;
 mod cutter;
 mod export;
+pub mod glossary;
 mod i18n;
 mod model;
 mod snapping;
+pub mod theme;
 mod ui_panels;
-mod viewport;
-mod batch_screenshot;
-pub mod glossary;
 pub mod update_checker;
+mod viewport;
 mod web;
 
+pub use crate::theme::ThemeChoice;
+
 use crate::i18n::AppLanguage;
-use crate::model::{EdgeId, MaterialId, PartId, Project};
-use crate::ui_panels::{
-    copy_selected_parts_to_clipboard, load_texture_from_memory, paste_parts_into_project,
-    resolve_and_load_material_texture, ui_cutting_layout_tab, ui_materials_manager_tab,
-    ui_right_inspector, ui_specification_tab, ui_top_transform_toolbar, AppTab, ClipboardPart,
-    CLIPBOARD_PREFIX,
-};
+use crate::model::{EdgeId, GroupId, MaterialId, PartId, PartOrientation, Project};
+use crate::theme::FA_PALETTE;
 #[cfg(not(target_arch = "wasm32"))]
 use crate::ui_panels::load_texture_from_path;
+use crate::ui_panels::{
+    add_quick_part, load_texture_from_memory, perform_copy_selection, perform_delete_selection,
+    perform_duplicate_selection, perform_paste_clipboard, resolve_and_load_material_texture,
+    ui_cutting_layout_tab, ui_left_tools_dock, ui_materials_manager_tab, ui_right_inspector,
+    ui_specification_tab, ui_top_transform_toolbar, AppTab, ClipboardPart, CLIPBOARD_PREFIX,
+};
 use crate::viewport::{EditorTool, QuadViewportController};
 use egui::{Color32, Key, RichText, TextureHandle};
-use glam::Vec3;
 use std::collections::HashMap;
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-pub enum ThemeChoice {
-    Dark,
-    Light,
-    System,
-}
-
-impl ThemeChoice {
-    pub fn label(&self) -> &'static str {
-        self.label_i18n(AppLanguage::Ru)
-    }
-
-    pub fn label_i18n(&self, lang: AppLanguage) -> &'static str {
-        let d = lang.dict();
-        match self {
-            ThemeChoice::Dark => d.theme_dark,
-            ThemeChoice::Light => d.theme_light,
-            ThemeChoice::System => d.theme_system,
-        }
-    }
-
-    pub fn apply(&self, ctx: &egui::Context) {
-        match self {
-            ThemeChoice::Dark => ctx.set_theme(egui::ThemePreference::Dark),
-            ThemeChoice::Light => ctx.set_theme(egui::ThemePreference::Light),
-            ThemeChoice::System => ctx.set_theme(egui::ThemePreference::System),
-        }
-    }
-}
 
 fn default_true() -> bool {
     true
+}
+
+fn default_tree_height() -> f32 {
+    260.0
 }
 
 /// Program settings (saved on disk in `%APPDATA%\QuadFurn\settings.json`)
@@ -71,6 +48,10 @@ pub struct AppSettings {
     pub recent_projects: Vec<std::path::PathBuf>,
     #[serde(default = "default_true")]
     pub z_order: bool,
+    #[serde(default)]
+    pub tools_two_columns: bool,
+    #[serde(default = "default_tree_height")]
+    pub hierarchy_tree_height: f32,
 }
 
 impl Default for AppSettings {
@@ -80,6 +61,8 @@ impl Default for AppSettings {
             language: AppLanguage::detect_system_or_en(),
             recent_projects: Vec::new(),
             z_order: true,
+            tools_two_columns: false,
+            hierarchy_tree_height: 260.0,
         }
     }
 }
@@ -131,6 +114,7 @@ impl AppSettings {
         if let Ok(txt) = std::fs::read_to_string(&path) {
             if let Ok(mut cfg) = serde_json::from_str::<Self>(&txt) {
                 cfg.recent_projects.truncate(10);
+                cfg.hierarchy_tree_height = cfg.hierarchy_tree_height.clamp(100.0, 800.0);
                 // If settings file was created before language field existed, detect system language and save
                 if !txt.contains("\"language\"") {
                     cfg.language = AppLanguage::detect_system_or_en();
@@ -174,6 +158,7 @@ pub struct FurnitureDocument {
     pub file_path: Option<std::path::PathBuf>,
     pub undo_stack: Vec<Project>,
     pub selected_part: Option<PartId>,
+    pub selected_group: Option<GroupId>,
     pub active_material_id: MaterialId,
     pub viewport_ctrl: QuadViewportController,
     pub loaded_textures: HashMap<MaterialId, TextureHandle>,
@@ -181,6 +166,7 @@ pub struct FurnitureDocument {
     pub missing_textures_queue: Vec<MissingTexturePrompt>,
     pub new_group_name_buf: String,
     pub selected_sheet_idx: usize,
+    pub hovered_cutting_part: Option<PartId>,
     pub pending_delete_material: Option<MaterialId>,
     pub pending_delete_edge: Option<EdgeId>,
     pub renaming_tab: bool,
@@ -202,6 +188,7 @@ impl FurnitureDocument {
             file_path: None,
             undo_stack: Vec::new(),
             selected_part: first_part,
+            selected_group: None,
             active_material_id: first_mat,
             viewport_ctrl,
             loaded_textures: HashMap::new(),
@@ -209,6 +196,7 @@ impl FurnitureDocument {
             missing_textures_queue: Vec::new(),
             new_group_name_buf: String::new(),
             selected_sheet_idx: 0,
+            hovered_cutting_part: None,
             pending_delete_material: None,
             pending_delete_edge: None,
             renaming_tab: false,
@@ -249,9 +237,9 @@ impl FurnitureDocument {
                         .as_ref()
                         .map(|s| crate::model::extract_cross_platform_filename(s))
                         .or_else(|| {
-                            m.texture_path
-                                .as_ref()
-                                .map(|p| crate::model::extract_cross_platform_filename(&p.to_string_lossy()))
+                            m.texture_path.as_ref().map(|p| {
+                                crate::model::extract_cross_platform_filename(&p.to_string_lossy())
+                            })
                         })
                         .unwrap_or_else(|| format!("{}.png", m.name));
 
@@ -346,20 +334,13 @@ impl FurnitureDocument {
                 match std::fs::write(&path, json) {
                     Ok(()) => {
                         let is_embedded = self.project.embed_textures;
-                        *status_msg = crate::glossary::format_saved_product(
-                            lang,
-                            is_embedded,
-                            &path,
-                        );
+                        *status_msg =
+                            crate::glossary::format_saved_product(lang, is_embedded, &path);
                         self.mark_saved(Some(path.clone()));
                         return Some(path);
                     }
                     Err(e) => {
-                        *status_msg = match lang {
-                            AppLanguage::Ru => format!("Ошибка сохранения: {}", e),
-                            AppLanguage::Uk => format!("Помилка збереження: {}", e),
-                            _ => format!("Save error: {}", e),
-                        };
+                        *status_msg = lang.tf("fmt.save_error", &[&e]);
                     }
                 }
             }
@@ -373,16 +354,15 @@ impl FurnitureDocument {
         status_msg: &mut String,
         lang: AppLanguage,
     ) -> Option<std::path::PathBuf> {
-        let clean_name = self.project.name.replace(['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'], "_");
+        let clean_name = self
+            .project
+            .name
+            .replace(['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'], "_");
         let filename = format!("{}.qfurn", clean_name);
         if let Ok(json) = serde_json::to_string_pretty(&self.project) {
             crate::web::download_file(&filename, "application/json", json.as_bytes());
             self.mark_saved(None);
-            *status_msg = match lang {
-                AppLanguage::Ru => format!("Проект скачан: {}", filename),
-                AppLanguage::Uk => format!("Проєкт завантажено: {}", filename),
-                _ => format!("Project downloaded: {}", filename),
-            };
+            *status_msg = lang.tf("fmt.project_downloaded", &[&filename]);
         }
         None
     }
@@ -405,7 +385,7 @@ pub struct QuadFurnApp {
     pub allow_exit: bool,
     /// Shared clipboard for copying one or more selected parts (Ctrl+C / Ctrl+V) between different furniture tabs
     pub clipboard_parts: Vec<ClipboardPart>,
-    /// App icon texture (from `assets/icon.jpeg`)
+    /// App icon texture (from `assets/icon_256.jpg`)
     pub app_icon_tex: Option<TextureHandle>,
     /// View mode (Designer / Specification / Cutting layout / Materials)
     pub active_tab: AppTab,
@@ -422,7 +402,16 @@ pub struct QuadFurnApp {
     pub batch_frame_delay: usize,
     pub batch_startup_delay: usize,
     pub force_open_lang_menu: bool,
+    pub force_open_theme_menu: bool,
     pub z_order: bool,
+    /// Whether Left Tools Dock is in 2-column mode (default: false = 1 column)
+    pub tools_two_columns: bool,
+    /// Height (px) of the vertically resizable Groups & Parts Tree in Right Inspector
+    pub hierarchy_tree_height: f32,
+    /// Whether the Keyboard Shortcuts modal window is open
+    pub show_hotkeys_modal: bool,
+    /// Whether the About QuadFurn modal window is open
+    pub show_about_modal: bool,
     #[cfg(not(target_arch = "wasm32"))]
     pub update_receiver: Option<std::sync::mpsc::Receiver<String>>,
     pub available_update: Option<String>,
@@ -432,14 +421,9 @@ impl Default for QuadFurnApp {
     fn default() -> Self {
         let settings = AppSettings::load();
         let lang = settings.language;
-        let default_prod_name = lang
-            .tr("Новое изделие 1", "New Product 1")
-            .to_string();
+        let default_prod_name = lang.t("New Product 1").to_string();
         let default_status = lang
-            .tr(
-                "Выберите действие на стартовой странице: создать новое изделие или открыть сохранённый проект.",
-                "Select an action on the start page: create a new product or open a saved project.",
-            )
+            .t("Select an action on the start page: create a new product or open a saved project.")
             .to_string();
         Self {
             documents: Vec::new(),
@@ -464,7 +448,12 @@ impl Default for QuadFurnApp {
             batch_frame_delay: 0,
             batch_startup_delay: 0,
             force_open_lang_menu: false,
+            force_open_theme_menu: false,
             z_order: settings.z_order,
+            tools_two_columns: settings.tools_two_columns,
+            hierarchy_tree_height: settings.hierarchy_tree_height,
+            show_hotkeys_modal: false,
+            show_about_modal: false,
             #[cfg(not(target_arch = "wasm32"))]
             update_receiver: update_checker::start_background_check(),
             available_update: None,
@@ -480,13 +469,15 @@ impl QuadFurnApp {
         undo_stack.push(current.clone());
     }
 
-    /// Saves current settings (color theme, language, and recent 10 projects) to `settings.json`
+    /// Saves current settings (color theme, language, dock preferences, and recent 10 projects) to `settings.json`
     pub fn save_settings(&self) -> Result<std::path::PathBuf, String> {
         let cfg = AppSettings {
             theme_choice: self.theme_choice,
             language: self.language,
             recent_projects: self.recent_projects.clone(),
             z_order: self.z_order,
+            tools_two_columns: self.tools_two_columns,
+            hierarchy_tree_height: self.hierarchy_tree_height,
         };
         cfg.save()
     }
@@ -497,6 +488,34 @@ impl QuadFurnApp {
         self.recent_projects.insert(0, path);
         self.recent_projects.truncate(10);
         let _ = self.save_settings();
+    }
+
+    /// Creates a new empty furniture product tab
+    pub fn create_empty_product_tab(&mut self) {
+        let lang = self.language;
+        let p = Project::new_empty_i18n(
+            format!("{} {}", lang.t("Product"), self.documents.len() + 1),
+            lang,
+        );
+        let mut doc = FurnitureDocument::new(p);
+        doc.viewport_ctrl.cam_3d.z_order = self.z_order;
+        self.documents.push(doc);
+        self.active_doc_idx = self.documents.len() - 1;
+        self.active_tab = AppTab::Designer4View;
+        self.status_msg = lang.t("Created new empty product").to_string();
+    }
+
+    /// Creates a new cabinet template tab
+    pub fn create_template_product_tab(&mut self) {
+        let lang = self.language;
+        let mut p = Project::new_demo_cabinet_i18n(lang);
+        p.name = format!("{} {}", lang.t("Cabinet"), self.documents.len() + 1);
+        let mut doc = FurnitureDocument::new(p);
+        doc.viewport_ctrl.cam_3d.z_order = self.z_order;
+        self.documents.push(doc);
+        self.active_doc_idx = self.documents.len() - 1;
+        self.active_tab = AppTab::Designer4View;
+        self.status_msg = lang.t("Created new tab with cabinet template").to_string();
     }
 
     /// Opens project at specified path and adds it to recent projects list (up to 10)
@@ -512,26 +531,18 @@ impl QuadFurnApp {
                     self.active_doc_idx = self.documents.len() - 1;
                     self.active_tab = AppTab::Designer4View;
                     self.record_recent_project(path.to_path_buf());
-                    self.status_msg = format!(
-                        "{}: {}",
-                        self.language.tr("Изделие открыто", "Product opened"),
-                        path.display()
-                    );
+                    self.status_msg =
+                        format!("{}: {}", self.language.t("Product opened"), path.display());
                 }
                 Err(e) => {
-                    self.status_msg = format!(
-                        "{}: {}",
-                        self.language
-                            .tr("Ошибка чтения проекта", "Error reading project"),
-                        e
-                    );
+                    self.status_msg =
+                        format!("{}: {}", self.language.t("Error reading project"), e);
                 }
             },
             Err(e) => {
                 self.status_msg = format!(
                     "{} ({}): {}",
-                    self.language
-                        .tr("Не удалось открыть файл", "Failed to open file"),
+                    self.language.t("Failed to open file"),
                     path.display(),
                     e
                 );
@@ -545,7 +556,7 @@ impl QuadFurnApp {
         {
             if let Some(path) = rfd::FileDialog::new()
                 .add_filter(
-                    self.language.tr("Проект QuadFurn", "QuadFurn Project"),
+                    self.language.t("QuadFurn Project"),
                     &["qfurn", "json"],
                 )
                 .pick_file()
@@ -627,7 +638,7 @@ impl QuadFurnApp {
                                 let prod_name = if self.new_product_name_buf.trim().is_empty() {
                                     format!(
                                         "{} {}",
-                                        lang.tr("Изделие", "Product"),
+                                        lang.t("Product"),
                                         self.documents.len() + 1
                                     )
                                 } else {
@@ -647,25 +658,18 @@ impl QuadFurnApp {
                                     .clicked()
                                 {
                                     let proj = Project::new_empty_i18n(prod_name.clone(), lang);
-                                    self.documents.push(FurnitureDocument::new(proj));
+                                    let mut doc = FurnitureDocument::new(proj);
+                                    doc.viewport_ctrl.cam_3d.z_order = self.z_order;
+                                    self.documents.push(doc);
                                     self.active_doc_idx = self.documents.len() - 1;
                                     self.active_tab = AppTab::Designer4View;
                                     self.new_product_name_buf = format!(
                                         "{} {}",
-                                        lang.tr("Новое изделие", "New Product"),
+                                        lang.t("New Product"),
                                         self.documents.len() + 1
                                     );
-                                    self.status_msg = match lang {
-                                        AppLanguage::Ru => {
-                                            format!("Создано новое изделие «{}»", prod_name)
-                                        }
-                                        AppLanguage::Uk => {
-                                            format!("Створено новий виріб «{}»", prod_name)
-                                        }
-                                        _ => {
-                                            format!("Created new product \"{}\"", prod_name)
-                                        }
-                                    };
+                                    self.status_msg =
+                                        lang.tf("fmt.created_new_product", &[&prod_name]);
                                 }
 
                                 ui.add_space(8.0);
@@ -682,42 +686,28 @@ impl QuadFurnApp {
                                 {
                                     let mut proj = Project::new_demo_cabinet_i18n(lang);
                                     let trimmed = self.new_product_name_buf.trim();
+                                    let default_prod_1 = lang.t("New Product 1");
+                                    let default_prod_prefix = lang.t("New Product");
                                     let is_default_placeholder = trimmed.is_empty()
-                                        || trimmed == "Новое изделие 1"
-                                        || trimmed == "Новий виріб 1"
+                                        || trimmed == default_prod_1
                                         || trimmed == "New Product 1"
-                                        || trimmed.starts_with("Новое изделие")
-                                        || trimmed.starts_with("Новий виріб")
+                                        || trimmed.starts_with(default_prod_prefix)
                                         || trimmed.starts_with("New Product");
                                     if !is_default_placeholder {
                                         proj.name = prod_name;
                                     } else {
-                                        proj.name = match lang {
-                                            AppLanguage::Ru => "Тумба 800х500х720".to_string(),
-                                            AppLanguage::Uk => "Тумба 800х500х720".to_string(),
-                                            AppLanguage::De => "Schrank 800x500x720".to_string(),
-                                            AppLanguage::Pl => "Szafka 800x500x720".to_string(),
-                                            _ => "Cabinet 800x500x720".to_string(),
-                                        };
+                                        proj.name = lang.t("default.proj_name").to_string();
                                     }
                                     let created_name = proj.name.clone();
-                                    self.documents.push(FurnitureDocument::new(proj));
+                                    let mut doc = FurnitureDocument::new(proj);
+                                    doc.viewport_ctrl.cam_3d.z_order = self.z_order;
+                                    self.documents.push(doc);
                                     self.active_doc_idx = self.documents.len() - 1;
                                     self.active_tab = AppTab::Designer4View;
-                                    self.status_msg = match lang {
-                                        AppLanguage::Ru => format!(
-                                            "Создано изделие по шаблону «{}»",
-                                            created_name
-                                        ),
-                                        AppLanguage::Uk => format!(
-                                            "Створено виріб за шаблоном «{}»",
-                                            created_name
-                                        ),
-                                        _ => format!(
-                                            "Created product from template \"{}\"",
-                                            created_name
-                                        ),
-                                    };
+                                    self.status_msg = lang.tf(
+                                        "fmt.created_template_product",
+                                        &[&created_name],
+                                    );
                                 }
 
                                 ui.add_space(16.0);
@@ -753,10 +743,7 @@ impl QuadFurnApp {
                                     ui.label(
                                         RichText::new(format!(
                                             "{} ({}/10):",
-                                            lang.tr(
-                                                "Последние открытые проекты",
-                                                "Recent projects"
-                                            ),
+                                            lang.t("Recent projects"),
                                             self.recent_projects.len().min(10)
                                         ))
                                         .strong()
@@ -780,54 +767,62 @@ impl QuadFurnApp {
                                             let file_title = rpath
                                                 .file_name()
                                                 .and_then(|n| n.to_str())
-                                                .unwrap_or_else(|| lang.tr("Проект", "Project"));
+                                                .unwrap_or_else(|| lang.t("Project"));
                                             let exists = rpath.exists();
 
-                                            ui.horizontal(|ui| {
-                                                let btn_label = if exists {
-                                                    format!(
-                                                        "{}. 🗄 {}   —   {}",
-                                                        idx + 1,
-                                                        file_title,
-                                                        rpath.display()
-                                                    )
-                                                } else {
-                                                    format!(
-                                                        "{}. ⚠ {} ({})   —   {}",
-                                                        idx + 1,
-                                                        file_title,
-                                                        lang.tr("файл не найден", "file not found"),
-                                                        rpath.display()
-                                                    )
-                                                };
+                                            ui.allocate_ui_with_layout(
+                                                egui::vec2(460.0, 28.0),
+                                                egui::Layout::left_to_right(egui::Align::Center)
+                                                    .with_main_align(egui::Align::Min),
+                                                |ui| {
+                                                    ui.spacing_mut().item_spacing.x = 6.0;
 
-                                                let resp = ui
-                                                    .add_sized(
-                                                        [424.0, 28.0],
-                                                        egui::Button::new(
-                                                            RichText::new(btn_label).size(12.5),
-                                                        ),
-                                                    )
-                                                    .on_hover_text(format!(
-                                                        "{}: {}",
-                                                        lang.tr("Открыть проект", "Open project"),
-                                                        rpath.display()
-                                                    ));
-                                                if resp.clicked() {
-                                                    open_recent_path = Some(rpath.clone());
-                                                }
+                                                    let btn_label = if exists {
+                                                        format!(
+                                                            "{}. 🗄 {}   —   {}",
+                                                            idx + 1,
+                                                            file_title,
+                                                            rpath.display()
+                                                        )
+                                                    } else {
+                                                        format!(
+                                                            "{}. ⚠ {} ({})   —   {}",
+                                                            idx + 1,
+                                                            file_title,
+                                                            lang.t("file not found"),
+                                                            rpath.display()
+                                                        )
+                                                    };
 
-                                                if ui
-                                                    .add_sized([28.0, 28.0], egui::Button::new("✖"))
-                                                    .on_hover_text(lang.tr(
-                                                        "Убрать из списка последних проектов",
-                                                        "Remove from recent projects list",
-                                                    ))
-                                                    .clicked()
-                                                {
-                                                    remove_recent_idx = Some(idx);
-                                                }
-                                            });
+                                                    let resp = ui
+                                                        .add_sized(
+                                                            [426.0, 28.0],
+                                                            egui::Button::new(
+                                                                RichText::new(btn_label).size(12.5),
+                                                            )
+                                                            .truncate(),
+                                                        )
+                                                        .on_hover_text(format!(
+                                                            "{}: {}",
+                                                            lang.t("Open project"),
+                                                            rpath.display()
+                                                        ));
+                                                    if resp.clicked() {
+                                                        open_recent_path = Some(rpath.clone());
+                                                    }
+
+                                                    if ui
+                                                        .add_sized([28.0, 28.0], egui::Button::new("✖"))
+                                                        .on_hover_text(
+                                                            lang.t("Remove from recent projects list"),
+                                                        )
+                                                        .clicked()
+                                                    {
+                                                        remove_recent_idx = Some(idx);
+                                                    }
+                                                },
+                                            );
+                                            ui.add_space(4.0);
                                         }
 
                                         if let Some(rem_idx) = remove_recent_idx {
@@ -845,10 +840,7 @@ impl QuadFurnApp {
                                     ui.label(
                                         RichText::new(format!(
                                             "{}: {}",
-                                            lang.tr(
-                                                "Настройки и цветовая схема сохраняются в",
-                                                "Settings & theme are saved in"
-                                            ),
+                                            lang.t("Settings & theme are saved in"),
                                             AppSettings::settings_file_path().display()
                                         ))
                                         .size(11.5)
@@ -884,12 +876,15 @@ impl QuadFurnApp {
         // Ctrl+S / Cmd+S -> Quick save current project
         let save_pressed = ctx.input(|i| {
             let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
-            (i.key_pressed(Key::S) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "ы" || t == "Ы")))
+            (i.key_pressed(Key::S)
+                || i.events
+                    .iter()
+                    .any(|e| matches!(e, egui::Event::Text(t) if t == "ы" || t == "Ы")))
                 && ctrl_cmd
         }) || crate::web::check_and_clear_web_save();
         if save_pressed {
-            let saved_path =
-                self.documents[self.active_doc_idx].save_interactive(&mut self.status_msg, self.language);
+            let saved_path = self.documents[self.active_doc_idx]
+                .save_interactive(&mut self.status_msg, self.language);
             if let Some(path) = saved_path {
                 self.record_recent_project(path);
             }
@@ -902,7 +897,10 @@ impl QuadFurnApp {
         // Ctrl+Z / Cmd+Z -> Undo in current furniture tab
         let undo_pressed = ctx.input(|i| {
             let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
-            (i.key_pressed(Key::Z) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "я" || t == "Я")))
+            (i.key_pressed(Key::Z)
+                || i.events
+                    .iter()
+                    .any(|e| matches!(e, egui::Event::Text(t) if t == "я" || t == "Я")))
                 && ctrl_cmd
         }) || crate::web::check_and_clear_web_undo();
         if undo_pressed {
@@ -910,58 +908,31 @@ impl QuadFurnApp {
                 doc.project = prev;
                 let is_mac = crate::i18n::is_macos_platform();
                 let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
-                self.status_msg = match lang {
-                    AppLanguage::Ru => format!("Отменено последнее действие ({}+Z)", mod_name),
-                    _ => format!("Last action undone ({}+Z)", mod_name),
-                };
+                self.status_msg = lang.tf("fmt.undo_done", &[&mod_name]);
             }
             return;
         }
 
-        // Ctrl+C / Cmd+C -> Copy selected part or parts to shared clipboard (to paste into any furniture tab or window)
+        // Ctrl+C / Cmd+C -> Copy selected part or parts to shared clipboard
         let copy_pressed = ctx.input(|i| {
             let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
-            ((i.key_pressed(Key::C) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "с" || t == "С")))
+            ((i.key_pressed(Key::C)
+                || i.events
+                    .iter()
+                    .any(|e| matches!(e, egui::Event::Text(t) if t == "с" || t == "С")))
                 && ctrl_cmd)
                 || i.events.iter().any(|e| matches!(e, egui::Event::Copy))
         });
         if copy_pressed {
-            let copied = copy_selected_parts_to_clipboard(
+            perform_copy_selection(
+                ctx,
                 &doc.project,
                 doc.selected_part,
                 &doc.viewport_ctrl.selected_parts,
+                &mut self.clipboard_parts,
+                &mut self.status_msg,
+                lang,
             );
-            if !copied.is_empty() {
-                if let Ok(json) = serde_json::to_string(&copied) {
-                    ctx.copy_text(format!("{}{}", CLIPBOARD_PREFIX, json));
-                }
-                let is_mac = crate::i18n::is_macos_platform();
-                let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
-                if copied.len() == 1 {
-                    self.status_msg = match lang {
-                        AppLanguage::Ru => format!(
-                            "Деталь «{}» скопирована ({}+C). Переключитесь на нужную вкладку мебели и нажмите {}+V.",
-                            copied[0].part.name, mod_name, mod_name
-                        ),
-                        _ => format!(
-                            "Part \"{}\" copied ({}+C). Switch to the target furniture tab and press {}+V.",
-                            copied[0].part.name, mod_name, mod_name
-                        ),
-                    };
-                } else {
-                    self.status_msg = match lang {
-                        AppLanguage::Ru => format!(
-                            "Скопировано деталей: {} шт. ({}+C). Переключитесь на нужную вкладку мебели и нажмите {}+V.",
-                            copied.len(), mod_name, mod_name
-                        ),
-                        _ => format!(
-                            "Copied {} parts ({}+C). Switch to the target furniture tab and press {}+V.",
-                            copied.len(), mod_name, mod_name
-                        ),
-                    };
-                }
-                self.clipboard_parts = copied;
-            }
             return;
         }
 
@@ -970,7 +941,10 @@ impl QuadFurnApp {
         let mut pasted_from_os: Option<Vec<ClipboardPart>> = None;
         ctx.input(|i| {
             let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
-            if (i.key_pressed(Key::V) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "м" || t == "М")))
+            if (i.key_pressed(Key::V)
+                || i.events
+                    .iter()
+                    .any(|e| matches!(e, egui::Event::Text(t) if t == "м" || t == "М")))
                 && ctrl_cmd
             {
                 paste_requested = true;
@@ -995,39 +969,16 @@ impl QuadFurnApp {
             }
             if !self.clipboard_parts.is_empty() {
                 let clips = self.clipboard_parts.clone();
-                Self::push_undo(&mut doc.undo_stack, &doc.project);
-                let new_ids = paste_parts_into_project(&mut doc.project, &clips);
-                doc.selected_part = new_ids.last().copied();
-                doc.viewport_ctrl.selected_parts = new_ids.clone();
-                let is_mac = crate::i18n::is_macos_platform();
-                let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
-                if new_ids.len() == 1 {
-                    self.status_msg = match lang {
-                        AppLanguage::Ru => format!(
-                            "Деталь «{}» вставлена во вкладку «{}» ({}+V)",
-                            clips[0].part.name, doc.project.name, mod_name
-                        ),
-                        _ => format!(
-                            "Part \"{}\" pasted into tab \"{}\" ({}+V)",
-                            clips[0].part.name, doc.project.name, mod_name
-                        ),
-                    };
-                } else {
-                    self.status_msg = match lang {
-                        AppLanguage::Ru => format!(
-                            "Вставлено деталей: {} шт. во вкладку «{}» ({}+V)",
-                            new_ids.len(),
-                            doc.project.name,
-                            mod_name
-                        ),
-                        _ => format!(
-                            "Pasted {} parts into tab \"{}\" ({}+V)",
-                            new_ids.len(),
-                            doc.project.name,
-                            mod_name
-                        ),
-                    };
-                }
+                let undo_ref = &mut doc.undo_stack;
+                perform_paste_clipboard(
+                    &mut doc.project,
+                    &mut doc.selected_part,
+                    &mut doc.viewport_ctrl.selected_parts,
+                    &clips,
+                    &mut self.status_msg,
+                    lang,
+                    |proj| Self::push_undo(undo_ref, proj),
+                );
             }
             return;
         }
@@ -1035,57 +986,35 @@ impl QuadFurnApp {
         // Ctrl+D / Cmd+D -> Duplicate selected part or parts within current tab
         let dup_pressed = ctx.input(|i| {
             let ctrl_cmd = i.modifiers.ctrl || i.modifiers.command;
-            (i.key_pressed(Key::D) || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "в" || t == "В")))
+            (i.key_pressed(Key::D)
+                || i.events
+                    .iter()
+                    .any(|e| matches!(e, egui::Event::Text(t) if t == "в" || t == "В")))
                 && ctrl_cmd
         }) || crate::web::check_and_clear_web_duplicate();
         if dup_pressed {
-            let ids_to_dup: Vec<PartId> = if !doc.viewport_ctrl.selected_parts.is_empty() {
-                doc.viewport_ctrl.selected_parts.clone()
-            } else {
-                doc.selected_part.into_iter().collect()
-            };
-            if !ids_to_dup.is_empty() {
-                Self::push_undo(&mut doc.undo_stack, &doc.project);
-                let mut new_ids = Vec::new();
-                for sid in ids_to_dup {
-                    if let Some(orig) = doc.project.parts.iter().find(|p| p.id == sid).cloned() {
-                        let new_id = doc.project.alloc_id();
-                        let mut copy = orig.clone();
-                        copy.id = new_id;
-                        let copy_word = lang.tr("копия", "copy");
-                        copy.name = doc.project.generate_copy_name(&orig.name, copy_word);
-                        copy.position_mm += Vec3::new(36.0, 0.0, 36.0);
-                        doc.project.parts.push(copy);
-                        new_ids.push(new_id);
-                    }
-                }
-                doc.selected_part = new_ids.last().copied();
-                doc.viewport_ctrl.selected_parts = new_ids;
-                let is_mac = crate::i18n::is_macos_platform();
-                let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
-                self.status_msg = match lang {
-                    AppLanguage::Ru => format!("Выделенные детали продублированы ({}+D)", mod_name),
-                    _ => format!("Selected parts duplicated ({}+D)", mod_name),
-                };
-            }
+            let undo_ref = &mut doc.undo_stack;
+            perform_duplicate_selection(
+                &mut doc.project,
+                &mut doc.selected_part,
+                &mut doc.viewport_ctrl.selected_parts,
+                &mut self.status_msg,
+                lang,
+                |proj| Self::push_undo(undo_ref, proj),
+            );
         }
 
         // Delete / Backspace -> Delete selected part or parts
         if ctx.input(|i| i.key_pressed(Key::Delete) || i.key_pressed(Key::Backspace)) {
-            let ids_to_del: Vec<PartId> = if !doc.viewport_ctrl.selected_parts.is_empty() {
-                doc.viewport_ctrl.selected_parts.clone()
-            } else {
-                doc.selected_part.into_iter().collect()
-            };
-            if !ids_to_del.is_empty() {
-                Self::push_undo(&mut doc.undo_stack, &doc.project);
-                doc.project.parts.retain(|p| !ids_to_del.contains(&p.id));
-                doc.selected_part = None;
-                doc.viewport_ctrl.selected_parts.clear();
-                self.status_msg = lang
-                    .tr("Выделенные детали удалены", "Selected parts deleted")
-                    .to_string();
-            }
+            let undo_ref = &mut doc.undo_stack;
+            perform_delete_selection(
+                &mut doc.project,
+                &mut doc.selected_part,
+                &mut doc.viewport_ctrl.selected_parts,
+                &mut self.status_msg,
+                lang,
+                |proj| Self::push_undo(undo_ref, proj),
+            );
         }
 
         // Tool switching hotkeys (V, B, M — only without Ctrl, Cmd, or Alt modifiers!)
@@ -1093,7 +1022,9 @@ impl QuadFurnApp {
             let no_mods = !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt;
             no_mods
                 && (i.key_pressed(Key::V)
-                    || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "м" || t == "М")))
+                    || i.events
+                        .iter()
+                        .any(|e| matches!(e, egui::Event::Text(t) if t == "м" || t == "М")))
         }) || crate::web::check_and_clear_web_tool_v();
         if tool_v {
             doc.viewport_ctrl.tool = EditorTool::SelectAndMove;
@@ -1103,7 +1034,9 @@ impl QuadFurnApp {
             let no_mods = !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt;
             no_mods
                 && (i.key_pressed(Key::B)
-                    || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "и" || t == "И")))
+                    || i.events
+                        .iter()
+                        .any(|e| matches!(e, egui::Event::Text(t) if t == "и" || t == "И")))
         }) || crate::web::check_and_clear_web_tool_b();
         if tool_b {
             doc.viewport_ctrl.tool = EditorTool::CreateBlock;
@@ -1113,10 +1046,185 @@ impl QuadFurnApp {
             let no_mods = !i.modifiers.ctrl && !i.modifiers.command && !i.modifiers.alt;
             no_mods
                 && (i.key_pressed(Key::M)
-                    || i.events.iter().any(|e| matches!(e, egui::Event::Text(t) if t == "ь" || t == "Ь")))
+                    || i.events
+                        .iter()
+                        .any(|e| matches!(e, egui::Event::Text(t) if t == "ь" || t == "Ь")))
         }) || crate::web::check_and_clear_web_tool_m();
         if tool_m {
             doc.viewport_ctrl.tool = EditorTool::MeasureTape;
+        }
+    }
+
+    /// Applies a new language and persists it to settings
+    fn set_language_interactive(&mut self, ctx: &egui::Context, candidate: AppLanguage) {
+        let prev_default_name = self.language.t("New Product 1").to_string();
+        self.language = candidate;
+        let app_ver = env!("CARGO_PKG_VERSION");
+        let win_title = self
+            .language
+            .dict()
+            .window_title
+            .replacen("QuadFurn CAD", &format!("QuadFurn CAD v{}", app_ver), 1);
+        ctx.send_viewport_cmd(egui::ViewportCommand::Title(win_title));
+        if matches!(
+            self.language,
+            AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::ZhTw | AppLanguage::Ko
+        ) && !crate::web::is_cjk_font_loaded_web()
+        {
+            crate::web::fetch_cjk_font_web();
+        }
+        if self.new_product_name_buf == prev_default_name
+            || self.new_product_name_buf == "New Product 1"
+        {
+            self.new_product_name_buf = self.language.t("New Product 1").to_string();
+        }
+        if let Ok(saved_path) = self.save_settings() {
+            self.status_msg = crate::glossary::format_status_lang_changed(
+                self.language,
+                self.language.label(),
+                &saved_path,
+            );
+        }
+    }
+
+    /// Renders the Keyboard Shortcuts modal window
+    fn render_hotkeys_modal(&mut self, ctx: &egui::Context) {
+        if !self.show_hotkeys_modal {
+            return;
+        }
+        let lang = self.language;
+        let mut open = self.show_hotkeys_modal;
+        egui::Window::new(format!("⌨ {}", lang.t("modal.hotkeys.title")))
+            .open(&mut open)
+            .collapsible(false)
+            .resizable(false)
+            .pivot(egui::Align2::CENTER_CENTER)
+            .default_pos(ctx.screen_rect().center())
+            .show(ctx, |ui| {
+                ui.set_min_width(420.0);
+                let shortcuts = [
+                    ("V", lang.t("↖ Select / Move (V)")),
+                    ("B", lang.t("➕ Create Part by Box (B)")),
+                    ("M", lang.t("📏 Tape Measure (M)")),
+                    ("Tab", lang.t("Orientation:")),
+                    ("Z", "3D Fly / Noclip (WASD + Mouse)"),
+                    (
+                        if crate::i18n::is_macos_platform() {
+                            "Cmd + S"
+                        } else {
+                            "Ctrl + S"
+                        },
+                        lang.dict().save_current_product,
+                    ),
+                    (
+                        if crate::i18n::is_macos_platform() {
+                            "Cmd + Z"
+                        } else {
+                            "Ctrl + Z"
+                        },
+                        lang.dict().undo_btn,
+                    ),
+                    (
+                        if crate::i18n::is_macos_platform() {
+                            "Cmd + C"
+                        } else {
+                            "Ctrl + C"
+                        },
+                        lang.t("📄 Copy (Ctrl+C)"),
+                    ),
+                    (
+                        if crate::i18n::is_macos_platform() {
+                            "Cmd + V"
+                        } else {
+                            "Ctrl + V"
+                        },
+                        lang.t("📥 Paste (Ctrl+V)"),
+                    ),
+                    (
+                        if crate::i18n::is_macos_platform() {
+                            "Cmd + D"
+                        } else {
+                            "Ctrl + D"
+                        },
+                        lang.t("📋 Duplicate (Ctrl+D)"),
+                    ),
+                    ("Del / Backspace", lang.t("🗑 Delete (Del)")),
+                    ("Alt + Drag (2D)", lang.t("📋 Duplicate (Ctrl+D)")),
+                ];
+
+                egui::Grid::new("hotkeys_modal_grid")
+                    .striped(true)
+                    .num_columns(2)
+                    .spacing([24.0, 6.0])
+                    .show(ui, |ui| {
+                        for (key, desc) in shortcuts {
+                            ui.label(
+                                RichText::new(key)
+                                    .monospace()
+                                    .strong()
+                                    .color(Color32::from_rgb(110, 205, 255)),
+                            );
+                            ui.label(crate::i18n::adapt_shortcuts(desc));
+                            ui.end_row();
+                        }
+                    });
+
+                ui.add_space(10.0);
+                ui.vertical_centered(|ui| {
+                    if ui.button(lang.t("modal.close")).clicked() {
+                        self.show_hotkeys_modal = false;
+                    }
+                });
+            });
+        if !open {
+            self.show_hotkeys_modal = false;
+        }
+    }
+
+    /// Renders the About QuadFurn CAD modal window
+    fn render_about_modal(&mut self, ctx: &egui::Context) {
+        if !self.show_about_modal {
+            return;
+        }
+        let lang = self.language;
+        let mut open = self.show_about_modal;
+        let app_ver = env!("CARGO_PKG_VERSION");
+        egui::Window::new(format!("ℹ {}", lang.t("modal.about.title")))
+            .open(&mut open)
+            .collapsible(false)
+            .resizable(false)
+            .pivot(egui::Align2::CENTER_CENTER)
+            .default_pos(ctx.screen_rect().center())
+            .show(ctx, |ui| {
+                ui.set_min_width(380.0);
+                ui.vertical_centered(|ui| {
+                    if let Some(tex) = &self.app_icon_tex {
+                        ui.add(
+                            egui::Image::new((tex.id(), egui::vec2(64.0, 64.0))).rounding(10.0),
+                        );
+                        ui.add_space(6.0);
+                    }
+                    ui.label(
+                        RichText::new(format!("QuadFurn CAD v{}", app_ver))
+                            .strong()
+                            .size(20.0)
+                            .color(Color32::from_rgb(235, 165, 40)),
+                    );
+                    ui.add_space(4.0);
+                    ui.label(lang.dict().start_page_subtitle);
+                    ui.add_space(8.0);
+                    ui.hyperlink_to(
+                        "https://github.com/RBM13S/QuadFurn",
+                        "https://github.com/RBM13S/QuadFurn",
+                    );
+                    ui.add_space(12.0);
+                    if ui.button(lang.t("modal.close")).clicked() {
+                        self.show_about_modal = false;
+                    }
+                });
+            });
+        if !open {
+            self.show_about_modal = false;
         }
     }
 }
@@ -1163,17 +1271,7 @@ impl eframe::App for QuadFurnApp {
                     crate::web::set_installed_font(name, font_bytes);
                 }
                 configure_fonts(ctx);
-                self.status_msg = match self.language {
-                    AppLanguage::Ja => "CJKフォントが正常に読み込まれました。".to_string(),
-                    AppLanguage::ZhCn => "CJK中文字体已成功加载。".to_string(),
-                    AppLanguage::ZhTw => "CJK字體已成功加載。".to_string(),
-                    AppLanguage::Ko => "CJK 한국어 글꼴이 성공적으로 로드되었습니다.".to_string(),
-                    AppLanguage::Ka => "ქართული შრიფტი წარმატებით ჩაიტვირთა.".to_string(),
-                    AppLanguage::Hy => "Հայերեն տառատեսակը հաջողությամբ բեռնվեց:".to_string(),
-                    AppLanguage::Az => "Azərbaycan şrifti uğurla yükləndi.".to_string(),
-                    AppLanguage::Uz => "Oʻzbek shrifti muvaffaqiyatli yuklandi.".to_string(),
-                    _ => self.language.tr("Шрифты успешно загружены", "Fonts loaded successfully").to_string(),
-                };
+                self.status_msg = self.language.t("Fonts loaded successfully").to_string();
                 ctx.request_repaint();
             }
 
@@ -1185,9 +1283,13 @@ impl eframe::App for QuadFurnApp {
                 for (name, bytes) in uploads.drain(..) {
                     if let Ok(mut proj) = serde_json::from_slice::<Project>(&bytes) {
                         if proj.name.is_empty() {
-                            proj.name = name.trim_end_matches(".qfurn").trim_end_matches(".json").to_string();
+                            proj.name = name
+                                .trim_end_matches(".qfurn")
+                                .trim_end_matches(".json")
+                                .to_string();
                         }
                         let mut doc = FurnitureDocument::new(proj);
+                        doc.viewport_ctrl.cam_3d.z_order = self.z_order;
                         doc.mark_saved(None);
                         doc.load_project_textures(ctx, None, self.language);
                         self.documents.push(doc);
@@ -1204,7 +1306,9 @@ impl eframe::App for QuadFurnApp {
                         let mat_id = upload.material_id;
                         use base64::Engine;
                         let b64 = base64::engine::general_purpose::STANDARD.encode(&upload.bytes);
-                        if let Some(m) = doc.project.materials.iter_mut().find(|m| m.id == mat_id) {
+                        if let Some(m) =
+                            doc.project.materials.iter_mut().find(|m| m.id == mat_id)
+                        {
                             m.texture_base64 = Some(b64);
                             m.texture_relative_path = Some(upload.filename.clone());
                             m.texture_path = None;
@@ -1221,18 +1325,18 @@ impl eframe::App for QuadFurnApp {
                                     } else {
                                         doc.texture_warnings.remove(&mat_id);
                                     }
-                                    self.status_msg = match self.language {
-                                        AppLanguage::Ru => format!("Загружена текстура для «{}»: {}", m.name, upload.filename),
-                                        AppLanguage::Uk => format!("Завантажена текстура для «{}»: {}", m.name, upload.filename),
-                                        _ => format!("Loaded texture for \"{}\": {}", m.name, upload.filename),
-                                    };
+                                    self.status_msg = self.language.tf(
+                                        "fmt.texture_loaded",
+                                        &[&m.name, &upload.filename],
+                                    );
                                 }
                                 Err(e) => {
                                     self.status_msg = e;
                                 }
                             }
                         }
-                        doc.missing_textures_queue.retain(|q| q.material_id != mat_id);
+                        doc.missing_textures_queue
+                            .retain(|q| q.material_id != mat_id);
                         ctx.request_repaint();
                     }
                 }
@@ -1253,9 +1357,14 @@ impl eframe::App for QuadFurnApp {
                 if let Some(ref bytes) = file.bytes {
                     if let Ok(mut proj) = serde_json::from_slice::<Project>(bytes) {
                         if proj.name.is_empty() {
-                            proj.name = file.name.trim_end_matches(".qfurn").trim_end_matches(".json").to_string();
+                            proj.name = file
+                                .name
+                                .trim_end_matches(".qfurn")
+                                .trim_end_matches(".json")
+                                .to_string();
                         }
                         let mut doc = FurnitureDocument::new(proj);
+                        doc.viewport_ctrl.cam_3d.z_order = self.z_order;
                         doc.mark_saved(None);
                         doc.load_project_textures(ctx, None, self.language);
                         self.documents.push(doc);
@@ -1290,12 +1399,15 @@ impl eframe::App for QuadFurnApp {
                 if let Some(bytes) = img_bytes {
                     if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
                         let target_mat_id = if !doc.missing_textures_queue.is_empty() {
-                            let matched_idx = doc.missing_textures_queue.iter().position(|prompt| {
-                                let exp_lower = prompt.expected_filename.to_lowercase();
-                                let exp_base = crate::model::extract_cross_platform_filename(&exp_lower);
-                                exp_lower == lower_name || exp_base == lower_name
-                            });
-                            let idx = matched_idx.or((doc.missing_textures_queue.len() == 1).then_some(0));
+                            let matched_idx =
+                                doc.missing_textures_queue.iter().position(|prompt| {
+                                    let exp_lower = prompt.expected_filename.to_lowercase();
+                                    let exp_base =
+                                        crate::model::extract_cross_platform_filename(&exp_lower);
+                                    exp_lower == lower_name || exp_base == lower_name
+                                });
+                            let idx = matched_idx
+                                .or((doc.missing_textures_queue.len() == 1).then_some(0));
                             if let Some(i) = idx {
                                 let prompt = doc.missing_textures_queue.remove(i);
                                 Some(prompt.material_id)
@@ -1311,7 +1423,9 @@ impl eframe::App for QuadFurnApp {
                         if let Some(mat_id) = target_mat_id {
                             use base64::Engine;
                             let b64 = base64::engine::general_purpose::STANDARD.encode(&bytes);
-                            if let Some(m) = doc.project.materials.iter_mut().find(|m| m.id == mat_id) {
+                            if let Some(m) =
+                                doc.project.materials.iter_mut().find(|m| m.id == mat_id)
+                            {
                                 #[cfg(not(target_arch = "wasm32"))]
                                 {
                                     if let Some(ref p) = file.path {
@@ -1329,7 +1443,12 @@ impl eframe::App for QuadFurnApp {
                                     m.texture_path = None;
                                 }
 
-                                match load_texture_from_memory(ctx, &bytes, &m.name, self.language) {
+                                match load_texture_from_memory(
+                                    ctx,
+                                    &bytes,
+                                    &m.name,
+                                    self.language,
+                                ) {
                                     Ok(tex_info) => {
                                         doc.loaded_textures.insert(mat_id, tex_info.handle);
                                         if let Some(w) = tex_info.warning {
@@ -1337,11 +1456,10 @@ impl eframe::App for QuadFurnApp {
                                         } else {
                                             doc.texture_warnings.remove(&mat_id);
                                         }
-                                        self.status_msg = match self.language {
-                                            AppLanguage::Ru => format!("Загружена текстура для «{}»: {}", m.name, file.name),
-                                            AppLanguage::Uk => format!("Завантажена текстура для «{}»: {}", m.name, file.name),
-                                            _ => format!("Loaded texture for \"{}\": {}", m.name, file.name),
-                                        };
+                                        self.status_msg = self.language.tf(
+                                            "fmt.texture_loaded",
+                                            &[&m.name, &file.name],
+                                        );
                                     }
                                     Err(e) => {
                                         self.status_msg = e;
@@ -1379,7 +1497,12 @@ impl eframe::App for QuadFurnApp {
                         h,
                         image::ExtendedColorType::Rgba8,
                     );
-                    let log_line = format!("Saved [{}/{}]: {}\n", lang_code, shot_name, out_path.display());
+                    let log_line = format!(
+                        "Saved [{}/{}]: {}\n",
+                        lang_code,
+                        shot_name,
+                        out_path.display()
+                    );
                     eprint!("{}", log_line);
                     let _ = std::fs::OpenOptions::new()
                         .create(true)
@@ -1453,150 +1576,369 @@ impl eframe::App for QuadFurnApp {
         let lang = self.language;
         let d = lang.dict();
 
-        // 1. Top menu bar and main mode switcher
-        egui::TopBottomPanel::top("main_menu_bar").show(ctx, |ui| {
-            ui.horizontal_wrapped(|ui| {
+        // =========================================================================
+        // ROW 1: Classic Main Menu Bar (File, Edit, Product, View, Language, Help, Theme)
+        // =========================================================================
+        egui::TopBottomPanel::top("main_menu_bar")
+            .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(egui::Margin::symmetric(8.0, 3.0)))
+            .show(ctx, |ui| {
+                ui.spacing_mut().interact_size.y = 22.0;
+                egui::menu::bar(ui, |ui| {
+                    ui.spacing_mut().interact_size.y = 22.0;
                 if let Some(tex) = &self.app_icon_tex {
-                    ui.add(egui::Image::new((tex.id(), egui::vec2(20.0, 20.0))).rounding(4.0));
+                    ui.add(egui::Image::new((tex.id(), egui::vec2(18.0, 18.0))).rounding(4.0));
                 }
                 ui.label(
                     RichText::new("QuadFurn CAD")
                         .strong()
-                        .size(16.0)
+                        .size(14.5)
                         .color(Color32::from_rgb(235, 165, 40)),
                 );
                 ui.separator();
 
-                if ui.button(d.open_in_new_tab).clicked() {
-                    self.open_project_interactive(ctx);
-                }
-
-                if ui
-                    .add_enabled(
-                        has_open_docs,
-                        egui::Button::new(d.save_current_product),
-                    )
-                    .on_hover_text(d.save_hover_label())
-                    .clicked()
-                {
-                    let saved_path = if let Some(doc) = self.documents.get_mut(self.active_doc_idx)
-                    {
-                        doc.save_interactive(&mut self.status_msg, self.language)
-                    } else {
-                        None
-                    };
-                    if let Some(path) = saved_path {
-                        self.record_recent_project(path);
+                // 1. FILE MENU
+                ui.menu_button(lang.t("menu.file"), |ui| {
+                    ui.set_min_width(220.0);
+                    if ui.button(d.empty_object_btn).clicked() {
+                        self.create_empty_product_tab();
+                        ui.close_menu();
                     }
-                }
-
-                if has_open_docs {
-                    if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
-                        ui.checkbox(
-                            &mut doc.project.embed_textures,
-                            lang.tr("📦 Упаковать текстуры", "📦 Embed textures"),
+                    if ui.button(d.cabinet_template_btn).clicked() {
+                        self.create_template_product_tab();
+                        ui.close_menu();
+                    }
+                    if ui.button(d.open_in_new_tab).clicked() {
+                        self.open_project_interactive(ctx);
+                        ui.close_menu();
+                    }
+                    ui.separator();
+                    if ui
+                        .add_enabled(
+                            has_open_docs,
+                            egui::Button::new(d.save_current_product),
                         )
-                        .on_hover_text(lang.tr(
-                            "Упаковывать текстуры прямо в файл проекта (.qfurn) в формате Base64 при сохранении для бесшовного переноса на любой ПК",
-                            "Embed textures directly into the project file (.qfurn) as Base64 when saving for seamless portability across PCs",
-                        ));
+                        .on_hover_text(d.save_hover_label())
+                        .clicked()
+                    {
+                        let saved_path =
+                            if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                                doc.save_interactive(&mut self.status_msg, self.language)
+                            } else {
+                                None
+                            };
+                        if let Some(path) = saved_path {
+                            self.record_recent_project(path);
+                        }
+                        ui.close_menu();
                     }
-                }
 
-                let has_undo = self
-                    .documents
-                    .get(self.active_doc_idx)
-                    .map(|doc_item| !doc_item.undo_stack.is_empty())
-                    .unwrap_or(false);
-                if ui
-                    .add_enabled(has_undo, egui::Button::new(d.undo_btn_label()))
-                    .clicked()
-                {
-                    if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
-                        if let Some(prev) = doc.undo_stack.pop() {
-                            doc.project = prev;
+                    if has_open_docs {
+                        if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                            ui.checkbox(
+                                &mut doc.project.embed_textures,
+                                lang.t("📦 Embed textures"),
+                            )
+                            .on_hover_text(lang.t(
+                                "Embed textures directly into the project file (.qfurn) as Base64 when saving for seamless portability across PCs",
+                            ));
                         }
                     }
-                }
 
-                if has_open_docs {
-                    ui.separator();
-
-                    // Mode tab switcher (clean labels without redundant parentheses)
-                    ui.selectable_value(
-                        &mut self.active_tab,
-                        AppTab::Designer4View,
-                        RichText::new(d.tab_designer).strong(),
-                    );
-                    ui.selectable_value(
-                        &mut self.active_tab,
-                        AppTab::Specification,
-                        RichText::new(d.tab_specification).strong(),
-                    );
-                    ui.selectable_value(
-                        &mut self.active_tab,
-                        AppTab::CuttingLayout,
-                        RichText::new(d.tab_cutting).strong(),
-                    );
-                    ui.selectable_value(
-                        &mut self.active_tab,
-                        AppTab::MaterialsManager,
-                        RichText::new(d.tab_materials).strong(),
-                    );
-                }
-
-                ui.separator();
-
-                // Color theme switcher: Dark, Light, System (with autosave to AppSettings)
-                ui.label(d.theme_label);
-                egui::ComboBox::from_id_salt("theme_selector_combo")
-                    .selected_text(self.theme_choice.label_i18n(lang))
-                    .width(135.0)
-                    .show_ui(ui, |ui| {
-                        for choice in [ThemeChoice::Dark, ThemeChoice::Light, ThemeChoice::System] {
-                            if ui
-                                .selectable_value(
-                                    &mut self.theme_choice,
-                                    choice,
-                                    choice.label_i18n(lang),
-                                )
-                                .clicked()
-                            {
-                                self.theme_choice.apply(ctx);
-                                if let Ok(saved_path) = self.save_settings() {
-                                    self.status_msg = match lang {
-                                        AppLanguage::Ru => format!(
-                                            "Цветовая схема «{}» сохранена в {}",
-                                            self.theme_choice.label_i18n(lang),
-                                            saved_path.display()
-                                        ),
-                                        AppLanguage::Uk => format!(
-                                            "Колірна схема «{}» збережена в {}",
-                                            self.theme_choice.label_i18n(lang),
-                                            saved_path.display()
-                                        ),
-                                        _ => format!(
-                                            "Theme \"{}\" saved to {}",
-                                            self.theme_choice.label_i18n(lang),
-                                            saved_path.display()
-                                        ),
-                                    };
+                    #[cfg(not(target_arch = "wasm32"))]
+                    if !self.recent_projects.is_empty() {
+                        ui.separator();
+                        ui.menu_button(lang.t("Recent projects"), |ui| {
+                            ui.set_min_width(260.0);
+                            let recent_clone = self.recent_projects.clone();
+                            for rpath in recent_clone.iter().take(10) {
+                                let label = rpath
+                                    .file_name()
+                                    .and_then(|n| n.to_str())
+                                    .unwrap_or("project.qfurn");
+                                if ui.button(format!("🗄 {}", label)).on_hover_text(format!("{}", rpath.display())).clicked() {
+                                    self.open_project_from_path(ctx, rpath);
+                                    ui.close_menu();
                                 }
                             }
-                        }
-                    })
-                    .response
-                    .on_hover_text(format!(
-                        "{}: {}",
-                        lang.tr(
-                            "Цветовая схема сохраняется в",
-                            "Theme preference is saved in"
-                        ),
-                        AppSettings::settings_file_path().display()
-                    ));
+                        });
+                    }
 
-                // Language switcher icon next to theme selector
-                let btn_resp = ui.button(RichText::new(self.language.switcher_button_text()).strong());
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        ui.separator();
+                        if ui.button(lang.t("menu.file.exit")).clicked() {
+                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                            ui.close_menu();
+                        }
+                    }
+                });
+
+                // 2. EDIT MENU
+                ui.menu_button(lang.t("menu.edit"), |ui| {
+                    ui.set_min_width(210.0);
+                    let has_undo = self
+                        .documents
+                        .get(self.active_doc_idx)
+                        .map(|doc_item| !doc_item.undo_stack.is_empty())
+                        .unwrap_or(false);
+                    if ui
+                        .add_enabled(has_undo, egui::Button::new(d.undo_btn_label()))
+                        .clicked()
+                    {
+                        if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                            if let Some(prev) = doc.undo_stack.pop() {
+                                doc.project = prev;
+                            }
+                        }
+                        ui.close_menu();
+                    }
+
+                    ui.separator();
+
+                    let has_sel = self
+                        .documents
+                        .get(self.active_doc_idx)
+                        .map(|doc| {
+                            doc.selected_part.is_some()
+                                || !doc.viewport_ctrl.selected_parts.is_empty()
+                        })
+                        .unwrap_or(false);
+
+                    if ui
+                        .add_enabled(
+                            has_sel,
+                            egui::Button::new(crate::i18n::adapt_shortcuts(
+                                lang.t("📄 Copy (Ctrl+C)"),
+                            )),
+                        )
+                        .clicked()
+                    {
+                        if let Some(doc) = self.documents.get(self.active_doc_idx) {
+                            perform_copy_selection(
+                                ctx,
+                                &doc.project,
+                                doc.selected_part,
+                                &doc.viewport_ctrl.selected_parts,
+                                &mut self.clipboard_parts,
+                                &mut self.status_msg,
+                                lang,
+                            );
+                        }
+                        ui.close_menu();
+                    }
+
+                    if ui
+                        .add_enabled(
+                            has_open_docs && !self.clipboard_parts.is_empty(),
+                            egui::Button::new(crate::i18n::adapt_shortcuts(
+                                lang.t("📥 Paste (Ctrl+V)"),
+                            )),
+                        )
+                        .clicked()
+                    {
+                        if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                            let clips = self.clipboard_parts.clone();
+                            let undo_ref = &mut doc.undo_stack;
+                            perform_paste_clipboard(
+                                &mut doc.project,
+                                &mut doc.selected_part,
+                                &mut doc.viewport_ctrl.selected_parts,
+                                &clips,
+                                &mut self.status_msg,
+                                lang,
+                                |proj| Self::push_undo(undo_ref, proj),
+                            );
+                        }
+                        ui.close_menu();
+                    }
+
+                    if ui
+                        .add_enabled(
+                            has_sel,
+                            egui::Button::new(crate::i18n::adapt_shortcuts(
+                                lang.t("📋 Duplicate (Ctrl+D)"),
+                            )),
+                        )
+                        .clicked()
+                    {
+                        if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                            let undo_ref = &mut doc.undo_stack;
+                            perform_duplicate_selection(
+                                &mut doc.project,
+                                &mut doc.selected_part,
+                                &mut doc.viewport_ctrl.selected_parts,
+                                &mut self.status_msg,
+                                lang,
+                                |proj| Self::push_undo(undo_ref, proj),
+                            );
+                        }
+                        ui.close_menu();
+                    }
+
+                    if ui
+                        .add_enabled(has_sel, egui::Button::new(lang.t("🗑 Delete (Del)")))
+                        .clicked()
+                    {
+                        if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                            let undo_ref = &mut doc.undo_stack;
+                            perform_delete_selection(
+                                &mut doc.project,
+                                &mut doc.selected_part,
+                                &mut doc.viewport_ctrl.selected_parts,
+                                &mut self.status_msg,
+                                lang,
+                                |proj| Self::push_undo(undo_ref, proj),
+                            );
+                        }
+                        ui.close_menu();
+                    }
+                });
+
+                // 3. PRODUCT MENU
+                ui.menu_button(lang.t("Product"), |ui| {
+                    ui.set_min_width(210.0);
+                    if ui.button(d.empty_object_btn).clicked() {
+                        self.create_empty_product_tab();
+                        ui.close_menu();
+                    }
+                    if ui.button(d.cabinet_template_btn).clicked() {
+                        self.create_template_product_tab();
+                        ui.close_menu();
+                    }
+                    if has_open_docs {
+                        ui.separator();
+                        if ui.button(lang.t("+ Shelf (XY)")).clicked() {
+                            if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                                Self::push_undo(&mut doc.undo_stack, &doc.project);
+                                let id = add_quick_part(
+                                    &mut doc.project,
+                                    doc.active_material_id,
+                                    PartOrientation::HorizontalXY,
+                                    lang,
+                                );
+                                doc.selected_part = Some(id);
+                                doc.viewport_ctrl.selected_parts = vec![id];
+                                self.active_tab = AppTab::Designer4View;
+                            }
+                            ui.close_menu();
+                        }
+                        if ui.button(lang.t("+ Side Panel (YZ)")).clicked() {
+                            if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                                Self::push_undo(&mut doc.undo_stack, &doc.project);
+                                let id = add_quick_part(
+                                    &mut doc.project,
+                                    doc.active_material_id,
+                                    PartOrientation::VerticalYZ,
+                                    lang,
+                                );
+                                doc.selected_part = Some(id);
+                                doc.viewport_ctrl.selected_parts = vec![id];
+                                self.active_tab = AppTab::Designer4View;
+                            }
+                            ui.close_menu();
+                        }
+                        if ui.button(lang.t("+ Front/Back (XZ)")).clicked() {
+                            if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                                Self::push_undo(&mut doc.undo_stack, &doc.project);
+                                let id = add_quick_part(
+                                    &mut doc.project,
+                                    doc.active_material_id,
+                                    PartOrientation::FrontalXZ,
+                                    lang,
+                                );
+                                doc.selected_part = Some(id);
+                                doc.viewport_ctrl.selected_parts = vec![id];
+                                self.active_tab = AppTab::Designer4View;
+                            }
+                            ui.close_menu();
+                        }
+                    }
+                });
+
+                // 4. VIEW MENU
+                ui.menu_button(lang.t("menu.view"), |ui| {
+                    ui.set_min_width(220.0);
+                    if ui
+                        .selectable_label(
+                            self.active_tab == AppTab::Designer4View,
+                            d.tab_designer,
+                        )
+                        .clicked()
+                    {
+                        self.active_tab = AppTab::Designer4View;
+                        ui.close_menu();
+                    }
+                    if ui
+                        .selectable_label(
+                            self.active_tab == AppTab::Specification,
+                            d.tab_specification,
+                        )
+                        .clicked()
+                    {
+                        self.active_tab = AppTab::Specification;
+                        ui.close_menu();
+                    }
+                    if ui
+                        .selectable_label(
+                            self.active_tab == AppTab::CuttingLayout,
+                            d.tab_cutting,
+                        )
+                        .clicked()
+                    {
+                        self.active_tab = AppTab::CuttingLayout;
+                        ui.close_menu();
+                    }
+                    if ui
+                        .selectable_label(
+                            self.active_tab == AppTab::MaterialsManager,
+                            d.tab_materials,
+                        )
+                        .clicked()
+                    {
+                        self.active_tab = AppTab::MaterialsManager;
+                        ui.close_menu();
+                    }
+
+                    if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                        ui.separator();
+                        if ui.button(lang.t("⊞ Equal Views")).clicked() {
+                            doc.viewport_ctrl.equalize_viewports();
+                            ui.close_menu();
+                        }
+                        if ui.button(lang.t("📐 Fit to Window")).clicked() {
+                            doc.viewport_ctrl.fit_all_to_window(&doc.project);
+                            ui.close_menu();
+                        }
+                        ui.separator();
+                        ui.checkbox(&mut doc.viewport_ctrl.grid_snap_enabled, lang.t("Grid"));
+                        ui.checkbox(
+                            &mut doc.viewport_ctrl.edge_snap_enabled,
+                            lang.t("Snap to edges"),
+                        );
+                        ui.checkbox(
+                            &mut doc.viewport_ctrl.show_distance_callouts,
+                            lang.t("Gaps (mm)"),
+                        );
+                        ui.checkbox(
+                            &mut doc.viewport_ctrl.cam_3d.z_order,
+                            lang.t("viewport.render_enhanced"),
+                        );
+                    }
+                    ui.separator();
+                    if ui
+                        .checkbox(
+                            &mut self.tools_two_columns,
+                            lang.t("menu.view.two_col_tools"),
+                        )
+                        .changed()
+                    {
+                        let _ = self.save_settings();
+                    }
+                });
+
+                // 5. LANGUAGE MENU BUTTON (with 3-column 37-language popup + batch screenshot compatibility)
+                let btn_resp =
+                    ui.button(RichText::new(self.language.switcher_button_text()).strong());
                 let pop_id = ui.make_persistent_id("lang_switcher_menu_popup");
                 if btn_resp.clicked() {
                     ui.memory_mut(|m| m.toggle_popup(pop_id));
@@ -1615,12 +1957,9 @@ impl eframe::App for QuadFurnApp {
                         ui.set_min_width(600.0);
                         ui.set_max_width(640.0);
                         ui.label(
-                            RichText::new(self.language.tr(
-                                "🌐 Выберите язык интерфейса:",
-                                "🌐 Select interface language:",
-                            ))
-                            .strong()
-                            .size(13.0),
+                            RichText::new(self.language.t("🌐 Select interface language:"))
+                                .strong()
+                                .size(13.0),
                         );
                         ui.separator();
                         egui::ScrollArea::vertical()
@@ -1641,29 +1980,13 @@ impl eframe::App for QuadFurnApp {
                                                     let candidate = all[idx];
                                                     let is_selected = self.language == candidate;
                                                     let label = format!("🌐 {}", candidate.label());
-                                                    if ui.selectable_label(is_selected, label).clicked() {
-                                                        self.language = candidate;
-                                                        let app_ver = env!("CARGO_PKG_VERSION");
-                                                        let win_title = self.language.dict().window_title.replacen("QuadFurn CAD", &format!("QuadFurn CAD v{}", app_ver), 1);
-                                                        ctx.send_viewport_cmd(egui::ViewportCommand::Title(win_title));
-                                                        if matches!(self.language, AppLanguage::Ja | AppLanguage::ZhCn | AppLanguage::ZhTw | AppLanguage::Ko) && !crate::web::is_cjk_font_loaded_web() {
-                                                            crate::web::fetch_cjk_font_web();
-                                                        }
-                                                        if self.new_product_name_buf == "Новое изделие 1"
-                                                            || self.new_product_name_buf == "New Product 1"
-                                                        {
-                                                            self.new_product_name_buf = self
-                                                                .language
-                                                                .tr("Новое изделие 1", "New Product 1")
-                                                                .to_string();
-                                                        }
-                                                        if let Ok(saved_path) = self.save_settings() {
-                                                            self.status_msg = crate::glossary::format_status_lang_changed(
-                                                                self.language,
-                                                                self.language.label(),
-                                                                &saved_path,
-                                                            );
-                                                        }
+                                                    if ui
+                                                        .selectable_label(is_selected, label)
+                                                        .clicked()
+                                                    {
+                                                        self.set_language_interactive(
+                                                            ctx, candidate,
+                                                        );
                                                         ui.memory_mut(|m| m.close_popup());
                                                         ui.close_menu();
                                                     }
@@ -1679,95 +2002,350 @@ impl eframe::App for QuadFurnApp {
                 );
                 btn_resp.on_hover_text(self.language.switcher_hover_tooltip());
 
-                if let Some(ref newer_ver) = self.available_update {
-                    ui.add_space(3.0);
-                    let update_text = RichText::new("☁ ⬇ Update")
-                        .color(Color32::from_rgb(100, 225, 255))
-                        .strong()
-                        .size(12.5);
-                    let update_btn = egui::Button::new(update_text)
-                        .fill(Color32::from_rgb(28, 55, 88));
-                    let ru_tooltip = format!("Доступна новая версия {}", newer_ver);
-                    let en_tooltip = format!("New version {} is available", newer_ver);
-                    let tooltip = self.language.tr(&ru_tooltip, &en_tooltip);
-                    let resp = ui.add(update_btn).on_hover_text(tooltip);
-                    if resp.clicked() {
-                        ctx.open_url(egui::OpenUrl::new_tab("https://rbm13s.github.io/QuadFurn/"));
+                // 6. HELP MENU
+                ui.menu_button(lang.t("menu.help"), |ui| {
+                    ui.set_min_width(210.0);
+                    if ui.button(lang.t("menu.help.hotkeys")).clicked() {
+                        self.show_hotkeys_modal = true;
+                        ui.close_menu();
                     }
-                }
+                    if ui.button(lang.t("menu.help.about")).clicked() {
+                        self.show_about_modal = true;
+                        ui.close_menu();
+                    }
+                });
+
+                // RIGHT-ALIGNED: Theme Switcher Menu (5 Dark + 5 Light + System) & Update Notification
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    let theme_btn_txt = format!(
+                        "{} {} {}",
+                        FA_PALETTE,
+                        d.theme_label,
+                        self.theme_choice.label_i18n(lang)
+                    );
+                    let theme_btn_resp = ui.button(RichText::new(theme_btn_txt).strong());
+                    let theme_pop_id = ui.make_persistent_id("theme_switcher_menu_popup");
+                    if theme_btn_resp.clicked() {
+                        ui.memory_mut(|m| m.toggle_popup(theme_pop_id));
+                    }
+                    if self.force_open_theme_menu {
+                        ui.memory_mut(|m| m.open_popup(theme_pop_id));
+                    }
+                    egui::popup_below_widget(
+                        ui,
+                        theme_pop_id,
+                        &theme_btn_resp,
+                        egui::PopupCloseBehavior::CloseOnClickOutside,
+                        |ui| {
+                            ui.set_min_width(390.0);
+
+                            // 1. DEFAULT / STANDARD THEMES AT TOP
+                            ui.label(
+                                RichText::new(lang.t("theme.group_standard"))
+                                    .strong()
+                                    .size(12.0),
+                            );
+                            for choice in ThemeChoice::DEFAULT_THEMES {
+                                if ui
+                                    .selectable_label(
+                                        self.theme_choice == choice,
+                                        choice.label_i18n(lang),
+                                    )
+                                    .clicked()
+                                {
+                                    self.theme_choice = choice;
+                                    self.theme_choice.apply(ctx);
+                                    if let Ok(saved_path) = self.save_settings() {
+                                        self.status_msg = lang.tf(
+                                            "fmt.theme_saved",
+                                            &[&self.theme_choice.label_i18n(lang), &saved_path.display()],
+                                        );
+                                    }
+                                    ui.memory_mut(|m| m.close_popup());
+                                }
+                            }
+
+                            ui.separator();
+
+                            // 2 & 3. TWO COLUMNS: DARK THEMES (LEFT) & LIGHT THEMES (RIGHT)
+                            ui.horizontal(|ui| {
+                                ui.vertical(|ui| {
+                                    ui.set_min_width(185.0);
+                                    ui.label(
+                                        RichText::new(lang.t("theme.group_dark"))
+                                            .strong()
+                                            .size(12.0),
+                                    );
+                                    for choice in ThemeChoice::DARK_THEMES {
+                                        if ui
+                                            .selectable_label(
+                                                self.theme_choice == choice,
+                                                choice.label_i18n(lang),
+                                            )
+                                            .clicked()
+                                        {
+                                            self.theme_choice = choice;
+                                            self.theme_choice.apply(ctx);
+                                            if let Ok(saved_path) = self.save_settings() {
+                                                self.status_msg = lang.tf(
+                                                    "fmt.theme_saved",
+                                                    &[&self.theme_choice.label_i18n(lang), &saved_path.display()],
+                                                );
+                                            }
+                                            ui.memory_mut(|m| m.close_popup());
+                                        }
+                                    }
+                                });
+
+                                ui.separator();
+
+                                ui.vertical(|ui| {
+                                    ui.set_min_width(185.0);
+                                    ui.label(
+                                        RichText::new(lang.t("theme.group_light"))
+                                            .strong()
+                                            .size(12.0),
+                                    );
+                                    for choice in ThemeChoice::LIGHT_THEMES {
+                                        if ui
+                                            .selectable_label(
+                                                self.theme_choice == choice,
+                                                choice.label_i18n(lang),
+                                            )
+                                            .clicked()
+                                        {
+                                            self.theme_choice = choice;
+                                            self.theme_choice.apply(ctx);
+                                            if let Ok(saved_path) = self.save_settings() {
+                                                self.status_msg = lang.tf(
+                                                    "fmt.theme_saved",
+                                                    &[&self.theme_choice.label_i18n(lang), &saved_path.display()],
+                                                );
+                                            }
+                                            ui.memory_mut(|m| m.close_popup());
+                                        }
+                                    }
+                                });
+                            });
+                        },
+                    );
+                    theme_btn_resp.on_hover_text(format!(
+                        "{}: {}",
+                        lang.t("Theme preference is saved in"),
+                        AppSettings::settings_file_path().display()
+                    ));
+
+                    if let Some(ref newer_ver) = self.available_update {
+                        ui.add_space(4.0);
+                        let update_text = RichText::new("☁ ⬇ Update")
+                            .color(Color32::from_rgb(100, 225, 255))
+                            .strong()
+                            .size(12.5);
+                        let update_btn =
+                            egui::Button::new(update_text).fill(Color32::from_rgb(28, 55, 88));
+                        let tooltip = lang.tf("fmt.update_available_tip", &[&newer_ver]);
+                        let resp = ui.add(update_btn).on_hover_text(tooltip);
+                        if resp.clicked() {
+                            ctx.open_url(egui::OpenUrl::new_tab(
+                                "https://rbm13s.github.io/QuadFurn/",
+                            ));
+                        }
+                    }
+                });
             });
         });
 
         let lang = self.language;
         let d = lang.dict();
 
-        // 2. Furniture product tabs bar (displayed when at least one product is open)
+        // =========================================================================
+        // ROW 2: Workspace Mode Tabs Bar (Designer, Specification, Cutting, Materials)
+        // =========================================================================
         if has_open_docs {
-            egui::TopBottomPanel::top("furniture_objects_tab_bar").show(ctx, |ui| {
-                ui.horizontal_wrapped(|ui| {
-                    ui.label(RichText::new(d.products_bar_label).strong());
+            egui::TopBottomPanel::top("mode_tabs_bar")
+                .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(egui::Margin::symmetric(8.0, 3.0)))
+                .show(ctx, |ui| {
+                    ui.spacing_mut().interact_size.y = 22.0;
+                    ui.spacing_mut().item_spacing.x = 6.0;
+                    ui.horizontal_wrapped(|ui| {
+                        ui.spacing_mut().interact_size.y = 22.0;
+                        ui.spacing_mut().item_spacing.x = 6.0;
 
-                    let mut switch_to: Option<usize> = None;
+                        ui.selectable_value(
+                            &mut self.active_tab,
+                            AppTab::Designer4View,
+                            RichText::new(d.tab_designer).strong(),
+                        );
+                        ui.selectable_value(
+                            &mut self.active_tab,
+                            AppTab::Specification,
+                            RichText::new(d.tab_specification).strong(),
+                        );
+                        ui.selectable_value(
+                            &mut self.active_tab,
+                            AppTab::CuttingLayout,
+                            RichText::new(d.tab_cutting).strong(),
+                        );
+                        ui.selectable_value(
+                            &mut self.active_tab,
+                            AppTab::MaterialsManager,
+                            RichText::new(d.tab_materials).strong(),
+                        );
 
-                    for idx in 0..self.documents.len() {
-                        let is_active = idx == self.active_doc_idx;
-                        let is_dirty = self.documents[idx].is_dirty();
-                        ui.group(|ui| {
-                            ui.spacing_mut().item_spacing.x = 4.0;
-                            if self.documents[idx].renaming_tab {
-                                let resp = ui.add(
-                                    egui::TextEdit::singleline(
-                                        &mut self.documents[idx].project.name,
-                                    )
-                                    .desired_width(145.0),
-                                );
-                                if resp.lost_focus()
-                                    || ui.input(|i| i.key_pressed(Key::Enter))
-                                {
-                                    self.documents[idx].renaming_tab = false;
+                        ui.separator();
+
+                        // Quick file/undo shortcuts right in the mode bar
+                        if ui.button(d.open_in_new_tab).clicked() {
+                            self.open_project_interactive(ctx);
+                        }
+
+                        if ui
+                            .add_enabled(
+                                has_open_docs,
+                                egui::Button::new(d.save_current_product),
+                            )
+                            .on_hover_text(d.save_hover_label())
+                            .clicked()
+                        {
+                            let saved_path =
+                                if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                                    doc.save_interactive(&mut self.status_msg, self.language)
+                                } else {
+                                    None
+                                };
+                            if let Some(path) = saved_path {
+                                self.record_recent_project(path);
+                            }
+                        }
+
+                        if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                            ui.checkbox(
+                                &mut doc.project.embed_textures,
+                                lang.t("📦 Embed textures"),
+                            )
+                            .on_hover_text(lang.t(
+                                "Embed textures directly into the project file (.qfurn) as Base64 when saving for seamless portability across PCs",
+                            ));
+                        }
+
+                        let has_undo = self
+                            .documents
+                            .get(self.active_doc_idx)
+                            .map(|doc_item| !doc_item.undo_stack.is_empty())
+                            .unwrap_or(false);
+                        if ui
+                            .add_enabled(has_undo, egui::Button::new(d.undo_btn_label()))
+                            .clicked()
+                        {
+                            if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
+                                if let Some(prev) = doc.undo_stack.pop() {
+                                    doc.project = prev;
+                                }
+                            }
+                        }
+                    });
+                });
+        }
+
+        // =========================================================================
+        // ROW 3: Furniture Product Document Tabs Bar
+        // =========================================================================
+        if has_open_docs {
+            egui::TopBottomPanel::top("furniture_objects_tab_bar")
+                .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(egui::Margin::symmetric(8.0, 3.0)))
+                .show(ctx, |ui| {
+                    ui.spacing_mut().interact_size.y = 22.0;
+                    ui.spacing_mut().item_spacing.x = 6.0;
+                    ui.horizontal_wrapped(|ui| {
+                        ui.spacing_mut().interact_size.y = 22.0;
+                        ui.spacing_mut().item_spacing.x = 6.0;
+                        ui.label(RichText::new(d.products_bar_label).strong());
+
+                        let mut switch_to: Option<usize> = None;
+
+                        for idx in 0..self.documents.len() {
+                            let is_active = idx == self.active_doc_idx;
+                            let is_dirty = self.documents[idx].is_dirty();
+                            let is_dark = ui.visuals().dark_mode;
+                            let dirty_mark = if is_dirty { " *" } else { "" };
+                            let tab_title = format!(
+                                "🗄 {}{} ({})",
+                                self.documents[idx].project.name,
+                                dirty_mark,
+                                self.documents[idx].project.parts.len()
+                            );
+
+                            let tab_fill = if is_active {
+                                if is_dark {
+                                    Color32::from_rgb(32, 60, 95)
+                                } else {
+                                    Color32::from_rgb(215, 230, 252)
                                 }
                             } else {
-                                let dirty_mark = if is_dirty { " *" } else { "" };
-                                let tab_title = format!(
-                                    "🗄 {}{} ({})",
-                                    self.documents[idx].project.name,
-                                    dirty_mark,
-                                    self.documents[idx].project.parts.len()
-                                );
-                                let resp = ui.selectable_label(
-                                    is_active,
-                                    if is_active {
-                                        RichText::new(tab_title).strong()
-                                    } else {
-                                        RichText::new(tab_title)
-                                    },
-                                );
-                                if resp.clicked() {
-                                    switch_to = Some(idx);
+                                Color32::TRANSPARENT
+                            };
+                            let tab_stroke = if is_active {
+                                if is_dark {
+                                    egui::Stroke::new(1.0, Color32::from_rgb(70, 140, 230))
+                                } else {
+                                    egui::Stroke::new(1.0, Color32::from_rgb(120, 175, 235))
                                 }
-                                if resp
-                                    .on_hover_text(lang.tr(
-                                        "Клик — переключиться на этот объект мебели. Двойной клик — переименовать.",
-                                        "Click to switch to this furniture product. Double-click to rename.",
-                                    ))
-                                    .double_clicked()
-                                {
-                                    self.documents[idx].renaming_tab = true;
-                                }
-                            }
+                            } else {
+                                egui::Stroke::NONE
+                            };
 
-                            if ui
-                                .small_button("✖")
-                                .on_hover_text(lang.tr(
-                                    "Закрыть вкладку изделия",
-                                    "Close product tab",
-                                ))
-                                .clicked()
-                            {
-                                self.pending_close_doc_idx = Some(idx);
-                            }
-                        });
-                    }
+                            egui::Frame::none()
+                                .fill(tab_fill)
+                                .stroke(tab_stroke)
+                                .rounding(4.0)
+                                .inner_margin(egui::Margin::symmetric(6.0, 1.0))
+                                .show(ui, |ui| {
+                                    ui.spacing_mut().interact_size.y = 20.0;
+                                    ui.spacing_mut().item_spacing.x = 3.0;
+
+                                    if self.documents[idx].renaming_tab {
+                                        let resp = ui.add(
+                                            egui::TextEdit::singleline(
+                                                &mut self.documents[idx].project.name,
+                                            )
+                                            .desired_width(145.0),
+                                        );
+                                        if resp.lost_focus()
+                                            || ui.input(|i| i.key_pressed(Key::Enter))
+                                        {
+                                            self.documents[idx].renaming_tab = false;
+                                        }
+                                    } else {
+                                        let resp = ui.selectable_label(
+                                            is_active,
+                                            if is_active {
+                                                RichText::new(&tab_title).strong()
+                                            } else {
+                                                RichText::new(&tab_title)
+                                            },
+                                        );
+                                        if resp.clicked() {
+                                            switch_to = Some(idx);
+                                        }
+                                        if resp
+                                            .on_hover_text(lang.t(
+                                                "Click to switch to this furniture product. Double-click to rename.",
+                                            ))
+                                            .double_clicked()
+                                        {
+                                            self.documents[idx].renaming_tab = true;
+                                        }
+                                    }
+
+                                    if ui
+                                        .small_button("✖")
+                                        .on_hover_text(lang.t("Close product tab"))
+                                        .clicked()
+                                    {
+                                        self.pending_close_doc_idx = Some(idx);
+                                    }
+                                });
+                        }
 
                     if let Some(target_idx) = switch_to {
                         if target_idx != self.active_doc_idx {
@@ -1792,19 +2370,7 @@ impl eframe::App for QuadFurnApp {
                         .on_hover_text(d.empty_object_hover)
                         .clicked()
                     {
-                        let p = Project::new_empty_i18n(
-                            format!(
-                                "{} {}",
-                                lang.tr("Изделие", "Product"),
-                                self.documents.len() + 1
-                            ),
-                            lang,
-                        );
-                        self.documents.push(FurnitureDocument::new(p));
-                        self.active_doc_idx = self.documents.len() - 1;
-                        self.status_msg = lang
-                            .tr("Создано новое пустое изделие", "Created new empty product")
-                            .to_string();
+                        self.create_empty_product_tab();
                     }
 
                     if ui
@@ -1812,24 +2378,15 @@ impl eframe::App for QuadFurnApp {
                         .on_hover_text(d.cabinet_template_hover)
                         .clicked()
                     {
-                        let mut p = Project::new_demo_cabinet_i18n(lang);
-                        p.name = format!(
-                            "{} {}",
-                            lang.tr("Шкаф", "Cabinet"),
-                            self.documents.len() + 1
-                        );
-                        self.documents.push(FurnitureDocument::new(p));
-                        self.active_doc_idx = self.documents.len() - 1;
-                        self.status_msg = lang
-                            .tr(
-                                "Создана новая вкладка с шаблоном шкафа",
-                                "Created new tab with cabinet template",
-                            )
-                            .to_string();
+                        self.create_template_product_tab();
                     }
                 });
             });
         }
+
+        // Render Keyboard Shortcuts & About Modals
+        self.render_hotkeys_modal(ctx);
+        self.render_about_modal(ctx);
 
         // Dialog confirming closure of furniture tab
         if let Some(close_idx) = self.pending_close_doc_idx {
@@ -1840,88 +2397,115 @@ impl eframe::App for QuadFurnApp {
                 let mut close_without_saving = false;
                 let mut cancel = false;
 
-                egui::Window::new(lang.tr("Закрытие вкладки изделия", "Close Product Tab"))
+                egui::Window::new(lang.t("Close Product Tab"))
                     .collapsible(false)
                     .resizable(false)
-                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                    .pivot(egui::Align2::CENTER_CENTER)
+                    .default_pos(ctx.screen_rect().center())
                     .show(ctx, |ui| {
-                        if doc_dirty {
-                            ui.label(
-                                RichText::new(match lang {
-                                    AppLanguage::Ru => format!(
-                                        "Сохранить изменения в изделии «{}» перед закрытием вкладки?",
-                                        doc_name
-                                    ),
-                                    AppLanguage::Uk => format!(
-                                        "Зберегти зміни у виробі «{}» перед закриттям вкладки?",
-                                        doc_name
-                                    ),
-                                    _ => format!(
-                                        "Save changes to product \"{}\" before closing the tab?",
-                                        doc_name
-                                    ),
-                                })
-                                .strong()
-                                .size(15.0),
-                            );
-                            ui.label(lang.tr(
-                                "В этой вкладке есть несохранённые изменения.",
-                                "This tab has unsaved changes.",
-                            ));
-                        } else {
-                            ui.label(
-                                RichText::new(match lang {
-                                    AppLanguage::Ru => format!("Закрыть вкладку «{}»?", doc_name),
-                                    AppLanguage::Uk => format!("Закрити вкладку «{}»?", doc_name),
-                                    _ => format!("Close tab \"{}\"?", doc_name),
-                                })
-                                .strong()
-                                .size(15.0),
-                            );
-                        }
-                        ui.add_space(10.0);
-                        ui.horizontal(|ui| {
+                        ui.set_width(440.0);
+                        ui.vertical_centered(|ui| {
+                            ui.add_space(6.0);
                             if doc_dirty {
-                                if ui
-                                    .button(
-                                        RichText::new(lang.tr(
-                                            "💾 Сохранить и закрыть",
-                                            "💾 Save and close",
-                                        ))
+                                ui.label(
+                                    RichText::new(lang.tf("fmt.close_tab_dirty_q", &[&doc_name]))
                                         .strong()
-                                        .color(Color32::from_rgb(90, 210, 120)),
-                                    )
-                                    .clicked()
-                                {
-                                    save_and_close = true;
-                                }
-                                ui.add_space(6.0);
-                            }
-                            let discard_label = if doc_dirty {
-                                lang.tr("Закрыть без сохранения", "Close without saving")
+                                        .size(15.0),
+                                );
+                                ui.add_space(4.0);
+                                ui.label(lang.t("This tab has unsaved changes."));
                             } else {
-                                lang.tr("✔ Да, закрыть", "✔ Yes, close")
-                            };
-                            if ui
-                                .button(
-                                    RichText::new(discard_label)
+                                ui.label(
+                                    RichText::new(lang.tf("fmt.close_tab_clean_q", &[&doc_name]))
                                         .strong()
-                                        .color(Color32::from_rgb(245, 95, 95)),
-                                )
-                                .clicked()
-                            {
-                                close_without_saving = true;
+                                        .size(15.0),
+                                );
+                            }
+                            ui.add_space(14.0);
+
+                            if doc_dirty {
+                                let btn1_w = 140.0;
+                                let btn2_w = 160.0;
+                                let btn3_w = 80.0;
+                                let spacing = 8.0;
+                                let total_w = btn1_w + spacing + btn2_w + spacing + btn3_w;
+                                let pad = (ui.available_width() - total_w).max(0.0) / 2.0;
+
+                                ui.horizontal(|ui| {
+                                    ui.add_space(pad);
+                                    if ui
+                                        .add_sized(
+                                            [btn1_w, 28.0],
+                                            egui::Button::new(
+                                                RichText::new(lang.t("💾 Save and close"))
+                                                    .strong()
+                                                    .color(Color32::from_rgb(90, 210, 120)),
+                                            ),
+                                        )
+                                        .clicked()
+                                    {
+                                        save_and_close = true;
+                                    }
+                                    ui.add_space(spacing);
+                                    if ui
+                                        .add_sized(
+                                            [btn2_w, 28.0],
+                                            egui::Button::new(
+                                                RichText::new(lang.t("Close without saving"))
+                                                    .strong()
+                                                    .color(Color32::from_rgb(245, 95, 95)),
+                                            ),
+                                        )
+                                        .clicked()
+                                    {
+                                        close_without_saving = true;
+                                    }
+                                    ui.add_space(spacing);
+                                    if ui
+                                        .add_sized([btn3_w, 28.0], egui::Button::new(lang.t("Cancel")))
+                                        .clicked()
+                                    {
+                                        cancel = true;
+                                    }
+                                });
+                            } else {
+                                let btn1_w = 140.0;
+                                let btn2_w = 80.0;
+                                let spacing = 12.0;
+                                let total_w = btn1_w + spacing + btn2_w;
+                                let pad = (ui.available_width() - total_w).max(0.0) / 2.0;
+
+                                ui.horizontal(|ui| {
+                                    ui.add_space(pad);
+                                    if ui
+                                        .add_sized(
+                                            [btn1_w, 28.0],
+                                            egui::Button::new(
+                                                RichText::new(lang.t("✔ Yes, close"))
+                                                    .strong()
+                                                    .color(Color32::from_rgb(245, 95, 95)),
+                                            ),
+                                        )
+                                        .clicked()
+                                    {
+                                        close_without_saving = true;
+                                    }
+                                    ui.add_space(spacing);
+                                    if ui
+                                        .add_sized([btn2_w, 28.0], egui::Button::new(lang.t("Cancel")))
+                                        .clicked()
+                                    {
+                                        cancel = true;
+                                    }
+                                });
                             }
                             ui.add_space(6.0);
-                            if ui.button(lang.tr("Отмена", "Cancel")).clicked() {
-                                cancel = true;
-                            }
                         });
                     });
 
                 if save_and_close {
-                    let saved_path =
-                        self.documents[close_idx].save_interactive(&mut self.status_msg, self.language);
+                    let saved_path = self.documents[close_idx]
+                        .save_interactive(&mut self.status_msg, self.language);
                     if let Some(path) = saved_path {
                         self.record_recent_project(path);
                         self.documents.remove(close_idx);
@@ -1967,70 +2551,84 @@ impl eframe::App for QuadFurnApp {
                 let mut exit_without_saving = false;
                 let mut cancel_exit = false;
 
-                egui::Window::new(lang.tr(
-                    "Сохранение проекта перед выходом",
-                    "Save Project Before Exit",
-                ))
-                .collapsible(false)
-                .resizable(false)
-                .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
-                .show(ctx, |ui| {
-                    ui.label(
-                        RichText::new(lang.tr(
-                            "Сохранить открытый проект перед выходом?",
-                            "Save open project before exiting?",
-                        ))
-                        .strong()
-                        .size(16.0),
-                    );
-                    ui.add_space(4.0);
-                    ui.label(format!(
-                        "{}: {}",
-                        lang.tr("Несохранённые изменения в", "Unsaved changes in"),
-                        dirty_names.join(", ")
-                    ));
-                    ui.add_space(12.0);
-                    ui.horizontal(|ui| {
-                        if ui
-                            .button(
-                                RichText::new(lang.tr(
-                                    "💾 Сохранить и выйти",
-                                    "💾 Save and exit",
-                                ))
-                                .strong()
-                                .color(Color32::from_rgb(90, 210, 120)),
-                            )
-                            .clicked()
-                        {
-                            save_and_exit = true;
-                        }
-                        ui.add_space(8.0);
-                        if ui
-                            .button(
-                                RichText::new(lang.tr(
-                                    "Выйти без сохранения",
-                                    "Exit without saving",
-                                ))
-                                .strong()
-                                .color(Color32::from_rgb(245, 95, 95)),
-                            )
-                            .clicked()
-                        {
-                            exit_without_saving = true;
-                        }
-                        ui.add_space(8.0);
-                        if ui.button(lang.tr("Отмена", "Cancel")).clicked() {
-                            cancel_exit = true;
-                        }
+                egui::Window::new(lang.t("Save Project Before Exit"))
+                    .collapsible(false)
+                    .resizable(false)
+                    .pivot(egui::Align2::CENTER_CENTER)
+                    .default_pos(ctx.screen_rect().center())
+                    .show(ctx, |ui| {
+                        ui.set_width(430.0);
+                        ui.vertical_centered(|ui| {
+                            ui.add_space(6.0);
+                            ui.label(
+                                RichText::new(lang.t("Save open project before exiting?"))
+                                    .strong()
+                                    .size(16.0),
+                            );
+                            ui.add_space(4.0);
+                            ui.label(format!(
+                                "{}: {}",
+                                lang.t("Unsaved changes in"),
+                                dirty_names.join(", ")
+                            ));
+                            ui.add_space(14.0);
+
+                            let btn1_w = 140.0;
+                            let btn2_w = 160.0;
+                            let btn3_w = 80.0;
+                            let spacing = 8.0;
+                            let total_w = btn1_w + spacing + btn2_w + spacing + btn3_w;
+                            let pad = (ui.available_width() - total_w).max(0.0) / 2.0;
+
+                            ui.horizontal(|ui| {
+                                ui.add_space(pad);
+                                if ui
+                                    .add_sized(
+                                        [btn1_w, 28.0],
+                                        egui::Button::new(
+                                            RichText::new(lang.t("💾 Save and exit"))
+                                                .strong()
+                                                .color(Color32::from_rgb(90, 210, 120)),
+                                        ),
+                                    )
+                                    .clicked()
+                                {
+                                    save_and_exit = true;
+                                }
+                                ui.add_space(spacing);
+                                if ui
+                                    .add_sized(
+                                        [btn2_w, 28.0],
+                                        egui::Button::new(
+                                            RichText::new(lang.t("Exit without saving"))
+                                                .strong()
+                                                .color(Color32::from_rgb(245, 95, 95)),
+                                        ),
+                                    )
+                                    .clicked()
+                                {
+                                    exit_without_saving = true;
+                                }
+                                ui.add_space(spacing);
+                                if ui
+                                    .add_sized([btn3_w, 28.0], egui::Button::new(lang.t("Cancel")))
+                                    .clicked()
+                                {
+                                    cancel_exit = true;
+                                }
+                            });
+                            ui.add_space(6.0);
+                        });
                     });
-                });
 
                 if save_and_exit {
                     let mut all_saved = true;
                     let mut saved_paths = Vec::new();
                     for d in &mut self.documents {
                         if d.is_dirty() {
-                            if let Some(p) = d.save_interactive(&mut self.status_msg, self.language) {
+                            if let Some(p) =
+                                d.save_interactive(&mut self.status_msg, self.language)
+                            {
                                 saved_paths.push(p);
                             } else {
                                 all_saved = false;
@@ -2067,102 +2665,113 @@ impl eframe::App for QuadFurnApp {
                 let mut action_skip = false;
                 let mut action_skip_all = false;
 
-                egui::Window::new(lang.tr("🔍 Поиск отсутствующих текстур", "🔍 Locate Missing Textures"))
+                egui::Window::new(lang.t("🔍 Locate Missing Textures"))
                     .collapsible(false)
                     .resizable(false)
-                    .anchor(egui::Align2::CENTER_CENTER, egui::Vec2::ZERO)
+                    .pivot(egui::Align2::CENTER_CENTER)
+                    .default_pos(ctx.screen_rect().center())
                     .show(ctx, |ui| {
-                        ui.set_min_width(380.0);
-                        ui.label(
-                            RichText::new(lang.tr(
-                                "Не найден файл текстуры для материала:",
-                                "Texture file not found for material:",
-                            ))
-                            .strong()
-                            .size(15.0),
-                        );
+                        ui.set_width(420.0);
+                        ui.vertical_centered(|ui| {
+                            ui.add_space(4.0);
+                            ui.label(
+                                RichText::new(lang.t("Texture file not found for material:"))
+                                    .strong()
+                                    .size(15.0),
+                            );
 
-                        ui.add_space(4.0);
+                            ui.add_space(4.0);
 
-                        let progress_text = match lang {
-                            AppLanguage::Ru => format!("Осталось найти текстур: {}", queue_len),
-                            AppLanguage::Uk => format!("Залишилося знайти текстур: {}", queue_len),
-                            _ => format!("Missing textures remaining: {}", queue_len),
-                        };
-                        ui.label(RichText::new(progress_text).color(Color32::from_rgb(240, 180, 50)).strong());
+                            let progress_text = lang.tf("fmt.missing_textures_rem", &[&queue_len]);
+                            ui.label(
+                                RichText::new(progress_text)
+                                    .color(Color32::from_rgb(240, 180, 50))
+                                    .strong(),
+                            );
 
-                        ui.add_space(8.0);
+                            ui.add_space(8.0);
 
-                        egui::Frame::group(ui.style())
-                            .fill(ui.visuals().faint_bg_color)
-                            .show(ui, |ui| {
-                                egui::Grid::new("missing_tex_grid")
-                                    .num_columns(2)
-                                    .spacing([12.0, 6.0])
-                                    .show(ui, |ui| {
-                                        ui.label(RichText::new(lang.tr("Материал:", "Material:")).strong());
-                                        ui.label(RichText::new(&current.material_name).strong());
-                                        ui.end_row();
+                            egui::Frame::group(ui.style())
+                                .fill(ui.visuals().faint_bg_color)
+                                .show(ui, |ui| {
+                                    egui::Grid::new("missing_tex_grid")
+                                        .num_columns(2)
+                                        .spacing([12.0, 6.0])
+                                        .show(ui, |ui| {
+                                            ui.label(RichText::new(lang.t("Material:")).strong());
+                                            ui.label(RichText::new(&current.material_name).strong());
+                                            ui.end_row();
 
-                                        ui.label(RichText::new(lang.tr("Ожидаемый файл:", "Expected file:")).strong());
-                                        ui.label(
-                                            RichText::new(&current.expected_filename)
-                                                .monospace()
-                                                .color(Color32::from_rgb(100, 180, 240)),
-                                        );
-                                        ui.end_row();
-                                    });
+                                            ui.label(RichText::new(lang.t("Expected file:")).strong());
+                                            ui.label(
+                                                RichText::new(&current.expected_filename)
+                                                    .monospace()
+                                                    .color(Color32::from_rgb(100, 180, 240)),
+                                            );
+                                            ui.end_row();
+                                        });
+                                });
+
+                            ui.add_space(8.0);
+                            ui.label(
+                                RichText::new(lang.t(
+                                    "💡 Choose file from disk or drag & drop it into the application window.",
+                                ))
+                                .small()
+                                .color(Color32::GRAY),
+                            );
+
+                            ui.add_space(14.0);
+
+                            let btn1_w = 140.0;
+                            let btn2_w = 90.0;
+                            let btn3_w = 110.0;
+                            let spacing = 8.0;
+                            let total_w = btn1_w + spacing + btn2_w + spacing + btn3_w;
+                            let pad = (ui.available_width() - total_w).max(0.0) / 2.0;
+
+                            ui.horizontal(|ui| {
+                                ui.add_space(pad);
+                                if ui
+                                    .add_sized(
+                                        [btn1_w, 28.0],
+                                        egui::Button::new(
+                                            RichText::new(lang.t("📂 Browse File..."))
+                                                .strong()
+                                                .color(Color32::from_rgb(90, 210, 120)),
+                                        ),
+                                    )
+                                    .clicked()
+                                {
+                                    action_browse = true;
+                                }
+
+                                ui.add_space(spacing);
+
+                                if ui
+                                    .add_sized([btn2_w, 28.0], egui::Button::new(lang.t("⏭ Skip")))
+                                    .on_hover_text(
+                                        lang.t("Skip this texture and proceed to the next"),
+                                    )
+                                    .clicked()
+                                {
+                                    action_skip = true;
+                                }
+
+                                ui.add_space(spacing);
+
+                                if ui
+                                    .add_sized(
+                                        [btn3_w, 28.0],
+                                        egui::Button::new(lang.t("✖ Skip All")),
+                                    )
+                                    .on_hover_text(lang.t("Skip all remaining missing textures"))
+                                    .clicked()
+                                {
+                                    action_skip_all = true;
+                                }
                             });
-
-                        ui.add_space(8.0);
-                        ui.label(
-                            RichText::new(lang.tr(
-                                "💡 Выберите файл на диске или перетащите его мышью в окно программы.",
-                                "💡 Choose file from disk or drag & drop it into the application window.",
-                            ))
-                            .small()
-                            .color(Color32::GRAY),
-                        );
-
-                        ui.add_space(12.0);
-
-                        ui.horizontal(|ui| {
-                            if ui
-                                .button(
-                                    RichText::new(lang.tr("📂 Указать файл...", "📂 Browse File..."))
-                                        .strong()
-                                        .color(Color32::from_rgb(90, 210, 120)),
-                                )
-                                .clicked()
-                            {
-                                action_browse = true;
-                            }
-
-                            ui.add_space(8.0);
-
-                            if ui
-                                .button(lang.tr("⏭ Пропустить", "⏭ Skip"))
-                                .on_hover_text(lang.tr(
-                                    "Пропустить эту текстуру и перейти к следующей",
-                                    "Skip this texture and proceed to the next",
-                                ))
-                                .clicked()
-                            {
-                                action_skip = true;
-                            }
-
-                            ui.add_space(8.0);
-
-                            if ui
-                                .button(lang.tr("✖ Пропустить все", "✖ Skip All"))
-                                .on_hover_text(lang.tr(
-                                    "Пропустить все оставшиеся отсутствующие текстуры",
-                                    "Skip all remaining missing textures",
-                                ))
-                                .clicked()
-                            {
-                                action_skip_all = true;
-                            }
+                            ui.add_space(6.0);
                         });
                     });
 
@@ -2175,10 +2784,7 @@ impl eframe::App for QuadFurnApp {
                     {
                         let mut dialog = rfd::FileDialog::new()
                             .add_filter(
-                                lang.tr(
-                                    "Изображения текстур (PNG, JPG, WEBP)",
-                                    "Texture Images (PNG, JPG, WEBP)",
-                                ),
+                                lang.t("Texture Images (PNG, JPG, WEBP)"),
                                 &["png", "jpg", "jpeg", "webp"],
                             )
                             .set_file_name(&current.expected_filename);
@@ -2194,9 +2800,16 @@ impl eframe::App for QuadFurnApp {
                                 Ok(tex_info) => {
                                     let mat_id = current.material_id;
                                     doc.loaded_textures.insert(mat_id, tex_info.handle);
-                                    if let Some(m) = doc.project.materials.iter_mut().find(|m| m.id == mat_id) {
+                                    if let Some(m) = doc
+                                        .project
+                                        .materials
+                                        .iter_mut()
+                                        .find(|m| m.id == mat_id)
+                                    {
                                         m.texture_path = Some(path.clone());
-                                        let fname = crate::model::extract_cross_platform_filename(&path.to_string_lossy());
+                                        let fname = crate::model::extract_cross_platform_filename(
+                                            &path.to_string_lossy(),
+                                        );
                                         if !fname.is_empty() {
                                             m.texture_relative_path = Some(fname);
                                         }
@@ -2205,7 +2818,8 @@ impl eframe::App for QuadFurnApp {
                                                 if bytes.len() <= 60 * 1024 * 1024 {
                                                     use base64::Engine;
                                                     m.texture_base64 = Some(
-                                                        base64::engine::general_purpose::STANDARD.encode(&bytes),
+                                                        base64::engine::general_purpose::STANDARD
+                                                            .encode(&bytes),
                                                     );
                                                 }
                                             }
@@ -2217,23 +2831,10 @@ impl eframe::App for QuadFurnApp {
                                         doc.texture_warnings.remove(&mat_id);
                                     }
                                     doc.missing_textures_queue.remove(0);
-                                    missing_status_update = Some(match lang {
-                                        AppLanguage::Ru => format!(
-                                            "Загружена текстура для «{}»: {}",
-                                            current.material_name,
-                                            path.display()
-                                        ),
-                                        AppLanguage::Uk => format!(
-                                            "Завантажена текстура для «{}»: {}",
-                                            current.material_name,
-                                            path.display()
-                                        ),
-                                        _ => format!(
-                                            "Loaded texture for \"{}\": {}",
-                                            current.material_name,
-                                            path.display()
-                                        ),
-                                    });
+                                    missing_status_update = Some(lang.tf(
+                                        "fmt.texture_loaded",
+                                        &[&current.material_name, &path.display()],
+                                    ));
                                     ctx.request_repaint();
                                 }
                                 Err(e) => {
@@ -2260,10 +2861,7 @@ impl eframe::App for QuadFurnApp {
                 ui.horizontal(|ui| {
                     ui.label(&self.status_msg);
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        ui.label(
-                            RichText::new(d.start_footer_status)
-                                .color(Color32::GRAY),
-                        );
+                        ui.label(RichText::new(d.start_footer_status).color(Color32::GRAY));
                     });
                 });
             });
@@ -2279,122 +2877,191 @@ impl eframe::App for QuadFurnApp {
             let _ = self.save_settings();
         }
 
-        let doc = &mut self.documents[self.active_doc_idx];
-        doc.viewport_ctrl.lang = lang;
-
-        // If we leave Designer tab, reliably disable Noclip mouse capture
-        if self.active_tab != AppTab::Designer4View && doc.viewport_ctrl.cam_3d.noclip_active {
-            doc.viewport_ctrl.cam_3d.noclip_active = false;
-            QuadViewportController::set_noclip_cursor_grab(ctx, false, egui::Pos2::ZERO);
-        }
-
         // Bottom status bar
-        egui::TopBottomPanel::bottom("status_footer").show(ctx, |ui| {
-            ui.horizontal(|ui| {
-                ui.label(&self.status_msg);
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    let right_footer = crate::glossary::format_product_parts_footer(
-                        lang,
-                        &doc.project.name,
-                        doc.project.parts.len(),
-                    );
-                    ui.label(RichText::new(right_footer).color(Color32::GRAY));
+        {
+            let doc = &self.documents[self.active_doc_idx];
+            egui::TopBottomPanel::bottom("status_footer").show(ctx, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label(&self.status_msg);
+                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                        let right_footer = crate::glossary::format_product_parts_footer(
+                            lang,
+                            &doc.project.name,
+                            doc.project.parts.len(),
+                        );
+                        ui.label(RichText::new(right_footer).color(Color32::GRAY));
+                    });
                 });
             });
-        });
+        }
 
-        match self.active_tab {
-            AppTab::Designer4View => {
-                // Top transform toolbar for precise dimensions and coordinates
-                egui::TopBottomPanel::top("top_transform_bar").show(ctx, |ui| {
+        // =========================================================================
+        // LEFT TOOLS DOCK (Visible ONLY in Designer tab)
+        // =========================================================================
+        let left_dock_width = if self.tools_two_columns { 104.0 } else { 56.0 };
+        let mut save_settings_after_dock = false;
+        if self.active_tab == AppTab::Designer4View {
+            egui::SidePanel::left("left_tools_dock")
+                .resizable(false)
+                .exact_width(left_dock_width)
+                .show(ctx, |ui| {
+                    let doc = &mut self.documents[self.active_doc_idx];
+                    doc.viewport_ctrl.lang = lang;
                     let undo_ref = &mut doc.undo_stack;
-                    ui_top_transform_toolbar(
+                    ui_left_tools_dock(
                         ui,
                         &mut doc.project,
                         &mut doc.selected_part,
                         &mut doc.active_material_id,
                         &mut doc.viewport_ctrl,
+                        &mut self.active_tab,
+                        &mut self.clipboard_parts,
+                        &mut self.status_msg,
+                        &mut self.tools_two_columns,
+                        || {
+                            save_settings_after_dock = true;
+                        },
                         |proj| Self::push_undo(undo_ref, proj),
                     );
                 });
+            if save_settings_after_dock {
+                let _ = self.save_settings();
+            }
+        }
 
-                // Right inspector for blocks, groups, materials, and edge banding
-                egui::SidePanel::right("right_block_inspector")
-                    .default_width(330.0)
-                    .min_width(275.0)
-                    .max_width(460.0)
-                    .resizable(true)
-                    .show(ctx, |ui| {
+        let mut save_settings_after_inspector = false;
+        {
+            let doc = &mut self.documents[self.active_doc_idx];
+            doc.viewport_ctrl.lang = lang;
+
+            // If we leave Designer tab, reliably disable Noclip mouse capture
+            if self.active_tab != AppTab::Designer4View && doc.viewport_ctrl.cam_3d.noclip_active {
+                doc.viewport_ctrl.cam_3d.noclip_active = false;
+                QuadViewportController::set_noclip_cursor_grab(ctx, false, egui::Pos2::ZERO);
+            }
+
+            match self.active_tab {
+                AppTab::Designer4View => {
+                    // ROW 4: Top transform toolbar for precise dimensions, coordinates, and snapping
+                    egui::TopBottomPanel::top("top_transform_bar")
+                        .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(egui::Margin::symmetric(8.0, 3.0)))
+                        .show(ctx, |ui| {
                         let undo_ref = &mut doc.undo_stack;
-                        ui_right_inspector(
+                        ui_top_transform_toolbar(
                             ui,
                             &mut doc.project,
                             &mut doc.selected_part,
-                            &mut doc.viewport_ctrl.selected_parts,
                             &mut doc.active_material_id,
-                            &mut doc.new_group_name_buf,
-                            &mut self.clipboard_parts,
-                            &mut self.status_msg,
-                            lang,
+                            &mut doc.viewport_ctrl,
                             |proj| Self::push_undo(undo_ref, proj),
                         );
                     });
 
-                // Central viewports: 4 views (Top XY, 3D Orbit/Z-Noclip, Front XZ, Side YZ)
-                egui::CentralPanel::default()
-                    .frame(egui::Frame::none().fill(Color32::from_rgb(14, 17, 21)))
-                    .show(ctx, |ui| {
-                        let undo_ref = &mut doc.undo_stack;
-                        doc.viewport_ctrl.ui_quad_viewports(
-                            ui,
-                            &mut doc.project,
-                            &mut doc.selected_part,
-                            doc.active_material_id,
-                            &doc.loaded_textures,
-                            |proj| Self::push_undo(undo_ref, proj),
-                        );
+                    // RIGHT INSPECTOR DOCK: Collapsible sections, vertically resizable tree, Move Up/Down
+                    egui::SidePanel::right("right_block_inspector")
+                        .default_width(335.0)
+                        .min_width(275.0)
+                        .max_width(480.0)
+                        .resizable(true)
+                        .show(ctx, |ui| {
+                            let undo_ref = &mut doc.undo_stack;
+                            ui_right_inspector(
+                                ui,
+                                &mut doc.project,
+                                &mut doc.selected_part,
+                                &mut doc.viewport_ctrl.selected_parts,
+                                &mut doc.selected_group,
+                                &mut self.hierarchy_tree_height,
+                                &mut doc.active_material_id,
+                                &mut doc.new_group_name_buf,
+                                &mut self.clipboard_parts,
+                                &mut self.status_msg,
+                                lang,
+                                || {
+                                    save_settings_after_inspector = true;
+                                },
+                                |proj| Self::push_undo(undo_ref, proj),
+                            );
+                        });
+
+                    // Central viewports: 4 views (Top XY, 3D Orbit/Z-Noclip, Front XZ, Side YZ)
+                    // Viewport background stays dark across all themes
+                    egui::CentralPanel::default()
+                        .frame(egui::Frame::none().fill(Color32::from_rgb(14, 17, 21)))
+                        .show(ctx, |ui| {
+                            let undo_ref = &mut doc.undo_stack;
+                            doc.viewport_ctrl.ui_quad_viewports(
+                                ui,
+                                &mut doc.project,
+                                &mut doc.selected_part,
+                                doc.active_material_id,
+                                &doc.loaded_textures,
+                                |proj| Self::push_undo(undo_ref, proj),
+                            );
+                        });
+                }
+                AppTab::Specification => {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ui_specification_tab(ui, &mut doc.project, &mut self.status_msg, lang);
                     });
-            }
-            AppTab::Specification => {
-                egui::CentralPanel::default().show(ctx, |ui| {
-                    ui_specification_tab(ui, &mut doc.project, &mut self.status_msg, lang);
-                });
-            }
-            AppTab::CuttingLayout => {
-                egui::CentralPanel::default().show(ctx, |ui| {
-                    ui_cutting_layout_tab(ui, &mut doc.project, &mut doc.selected_sheet_idx, lang);
-                });
-            }
-            AppTab::MaterialsManager => {
-                egui::CentralPanel::default().show(ctx, |ui| {
-                    ui_materials_manager_tab(
-                        ui,
+                }
+                AppTab::CuttingLayout => {
+                    ui_cutting_layout_tab(
+                        ctx,
                         &mut doc.project,
-                        &mut doc.active_material_id,
-                        &mut doc.loaded_textures,
-                        &mut doc.texture_warnings,
-                        &mut doc.pending_delete_material,
-                        &mut doc.pending_delete_edge,
+                        &mut doc.selected_sheet_idx,
+                        &mut doc.hovered_cutting_part,
+                        &doc.loaded_textures,
                         &mut self.status_msg,
                         lang,
                     );
-                });
+                }
+                AppTab::MaterialsManager => {
+                    egui::CentralPanel::default().show(ctx, |ui| {
+                        ui_materials_manager_tab(
+                            ui,
+                            &mut doc.project,
+                            &mut doc.active_material_id,
+                            &mut doc.loaded_textures,
+                            &mut doc.texture_warnings,
+                            &mut doc.pending_delete_material,
+                            &mut doc.pending_delete_edge,
+                            &mut self.status_msg,
+                            lang,
+                        );
+                    });
+                }
             }
+        }
+        if save_settings_after_inspector {
+            let _ = self.save_settings();
         }
     }
 }
 
-/// Configures UI fonts: attaches system fonts of Windows, Linux and macOS
-/// to display icons, technical symbols (Δ, ×, ∠, ↺), Cyrillic and CJK.
+/// Configures UI fonts: attaches embedded Font Awesome Solid 900 (`fa-solid-900.ttf`)
+/// and system fonts of Windows, Linux and macOS to display icons, technical symbols (Δ, ×, ∠, ↺), Cyrillic and CJK.
 pub fn configure_fonts(ctx: &egui::Context) {
     let mut fonts = egui::FontDefinitions::default();
 
+    // 0. Embedded Font Awesome 6 Free Solid 900 (cross-platform vector icons for Tools dock, theme menu, and tree header)
+    const FA_SOLID_TTF: &[u8] = include_bytes!("../assets/fonts/fa-solid-900.ttf");
+    fonts.font_data.insert(
+        "fa-solid-900".to_owned(),
+        egui::FontData::from_static(FA_SOLID_TTF),
+    );
+    if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
+        vec.push("fa-solid-900".to_owned());
+    }
+    if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
+        vec.push("fa-solid-900".to_owned());
+    }
+
     // 1. Windows emoji font (Segoe UI Emoji — monochromatic outlines for modern icons, including 🪚 and 🌐)
     if let Some(bytes) = crate::export::read_system_font_bytes("C:\\Windows\\Fonts\\seguiemj.ttf") {
-        fonts.font_data.insert(
-            "seguiemj".to_owned(),
-            egui::FontData::from_owned(bytes),
-        );
+        fonts
+            .font_data
+            .insert("seguiemj".to_owned(), egui::FontData::from_owned(bytes));
         if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
             vec.insert(0, "seguiemj".to_owned());
         }
@@ -2405,10 +3072,9 @@ pub fn configure_fonts(ctx: &egui::Context) {
 
     // 2. Windows technical symbols font (Segoe UI Symbol — vector icons 🗄, 🗑, 👁, 🖥, 📁, 💾, 🔍, 🔒 and arrows)
     if let Some(bytes) = crate::export::read_system_font_bytes("C:\\Windows\\Fonts\\seguisym.ttf") {
-        fonts.font_data.insert(
-            "seguisym".to_owned(),
-            egui::FontData::from_owned(bytes),
-        );
+        fonts
+            .font_data
+            .insert("seguisym".to_owned(), egui::FontData::from_owned(bytes));
         if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
             vec.insert(0, "seguisym".to_owned());
         }
@@ -2565,9 +3231,9 @@ pub fn configure_fonts(ctx: &egui::Context) {
     ctx.set_fonts(fonts);
 }
 
-const APP_ICON_JPEG: &[u8] = include_bytes!("../assets/icon.jpeg");
+const APP_ICON_JPEG: &[u8] = include_bytes!("../assets/icon_256.jpg");
 
-/// Loads application icon from `assets/icon.jpeg` for window titlebar and taskbar
+/// Loads application icon from `assets/icon_256.jpg` for window titlebar and taskbar
 pub fn load_app_icon_data() -> Option<std::sync::Arc<egui::IconData>> {
     let dyn_img = image::load_from_memory(APP_ICON_JPEG).ok()?;
     let resized = dyn_img.resize_exact(256, 256, image::imageops::FilterType::Lanczos3);
@@ -2600,10 +3266,7 @@ fn main() -> eframe::Result<()> {
         .dict()
         .window_title
         .replacen("QuadFurn CAD", &format!("QuadFurn CAD v{}", app_ver), 1);
-    // Set base (restored) window size 1520×920 without .with_maximized(true),
-    // because winit on Windows with simultaneous with_maximized(true) + with_inner_size(...)
-    // issues SetWindowPos over WS_MAXIMIZE (leaving window 1520×920 with restore icon ❐).
-    // Actual SW_MAXIMIZE maximization is executed on first frame render.
+
     let mut viewport = egui::ViewportBuilder::default()
         .with_title(&win_title)
         .with_inner_size([1520.0, 920.0])
@@ -2655,12 +3318,20 @@ fn main() -> eframe::Result<()> {
             let mut iter = raw_args.into_iter();
             while let Some(arg) = iter.next() {
                 if arg == "--demo" {
-                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(app.language)));
+                    app.documents
+                        .push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(
+                            app.language,
+                        )));
                     app.active_doc_idx = app.documents.len() - 1;
                     app.active_tab = AppTab::Designer4View;
                 } else if arg == "--materials" {
-                    app.documents.push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(app.language)));
-                    app.active_doc_idx = app.documents.len() - 1;
+                    if app.documents.is_empty() {
+                        app.documents
+                            .push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(
+                                app.language,
+                            )));
+                        app.active_doc_idx = app.documents.len() - 1;
+                    }
                     app.active_tab = AppTab::MaterialsManager;
                 } else if arg == "--embed" {
                     if let Some(doc) = app.documents.last_mut() {
@@ -2668,9 +3339,88 @@ fn main() -> eframe::Result<()> {
                     }
                 } else if arg == "--lang" {
                     let _ = iter.next();
+                } else if arg == "--theme" {
+                    if let Some(t) = iter.next() {
+                        let tl = t.to_ascii_lowercase();
+                        app.theme_choice = match tl.as_str() {
+                            "dark" | "studiodark" => ThemeChoice::Dark,
+                            "light" | "studiolight" => ThemeChoice::Light,
+                            "system" => ThemeChoice::System,
+
+                            "nord" | "nordfrost" => ThemeChoice::NordFrost,
+                            "dracula" => ThemeChoice::Dracula,
+                            "tokyo" | "tokyonight" => ThemeChoice::TokyoNight,
+                            "mocha" | "catppuccinmocha" => ThemeChoice::CatppuccinMocha,
+                            "onedark" => ThemeChoice::OneDark,
+                            "gruvboxdark" => ThemeChoice::GruvboxDark,
+                            "monokai" | "monokaipro" => ThemeChoice::MonokaiPro,
+                            "ayudark" => ThemeChoice::AyuDark,
+                            "solarizeddark" => ThemeChoice::SolarizedDark,
+                            "rosepine" => ThemeChoice::RosePine,
+
+                            "solarized" | "solarizedlight" => ThemeChoice::SolarizedLight,
+                            "latte" | "catppuccinlatte" => ThemeChoice::CatppuccinLatte,
+                            "snow" | "nordsnow" => ThemeChoice::NordSnow,
+                            "github" | "githublight" => ThemeChoice::GithubLight,
+                            "onelight" => ThemeChoice::OneLight,
+                            "gruvboxlight" => ThemeChoice::GruvboxLight,
+                            "ayulight" => ThemeChoice::AyuLight,
+                            "rosepinedawn" => ThemeChoice::RosePineDawn,
+                            "everforest" | "everforestlight" => ThemeChoice::EverforestLight,
+                            "papercolor" | "papercolorlight" => ThemeChoice::PaperColorLight,
+                            _ => app.theme_choice,
+                        };
+                        app.theme_choice.apply(&cc.egui_ctx);
+                    }
+                } else if arg == "--tab" {
+                    if app.documents.is_empty() {
+                        app.documents
+                            .push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(
+                                app.language,
+                            )));
+                        app.active_doc_idx = app.documents.len() - 1;
+                    }
+                    if let Some(tab_name) = iter.next() {
+                        match tab_name.to_ascii_lowercase().as_str() {
+                            "materials" | "materialsmanager" => app.active_tab = AppTab::MaterialsManager,
+                            "spec" | "specification" => app.active_tab = AppTab::Specification,
+                            "cut" | "cutting" | "cuttinglayout" => app.active_tab = AppTab::CuttingLayout,
+                            "designer" | "3d" => app.active_tab = AppTab::Designer4View,
+                            _ => {}
+                        }
+                    }
+                } else if arg == "--algo" {
+                    if let Some(algo_name) = iter.next() {
+                        let algo = match algo_name.to_ascii_lowercase().as_str() {
+                            "large" | "largeusableoffcut" | "offcut" => {
+                                crate::model::CuttingAlgorithm::LargeUsableOffcut
+                            }
+                            "toolpath" | "minimizetoolpath" => {
+                                crate::model::CuttingAlgorithm::MinimizeToolpath
+                            }
+                            "strip" | "stripcutting" => {
+                                crate::model::CuttingAlgorithm::StripCutting
+                            }
+                            _ => crate::model::CuttingAlgorithm::MinimizeRemnants,
+                        };
+                        if app.documents.is_empty() {
+                            app.documents
+                                .push(FurnitureDocument::new(Project::new_demo_cabinet_i18n(
+                                    app.language,
+                                )));
+                            app.active_doc_idx = app.documents.len() - 1;
+                        }
+                        for doc in &mut app.documents {
+                            doc.project.cutting_settings.algorithm = algo;
+                        }
+                    }
+                } else if arg == "--open-theme-menu" {
+                    app.force_open_theme_menu = true;
                 } else if arg == "--batch-screenshots" {
                     let dir = match iter.next() {
-                        Some(target) if !target.starts_with("--") => std::path::PathBuf::from(target),
+                        Some(target) if !target.starts_with("--") => {
+                            std::path::PathBuf::from(target)
+                        }
                         _ => std::path::PathBuf::from("docs/screenshots"),
                     };
                     app.batch_screenshots_dir = Some(dir);
@@ -2753,9 +3503,53 @@ mod icon_tests {
         let ctx = egui::Context::default();
         configure_fonts(&ctx);
         let icons = [
-            "🌙", "☀", "🖥", "🪚", "📂", "💾", "↩", "📐", "📋", "🎨", "🗄", "✖", "➕", "✔",
-            "↖", "📏", "🔍", "↺", "📁", "📄", "📥", "🗑", "▼", "▶", "👁", "🚫", "🔒", "🔓",
-            "⇄", "🌲", "🔄", "⚠", "►", "◄", "▲", "∠", "Δ", "×", "°", "🌐", "📦",
+            "🌙",
+            "☀",
+            "🖥",
+            "🪚",
+            "📂",
+            "💾",
+            "↩",
+            "📐",
+            "📋",
+            "🎨",
+            "🗄",
+            "✖",
+            "➕",
+            "✔",
+            "↖",
+            "📏",
+            "🔍",
+            "↺",
+            "📁",
+            "📄",
+            "📥",
+            "🗑",
+            "▼",
+            "▶",
+            "👁",
+            "🚫",
+            "🔒",
+            "🔓",
+            "⇄",
+            "🌲",
+            "🔄",
+            "⚠",
+            "►",
+            "◄",
+            "▲",
+            "∠",
+            "Δ",
+            "×",
+            "°",
+            "🌐",
+            "📦",
+            crate::theme::FA_POINTER,
+            crate::theme::FA_CUBE,
+            crate::theme::FA_RULER,
+            crate::theme::FA_ARROW_UP,
+            crate::theme::FA_ARROW_DOWN,
+            crate::theme::FA_PALETTE,
         ];
         let _ = ctx.run(egui::RawInput::default(), |ctx| {
             ctx.fonts(|f| {
@@ -2765,7 +3559,6 @@ mod icon_tests {
                     Color32::WHITE,
                 );
                 let notdef_uv = notdef_galley.rows[0].glyphs[0].uv_rect;
-                println!("notdef uv_rect: min={:?}, max={:?}, size={:?}", notdef_uv.min, notdef_uv.max, notdef_uv.size);
 
                 for ic in icons {
                     let galley = f.layout_no_wrap(
@@ -2775,15 +3568,8 @@ mod icon_tests {
                     );
                     for row in &galley.rows {
                         for g in &row.glyphs {
-                            let is_tofu = g.uv_rect.min == notdef_uv.min && g.uv_rect.max == notdef_uv.max;
-                            println!(
-                                "Icon '{}' (U+{:04X}) -> uv_min={:?}, size={:?}, is_tofu={}",
-                                ic,
-                                ic.chars().next().unwrap() as u32,
-                                g.uv_rect.min,
-                                g.uv_rect.size,
-                                is_tofu
-                            );
+                            let is_tofu = g.uv_rect.min == notdef_uv.min
+                                && g.uv_rect.max == notdef_uv.max;
                             assert!(!is_tofu, "Icon '{}' rendered as .notdef tofu!", ic);
                         }
                     }
@@ -2831,11 +3617,17 @@ mod texture_missing_tests {
         assert_eq!(doc.missing_textures_queue.len(), 2);
         assert_eq!(doc.missing_textures_queue[0].material_id, 1);
         assert_eq!(doc.missing_textures_queue[0].material_name, "Oak Sonoma");
-        assert_eq!(doc.missing_textures_queue[0].expected_filename, "oak_sonoma.png");
+        assert_eq!(
+            doc.missing_textures_queue[0].expected_filename,
+            "oak_sonoma.png"
+        );
 
         assert_eq!(doc.missing_textures_queue[1].material_id, 3);
         assert_eq!(doc.missing_textures_queue[1].material_name, "Dark Walnut");
-        assert_eq!(doc.missing_textures_queue[1].expected_filename, "dark_walnut.jpg");
+        assert_eq!(
+            doc.missing_textures_queue[1].expected_filename,
+            "dark_walnut.jpg"
+        );
 
         // Simulate user skipping first texture:
         let skipped = doc.missing_textures_queue.remove(0);
@@ -2878,7 +3670,3 @@ mod texture_missing_tests {
         assert!(doc.loaded_textures.contains_key(&10));
     }
 }
-
-
-
-

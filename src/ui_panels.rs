@@ -9,6 +9,10 @@ use crate::model::{
     EdgeId, GroupId, Material, MaterialId, PartBlock, PartEdges, PartGroup, PartId,
     PartOrientation, Project,
 };
+use crate::theme::{
+    FA_ARROW_DOWN, FA_ARROW_UP, FA_CLONE, FA_COPY, FA_CUBE, FA_EXPAND, FA_PASTE, FA_POINTER,
+    FA_ROTATE, FA_RULER, FA_TABLE_CELLS_LARGE, FA_TRASH,
+};
 use crate::viewport::{EditorTool, QuadViewportController};
 use egui::{Color32, FontId, Pos2, Rect, RichText, Sense, Stroke, TextureHandle, Vec2 as EguiVec2};
 use glam::Vec3;
@@ -160,7 +164,629 @@ pub fn math_drag_value(value: &mut f32) -> egui::DragValue<'_> {
     egui::DragValue::new(value).custom_parser(eval_math_expression)
 }
 
-/// Renders precision top transform bar (precise coordinate inputs X/Y/Z, dimensions L/W/T, rotation, grid, and tools)
+/// Creates an `egui::DragValue` for f64 supporting math expressions (`600+100`, `600-4`, etc.)
+pub fn math_drag_value_f64(value: &mut f64) -> egui::DragValue<'_> {
+    egui::DragValue::new(value).custom_parser(eval_math_expression)
+}
+
+/// Adds a quick standard panel (Shelf XY, Side YZ, or Front XZ) using the active material
+pub fn add_quick_part(
+    project: &mut Project,
+    material_id: MaterialId,
+    orientation: PartOrientation,
+    lang: AppLanguage,
+) -> PartId {
+    let grain_fixed = project
+        .get_material(material_id)
+        .map(|m| m.default_grain_fixed)
+        .unwrap_or(true);
+    let id = project.alloc_id();
+    let idx = project.parts.len() + 1;
+    let (name, l, w, pos) = match orientation {
+        PartOrientation::HorizontalXY => (
+            format!("{} {}", lang.t("Shelf"), idx),
+            764.0,
+            500.0,
+            Vec3::new(18.0, 0.0, 350.0),
+        ),
+        PartOrientation::VerticalYZ => (
+            format!("{} {}", lang.t("Side Panel"), idx),
+            720.0,
+            500.0,
+            Vec3::new(0.0, 0.0, 0.0),
+        ),
+        PartOrientation::FrontalXZ => (
+            format!("{} {}", lang.t("Front Panel"), idx),
+            720.0,
+            400.0,
+            Vec3::new(0.0, 500.0, 0.0),
+        ),
+    };
+    project.parts.push(PartBlock {
+        id,
+        name,
+        group_id: project.groups.first().map(|g| g.id),
+        material_id,
+        orientation,
+        position_mm: pos,
+        length_mm: l,
+        width_mm: w,
+        yaw_deg: 0.0,
+        grain_fixed,
+        grain_along_width: false,
+        edges: PartEdges::default(),
+        visible: true,
+        locked: false,
+        drill_holes: Vec::new(),
+    });
+    id
+}
+
+/// Shared helper to copy currently selected parts into clipboard and update status message
+pub fn perform_copy_selection(
+    ctx: &egui::Context,
+    project: &Project,
+    selected_part: Option<PartId>,
+    selected_parts: &[PartId],
+    clipboard: &mut Vec<ClipboardPart>,
+    status_msg: &mut String,
+    lang: AppLanguage,
+) {
+    let copied = copy_selected_parts_to_clipboard(project, selected_part, selected_parts);
+    if !copied.is_empty() {
+        if let Ok(json) = serde_json::to_string(&copied) {
+            ctx.copy_text(format!("{}{}", CLIPBOARD_PREFIX, json));
+        }
+        let is_mac = crate::i18n::is_macos_platform();
+        let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
+        if copied.len() == 1 {
+            *status_msg = lang.tf("fmt.part_copied_one", &[&copied[0].part.name, &mod_name]);
+        } else {
+            *status_msg = lang.tf("fmt.parts_copied_many", &[&copied.len(), &mod_name]);
+        }
+        *clipboard = copied;
+    }
+}
+
+/// Shared helper to paste clipboard parts into project and update selection & status message
+pub fn perform_paste_clipboard(
+    project: &mut Project,
+    selected_part: &mut Option<PartId>,
+    selected_parts: &mut Vec<PartId>,
+    clipboard: &[ClipboardPart],
+    status_msg: &mut String,
+    lang: AppLanguage,
+    mut on_before_mutate: impl FnMut(&Project),
+) {
+    if clipboard.is_empty() {
+        return;
+    }
+    on_before_mutate(project);
+    let new_ids = paste_parts_into_project(project, clipboard);
+    *selected_part = new_ids.last().copied();
+    *selected_parts = new_ids.clone();
+    if new_ids.len() == 1 {
+        *status_msg = lang.tf(
+            "fmt.part_pasted_one",
+            &[&clipboard[0].part.name, &project.name],
+        );
+    } else {
+        *status_msg = lang.tf("fmt.parts_pasted_many", &[&new_ids.len(), &project.name]);
+    }
+}
+
+/// Shared helper to duplicate selected parts within the project
+pub fn perform_duplicate_selection(
+    project: &mut Project,
+    selected_part: &mut Option<PartId>,
+    selected_parts: &mut Vec<PartId>,
+    status_msg: &mut String,
+    lang: AppLanguage,
+    mut on_before_mutate: impl FnMut(&Project),
+) {
+    let ids_to_dup: Vec<PartId> = if !selected_parts.is_empty() {
+        selected_parts.clone()
+    } else {
+        (*selected_part).into_iter().collect()
+    };
+    if !ids_to_dup.is_empty() {
+        on_before_mutate(project);
+        let mut new_ids = Vec::new();
+        let copy_word = lang.t("copy");
+        for sid in ids_to_dup {
+            if let Some(orig) = project.parts.iter().find(|p| p.id == sid).cloned() {
+                let new_id = project.alloc_id();
+                let mut copy = orig.clone();
+                copy.id = new_id;
+                copy.name = project.generate_copy_name(&orig.name, copy_word);
+                copy.position_mm += Vec3::new(36.0, 0.0, 36.0);
+                project.parts.push(copy);
+                new_ids.push(new_id);
+            }
+        }
+        *selected_part = new_ids.last().copied();
+        *selected_parts = new_ids;
+        let mod_name = if crate::i18n::is_macos_platform() {
+            "Cmd"
+        } else {
+            "Ctrl"
+        };
+        *status_msg = lang.tf("fmt.parts_duplicated", &[&mod_name]);
+    }
+}
+
+/// Shared helper to delete selected parts from the project
+pub fn perform_delete_selection(
+    project: &mut Project,
+    selected_part: &mut Option<PartId>,
+    selected_parts: &mut Vec<PartId>,
+    status_msg: &mut String,
+    lang: AppLanguage,
+    mut on_before_mutate: impl FnMut(&Project),
+) {
+    let ids_to_del: Vec<PartId> = if !selected_parts.is_empty() {
+        selected_parts.clone()
+    } else {
+        (*selected_part).into_iter().collect()
+    };
+    if !ids_to_del.is_empty() {
+        on_before_mutate(project);
+        project.parts.retain(|p| !ids_to_del.contains(&p.id));
+        *selected_part = None;
+        selected_parts.clear();
+        *status_msg = lang.t("Selected parts deleted").to_string();
+    }
+}
+
+/// Always-visible Left Tools Dock (modeled after OniAnvil: 1-column 58px or 2-column 106px)
+#[allow(clippy::too_many_arguments)]
+pub fn ui_left_tools_dock(
+    ui: &mut egui::Ui,
+    project: &mut Project,
+    selected_part: &mut Option<PartId>,
+    active_material_id: &mut MaterialId,
+    viewport_ctrl: &mut QuadViewportController,
+    active_tab: &mut AppTab,
+    clipboard: &mut Vec<ClipboardPart>,
+    status_msg: &mut String,
+    two_columns: &mut bool,
+    mut on_toggle_columns: impl FnMut(),
+    mut on_before_mutate: impl FnMut(&Project),
+) {
+    let lang = viewport_ctrl.lang;
+    let mm_suffix = lang.t(" mm");
+    let btn_w = 42.0;
+    let btn_h = 36.0;
+
+    // Dock header with 1-col / 2-col switcher button
+    ui.horizontal(|ui| {
+        let header_lbl = if *two_columns {
+            lang.t("tools.header")
+        } else {
+            "🛠"
+        };
+        ui.label(RichText::new(header_lbl).size(11.5).strong())
+            .on_hover_text(lang.t("tools.header"));
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            let toggle_icon = if *two_columns { "«" } else { "»" };
+            if ui
+                .small_button(toggle_icon)
+                .on_hover_text(lang.t("tools.toggle_columns_tip"))
+                .clicked()
+            {
+                *two_columns = !*two_columns;
+                on_toggle_columns();
+            }
+        });
+    });
+    ui.separator();
+
+    egui::ScrollArea::vertical()
+        .id_salt("left_tools_scroll")
+        .auto_shrink([false, false])
+        .show(ui, |ui| {
+            let cols = if *two_columns { 2 } else { 1 };
+
+            // Helper closure to render a styled tool/action button in the dock grid
+            let draw_dock_btn = |ui: &mut egui::Ui,
+                                 icon: &str,
+                                 short_txt: &str,
+                                 selected: bool,
+                                 enabled: bool,
+                                 tooltip: &str|
+             -> bool {
+                let text = format!("{}\n{}", icon, short_txt);
+                let rt = RichText::new(text).size(10.5);
+                let btn = egui::Button::new(if selected { rt.strong() } else { rt })
+                    .selected(selected)
+                    .min_size(EguiVec2::new(btn_w, btn_h));
+                ui.add_enabled(enabled, btn)
+                    .on_hover_text(tooltip)
+                    .clicked()
+            };
+
+            // 1. Editor Tools (Select V, Create B, Measure M)
+            egui::Grid::new("left_dock_editor_tools")
+                .num_columns(cols)
+                .spacing([4.0, 4.0])
+                .show(ui, |ui| {
+                    let mut col_idx = 0;
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_POINTER,
+                        "V",
+                        *active_tab == AppTab::Designer4View
+                            && viewport_ctrl.tool == EditorTool::SelectAndMove,
+                        true,
+                        &format!(
+                            "{}\n{}",
+                            lang.t("↖ Select / Move (V)"),
+                            lang.t("Select parts, move and resize using 8 handles")
+                        ),
+                    ) {
+                        *active_tab = AppTab::Designer4View;
+                        viewport_ctrl.tool = EditorTool::SelectAndMove;
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_CUBE,
+                        "B",
+                        *active_tab == AppTab::Designer4View
+                            && viewport_ctrl.tool == EditorTool::CreateBlock,
+                        true,
+                        &format!(
+                            "{}\n{}",
+                            lang.t("➕ Create Part by Box (B)"),
+                            lang.t("Draw a rectangle in any 2D view. Thickness comes from active material (e.g. 18 mm). Press Tab to cycle Shelf/Side/Front.")
+                        ),
+                    ) {
+                        *active_tab = AppTab::Designer4View;
+                        viewport_ctrl.tool = EditorTool::CreateBlock;
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_RULER,
+                        "M",
+                        *active_tab == AppTab::Designer4View
+                            && viewport_ctrl.tool == EditorTool::MeasureTape,
+                        true,
+                        &format!(
+                            "{}\n{}",
+                            lang.t("📏 Tape Measure (M)"),
+                            lang.t("Measure distances between points and edges in 2D projections")
+                        ),
+                    ) {
+                        *active_tab = AppTab::Designer4View;
+                        viewport_ctrl.tool = EditorTool::MeasureTape;
+                    }
+                    ui.end_row();
+                });
+
+            ui.separator();
+
+            // 2. Quick Add Part (+XY Shelf, +YZ Side, +XZ Front)
+            egui::Grid::new("left_dock_quick_parts")
+                .num_columns(cols)
+                .spacing([4.0, 4.0])
+                .show(ui, |ui| {
+                    let mut col_idx = 0;
+
+                    if draw_dock_btn(
+                        ui,
+                        "➕",
+                        "XY",
+                        false,
+                        true,
+                        &format!(
+                            "{}\n{}",
+                            lang.t("+ Shelf (XY)"),
+                            lang.t("Add horizontal shelf/bottom panel from active material")
+                        ),
+                    ) {
+                        *active_tab = AppTab::Designer4View;
+                        on_before_mutate(project);
+                        let id = add_quick_part(
+                            project,
+                            *active_material_id,
+                            PartOrientation::HorizontalXY,
+                            lang,
+                        );
+                        *selected_part = Some(id);
+                        viewport_ctrl.selected_parts = vec![id];
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        "➕",
+                        "YZ",
+                        false,
+                        true,
+                        &format!(
+                            "{}\n{}",
+                            lang.t("+ Side Panel (YZ)"),
+                            lang.t("Add vertical side panel from active material")
+                        ),
+                    ) {
+                        *active_tab = AppTab::Designer4View;
+                        on_before_mutate(project);
+                        let id = add_quick_part(
+                            project,
+                            *active_material_id,
+                            PartOrientation::VerticalYZ,
+                            lang,
+                        );
+                        *selected_part = Some(id);
+                        viewport_ctrl.selected_parts = vec![id];
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        "➕",
+                        "XZ",
+                        false,
+                        true,
+                        &format!(
+                            "{}\n{}",
+                            lang.t("+ Front/Back (XZ)"),
+                            lang.t("Add frontal panel (door, rail, or back panel)")
+                        ),
+                    ) {
+                        *active_tab = AppTab::Designer4View;
+                        on_before_mutate(project);
+                        let id = add_quick_part(
+                            project,
+                            *active_material_id,
+                            PartOrientation::FrontalXZ,
+                            lang,
+                        );
+                        *selected_part = Some(id);
+                        viewport_ctrl.selected_parts = vec![id];
+                    }
+                    ui.end_row();
+                });
+
+            ui.separator();
+
+            // 3. Active Material Swatch Button (opens popup selector)
+            let (mat_rgb, mat_thick, mat_full_name) = project
+                .get_material(*active_material_id)
+                .map(|m| {
+                    (
+                        m.color_rgb,
+                        m.thickness_mm,
+                        format!("{} ({:.0}{})", m.name, m.thickness_mm, mm_suffix),
+                    )
+                })
+                .unwrap_or(([190, 170, 140], 18.0, lang.t("Select...").to_string()));
+
+            let swatch_w = if *two_columns { btn_w * 2.0 + 4.0 } else { btn_w };
+            let (swatch_rect, swatch_resp) =
+                ui.allocate_exact_size(EguiVec2::new(swatch_w, 28.0), Sense::click());
+            let swatch_col = Color32::from_rgb(mat_rgb[0], mat_rgb[1], mat_rgb[2]);
+            ui.painter().rect_filled(swatch_rect, 4.0, swatch_col);
+            ui.painter().rect_stroke(
+                swatch_rect,
+                4.0,
+                Stroke::new(
+                    if swatch_resp.hovered() { 1.8 } else { 1.0 },
+                    Color32::from_gray(220),
+                ),
+            );
+            let lum = 0.299 * (mat_rgb[0] as f32)
+                + 0.587 * (mat_rgb[1] as f32)
+                + 0.114 * (mat_rgb[2] as f32);
+            let txt_col = if lum > 140.0 {
+                Color32::from_rgb(20, 20, 24)
+            } else {
+                Color32::WHITE
+            };
+            ui.painter().text(
+                swatch_rect.center(),
+                egui::Align2::CENTER_CENTER,
+                format!("{:.0}{}", mat_thick, lang.dict().unit_mm),
+                FontId::proportional(10.5),
+                txt_col,
+            );
+            let mat_pop_id = ui.make_persistent_id("left_dock_mat_popup");
+            if swatch_resp.clicked() {
+                ui.memory_mut(|m| m.toggle_popup(mat_pop_id));
+            }
+            egui::popup_below_widget(
+                ui,
+                mat_pop_id,
+                &swatch_resp,
+                egui::PopupCloseBehavior::CloseOnClickOutside,
+                |ui| {
+                    ui.set_min_width(210.0);
+                    ui.label(RichText::new(lang.t("Material:")).strong());
+                    ui.separator();
+                    for m in &project.materials {
+                        let label = format!("{} ({:.0}{})", m.name, m.thickness_mm, mm_suffix);
+                        if ui
+                            .selectable_label(*active_material_id == m.id, label)
+                            .clicked()
+                        {
+                            *active_material_id = m.id;
+                            ui.memory_mut(|mem| mem.close_popup());
+                        }
+                    }
+                },
+            );
+            swatch_resp.on_hover_text(format!("{} {}", lang.t("Material:"), mat_full_name));
+
+            ui.separator();
+
+            // 4. Quick Edit & View Actions
+            let has_sel = selected_part.is_some() || !viewport_ctrl.selected_parts.is_empty();
+            egui::Grid::new("left_dock_actions")
+                .num_columns(cols)
+                .spacing([4.0, 4.0])
+                .show(ui, |ui| {
+                    let mut col_idx = 0;
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_COPY,
+                        "Copy",
+                        false,
+                        has_sel,
+                        &crate::i18n::adapt_shortcuts(lang.t("📄 Copy (Ctrl+C)")),
+                    ) {
+                        perform_copy_selection(
+                            ui.ctx(),
+                            project,
+                            *selected_part,
+                            &viewport_ctrl.selected_parts,
+                            clipboard,
+                            status_msg,
+                            lang,
+                        );
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_PASTE,
+                        "Paste",
+                        false,
+                        !clipboard.is_empty(),
+                        &crate::i18n::adapt_shortcuts(lang.t("📥 Paste (Ctrl+V)")),
+                    ) {
+                        perform_paste_clipboard(
+                            project,
+                            selected_part,
+                            &mut viewport_ctrl.selected_parts,
+                            clipboard,
+                            status_msg,
+                            lang,
+                            &mut on_before_mutate,
+                        );
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_CLONE,
+                        "Dup",
+                        false,
+                        has_sel,
+                        &crate::i18n::adapt_shortcuts(lang.t("📋 Duplicate (Ctrl+D)")),
+                    ) {
+                        perform_duplicate_selection(
+                            project,
+                            selected_part,
+                            &mut viewport_ctrl.selected_parts,
+                            status_msg,
+                            lang,
+                            &mut on_before_mutate,
+                        );
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_ROTATE,
+                        "90°",
+                        false,
+                        selected_part.is_some(),
+                        lang.t("menu.edit.rotate_90"),
+                    ) {
+                        if let Some(sel_id) = *selected_part {
+                            if let Some(idx) = project.parts.iter().position(|p| p.id == sel_id) {
+                                on_before_mutate(project);
+                                project.parts[idx].yaw_deg =
+                                    (project.parts[idx].yaw_deg + 90.0) % 360.0;
+                            }
+                        }
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_TRASH,
+                        "Del",
+                        false,
+                        has_sel,
+                        lang.t("🗑 Delete (Del)"),
+                    ) {
+                        perform_delete_selection(
+                            project,
+                            selected_part,
+                            &mut viewport_ctrl.selected_parts,
+                            status_msg,
+                            lang,
+                            &mut on_before_mutate,
+                        );
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_TABLE_CELLS_LARGE,
+                        "4x",
+                        false,
+                        true,
+                        lang.t("⊞ Equal Views"),
+                    ) {
+                        *active_tab = AppTab::Designer4View;
+                        viewport_ctrl.equalize_viewports();
+                    }
+                    col_idx += 1;
+                    if col_idx % cols == 0 {
+                        ui.end_row();
+                    }
+
+                    if draw_dock_btn(
+                        ui,
+                        FA_EXPAND,
+                        "Fit",
+                        false,
+                        true,
+                        lang.t("📐 Fit to Window"),
+                    ) {
+                        *active_tab = AppTab::Designer4View;
+                        viewport_ctrl.fit_all_to_window(project);
+                    }
+                    ui.end_row();
+                });
+        });
+}
+
+/// Renders precision top transform bar (grid & snapping controls + fast numeric coordinate inputs X/Y/Z, dimensions L/W/T, and rotation)
 pub fn ui_top_transform_toolbar(
     ui: &mut egui::Ui,
     project: &mut Project,
@@ -170,120 +796,21 @@ pub fn ui_top_transform_toolbar(
     mut on_before_mutate: impl FnMut(&Project),
 ) {
     let lang = viewport_ctrl.lang;
-    let mm_suffix = lang.tr(" мм", " mm");
+    let mm_suffix = lang.t(" mm");
+
+    ui.spacing_mut().interact_size.y = 22.0;
+    ui.spacing_mut().item_spacing.x = 6.0;
 
     ui.horizontal_wrapped(|ui| {
+        ui.spacing_mut().interact_size.y = 22.0;
         ui.spacing_mut().item_spacing.x = 6.0;
 
-        // 1. Editor tools
-        ui.label(RichText::new(lang.tr("Инструмент:", "Tool:")).strong());
-        if ui
-            .selectable_label(
-                viewport_ctrl.tool == EditorTool::SelectAndMove,
-                lang.tr("↖ Выбор / Двигать (V)", "↖ Select / Move (V)"),
-            )
-            .on_hover_text(lang.tr(
-                "Выделение деталей, перемещение и растягивание за 8 маркеров",
-                "Select parts, move and resize using 8 handles",
-            ))
-            .clicked()
-        {
-            viewport_ctrl.tool = EditorTool::SelectAndMove;
-        }
-        if ui
-            .selectable_label(
-                viewport_ctrl.tool == EditorTool::CreateBlock,
-                lang.tr("➕ Создать деталь рамкой (B)", "➕ Create Part by Box (B)"),
-            )
-            .on_hover_text(lang.tr(
-                "Нарисуйте прямоугольник в любом 2D-окне. Толщина берется из активного материала (напр. 18 мм). Клавиша Tab меняет Полка/Стойка/Фасад.",
-                "Draw a rectangle in any 2D view. Thickness comes from active material (e.g. 18 mm). Press Tab to cycle Shelf/Side/Front.",
-            ))
-            .clicked()
-        {
-            viewport_ctrl.tool = EditorTool::CreateBlock;
-        }
-        if ui
-            .selectable_label(
-                viewport_ctrl.tool == EditorTool::MeasureTape,
-                lang.tr("📏 Рулетка (M)", "📏 Tape Measure (M)"),
-            )
-            .on_hover_text(lang.tr(
-                "Измерение расстояний между точками и краями в 2D проекциях",
-                "Measure distances between points and edges in 2D projections",
-            ))
-            .clicked()
-        {
-            viewport_ctrl.tool = EditorTool::MeasureTape;
-        }
-
-        ui.separator();
-
-        // 2. Quick add standard part (Side / Shelf / Front)
-        ui.label(lang.tr("Быстро:", "Quick:"));
-        if ui
-            .button(lang.tr("+ Полка (XY)", "+ Shelf (XY)"))
-            .on_hover_text(lang.tr(
-                "Добавить горизонтальную полку/дно из активного материала",
-                "Add horizontal shelf/bottom panel from active material",
-            ))
-            .clicked()
-        {
-            on_before_mutate(project);
-            let id = add_quick_part(
-                project,
-                *active_material_id,
-                PartOrientation::HorizontalXY,
-                lang,
-            );
-            *selected_part = Some(id);
-            viewport_ctrl.selected_parts = vec![id];
-        }
-        if ui
-            .button(lang.tr("+ Стойка (YZ)", "+ Side Panel (YZ)"))
-            .on_hover_text(lang.tr(
-                "Добавить боковую вертикальную стойку из активного материала",
-                "Add vertical side panel from active material",
-            ))
-            .clicked()
-        {
-            on_before_mutate(project);
-            let id = add_quick_part(
-                project,
-                *active_material_id,
-                PartOrientation::VerticalYZ,
-                lang,
-            );
-            *selected_part = Some(id);
-            viewport_ctrl.selected_parts = vec![id];
-        }
-        if ui
-            .button(lang.tr("+ Фасад/Стенка (XZ)", "+ Front/Back (XZ)"))
-            .on_hover_text(lang.tr(
-                "Добавить фронтальную деталь (фасад, царгу или заднюю стенку)",
-                "Add frontal panel (door, rail, or back panel)",
-            ))
-            .clicked()
-        {
-            on_before_mutate(project);
-            let id = add_quick_part(
-                project,
-                *active_material_id,
-                PartOrientation::FrontalXZ,
-                lang,
-            );
-            *selected_part = Some(id);
-            viewport_ctrl.selected_parts = vec![id];
-        }
-
-        ui.separator();
-
-        // 3. Active material selection (for new parts)
-        ui.label(lang.tr("Материал:", "Material:"));
+        // 1. Active material selection (for new parts)
+        ui.label(RichText::new(lang.t("Material:")).strong());
         let active_mat_name = project
             .get_material(*active_material_id)
             .map(|m| format!("{} ({:.0}{})", m.name, m.thickness_mm, mm_suffix))
-            .unwrap_or_else(|| lang.tr("Выбрать...", "Select...").to_string());
+            .unwrap_or_else(|| lang.t("Select...").to_string());
         egui::ComboBox::from_id_salt("active_mat_combo")
             .selected_text(active_mat_name)
             .width(195.0)
@@ -296,80 +823,70 @@ pub fn ui_top_transform_toolbar(
 
         ui.separator();
 
-        // 4. Snapping and grid step (mm)
-        ui.checkbox(
-            &mut viewport_ctrl.grid_snap_enabled,
-            lang.tr("Сетка", "Grid"),
-        );
+        // 2. Snapping and grid step (mm)
+        ui.checkbox(&mut viewport_ctrl.grid_snap_enabled, lang.t("Grid"));
         ui.add(
             math_drag_value(&mut viewport_ctrl.grid_step_mm)
                 .speed(1.0)
                 .range(0.5..=200.0)
                 .suffix(mm_suffix),
         )
-        .on_hover_text(lang.tr(
-            "Шаг координатной сетки в миллиметрах (1, 5, 9, 18, 50 мм)",
-            "Grid snap step in millimeters (1, 5, 9, 18, 50 mm)",
-        ));
+        .on_hover_text(lang.t("Grid snap step in millimeters (1, 5, 9, 18, 50 mm)"));
 
         for preset in [1.0_f32, 9.0, 18.0, 50.0] {
+            let is_sel = (viewport_ctrl.grid_step_mm - preset).abs() < 0.1;
+            let preset_str = format!("{:.0}", preset);
             if ui
-                .small_button(format!("{:.0}", preset))
-                .on_hover_text(match lang {
-                    AppLanguage::Ru => format!("Установить шаг сетки {:.0} мм", preset),
-                    AppLanguage::Uk => format!("Встановити крок сітки {:.0} мм", preset),
-                    _ => format!("Set grid step to {:.0} mm", preset),
-                })
+                .selectable_label(is_sel, &preset_str)
+                .on_hover_text(lang.tf("fmt.set_grid_step_tip", &[&preset_str]))
                 .clicked()
             {
                 viewport_ctrl.grid_step_mm = preset;
             }
         }
 
+        ui.separator();
+
         ui.checkbox(
             &mut viewport_ctrl.edge_snap_enabled,
-            lang.tr("Магнит к краям", "Snap to edges"),
+            lang.t("Snap to edges"),
         )
-        .on_hover_text(lang.tr(
-            "Примагничивать края деталей друг к другу вплотную",
-            "Snap part edges flush against neighboring parts",
-        ));
+        .on_hover_text(lang.t("Snap part edges flush against neighboring parts"));
+
         ui.checkbox(
             &mut viewport_ctrl.show_distance_callouts,
-            lang.tr("Проемы (мм)", "Gaps (mm)"),
+            lang.t("Gaps (mm)"),
         )
-        .on_hover_text(lang.tr(
-            "Показывать расстояния от выбранной детали до соседей",
-            "Display distances from selected part to neighboring parts",
-        ));
+        .on_hover_text(lang.t("Display distances from selected part to neighboring parts"));
+
+        ui.separator();
 
         if ui
-            .button(lang.tr("⊞ Выровнять окна", "⊞ Equal Views"))
-            .on_hover_text(lang.tr(
-                "Сбросить разделители и выровнять все 4 окна проекций поровну (50% / 50%)",
-                "Reset splitters and equalize all 4 viewport window sizes (50% / 50%)",
-            ))
+            .button(lang.t("⊞ Equal Views"))
+            .on_hover_text(
+                lang.t("Reset splitters and equalize all 4 viewport window sizes (50% / 50%)"),
+            )
             .clicked()
         {
             viewport_ctrl.equalize_viewports();
         }
 
         if ui
-            .button(lang.tr("📐 Вписать в окно", "📐 Fit to Window"))
-            .on_hover_text(lang.tr(
-                "Подобрать масштаб и положение камеры во всех 2D проекциях и в 3D так, чтобы вся модель помещалась целиком в каждое окно",
-                "Fit the entire model into all 2D projections and the 3D view",
-            ))
+            .button(lang.t("📐 Fit to Window"))
+            .on_hover_text(lang.t("Fit the entire model into all 2D projections and the 3D view"))
             .clicked()
         {
             viewport_ctrl.fit_all_to_window(project);
         }
     });
 
+    ui.add_space(2.0);
     ui.separator();
+    ui.add_space(2.0);
 
     // Second row of transform bar: numeric input of coordinates X, Y, Z and dimensions Length / Width / Thickness / Rotation for selected part or group
     ui.horizontal_wrapped(|ui| {
+        ui.spacing_mut().interact_size.y = 22.0;
         ui.spacing_mut().item_spacing.x = 6.0;
 
         if viewport_ctrl.selected_parts.len() > 1 {
@@ -388,22 +905,17 @@ pub fn ui_top_transform_toolbar(
             }
 
             if valid_count > 1 {
-                let grp_text = match lang {
-                    AppLanguage::Ru => format!("Группа: {} дет.", valid_count),
-                    AppLanguage::Uk => format!("Група: {} дет.", valid_count),
-                    _ => format!("Group: {} pcs", valid_count),
+                let is_dark = ui.visuals().dark_mode;
+                let grp_col = if is_dark {
+                    Color32::from_rgb(120, 210, 255)
+                } else {
+                    Color32::from_rgb(15, 95, 175)
                 };
-                ui.label(
-                    RichText::new(grp_text)
-                        .strong()
-                        .color(Color32::from_rgb(120, 210, 255)),
-                );
+                let grp_text = lang.tf("fmt.group_count_badge", &[&valid_count]);
+                ui.label(RichText::new(grp_text).strong().color(grp_col));
                 ui.separator();
 
-                ui.label(
-                    RichText::new(lang.tr("Позиция группы (мм):", "Group position (mm):"))
-                        .strong(),
-                );
+                ui.label(RichText::new(lang.t("Group position (mm):")).strong());
                 let mut gpos = bmin;
                 let mut pos_changed = false;
 
@@ -436,6 +948,7 @@ pub fn ui_top_transform_toolbar(
                     .changed();
 
                 if pos_changed {
+                    on_before_mutate(project);
                     let delta = gpos - bmin;
                     let sel_set = viewport_ctrl.selected_parts.clone();
                     for p in &mut project.parts {
@@ -447,40 +960,42 @@ pub fn ui_top_transform_toolbar(
 
                 ui.separator();
                 let span = bmax - bmin;
-                let span_text = match lang {
-                    AppLanguage::Ru => format!(
-                        "Общий габарит группы: X {:.0} × Y {:.0} × Z {:.0} мм",
-                        span.x, span.y, span.z
-                    ),
-                    _ => format!(
-                        "Group bounding box: X {:.0} × Y {:.0} × Z {:.0} mm",
-                        span.x, span.y, span.z
-                    ),
+                let span_text = lang.tf(
+                    "fmt.group_bbox_span",
+                    &[
+                        &format!("{:.0}", span.x),
+                        &format!("{:.0}", span.y),
+                        &format!("{:.0}", span.z),
+                    ],
+                );
+                let span_col = if is_dark {
+                    Color32::from_rgb(160, 225, 175)
+                } else {
+                    Color32::from_rgb(20, 125, 55)
                 };
-                ui.label(RichText::new(span_text).color(Color32::from_rgb(160, 225, 175)));
+                ui.label(RichText::new(span_text).color(span_col));
                 return;
             }
         }
 
         if let Some(sel_id) = *selected_part {
             if let Some(idx) = project.parts.iter().position(|p| p.id == sel_id) {
+                let is_dark = ui.visuals().dark_mode;
                 let mat_id = project.parts[idx].material_id;
                 let thick = project.get_material_thickness(mat_id);
                 let (cut_l, cut_w) = project.parts[idx].cut_dimensions_mm(&project.edge_bandings);
 
-                let block_lbl = match lang {
-                    AppLanguage::Ru => format!("Блок: «{}»", project.parts[idx].name),
-                    _ => format!("Part: \"{}\"", project.parts[idx].name),
+                let block_lbl = lang.tf("fmt.part_title_badge", &[&project.parts[idx].name]);
+                let badge_col = if is_dark {
+                    Color32::from_rgb(255, 215, 90)
+                } else {
+                    Color32::from_rgb(175, 95, 0)
                 };
-                ui.label(
-                    RichText::new(block_lbl)
-                        .strong()
-                        .color(Color32::from_rgb(255, 215, 90)),
-                );
+                ui.label(RichText::new(block_lbl).strong().color(badge_col));
                 ui.separator();
 
                 // Coordinates X, Y, Z (mm from scene origin)
-                ui.label(RichText::new(lang.tr("Позиция (мм):", "Position (mm):")).strong());
+                ui.label(RichText::new(lang.t("Position (mm):")).strong());
                 let mut pos = project.parts[idx].position_mm;
                 let mut pos_changed = false;
 
@@ -519,12 +1034,12 @@ pub fn ui_top_transform_toolbar(
                 ui.separator();
 
                 // Part dimensions (Length x Width x Thickness) in millimeters
-                ui.label(RichText::new(lang.tr("Габарит с кромкой:", "Full size w/ edge:")).strong());
+                ui.label(RichText::new(lang.t("Full size w/ edge:")).strong());
                 let mut len = project.parts[idx].length_mm;
                 let mut wid = project.parts[idx].width_mm;
                 let mut size_changed = false;
 
-                ui.label(lang.tr("Длина (L):", "Length (L):"));
+                ui.label(lang.t("Length (L):"));
                 size_changed |= ui
                     .add(
                         math_drag_value(&mut len)
@@ -534,7 +1049,7 @@ pub fn ui_top_transform_toolbar(
                     )
                     .changed();
 
-                ui.label(lang.tr("Ширина (W):", "Width (W):"));
+                ui.label(lang.t("Width (W):"));
                 size_changed |= ui
                     .add(
                         math_drag_value(&mut wid)
@@ -551,7 +1066,7 @@ pub fn ui_top_transform_toolbar(
 
                 // Thickness field (edits material thickness of part or shows 18 mm)
                 let mut cur_thick = thick;
-                ui.label(lang.tr("Толщ (T):", "Thick (T):"));
+                ui.label(lang.t("Thick (T):"));
                 if ui
                     .add(
                         math_drag_value(&mut cur_thick)
@@ -559,10 +1074,7 @@ pub fn ui_top_transform_toolbar(
                             .range(1.0..=100.0)
                             .suffix(mm_suffix),
                     )
-                    .on_hover_text(lang.tr(
-                        "Толщина листового материала детали (мм)",
-                        "Sheet material thickness of the part (mm)",
-                    ))
+                    .on_hover_text(lang.t("Sheet material thickness of the part (mm)"))
                     .changed()
                 {
                     if let Some(m) = project.materials.iter_mut().find(|m| m.id == mat_id) {
@@ -570,16 +1082,19 @@ pub fn ui_top_transform_toolbar(
                     }
                 }
 
-                let cut_badge = match lang {
-                    AppLanguage::Ru => format!("[Пил: {:.1}×{:.1} мм]", cut_l, cut_w),
-                    AppLanguage::Uk => format!("[Пил: {:.1}×{:.1} мм]", cut_l, cut_w),
-                    _ => format!("[Cut: {:.1}×{:.1} mm]", cut_l, cut_w),
+                let cut_badge = lang.tf(
+                    "fmt.cut_size_badge",
+                    &[&format!("{:.1}", cut_l), &format!("{:.1}", cut_w)],
+                );
+                let cut_col = if is_dark {
+                    Color32::from_rgb(120, 225, 150)
+                } else {
+                    Color32::from_rgb(18, 130, 55)
                 };
-                ui.label(RichText::new(cut_badge).color(Color32::from_rgb(120, 225, 150)))
-                    .on_hover_text(lang.tr(
-                        "Чистый пилильный размер заготовки за вычетом толщины кромок",
-                        "Net saw cutting dimensions after subtracting edge banding thickness",
-                    ));
+                ui.label(RichText::new(cut_badge).strong().color(cut_col))
+                    .on_hover_text(
+                        lang.t("Net saw cutting dimensions after subtracting edge banding thickness"),
+                    );
 
                 ui.separator();
 
@@ -591,19 +1106,17 @@ pub fn ui_top_transform_toolbar(
                         .range(-360.0..=360.0)
                         .suffix("°"),
                 )
-                .on_hover_text(lang.tr(
-                    "Поворот детали вокруг вертикальной оси Z (для угловых секций)",
-                    "Part rotation around the vertical Z axis (for corner units)",
-                ));
+                .on_hover_text(
+                    lang.t("Part rotation around the vertical Z axis (for corner units)"),
+                );
 
-                if ui.small_button("↺ 90°").clicked() {
+                if ui.button("↺ 90°").clicked() {
                     project.parts[idx].yaw_deg = (project.parts[idx].yaw_deg + 90.0) % 360.0;
                 }
             }
         } else {
             ui.label(
-                RichText::new(lang.tr(
-                    "Ни одна деталь не выбрана — кликните по блоку, растяните рамку выделения в 2D окне или выберите «➕ Создать деталь рамкой»",
+                RichText::new(lang.t(
                     "No part selected — click a block, drag a selection box in 2D, or choose \"➕ Create Part by Box\"",
                 ))
                 .italics()
@@ -611,58 +1124,6 @@ pub fn ui_top_transform_toolbar(
             );
         }
     });
-}
-
-fn add_quick_part(
-    project: &mut Project,
-    material_id: MaterialId,
-    orientation: PartOrientation,
-    lang: AppLanguage,
-) -> PartId {
-    let grain_fixed = project
-        .get_material(material_id)
-        .map(|m| m.default_grain_fixed)
-        .unwrap_or(true);
-    let id = project.alloc_id();
-    let idx = project.parts.len() + 1;
-    let (name, l, w, pos) = match orientation {
-        PartOrientation::HorizontalXY => (
-            format!("{} {}", lang.tr("Полка", "Shelf"), idx),
-            764.0,
-            500.0,
-            Vec3::new(18.0, 0.0, 350.0),
-        ),
-        PartOrientation::VerticalYZ => (
-            format!("{} {}", lang.tr("Стойка", "Side Panel"), idx),
-            720.0,
-            500.0,
-            Vec3::new(0.0, 0.0, 0.0),
-        ),
-        PartOrientation::FrontalXZ => (
-            format!("{} {}", lang.tr("Панель", "Front Panel"), idx),
-            720.0,
-            400.0,
-            Vec3::new(0.0, 500.0, 0.0),
-        ),
-    };
-    project.parts.push(PartBlock {
-        id,
-        name,
-        group_id: project.groups.first().map(|g| g.id),
-        material_id,
-        orientation,
-        position_mm: pos,
-        length_mm: l,
-        width_mm: w,
-        yaw_deg: 0.0,
-        grain_fixed,
-        grain_along_width: false,
-        edges: PartEdges::default(),
-        visible: true,
-        locked: false,
-        drill_holes: Vec::new(),
-    });
-    id
 }
 
 /// System clipboard prefix for copying parts between QuadFurn tabs and windows
@@ -821,561 +1282,654 @@ pub fn paste_parts_into_project(project: &mut Project, clips: &[ClipboardPart]) 
     pasted_ids
 }
 
+/// Normalizes a part's `group_id`: if it points to a group that does not exist in `groups`, treats it as `None` (ungrouped)
+fn effective_part_group(group_id: Option<GroupId>, groups: &[PartGroup]) -> Option<GroupId> {
+    group_id.filter(|gid| groups.iter().any(|g| g.id == *gid))
+}
+
+/// Checks whether the currently selected group or part can be moved up (`dir = -1`) or down (`dir = 1`).
+/// Parts can only move within their current group (never jumping across groups).
+pub fn can_move_hierarchy_item(
+    project: &Project,
+    selected_group: Option<GroupId>,
+    selected_part: Option<PartId>,
+    dir: i32,
+) -> bool {
+    if let Some(gid) = selected_group {
+        if let Some(g_idx) = project.groups.iter().position(|g| g.id == gid) {
+            return if dir < 0 {
+                g_idx > 0
+            } else {
+                g_idx + 1 < project.groups.len()
+            };
+        }
+        return false;
+    }
+
+    if let Some(pid) = selected_part {
+        if let Some(cur_pos) = project.parts.iter().position(|p| p.id == pid) {
+            let cur_grp = effective_part_group(project.parts[cur_pos].group_id, &project.groups);
+            if dir < 0 {
+                return (0..cur_pos).rev().any(|i| {
+                    effective_part_group(project.parts[i].group_id, &project.groups) == cur_grp
+                });
+            } else {
+                return ((cur_pos + 1)..project.parts.len()).any(|i| {
+                    effective_part_group(project.parts[i].group_id, &project.groups) == cur_grp
+                });
+            }
+        }
+    }
+
+    false
+}
+
+/// Moves the currently selected group up/down among `project.groups`, or moves the currently
+/// selected part up/down strictly within its own group in `project.parts` (never crosses group boundaries).
+pub fn move_hierarchy_item(
+    project: &mut Project,
+    selected_group: Option<GroupId>,
+    selected_part: Option<PartId>,
+    dir: i32,
+) -> bool {
+    if let Some(gid) = selected_group {
+        if let Some(g_idx) = project.groups.iter().position(|g| g.id == gid) {
+            if dir < 0 && g_idx > 0 {
+                project.groups.swap(g_idx, g_idx - 1);
+                return true;
+            } else if dir > 0 && g_idx + 1 < project.groups.len() {
+                project.groups.swap(g_idx, g_idx + 1);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    if let Some(pid) = selected_part {
+        if let Some(cur_pos) = project.parts.iter().position(|p| p.id == pid) {
+            let cur_grp = effective_part_group(project.parts[cur_pos].group_id, &project.groups);
+            if dir < 0 {
+                if let Some(prev_pos) = (0..cur_pos).rev().find(|&i| {
+                    effective_part_group(project.parts[i].group_id, &project.groups) == cur_grp
+                }) {
+                    project.parts.swap(cur_pos, prev_pos);
+                    return true;
+                }
+            } else if let Some(next_pos) = ((cur_pos + 1)..project.parts.len()).find(|&i| {
+                effective_part_group(project.parts[i].group_id, &project.groups) == cur_grp
+            }) {
+                project.parts.swap(cur_pos, next_pos);
+                return true;
+            }
+        }
+    }
+
+    false
+}
+
 /// Right inspector for parts, groups, materials, and interactive edge banding diagram
+/// Features collapsible sections, a vertically resizable parts tree with a draggable splitter,
+/// and header-level Move Up (`↑`) / Move Down (`↓`) buttons for groups and parts.
 #[allow(clippy::too_many_arguments)]
 pub fn ui_right_inspector(
     ui: &mut egui::Ui,
     project: &mut Project,
     selected_part: &mut Option<PartId>,
     selected_parts: &mut Vec<PartId>,
+    selected_group: &mut Option<GroupId>,
+    hierarchy_tree_height: &mut f32,
     active_material_id: &mut MaterialId,
     new_group_name_buf: &mut String,
     clipboard: &mut Vec<ClipboardPart>,
     status_msg: &mut String,
     lang: AppLanguage,
+    mut on_tree_height_changed: impl FnMut(),
     mut on_before_mutate: impl FnMut(&Project),
 ) {
-    let mm_suffix = lang.tr(" мм", " mm");
-    ui.heading(lang.tr("Инспектор блоков", "Part Inspector"));
+    let mm_suffix = lang.t(" mm");
+    ui.heading(lang.t("Part Inspector"));
 
-    // Group and part management panel
-    ui.horizontal(|ui| {
-        ui.add(
-            egui::TextEdit::singleline(new_group_name_buf)
-                .hint_text(lang.tr("Имя новой группы...", "New group name..."))
-                .desired_width(135.0),
-        );
-        if ui.button(lang.tr("📁 +Группа", "📁 +Group")).clicked() {
-            on_before_mutate(project);
-            let gid = project.alloc_id();
-            let gname = if new_group_name_buf.trim().is_empty() {
-                format!("{} {}", lang.tr("Группа", "Group"), project.groups.len() + 1)
-            } else {
-                new_group_name_buf.trim().to_string()
-            };
-            project.groups.push(PartGroup {
-                id: gid,
-                name: gname,
-                visible: true,
-                locked: false,
-                expanded: true,
-            });
-            new_group_name_buf.clear();
-        }
-    });
-
-    ui.horizontal_wrapped(|ui| {
-        let has_sel = selected_part.is_some() || !selected_parts.is_empty();
-        if ui
-            .add_enabled(
-                has_sel,
-                egui::Button::new(crate::i18n::adapt_shortcuts(lang.tr("📄 Копировать (Ctrl+C)", "📄 Copy (Ctrl+C)"))),
-            )
-            .on_hover_text(lang.tr(
-                "Скопировать выделенные детали в буфер (можно вставить в другую вкладку или окно мебели)",
-                "Copy selected parts to clipboard (can be pasted into another tab or window)",
-            ))
-            .clicked()
-        {
-            let copied = copy_selected_parts_to_clipboard(project, *selected_part, selected_parts);
-            if !copied.is_empty() {
-                if let Ok(json) = serde_json::to_string(&copied) {
-                    ui.ctx().copy_text(format!("{}{}", CLIPBOARD_PREFIX, json));
-                }
-                let is_mac = crate::i18n::is_macos_platform();
-                let mod_name = if is_mac { "Cmd" } else { "Ctrl" };
-                if copied.len() == 1 {
-                    *status_msg = match lang {
-                        AppLanguage::Ru => format!(
-                            "Деталь «{}» скопирована в буфер обмена (перейдите в любую вкладку мебели и нажмите {}+V)",
-                            copied[0].part.name, mod_name
-                        ),
-                        AppLanguage::Uk => format!(
-                            "Деталь «{}» скопійована в буфер обміну (перейдіть у будь-яку вкладку меблів та натисніть {}+V)",
-                            copied[0].part.name, mod_name
-                        ),
-                        _ => format!(
-                            "Part \"{}\" copied to clipboard (switch to any product tab and press {}+V)",
-                            copied[0].part.name, mod_name
-                        ),
-                    };
-                } else {
-                    *status_msg = match lang {
-                        AppLanguage::Ru => format!(
-                            "Скопировано деталей: {} шт. (перейдите в любую вкладку мебели и нажмите {}+V)",
-                            copied.len(), mod_name
-                        ),
-                        AppLanguage::Uk => format!(
-                            "Скопійовано деталей: {} шт. (перейдіть у будь-яку вкладку меблів та натисніть {}+V)",
-                            copied.len(), mod_name
-                        ),
-                        _ => format!(
-                            "Copied {} parts (switch to any product tab and press {}+V)",
-                            copied.len(), mod_name
-                        ),
-                    };
-                }
-                *clipboard = copied;
-            }
-        }
-
-        if ui
-            .add_enabled(
-                !clipboard.is_empty(),
-                egui::Button::new(crate::i18n::adapt_shortcuts(lang.tr("📥 Вставить (Ctrl+V)", "📥 Paste (Ctrl+V)"))),
-            )
-            .on_hover_text(lang.tr(
-                "Вставить скопированные детали в текущий объект мебели",
-                "Paste copied parts into the current furniture product",
-            ))
-            .clicked()
-            && !clipboard.is_empty()
-        {
-            on_before_mutate(project);
-            let new_ids = paste_parts_into_project(project, clipboard);
-                *selected_part = new_ids.last().copied();
-                *selected_parts = new_ids.clone();
-                if new_ids.len() == 1 {
-                    *status_msg = match lang {
-                        AppLanguage::Ru => format!(
-                            "Деталь «{}» вставлена в «{}»",
-                            clipboard[0].part.name, project.name
-                        ),
-                        AppLanguage::Uk => format!(
-                            "Деталь «{}» вставлена в «{}»",
-                            clipboard[0].part.name, project.name
-                        ),
-                        _ => format!(
-                            "Part \"{}\" pasted into \"{}\"",
-                            clipboard[0].part.name, project.name
-                        ),
-                    };
-                } else {
-                    *status_msg = match lang {
-                        AppLanguage::Ru => format!(
-                            "Вставлено деталей: {} шт. в изделие «{}»",
-                            new_ids.len(),
-                            project.name
-                        ),
-                        AppLanguage::Uk => format!(
-                            "Вставлено деталей: {} шт. у виріб «{}»",
-                            new_ids.len(),
-                            project.name
-                        ),
-                        _ => format!(
-                            "Pasted {} parts into product \"{}\"",
-                            new_ids.len(),
-                            project.name
-                        ),
-                    };
-                }
-            }
-    });
-
-    ui.horizontal_wrapped(|ui| {
-        let has_sel = selected_part.is_some() || !selected_parts.is_empty();
-        if ui
-            .add_enabled(
-                has_sel,
-                egui::Button::new(crate::i18n::adapt_shortcuts(lang.tr("📋 Дублировать (Ctrl+D)", "📋 Duplicate (Ctrl+D)"))),
-            )
-            .clicked()
-        {
-            let ids_to_dup: Vec<PartId> = if !selected_parts.is_empty() {
-                selected_parts.clone()
-            } else {
-                (*selected_part).into_iter().collect()
-            };
-            if !ids_to_dup.is_empty() {
-                on_before_mutate(project);
-                let mut new_ids = Vec::new();
-                for sid in ids_to_dup {
-                    if let Some(orig) = project.parts.iter().find(|p| p.id == sid).cloned() {
-                        let new_id = project.alloc_id();
-                        let mut copy = orig.clone();
-                        copy.id = new_id;
-                        let copy_word = lang.tr("копия", "copy");
-                        copy.name = project.generate_copy_name(&orig.name, copy_word);
-                        copy.position_mm += Vec3::new(36.0, 0.0, 36.0);
-                        project.parts.push(copy);
-                        new_ids.push(new_id);
-                    }
-                }
-                *selected_part = new_ids.last().copied();
-                *selected_parts = new_ids;
-            }
-        }
-        if ui
-            .add_enabled(
-                has_sel,
-                egui::Button::new(lang.tr("🗑 Удалить (Del)", "🗑 Delete (Del)")),
-            )
-            .clicked()
-        {
-            let ids_to_del: Vec<PartId> = if !selected_parts.is_empty() {
-                selected_parts.clone()
-            } else {
-                (*selected_part).into_iter().collect()
-            };
-            if !ids_to_del.is_empty() {
-                on_before_mutate(project);
-                project.parts.retain(|p| !ids_to_del.contains(&p.id));
-                *selected_part = None;
-                selected_parts.clear();
-            }
-        }
-    });
-
-    ui.separator();
-
-    // Tree of groups and parts (with scroll pinned to right edge)
-    egui::ScrollArea::vertical()
-        .id_salt("hierarchy_scroll")
-        .auto_shrink([false, false])
-        .max_height(235.0)
+    // 1. Collapsible Groups & Parts Tree Section
+    egui::CollapsingHeader::new(RichText::new(lang.t("inspector.hierarchy_section")).strong())
+        .id_salt("inspector_hierarchy_collapse")
+        .default_open(true)
         .show(ui, |ui| {
-            let group_ids: Vec<GroupId> = project.groups.iter().map(|g| g.id).collect();
-            for gid in group_ids {
-                let Some(g_idx) = project.groups.iter().position(|g| g.id == gid) else {
-                    continue;
-                };
-                ui.horizontal(|ui| {
-                    let exp_icon = if project.groups[g_idx].expanded {
-                        "▼"
+            // New group creation row
+            ui.horizontal(|ui| {
+                ui.add(
+                    egui::TextEdit::singleline(new_group_name_buf)
+                        .hint_text(lang.t("New group name..."))
+                        .desired_width(140.0),
+                );
+                if ui.button(lang.t("📁 +Group")).clicked() {
+                    on_before_mutate(project);
+                    let gid = project.alloc_id();
+                    let gname = if new_group_name_buf.trim().is_empty() {
+                        format!("{} {}", lang.t("Group"), project.groups.len() + 1)
                     } else {
-                        "▶"
+                        new_group_name_buf.trim().to_string()
                     };
-                    if ui.small_button(exp_icon).clicked() {
-                        project.groups[g_idx].expanded = !project.groups[g_idx].expanded;
-                    }
-                    let vis_icon = if project.groups[g_idx].visible {
-                        "👁"
-                    } else {
-                        "🚫"
-                    };
-                    if ui
-                        .small_button(vis_icon)
-                        .on_hover_text(lang.tr(
-                            "Скрыть/показать всю группу",
-                            "Show/hide entire group",
-                        ))
-                        .clicked()
-                    {
-                        project.groups[g_idx].visible = !project.groups[g_idx].visible;
-                    }
-                    let lock_icon = if project.groups[g_idx].locked {
-                        "🔒"
-                    } else {
-                        "🔓"
-                    };
-                    if ui
-                        .small_button(lock_icon)
-                        .on_hover_text(lang.tr(
-                            "Заблокировать/разблокировать группу от сдвига мышью",
-                            "Lock/unlock group against mouse dragging",
-                        ))
-                        .clicked()
-                    {
-                        project.groups[g_idx].locked = !project.groups[g_idx].locked;
-                    }
-
-                    if ui
-                        .small_button("✔")
-                        .on_hover_text(lang.tr(
-                            "Выделить все детали этой группы для совместного перемещения",
-                            "Select all parts in this group to move them together",
-                        ))
-                        .clicked()
-                    {
-                        let grp_parts: Vec<PartId> = project
-                            .parts
-                            .iter()
-                            .filter(|p| p.group_id == Some(gid) && p.visible && !p.locked)
-                            .map(|p| p.id)
-                            .collect();
-                        if !grp_parts.is_empty() {
-                            *selected_part = grp_parts.first().copied();
-                            *selected_parts = grp_parts;
-                        }
-                    }
-
-                    let avail_w = (ui.available_width() - 8.0).max(110.0);
-                    ui.add(
-                        egui::TextEdit::singleline(&mut project.groups[g_idx].name)
-                            .desired_width(avail_w),
-                    );
-                });
-
-                if project.groups[g_idx].expanded {
-                    ui.indent(("grp_indent", gid), |ui| {
-                        for p_idx in 0..project.parts.len() {
-                            if project.parts[p_idx].group_id == Some(gid) {
-                                render_part_tree_row(
-                                    ui,
-                                    project,
-                                    p_idx,
-                                    selected_part,
-                                    selected_parts,
-                                    lang,
-                                );
-                            }
-                        }
+                    project.groups.push(PartGroup {
+                        id: gid,
+                        name: gname,
+                        visible: true,
+                        locked: false,
+                        expanded: true,
                     });
+                    *selected_group = Some(gid);
+                    new_group_name_buf.clear();
                 }
-            }
+            });
 
-            // Ungrouped parts
-            let ungrouped_indices: Vec<usize> = project
-                .parts
-                .iter()
-                .enumerate()
-                .filter(|(_, p)| {
-                    p.group_id.is_none()
-                        || !project.groups.iter().any(|g| Some(g.id) == p.group_id)
-                })
-                .map(|(i, _)| i)
-                .collect();
+            // Header action strip: Move Up (↑), Move Down (↓), Copy, Paste, Duplicate, Delete
+            ui.horizontal_wrapped(|ui| {
+                ui.spacing_mut().item_spacing.x = 4.0;
+                let can_up =
+                    can_move_hierarchy_item(project, *selected_group, *selected_part, -1);
+                let can_down =
+                    can_move_hierarchy_item(project, *selected_group, *selected_part, 1);
 
-            if !ungrouped_indices.is_empty() {
-                ui.label(RichText::new(lang.tr("📁 Вне групп:", "📁 Ungrouped:")).strong());
-                for p_idx in ungrouped_indices {
-                    render_part_tree_row(
-                        ui,
+                if ui
+                    .add_enabled(
+                        can_up,
+                        egui::Button::new(FA_ARROW_UP),
+                    )
+                    .on_hover_text(lang.t("inspector.move_up_tip"))
+                    .clicked()
+                {
+                    on_before_mutate(project);
+                    move_hierarchy_item(project, *selected_group, *selected_part, -1);
+                }
+
+                if ui
+                    .add_enabled(
+                        can_down,
+                        egui::Button::new(FA_ARROW_DOWN),
+                    )
+                    .on_hover_text(lang.t("inspector.move_down_tip"))
+                    .clicked()
+                {
+                    on_before_mutate(project);
+                    move_hierarchy_item(project, *selected_group, *selected_part, 1);
+                }
+
+                ui.separator();
+
+                let has_sel = selected_part.is_some() || !selected_parts.is_empty();
+                if ui
+                    .add_enabled(has_sel, egui::Button::new(FA_COPY))
+                    .on_hover_text(format!(
+                        "{}\n{}",
+                        crate::i18n::adapt_shortcuts(lang.t("📄 Copy (Ctrl+C)")),
+                        lang.t("Copy selected parts to clipboard (can be pasted into another tab or window)")
+                    ))
+                    .clicked()
+                {
+                    perform_copy_selection(
+                        ui.ctx(),
                         project,
-                        p_idx,
-                        selected_part,
+                        *selected_part,
                         selected_parts,
+                        clipboard,
+                        status_msg,
                         lang,
                     );
                 }
+
+                if ui
+                    .add_enabled(!clipboard.is_empty(), egui::Button::new(FA_PASTE))
+                    .on_hover_text(format!(
+                        "{}\n{}",
+                        crate::i18n::adapt_shortcuts(lang.t("📥 Paste (Ctrl+V)")),
+                        lang.t("Paste copied parts into the current furniture product")
+                    ))
+                    .clicked()
+                {
+                    perform_paste_clipboard(
+                        project,
+                        selected_part,
+                        selected_parts,
+                        clipboard,
+                        status_msg,
+                        lang,
+                        &mut on_before_mutate,
+                    );
+                }
+
+                if ui
+                    .add_enabled(has_sel, egui::Button::new(FA_CLONE))
+                    .on_hover_text(crate::i18n::adapt_shortcuts(
+                        lang.t("📋 Duplicate (Ctrl+D)"),
+                    ))
+                    .clicked()
+                {
+                    perform_duplicate_selection(
+                        project,
+                        selected_part,
+                        selected_parts,
+                        status_msg,
+                        lang,
+                        &mut on_before_mutate,
+                    );
+                }
+
+                if ui
+                    .add_enabled(has_sel, egui::Button::new(FA_TRASH))
+                    .on_hover_text(lang.t("🗑 Delete (Del)"))
+                    .clicked()
+                {
+                    perform_delete_selection(
+                        project,
+                        selected_part,
+                        selected_parts,
+                        status_msg,
+                        lang,
+                        &mut on_before_mutate,
+                    );
+                }
+            });
+
+            ui.separator();
+
+            // Vertically resizable tree of groups and parts
+            let clamped_h = hierarchy_tree_height.clamp(100.0, 800.0);
+            egui::ScrollArea::vertical()
+                .id_salt("hierarchy_scroll")
+                .auto_shrink([false, false])
+                .max_height(clamped_h)
+                .show(ui, |ui| {
+                    let group_ids: Vec<GroupId> = project.groups.iter().map(|g| g.id).collect();
+                    for gid in group_ids {
+                        let Some(g_idx) = project.groups.iter().position(|g| g.id == gid) else {
+                            continue;
+                        };
+                        let is_grp_selected = *selected_group == Some(gid);
+                        ui.horizontal(|ui| {
+                            let exp_icon = if project.groups[g_idx].expanded {
+                                "▼"
+                            } else {
+                                "▶"
+                            };
+                            if ui.small_button(exp_icon).clicked() {
+                                project.groups[g_idx].expanded = !project.groups[g_idx].expanded;
+                            }
+                            let vis_icon = if project.groups[g_idx].visible {
+                                "👁"
+                            } else {
+                                "🚫"
+                            };
+                            if ui
+                                .small_button(vis_icon)
+                                .on_hover_text(lang.t("Show/hide entire group"))
+                                .clicked()
+                            {
+                                project.groups[g_idx].visible = !project.groups[g_idx].visible;
+                            }
+                            let lock_icon = if project.groups[g_idx].locked {
+                                "🔒"
+                            } else {
+                                "🔓"
+                            };
+                            if ui
+                                .small_button(lock_icon)
+                                .on_hover_text(lang.t("Lock/unlock group against mouse dragging"))
+                                .clicked()
+                            {
+                                project.groups[g_idx].locked = !project.groups[g_idx].locked;
+                            }
+
+                            if ui
+                                .selectable_label(is_grp_selected, "📁")
+                                .on_hover_text(lang.t(
+                                    "Select all parts in this group to move them together",
+                                ))
+                                .clicked()
+                            {
+                                *selected_group = Some(gid);
+                                let grp_parts: Vec<PartId> = project
+                                    .parts
+                                    .iter()
+                                    .filter(|p| p.group_id == Some(gid) && p.visible && !p.locked)
+                                    .map(|p| p.id)
+                                    .collect();
+                                if !grp_parts.is_empty() {
+                                    *selected_part = grp_parts.first().copied();
+                                    *selected_parts = grp_parts;
+                                }
+                            }
+
+                            let avail_w = (ui.available_width() - 8.0).max(95.0);
+                            let name_resp = ui.add(
+                                egui::TextEdit::singleline(&mut project.groups[g_idx].name)
+                                    .desired_width(avail_w),
+                            );
+                            if name_resp.clicked() || name_resp.gained_focus() {
+                                *selected_group = Some(gid);
+                            }
+                        });
+
+                        if project.groups[g_idx].expanded {
+                            ui.indent(("grp_indent", gid), |ui| {
+                                for p_idx in 0..project.parts.len() {
+                                    if project.parts[p_idx].group_id == Some(gid) {
+                                        render_part_tree_row(
+                                            ui,
+                                            project,
+                                            p_idx,
+                                            selected_part,
+                                            selected_parts,
+                                            selected_group,
+                                            lang,
+                                        );
+                                    }
+                                }
+                            });
+                        }
+                    }
+
+                    // Ungrouped parts
+                    let ungrouped_indices: Vec<usize> = project
+                        .parts
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, p)| {
+                            effective_part_group(p.group_id, &project.groups).is_none()
+                        })
+                        .map(|(i, _)| i)
+                        .collect();
+
+                    if !ungrouped_indices.is_empty() {
+                        ui.label(RichText::new(lang.t("📁 Ungrouped:")).strong());
+                        for p_idx in ungrouped_indices {
+                            render_part_tree_row(
+                                ui,
+                                project,
+                                p_idx,
+                                selected_part,
+                                selected_parts,
+                                selected_group,
+                                lang,
+                            );
+                        }
+                    }
+                });
+
+            // Draggable horizontal splitter handle right below the tree
+            let splitter_w = ui.available_width().max(120.0);
+            let (split_rect, split_resp) =
+                ui.allocate_exact_size(EguiVec2::new(splitter_w, 10.0), Sense::drag());
+            if split_resp.hovered() || split_resp.dragged() {
+                ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeVertical);
             }
+            let grip_col = if split_resp.hovered() || split_resp.dragged() {
+                ui.visuals().widgets.active.fg_stroke.color
+            } else {
+                ui.visuals().widgets.noninteractive.bg_stroke.color
+            };
+            ui.painter().line_segment(
+                [
+                    Pos2::new(split_rect.left() + 8.0, split_rect.center().y),
+                    Pos2::new(split_rect.right() - 8.0, split_rect.center().y),
+                ],
+                Stroke::new(1.2, grip_col),
+            );
+            ui.painter().text(
+                split_rect.center(),
+                egui::Align2::CENTER_CENTER,
+                "══ ↕ ══",
+                FontId::proportional(9.5),
+                grip_col,
+            );
+            if split_resp.dragged() {
+                *hierarchy_tree_height =
+                    (*hierarchy_tree_height + split_resp.drag_delta().y).clamp(100.0, 800.0);
+            }
+            if split_resp.drag_stopped() {
+                on_tree_height_changed();
+            }
+            split_resp.on_hover_text(lang.t("inspector.resize_tree_tip"));
         });
 
     ui.separator();
 
-    // Lower part of Right Inspector: detailed properties of selected part, material, texture, and edge diagram
+    // Lower part of Right Inspector: collapsible detailed sections for selected part
     egui::ScrollArea::vertical()
         .id_salt("part_props_scroll")
         .auto_shrink([false, false])
         .show(ui, |ui| {
             if let Some(sel_id) = *selected_part {
                 if let Some(idx) = project.parts.iter().position(|p| p.id == sel_id) {
-                    ui.heading(lang.tr("Свойства детали", "Part Properties"));
-
-                    egui::Grid::new("part_inspector_grid")
-                        .num_columns(2)
-                        .spacing([8.0, 6.0])
+                    // 2. Collapsible Part Properties Section
+                    egui::CollapsingHeader::new(RichText::new(lang.t("Part Properties")).strong())
+                        .id_salt("inspector_props_collapse")
+                        .default_open(true)
                         .show(ui, |ui| {
-                            ui.label(lang.tr("Наименование:", "Name:"));
-                            ui.text_edit_singleline(&mut project.parts[idx].name);
-                            ui.end_row();
+                            egui::Grid::new("part_inspector_grid")
+                                .num_columns(2)
+                                .spacing([8.0, 6.0])
+                                .show(ui, |ui| {
+                                    ui.label(lang.t("Name:"));
+                                    ui.text_edit_singleline(&mut project.parts[idx].name);
+                                    ui.end_row();
 
-                            ui.label(lang.tr("Группа:", "Group:"));
-                            let no_grp_txt = lang.tr("Без группы", "No group");
-                            let cur_grp_name = project.parts[idx]
-                                .group_id
-                                .and_then(|gid| project.groups.iter().find(|g| g.id == gid))
-                                .map(|g| g.name.clone())
-                                .unwrap_or_else(|| no_grp_txt.to_string());
-                            egui::ComboBox::from_id_salt("part_group_combo")
-                                .selected_text(cur_grp_name)
-                                .show_ui(ui, |ui| {
-                                    ui.selectable_value(
-                                        &mut project.parts[idx].group_id,
-                                        None,
-                                        no_grp_txt,
-                                    );
-                                    for g in &project.groups {
-                                        ui.selectable_value(
-                                            &mut project.parts[idx].group_id,
-                                            Some(g.id),
-                                            &g.name,
-                                        );
-                                    }
-                                });
-                            ui.end_row();
+                                    ui.label(lang.t("Group:"));
+                                    let no_grp_txt = lang.t("No group");
+                                    let cur_grp_name = project.parts[idx]
+                                        .group_id
+                                        .and_then(|gid| {
+                                            project.groups.iter().find(|g| g.id == gid)
+                                        })
+                                        .map(|g| g.name.clone())
+                                        .unwrap_or_else(|| no_grp_txt.to_string());
+                                    egui::ComboBox::from_id_salt("part_group_combo")
+                                        .selected_text(cur_grp_name)
+                                        .show_ui(ui, |ui| {
+                                            ui.selectable_value(
+                                                &mut project.parts[idx].group_id,
+                                                None,
+                                                no_grp_txt,
+                                            );
+                                            for g in &project.groups {
+                                                ui.selectable_value(
+                                                    &mut project.parts[idx].group_id,
+                                                    Some(g.id),
+                                                    &g.name,
+                                                );
+                                            }
+                                        });
+                                    ui.end_row();
 
-                            ui.label(lang.tr("Ориентация:", "Orientation:"));
-                            egui::ComboBox::from_id_salt("part_orient_combo")
-                                .selected_text(project.parts[idx].orientation.label_i18n(lang))
-                                .show_ui(ui, |ui| {
-                                    for orient in [
-                                        PartOrientation::HorizontalXY,
-                                        PartOrientation::VerticalYZ,
-                                        PartOrientation::FrontalXZ,
-                                    ] {
-                                        ui.selectable_value(
-                                            &mut project.parts[idx].orientation,
-                                            orient,
-                                            orient.label_i18n(lang),
-                                        );
-                                    }
-                                });
-                            ui.end_row();
+                                    ui.label(lang.t("Orientation:"));
+                                    egui::ComboBox::from_id_salt("part_orient_combo")
+                                        .selected_text(
+                                            project.parts[idx].orientation.label_i18n(lang),
+                                        )
+                                        .show_ui(ui, |ui| {
+                                            for orient in [
+                                                PartOrientation::HorizontalXY,
+                                                PartOrientation::VerticalYZ,
+                                                PartOrientation::FrontalXZ,
+                                            ] {
+                                                ui.selectable_value(
+                                                    &mut project.parts[idx].orientation,
+                                                    orient,
+                                                    orient.label_i18n(lang),
+                                                );
+                                            }
+                                        });
+                                    ui.end_row();
 
-                            ui.label(lang.tr("Материал:", "Material:"));
-                            let cur_mat_id = project.parts[idx].material_id;
-                            let cur_mat_label = project
-                                .get_material(cur_mat_id)
-                                .map(|m| format!("{} ({:.0}{})", m.name, m.thickness_mm, mm_suffix))
-                                .unwrap_or_else(|| lang.tr("Не выбран", "None").to_string());
-                            egui::ComboBox::from_id_salt("part_mat_combo")
-                                .selected_text(cur_mat_label)
-                                .show_ui(ui, |ui| {
-                                    for m in &project.materials {
-                                        if ui
-                                            .selectable_value(
-                                                &mut project.parts[idx].material_id,
-                                                m.id,
-                                                format!("{} ({:.0}{})", m.name, m.thickness_mm, mm_suffix),
+                                    ui.label(lang.t("Material:"));
+                                    let cur_mat_id = project.parts[idx].material_id;
+                                    let cur_mat_label = project
+                                        .get_material(cur_mat_id)
+                                        .map(|m| {
+                                            format!(
+                                                "{} ({:.0}{})",
+                                                m.name, m.thickness_mm, mm_suffix
                                             )
+                                        })
+                                        .unwrap_or_else(|| lang.t("None").to_string());
+                                    egui::ComboBox::from_id_salt("part_mat_combo")
+                                        .selected_text(cur_mat_label)
+                                        .show_ui(ui, |ui| {
+                                            for m in &project.materials {
+                                                if ui
+                                                    .selectable_value(
+                                                        &mut project.parts[idx].material_id,
+                                                        m.id,
+                                                        format!(
+                                                            "{} ({:.0}{})",
+                                                            m.name, m.thickness_mm, mm_suffix
+                                                        ),
+                                                    )
+                                                    .clicked()
+                                                {
+                                                    *active_material_id = m.id;
+                                                }
+                                            }
+                                        });
+                                    ui.end_row();
+
+                                    ui.label(lang.t("Full Size (L×W):"));
+                                    ui.horizontal(|ui| {
+                                        ui.add(
+                                            math_drag_value(&mut project.parts[idx].length_mm)
+                                                .speed(1.0)
+                                                .range(10.0..=5000.0)
+                                                .suffix(mm_suffix),
+                                        );
+                                        ui.label("×");
+                                        ui.add(
+                                            math_drag_value(&mut project.parts[idx].width_mm)
+                                                .speed(1.0)
+                                                .range(10.0..=5000.0)
+                                                .suffix(mm_suffix),
+                                        );
+                                        if ui
+                                            .small_button("⇄")
+                                            .on_hover_text(lang.t("Swap Length and Width"))
                                             .clicked()
                                         {
-                                            *active_material_id = m.id;
+                                            on_before_mutate(project);
+                                            let part = &mut project.parts[idx];
+                                            std::mem::swap(&mut part.length_mm, &mut part.width_mm);
                                         }
-                                    }
+                                    });
+                                    ui.end_row();
+
+                                    let (cut_l, cut_w) = project.parts[idx]
+                                        .cut_dimensions_mm(&project.edge_bandings);
+                                    let cut_col = if ui.visuals().dark_mode {
+                                        Color32::from_rgb(110, 235, 145)
+                                    } else {
+                                        Color32::from_rgb(18, 130, 55)
+                                    };
+                                    ui.label(lang.t("Cut Size:"));
+                                    ui.label(
+                                        RichText::new(format!(
+                                            "{:.1} × {:.1}{}",
+                                            cut_l, cut_w, mm_suffix
+                                        ))
+                                        .strong()
+                                        .color(cut_col),
+                                    );
+                                    ui.end_row();
                                 });
-                            ui.end_row();
-
-                            ui.label(lang.tr("Габарит (Д×Ш):", "Full Size (L×W):"));
-                            ui.horizontal(|ui| {
-                                ui.add(
-                                    math_drag_value(&mut project.parts[idx].length_mm)
-                                        .speed(1.0)
-                                        .range(10.0..=5000.0)
-                                        .suffix(mm_suffix),
-                                );
-                                ui.label("×");
-                                ui.add(
-                                    math_drag_value(&mut project.parts[idx].width_mm)
-                                        .speed(1.0)
-                                        .range(10.0..=5000.0)
-                                        .suffix(mm_suffix),
-                                );
-                                if ui
-                                    .small_button("⇄")
-                                    .on_hover_text(lang.tr(
-                                        "Поменять Длину и Ширину местами",
-                                        "Swap Length and Width",
-                                    ))
-                                    .clicked()
-                                {
-                                    let tmp = project.parts[idx].length_mm;
-                                    project.parts[idx].length_mm = project.parts[idx].width_mm;
-                                    project.parts[idx].width_mm = tmp;
-                                }
-                            });
-                            ui.end_row();
-
-                            let (cut_l, cut_w) =
-                                project.parts[idx].cut_dimensions_mm(&project.edge_bandings);
-                            ui.label(lang.tr("Размер пила:", "Cut Size:"));
-                            ui.label(
-                                RichText::new(format!("{:.1} × {:.1}{}", cut_l, cut_w, mm_suffix))
-                                    .strong()
-                                    .color(Color32::from_rgb(110, 235, 145)),
-                            );
-                            ui.end_row();
                         });
 
-                    ui.add_space(4.0);
-                    ui.checkbox(
-                        &mut project.parts[idx].grain_fixed,
-                        lang.tr(
-                            "🌲 Зафиксировать направление волокон (не вращать при раскрое)",
-                            "🌲 Lock grain direction (do not rotate on cutting sheet)",
-                        ),
-                    );
-                    if project.parts[idx].grain_fixed {
+                    // 3. Collapsible Grain & Orientation Section
+                    egui::CollapsingHeader::new(
+                        RichText::new(lang.t("inspector.grain_section")).strong(),
+                    )
+                    .id_salt("inspector_grain_collapse")
+                    .default_open(true)
+                    .show(ui, |ui| {
                         ui.checkbox(
-                            &mut project.parts[idx].grain_along_width,
-                            lang.tr(
-                                "Направить волокна поперек (вдоль Ширины W вместо Длины L)",
-                                "Run grain across width (along Width W instead of Length L)",
-                            ),
+                            &mut project.parts[idx].grain_fixed,
+                            lang.t("🌲 Lock grain direction (do not rotate on cutting sheet)"),
                         );
-                    }
-
-                    ui.separator();
-                    ui.label(
-                        RichText::new(lang.tr(
-                            "Оклеивание кромкой по 4 граням:",
-                            "Edge Banding on 4 Sides:",
-                        ))
-                        .strong(),
-                    );
-
-                    // Quick one-click edge banding buttons
-                    ui.horizontal_wrapped(|ui| {
-                        ui.label(lang.tr("Быстро:", "Quick:"));
-                        if let Some(first_edge) = project.edge_bandings.first().map(|e| e.id) {
-                            if ui
-                                .small_button(lang.tr("Вкруг ПВХ 2мм", "All 4 Edges"))
-                                .clicked()
-                            {
-                                project.parts[idx].edges = PartEdges {
-                                    l1: Some(first_edge),
-                                    l2: Some(first_edge),
-                                    w1: Some(first_edge),
-                                    w2: Some(first_edge),
-                                };
-                            }
-                        }
-                        if ui
-                            .small_button(lang.tr("Очистить кромки", "Clear Edges"))
-                            .clicked()
-                        {
-                            project.parts[idx].edges = PartEdges::default();
+                        if project.parts[idx].grain_fixed {
+                            ui.checkbox(
+                                &mut project.parts[idx].grain_along_width,
+                                lang.t("Run grain across width (along Width W instead of Length L)"),
+                            );
                         }
                     });
 
-                    // Interactive graphic diagram of part with 4 edges (L1, L2, W1, W2)
-                    draw_interactive_edge_diagram(ui, project, idx, lang);
-
-                    // Dropdown combos for each of the 4 edges
-                    let edges_clone = project.edge_bandings.clone();
-                    egui::Grid::new("edges_select_grid")
-                        .num_columns(2)
-                        .spacing([8.0, 4.0])
-                        .show(ui, |ui| {
-                            edge_combo_row(
-                                ui,
-                                lang.tr("Д1 (Длина 1 / Перед):", "L1 (Length 1 / Front):"),
-                                "edge_l1",
-                                &mut project.parts[idx].edges.l1,
-                                &edges_clone,
-                                lang,
-                            );
-                            edge_combo_row(
-                                ui,
-                                lang.tr("Д2 (Длина 2 / Зад):", "L2 (Length 2 / Back):"),
-                                "edge_l2",
-                                &mut project.parts[idx].edges.l2,
-                                &edges_clone,
-                                lang,
-                            );
-                            edge_combo_row(
-                                ui,
-                                lang.tr("Ш1 (Ширина 1 / Торец 1):", "W1 (Width 1 / End 1):"),
-                                "edge_w1",
-                                &mut project.parts[idx].edges.w1,
-                                &edges_clone,
-                                lang,
-                            );
-                            edge_combo_row(
-                                ui,
-                                lang.tr("Ш2 (Ширина 2 / Торец 2):", "W2 (Width 2 / End 2):"),
-                                "edge_w2",
-                                &mut project.parts[idx].edges.w2,
-                                &edges_clone,
-                                lang,
-                            );
+                    // 4. Collapsible Edge Banding Section
+                    egui::CollapsingHeader::new(
+                        RichText::new(lang.t("inspector.edges_section")).strong(),
+                    )
+                    .id_salt("inspector_edges_collapse")
+                    .default_open(true)
+                    .show(ui, |ui| {
+                        ui.horizontal_wrapped(|ui| {
+                            ui.label(lang.t("Quick:"));
+                            if let Some(first_edge) = project.edge_bandings.first().map(|e| e.id) {
+                                if ui.small_button(lang.t("All 4 Edges")).clicked() {
+                                    on_before_mutate(project);
+                                    project.parts[idx].edges = PartEdges {
+                                        l1: Some(first_edge),
+                                        l2: Some(first_edge),
+                                        w1: Some(first_edge),
+                                        w2: Some(first_edge),
+                                    };
+                                }
+                            }
+                            if ui.small_button(lang.t("Clear Edges")).clicked() {
+                                on_before_mutate(project);
+                                project.parts[idx].edges = PartEdges::default();
+                            }
                         });
+
+                        // Interactive graphic diagram of part with 4 edges (L1, L2, W1, W2)
+                        draw_interactive_edge_diagram(ui, project, idx, lang);
+
+                        // Dropdown combos for each of the 4 edges
+                        let edges_clone = project.edge_bandings.clone();
+                        egui::Grid::new("edges_select_grid")
+                            .num_columns(2)
+                            .spacing([8.0, 4.0])
+                            .show(ui, |ui| {
+                                edge_combo_row(
+                                    ui,
+                                    lang.t("L1 (Length 1 / Front):"),
+                                    "edge_l1",
+                                    &mut project.parts[idx].edges.l1,
+                                    &edges_clone,
+                                    lang,
+                                );
+                                edge_combo_row(
+                                    ui,
+                                    lang.t("L2 (Length 2 / Back):"),
+                                    "edge_l2",
+                                    &mut project.parts[idx].edges.l2,
+                                    &edges_clone,
+                                    lang,
+                                );
+                                edge_combo_row(
+                                    ui,
+                                    lang.t("W1 (Width 1 / End 1):"),
+                                    "edge_w1",
+                                    &mut project.parts[idx].edges.w1,
+                                    &edges_clone,
+                                    lang,
+                                );
+                                edge_combo_row(
+                                    ui,
+                                    lang.t("W2 (Width 2 / End 2):"),
+                                    "edge_w2",
+                                    &mut project.parts[idx].edges.w2,
+                                    &edges_clone,
+                                    lang,
+                                );
+                            });
+                    });
                 }
             } else {
                 ui.label(
-                    RichText::new(lang.tr(
-                        "Выберите деталь в списке выше или кликните по ней на чертеже / в 3D, чтобы настроить размеры, материал и кромки.",
+                    RichText::new(lang.t(
                         "Select a part in the tree above or click it in the 2D/3D view to configure dimensions, material, and edge bandings.",
                     ))
                     .color(Color32::GRAY),
@@ -1390,6 +1944,7 @@ fn render_part_tree_row(
     p_idx: usize,
     selected_part: &mut Option<PartId>,
     selected_parts: &mut Vec<PartId>,
+    selected_group: &mut Option<GroupId>,
     lang: AppLanguage,
 ) {
     let pid = project.parts[p_idx].id;
@@ -1423,12 +1978,13 @@ fn render_part_tree_row(
         );
         let resp = ui
             .selectable_label(is_sel, label_text)
-            .on_hover_text(crate::i18n::adapt_shortcuts(lang.tr(
-                "Клик — выбрать деталь; Shift/Ctrl + клик — добавить/убрать из группового выделения",
-                "Click to select part; Shift/Ctrl + click to toggle in multi-selection",
-            )));
+            .on_hover_text(crate::i18n::adapt_shortcuts(
+                lang.t("Click to select part; Shift/Ctrl + click to toggle in multi-selection"),
+            ));
         if resp.clicked() {
-            let multi_mod = ui.input(|i| i.modifiers.shift || i.modifiers.command || i.modifiers.ctrl);
+            *selected_group = None;
+            let multi_mod =
+                ui.input(|i| i.modifiers.shift || i.modifiers.command || i.modifiers.ctrl);
             if multi_mod {
                 if let Some(prev) = *selected_part {
                     if !selected_parts.contains(&prev) {
@@ -1458,8 +2014,8 @@ fn edge_combo_row(
     edges_lib: &[crate::model::EdgeBanding],
     lang: AppLanguage,
 ) {
-    let mm_suffix = lang.tr(" мм", " mm");
-    let none_txt = lang.tr("Нет (без кромки)", "None (no edge)");
+    let mm_suffix = lang.t(" mm");
+    let none_txt = lang.t("None (no edge)");
     ui.label(label);
     let selected_text = edge_slot
         .and_then(|id| edges_lib.iter().find(|e| e.id == id))
@@ -1505,27 +2061,32 @@ fn draw_interactive_edge_diagram(
         let c = inner.center();
         if !part.grain_along_width {
             painter.line_segment(
-                [Pos2::new(inner.left() + 18.0, c.y), Pos2::new(inner.right() - 18.0, c.y)],
+                [
+                    Pos2::new(inner.left() + 18.0, c.y),
+                    Pos2::new(inner.right() - 18.0, c.y),
+                ],
                 Stroke::new(1.2, Color32::from_rgb(170, 190, 215)),
             );
         } else {
             painter.line_segment(
-                [Pos2::new(c.x, inner.top() + 10.0), Pos2::new(c.x, inner.bottom() - 10.0)],
+                [
+                    Pos2::new(c.x, inner.top() + 10.0),
+                    Pos2::new(c.x, inner.bottom() - 10.0),
+                ],
                 Stroke::new(1.2, Color32::from_rgb(170, 190, 215)),
             );
         }
     }
 
-    let center_txt = match lang {
-        AppLanguage::Ru => format!(
-            "Габарит: {:.0}×{:.0}\nПил: {:.1}×{:.1}",
-            part.length_mm, part.width_mm, cut_l, cut_w
-        ),
-        _ => format!(
-            "Full: {:.0}×{:.0}\nCut: {:.1}×{:.1}",
-            part.length_mm, part.width_mm, cut_l, cut_w
-        ),
-    };
+    let center_txt = lang.tf(
+        "fmt.edge_diag_center",
+        &[
+            &format!("{:.0}", part.length_mm),
+            &format!("{:.0}", part.width_mm),
+            &format!("{:.1}", cut_l),
+            &format!("{:.1}", cut_w),
+        ],
+    );
     painter.text(
         inner.center(),
         egui::Align2::CENTER_CENTER,
@@ -1534,81 +2095,83 @@ fn draw_interactive_edge_diagram(
         Color32::WHITE,
     );
 
-    let mm_unit = lang.tr("мм", "mm");
-    let none_unit = lang.tr("нет", "none");
-    let draw_edge_bar = |p1: Pos2, p2: Pos2, label_pos: Pos2, title: &str, eid: Option<EdgeId>| {
-        if let Some(id) = eid {
-            if let Some(e) = project.get_edge(id) {
-                let col = Color32::from_rgb(e.color_rgb[0], e.color_rgb[1], e.color_rgb[2]);
-                painter.line_segment([p1, p2], Stroke::new(4.0, col));
-                painter.text(
-                    label_pos,
-                    egui::Align2::CENTER_CENTER,
-                    format!("{}: {:.1}{}", title, e.thickness_mm, mm_unit),
-                    FontId::proportional(10.5),
-                    col,
-                );
-                return;
+    let mm_unit = lang.t("mm");
+    let none_unit = lang.t("none");
+    let draw_edge_bar =
+        |p1: Pos2, p2: Pos2, label_pos: Pos2, title: &str, eid: Option<EdgeId>| {
+            if let Some(id) = eid {
+                if let Some(e) = project.get_edge(id) {
+                    let col = Color32::from_rgb(e.color_rgb[0], e.color_rgb[1], e.color_rgb[2]);
+                    painter.line_segment([p1, p2], Stroke::new(4.0, col));
+                    painter.text(
+                        label_pos,
+                        egui::Align2::CENTER_CENTER,
+                        format!("{}: {:.1}{}", title, e.thickness_mm, mm_unit),
+                        FontId::proportional(10.5),
+                        col,
+                    );
+                    return;
+                }
             }
-        }
-        painter.text(
-            label_pos,
-            egui::Align2::CENTER_CENTER,
-            format!("{}: {}", title, none_unit),
-            FontId::proportional(10.0),
-            Color32::GRAY,
-        );
-    };
+            painter.text(
+                label_pos,
+                egui::Align2::CENTER_CENTER,
+                format!("{}: {}", title, none_unit),
+                FontId::proportional(10.0),
+                Color32::GRAY,
+            );
+        };
 
     // Top edge = L1, Bottom = L2, Left = W1, Right = W2
     draw_edge_bar(
         inner.left_top(),
         inner.right_top(),
         Pos2::new(inner.center().x, rect.top() + 10.0),
-        lang.tr("Д1", "L1"),
+        lang.t("L1"),
         part.edges.l1,
     );
     draw_edge_bar(
         inner.left_bottom(),
         inner.right_bottom(),
         Pos2::new(inner.center().x, rect.bottom() - 10.0),
-        lang.tr("Д2", "L2"),
+        lang.t("L2"),
         part.edges.l2,
     );
     draw_edge_bar(
         inner.left_top(),
         inner.left_bottom(),
         Pos2::new(rect.left() + 19.0, inner.center().y),
-        lang.tr("Ш1", "W1"),
+        lang.t("W1"),
         part.edges.w1,
     );
     draw_edge_bar(
         inner.right_top(),
         inner.right_bottom(),
         Pos2::new(rect.right() - 19.0, inner.center().y),
-        lang.tr("Ш2", "W2"),
+        lang.t("W2"),
         part.edges.w2,
     );
 
     // Clicking edge area on mini-diagram cycles edge banding
     if resp.clicked() {
         if let Some(mp) = resp.interact_pointer_pos() {
-            let cycle_edge = |cur: Option<EdgeId>, lib: &[crate::model::EdgeBanding]| -> Option<EdgeId> {
-                if lib.is_empty() {
-                    return None;
-                }
-                match cur {
-                    None => Some(lib[0].id),
-                    Some(id) => {
-                        let pos = lib.iter().position(|e| e.id == id).unwrap_or(0);
-                        if pos + 1 < lib.len() {
-                            Some(lib[pos + 1].id)
-                        } else {
-                            None
+            let cycle_edge =
+                |cur: Option<EdgeId>, lib: &[crate::model::EdgeBanding]| -> Option<EdgeId> {
+                    if lib.is_empty() {
+                        return None;
+                    }
+                    match cur {
+                        None => Some(lib[0].id),
+                        Some(id) => {
+                            let pos = lib.iter().position(|e| e.id == id).unwrap_or(0);
+                            if pos + 1 < lib.len() {
+                                Some(lib[pos + 1].id)
+                            } else {
+                                None
+                            }
                         }
                     }
-                }
-            };
+                };
             let lib = project.edge_bandings.clone();
             let d_top = (mp.y - inner.top()).abs();
             let d_bot = (mp.y - inner.bottom()).abs();
@@ -1616,19 +2179,24 @@ fn draw_interactive_edge_diagram(
             let d_right = (mp.x - inner.right()).abs();
             let min_d = d_top.min(d_bot).min(d_left).min(d_right);
             if min_d == d_top {
-                project.parts[part_idx].edges.l1 = cycle_edge(project.parts[part_idx].edges.l1, &lib);
+                project.parts[part_idx].edges.l1 =
+                    cycle_edge(project.parts[part_idx].edges.l1, &lib);
             } else if min_d == d_bot {
-                project.parts[part_idx].edges.l2 = cycle_edge(project.parts[part_idx].edges.l2, &lib);
+                project.parts[part_idx].edges.l2 =
+                    cycle_edge(project.parts[part_idx].edges.l2, &lib);
             } else if min_d == d_left {
-                project.parts[part_idx].edges.w1 = cycle_edge(project.parts[part_idx].edges.w1, &lib);
+                project.parts[part_idx].edges.w1 =
+                    cycle_edge(project.parts[part_idx].edges.w1, &lib);
             } else {
-                project.parts[part_idx].edges.w2 = cycle_edge(project.parts[part_idx].edges.w2, &lib);
+                project.parts[part_idx].edges.w2 =
+                    cycle_edge(project.parts[part_idx].edges.w2, &lib);
             }
         }
     }
 }
 
 /// "Sheet Materials & Edge Banding Catalog" tab (configure 18 mm thickness, RGB color, sheet dimensions, load PNG/JPG/WEBP texture, and delete with confirmation)
+#[allow(clippy::too_many_arguments)]
 pub fn ui_materials_manager_tab(
     ui: &mut egui::Ui,
     project: &mut Project,
@@ -1640,89 +2208,58 @@ pub fn ui_materials_manager_tab(
     status_msg: &mut String,
     lang: AppLanguage,
 ) {
-    let mm_suffix = lang.tr(" мм", " mm");
-    ui.heading(lang.tr(
-        "Справочник листовых материалов и кромок",
-        "Sheet Materials & Edge Banding Catalog",
-    ));
-    ui.add_space(6.0);
+    let mm_suffix = lang.t(" mm");
+    ui.heading(lang.t("Sheet Materials & Edge Banding Catalog"));
+    ui.separator();
+
+    ui.label(RichText::new(lang.t("Project sheet materials (all dimensions in millimeters):")).strong());
+    ui.add_space(2.0);
 
     ui.horizontal(|ui| {
-        if ui
-            .button(lang.tr(
-                "➕ Добавить листовой материал",
-                "➕ Add Sheet Material",
-            ))
-            .clicked()
-        {
+        if ui.button(lang.t("➕ Add Sheet Material")).clicked() {
             let id = project.alloc_id();
+            let color_rgb = crate::model::generate_next_material_color(&project.materials, id);
             project.materials.push(Material {
                 id,
                 name: crate::glossary::format_new_material_name(lang, project.materials.len() + 1),
                 thickness_mm: 18.0,
-                color_rgb: [200, 175, 145],
+                color_rgb,
                 texture_path: None,
                 texture_relative_path: None,
                 texture_base64: None,
                 sheet_length_mm: 2800.0,
                 sheet_width_mm: 2070.0,
                 default_grain_fixed: true,
-            });
-        }
-
-        if ui
-            .button(lang.tr("➕ Добавить тип кромки", "➕ Add Edge Banding Type"))
-            .clicked()
-        {
-            let id = project.alloc_id();
-            project.edge_bandings.push(crate::model::EdgeBanding {
-                id,
-                name: crate::glossary::format_new_edge_name(lang, project.edge_bandings.len() + 1),
-                thickness_mm: 1.0,
-                color_rgb: [180, 100, 240],
+                price_per_sheet: 0.0,
             });
         }
 
         ui.separator();
         ui.checkbox(
             &mut project.embed_textures,
-            lang.tr(
-                "📦 Упаковывать текстуры в файл проекта (.qfurn)",
-                "📦 Embed textures into project file (.qfurn)",
-            ),
+            lang.t("📦 Embed textures into project file (.qfurn)"),
         )
-        .on_hover_text(lang.tr(
-            "При сохранении все используемые текстуры будут сохранены прямо в файл проекта (Base64). Файл можно будет переносить на любой ПК без потери изображений.",
+        .on_hover_text(lang.t(
             "When saving, all active textures will be embedded directly into the project file (Base64). The file can be transferred to any PC without losing images.",
         ));
     });
-
-    ui.separator();
-    ui.label(
-        RichText::new(lang.tr(
-            "Листовые материалы проекта (все размеры в миллиметрах):",
-            "Project sheet materials (all dimensions in millimeters):",
-        ))
-        .strong(),
-    );
 
     let can_delete_mat = project.materials.len() > 1;
 
     egui::Grid::new("materials_table_grid")
         .striped(true)
-        .num_columns(8)
+        .num_columns(9)
         .spacing([12.0, 8.0])
         .show(ui, |ui| {
-            ui.label(RichText::new(lang.tr("Наименование материала", "Material Name")).strong());
-            ui.label(RichText::new(lang.tr("Толщина (мм)", "Thickness (mm)")).strong());
-            ui.label(RichText::new(lang.tr("Цвет 3D", "3D Color")).strong());
-            ui.label(
-                RichText::new(lang.tr("Текстура (PNG/JPG/WEBP)", "Texture (PNG/JPG/WEBP)")).strong(),
-            );
-            ui.label(RichText::new(lang.tr("Длина листа (мм)", "Sheet Length (mm)")).strong());
-            ui.label(RichText::new(lang.tr("Ширина листа (мм)", "Sheet Width (mm)")).strong());
-            ui.label(RichText::new(lang.tr("Текстура по умолч.", "Default Grain")).strong());
-            ui.label(RichText::new(lang.tr("Действия", "Actions")).strong());
+            ui.label(RichText::new(lang.t("Material Name")).strong());
+            ui.label(RichText::new(lang.t("Thickness (mm)")).strong());
+            ui.label(RichText::new(lang.t("3D Color")).strong());
+            ui.label(RichText::new(lang.t("Texture (PNG/JPG/WEBP)")).strong());
+            ui.label(RichText::new(lang.t("Sheet Length (mm)")).strong());
+            ui.label(RichText::new(lang.t("Sheet Width (mm)")).strong());
+            ui.label(RichText::new(lang.t("Default Grain")).strong());
+            ui.label(RichText::new(lang.t("Cost per sheet")).strong());
+            ui.label(RichText::new(lang.t("Actions")).strong());
             ui.end_row();
 
             for m in &mut project.materials {
@@ -1736,18 +2273,12 @@ pub fn ui_materials_manager_tab(
                 ui.color_edit_button_srgb(&mut m.color_rgb);
 
                 ui.horizontal(|ui| {
-                    if ui
-                        .button(lang.tr("📂 Загрузить...", "📂 Load..."))
-                        .clicked()
-                    {
+                    if ui.button(lang.t("📂 Load...")).clicked() {
                         #[cfg(not(target_arch = "wasm32"))]
                         {
                             if let Some(path) = rfd::FileDialog::new()
                                 .add_filter(
-                                    lang.tr(
-                                        "Изображения текстур (PNG, JPG, WEBP)",
-                                        "Texture Images (PNG, JPG, WEBP)",
-                                    ),
+                                    lang.t("Texture Images (PNG, JPG, WEBP)"),
                                     &["png", "jpg", "jpeg", "webp"],
                                 )
                                 .pick_file()
@@ -1757,13 +2288,17 @@ pub fn ui_materials_manager_tab(
                                         loaded_textures.insert(m.id, tex_info.handle);
                                         m.texture_path = Some(path.clone());
                                         if let Some(fname) = path.file_name() {
-                                            m.texture_relative_path = Some(fname.to_string_lossy().to_string());
+                                            m.texture_relative_path =
+                                                Some(fname.to_string_lossy().to_string());
                                         }
                                         if project.embed_textures {
                                             if let Ok(bytes) = std::fs::read(&path) {
                                                 if bytes.len() <= 60 * 1024 * 1024 {
                                                     use base64::Engine;
-                                                    m.texture_base64 = Some(base64::engine::general_purpose::STANDARD.encode(&bytes));
+                                                    m.texture_base64 = Some(
+                                                        base64::engine::general_purpose::STANDARD
+                                                            .encode(&bytes),
+                                                    );
                                                 }
                                             }
                                         } else {
@@ -1772,34 +2307,16 @@ pub fn ui_materials_manager_tab(
 
                                         if let Some(ref w) = tex_info.warning {
                                             texture_warnings.insert(m.id, w.clone());
-                                            *status_msg = match lang {
-                                                AppLanguage::Ru => format!(
-                                                    "⚠️ Текстура для «{}» загружена: {}. {}",
-                                                    m.name,
-                                                    path.display(),
-                                                    w
-                                                ),
-                                                _ => format!(
-                                                    "⚠️ Texture for \"{}\" loaded: {}. {}",
-                                                    m.name,
-                                                    path.display(),
-                                                    w
-                                                ),
-                                            };
+                                            *status_msg = lang.tf(
+                                                "fmt.texture_loaded_warn",
+                                                &[&m.name, &path.display(), &w],
+                                            );
                                         } else {
                                             texture_warnings.remove(&m.id);
-                                            *status_msg = match lang {
-                                                AppLanguage::Ru => format!(
-                                                    "Загружена текстура для «{}»: {}",
-                                                    m.name,
-                                                    path.display()
-                                                ),
-                                                _ => format!(
-                                                    "Loaded texture for \"{}\": {}",
-                                                    m.name,
-                                                    path.display()
-                                                ),
-                                            };
+                                            *status_msg = lang.tf(
+                                                "fmt.texture_loaded",
+                                                &[&m.name, &path.display()],
+                                            );
                                         }
                                     }
                                     Err(e) => {
@@ -1813,11 +2330,11 @@ pub fn ui_materials_manager_tab(
                             crate::web::pick_texture_file_web(m.id);
                         }
                     }
-                    if m.texture_path.is_some() || m.texture_base64.is_some() || m.texture_relative_path.is_some() {
-                        if ui
-                            .small_button(lang.tr("✖ Сброс", "✖ Reset"))
-                            .clicked()
-                        {
+                    if m.texture_path.is_some()
+                        || m.texture_base64.is_some()
+                        || m.texture_relative_path.is_some()
+                    {
+                        if ui.small_button(lang.t("✖ Reset")).clicked() {
                             m.texture_path = None;
                             m.texture_relative_path = None;
                             m.texture_base64 = None;
@@ -1828,14 +2345,11 @@ pub fn ui_materials_manager_tab(
                             ui.image((tex.id(), egui::vec2(18.0, 18.0)));
                         }
                         let active_label = if m.texture_base64.is_some() {
-                            lang.tr("✔ Текстура (упакована)", "✔ Texture (embedded)")
+                            lang.t("✔ Texture (embedded)")
                         } else {
-                            lang.tr("✔ Текстура активна", "✔ Texture active")
+                            lang.t("✔ Texture active")
                         };
-                        ui.label(
-                            RichText::new(active_label)
-                                .color(Color32::GREEN),
-                        );
+                        ui.label(RichText::new(active_label).color(Color32::GREEN));
                         if let Some(warn) = texture_warnings.get(&m.id) {
                             ui.label(
                                 RichText::new(format!("⚠️ {}", warn))
@@ -1845,8 +2359,7 @@ pub fn ui_materials_manager_tab(
                         }
                     } else {
                         ui.label(
-                            RichText::new(lang.tr("Цвет (без фото)", "Solid color (no photo)"))
-                                .color(Color32::GRAY),
+                            RichText::new(lang.t("Solid color (no photo)")).color(Color32::GRAY),
                         );
                     }
                 });
@@ -1863,29 +2376,26 @@ pub fn ui_materials_manager_tab(
                         .range(500.0..=4000.0)
                         .suffix(mm_suffix),
                 );
-                ui.checkbox(
-                    &mut m.default_grain_fixed,
-                    lang.tr("Фикс. волокна", "Lock grain"),
+                ui.checkbox(&mut m.default_grain_fixed, lang.t("Lock grain"));
+
+                ui.add(
+                    math_drag_value_f64(&mut m.price_per_sheet)
+                        .speed(10.0)
+                        .range(0.0..=10_000_000.0),
                 );
 
                 if ui
                     .add_enabled(
                         can_delete_mat,
                         egui::Button::new(
-                            RichText::new(lang.tr("🗑 Удалить", "🗑 Delete"))
+                            RichText::new(lang.t("🗑 Delete"))
                                 .color(Color32::from_rgb(245, 95, 95)),
                         ),
                     )
                     .on_hover_text(if can_delete_mat {
-                        lang.tr(
-                            "Удалить этот материал (потребуется подтверждение)",
-                            "Delete this material (confirmation required)",
-                        )
+                        lang.t("Delete this material (confirmation required)")
                     } else {
-                        lang.tr(
-                            "Нельзя удалить единственный материал в проекте",
-                            "Cannot delete the only material in the project",
-                        )
+                        lang.t("Cannot delete the only material in the project")
                     })
                     .clicked()
                 {
@@ -1900,7 +2410,7 @@ pub fn ui_materials_manager_tab(
         let mat_name = project
             .get_material(del_id)
             .map(|m| m.name.clone())
-            .unwrap_or_else(|| lang.tr("Материал", "Material").to_string());
+            .unwrap_or_else(|| lang.t("Material").to_string());
         let used_parts_count = project
             .parts
             .iter()
@@ -1910,41 +2420,58 @@ pub fn ui_materials_manager_tab(
         let mut close_dialog = false;
         let mut confirm_delete = false;
 
-        egui::Window::new(lang.tr(
-            "Подтверждение удаления материала",
-            "Confirm Material Deletion",
-        ))
-        .collapsible(false)
-        .resizable(false)
-        .anchor(egui::Align2::CENTER_CENTER, EguiVec2::ZERO)
-        .show(ui.ctx(), |ui| {
-            ui.add_space(4.0);
-            let q_txt = crate::glossary::format_material_delete_confirm(lang, &mat_name);
-            ui.label(RichText::new(q_txt).strong().size(15.0));
-            if used_parts_count > 0 {
-                ui.add_space(4.0);
-                let warn_txt = crate::glossary::format_material_delete_warn(lang, used_parts_count);
-                ui.colored_label(Color32::from_rgb(240, 175, 50), warn_txt);
-            }
-            ui.add_space(12.0);
-            ui.horizontal(|ui| {
-                if ui
-                    .button(
-                        RichText::new(lang.tr("✔ Да, точно удалить", "✔ Yes, delete"))
-                            .strong()
-                            .color(Color32::from_rgb(250, 90, 90)),
-                    )
-                    .clicked()
-                {
-                    confirm_delete = true;
-                    close_dialog = true;
-                }
-                ui.add_space(8.0);
-                if ui.button(lang.tr("Отмена", "Cancel")).clicked() {
-                    close_dialog = true;
-                }
+        egui::Window::new(lang.t("Confirm Material Deletion"))
+            .collapsible(false)
+            .resizable(false)
+            .pivot(egui::Align2::CENTER_CENTER)
+            .default_pos(ui.ctx().screen_rect().center())
+            .show(ui.ctx(), |ui| {
+                ui.set_width(380.0);
+                ui.vertical_centered(|ui| {
+                    ui.add_space(6.0);
+                    let q_txt = crate::glossary::format_material_delete_confirm(lang, &mat_name);
+                    ui.label(RichText::new(q_txt).strong().size(15.0));
+                    if used_parts_count > 0 {
+                        ui.add_space(6.0);
+                        let warn_txt =
+                            crate::glossary::format_material_delete_warn(lang, used_parts_count);
+                        ui.colored_label(Color32::from_rgb(240, 175, 50), warn_txt);
+                    }
+                    ui.add_space(14.0);
+
+                    let btn_del_w = 160.0;
+                    let btn_cancel_w = 90.0;
+                    let spacing = 12.0;
+                    let total_w = btn_del_w + spacing + btn_cancel_w;
+                    let pad = (ui.available_width() - total_w).max(0.0) / 2.0;
+
+                    ui.horizontal(|ui| {
+                        ui.add_space(pad);
+                        if ui
+                            .add_sized(
+                                [btn_del_w, 28.0],
+                                egui::Button::new(
+                                    RichText::new(lang.t("✔ Yes, delete"))
+                                        .strong()
+                                        .color(Color32::from_rgb(250, 90, 90)),
+                                ),
+                            )
+                            .clicked()
+                        {
+                            confirm_delete = true;
+                            close_dialog = true;
+                        }
+                        ui.add_space(spacing);
+                        if ui
+                            .add_sized([btn_cancel_w, 28.0], egui::Button::new(lang.t("Cancel")))
+                            .clicked()
+                        {
+                            close_dialog = true;
+                        }
+                    });
+                    ui.add_space(6.0);
+                });
             });
-        });
 
         if confirm_delete && project.materials.len() > 1 {
             project.materials.retain(|m| m.id != del_id);
@@ -1968,25 +2495,33 @@ pub fn ui_materials_manager_tab(
 
     ui.add_space(16.0);
     ui.separator();
-    ui.label(
-        RichText::new(lang.tr(
-            "Справочник кромочных материалов (толщина вычитается при расчете пилильного размера):",
-            "Edge banding catalog (thickness is subtracted when calculating net saw cutting size):",
-        ))
-        .strong(),
-    );
+    ui.label(RichText::new(lang.t("Edge banding catalog (thickness is subtracted when calculating net saw cutting size):")).strong());
+    ui.add_space(2.0);
+
+    ui.horizontal(|ui| {
+        if ui.button(lang.t("➕ Add Edge Banding Type")).clicked() {
+            let id = project.alloc_id();
+            let color_rgb = crate::model::generate_next_edge_color(&project.edge_bandings, id);
+            project.edge_bandings.push(crate::model::EdgeBanding {
+                id,
+                name: crate::glossary::format_new_edge_name(lang, project.edge_bandings.len() + 1),
+                thickness_mm: 1.0,
+                color_rgb,
+                price_per_m: 0.0,
+            });
+        }
+    });
 
     egui::Grid::new("edges_table_grid")
         .striped(true)
-        .num_columns(4)
+        .num_columns(5)
         .spacing([16.0, 8.0])
         .show(ui, |ui| {
-            ui.label(RichText::new(lang.tr("Наименование кромки", "Edge Banding Name")).strong());
-            ui.label(RichText::new(lang.tr("Толщина (мм)", "Thickness (mm)")).strong());
-            ui.label(
-                RichText::new(lang.tr("Цвет маркера на чертеже", "Drawing Marker Color")).strong(),
-            );
-            ui.label(RichText::new(lang.tr("Действия", "Actions")).strong());
+            ui.label(RichText::new(lang.t("Edge Banding Name")).strong());
+            ui.label(RichText::new(lang.t("Thickness (mm)")).strong());
+            ui.label(RichText::new(lang.t("Drawing Marker Color")).strong());
+            ui.label(RichText::new(lang.t("Cost per meter")).strong());
+            ui.label(RichText::new(lang.t("Actions")).strong());
             ui.end_row();
 
             for e in &mut project.edge_bandings {
@@ -1998,15 +2533,16 @@ pub fn ui_materials_manager_tab(
                         .suffix(mm_suffix),
                 );
                 ui.color_edit_button_srgb(&mut e.color_rgb);
+                ui.add(
+                    math_drag_value_f64(&mut e.price_per_m)
+                        .speed(1.0)
+                        .range(0.0..=100_000.0),
+                );
                 if ui
                     .button(
-                        RichText::new(lang.tr("🗑 Удалить", "🗑 Delete"))
-                            .color(Color32::from_rgb(245, 95, 95)),
+                        RichText::new(lang.t("🗑 Delete")).color(Color32::from_rgb(245, 95, 95)),
                     )
-                    .on_hover_text(lang.tr(
-                        "Удалить этот тип кромки (потребуется подтверждение)",
-                        "Delete this edge banding type (confirmation required)",
-                    ))
+                    .on_hover_text(lang.t("Delete this edge banding type (confirmation required)"))
                     .clicked()
                 {
                     *pending_delete_edge = Some(e.id);
@@ -2020,7 +2556,7 @@ pub fn ui_materials_manager_tab(
         let edge_name = project
             .get_edge(del_edge_id)
             .map(|e| e.name.clone())
-            .unwrap_or_else(|| lang.tr("Кромка", "Edge Banding").to_string());
+            .unwrap_or_else(|| lang.t("Edge Banding").to_string());
         let used_sides_count: usize = project
             .parts
             .iter()
@@ -2035,41 +2571,58 @@ pub fn ui_materials_manager_tab(
         let mut close_edge_dialog = false;
         let mut confirm_edge_delete = false;
 
-        egui::Window::new(lang.tr(
-            "Подтверждение удаления кромки",
-            "Confirm Edge Banding Deletion",
-        ))
-        .collapsible(false)
-        .resizable(false)
-        .anchor(egui::Align2::CENTER_CENTER, EguiVec2::ZERO)
-        .show(ui.ctx(), |ui| {
-            ui.add_space(4.0);
-            let q_txt = crate::glossary::format_edge_delete_confirm(lang, &edge_name);
-            ui.label(RichText::new(q_txt).strong().size(15.0));
-            if used_sides_count > 0 {
-                ui.add_space(4.0);
-                let warn_txt = crate::glossary::format_edge_delete_warn(lang, used_sides_count);
-                ui.colored_label(Color32::from_rgb(240, 175, 50), warn_txt);
-            }
-            ui.add_space(12.0);
-            ui.horizontal(|ui| {
-                if ui
-                    .button(
-                        RichText::new(lang.tr("✔ Да, точно удалить", "✔ Yes, delete"))
-                            .strong()
-                            .color(Color32::from_rgb(250, 90, 90)),
-                    )
-                    .clicked()
-                {
-                    confirm_edge_delete = true;
-                    close_edge_dialog = true;
-                }
-                ui.add_space(8.0);
-                if ui.button(lang.tr("Отмена", "Cancel")).clicked() {
-                    close_edge_dialog = true;
-                }
+        egui::Window::new(lang.t("Confirm Edge Banding Deletion"))
+            .collapsible(false)
+            .resizable(false)
+            .pivot(egui::Align2::CENTER_CENTER)
+            .default_pos(ui.ctx().screen_rect().center())
+            .show(ui.ctx(), |ui| {
+                ui.set_width(380.0);
+                ui.vertical_centered(|ui| {
+                    ui.add_space(6.0);
+                    let q_txt = crate::glossary::format_edge_delete_confirm(lang, &edge_name);
+                    ui.label(RichText::new(q_txt).strong().size(15.0));
+                    if used_sides_count > 0 {
+                        ui.add_space(6.0);
+                        let warn_txt =
+                            crate::glossary::format_edge_delete_warn(lang, used_sides_count);
+                        ui.colored_label(Color32::from_rgb(240, 175, 50), warn_txt);
+                    }
+                    ui.add_space(14.0);
+
+                    let btn_del_w = 160.0;
+                    let btn_cancel_w = 90.0;
+                    let spacing = 12.0;
+                    let total_w = btn_del_w + spacing + btn_cancel_w;
+                    let pad = (ui.available_width() - total_w).max(0.0) / 2.0;
+
+                    ui.horizontal(|ui| {
+                        ui.add_space(pad);
+                        if ui
+                            .add_sized(
+                                [btn_del_w, 28.0],
+                                egui::Button::new(
+                                    RichText::new(lang.t("✔ Yes, delete"))
+                                        .strong()
+                                        .color(Color32::from_rgb(250, 90, 90)),
+                                ),
+                            )
+                            .clicked()
+                        {
+                            confirm_edge_delete = true;
+                            close_edge_dialog = true;
+                        }
+                        ui.add_space(spacing);
+                        if ui
+                            .add_sized([btn_cancel_w, 28.0], egui::Button::new(lang.t("Cancel")))
+                            .clicked()
+                        {
+                            close_edge_dialog = true;
+                        }
+                    });
+                    ui.add_space(6.0);
+                });
             });
-        });
 
         if confirm_edge_delete {
             project.edge_bandings.retain(|e| e.id != del_edge_id);
@@ -2109,11 +2662,8 @@ pub fn load_texture_from_memory(
     name: &str,
     lang: AppLanguage,
 ) -> Result<LoadedTextureInfo, String> {
-    let dyn_img = image::load_from_memory(img_bytes).map_err(|e| match lang {
-        AppLanguage::Ru => format!("Ошибка декодирования изображения текстуры: {}", e),
-        AppLanguage::Uk => format!("Помилка декодування зображення текстури: {}", e),
-        _ => format!("Failed to decode texture image: {}", e),
-    })?;
+    let dyn_img = image::load_from_memory(img_bytes)
+        .map_err(|e| lang.tf("fmt.tex_decode_err", &[&e]))?;
 
     let (orig_w, orig_h) = (dyn_img.width(), dyn_img.height());
     let gpu_limit = ctx.input(|i| i.max_texture_side) as u32;
@@ -2124,22 +2674,16 @@ pub fn load_texture_from_memory(
     };
 
     let (final_img, warning) = if orig_w > max_allowed || orig_h > max_allowed {
-        let resized = dyn_img.resize(max_allowed, max_allowed, image::imageops::FilterType::Triangle);
+        let resized = dyn_img.resize(
+            max_allowed,
+            max_allowed,
+            image::imageops::FilterType::Triangle,
+        );
         let (nw, nh) = (resized.width(), resized.height());
-        let warn_msg = match lang {
-            AppLanguage::Ru => format!(
-                "Разрешение изображения {}×{} px превышает лимит ({} px). Текстура автоматически уменьшена до {}×{} px для предотвращения перегрузки видеокарты.",
-                orig_w, orig_h, max_allowed, nw, nh
-            ),
-            AppLanguage::Uk => format!(
-                "Роздільна здатність зображення {}×{} px перевищує ліміт ({} px). Текстуру автоматично зменшено до {}×{} px для запобігання перевантаженню відеокарти.",
-                orig_w, orig_h, max_allowed, nw, nh
-            ),
-            _ => format!(
-                "Image resolution {}x{} px exceeds limit ({} px). Texture was automatically downscaled to {}x{} px to prevent GPU issues.",
-                orig_w, orig_h, max_allowed, nw, nh
-            ),
-        };
+        let warn_msg = lang.tf(
+            "fmt.tex_downscaled_warn",
+            &[&orig_w, &orig_h, &max_allowed, &nw, &nh],
+        );
         (resized, Some(warn_msg))
     } else {
         (dyn_img, None)
@@ -2147,13 +2691,11 @@ pub fn load_texture_from_memory(
 
     let rgba = final_img.to_rgba8();
     let dims = [rgba.width() as usize, rgba.height() as usize];
-    let color_img = egui::ColorImage::from_rgba_unmultiplied(dims, rgba.as_flat_samples().as_slice());
+    let color_img =
+        egui::ColorImage::from_rgba_unmultiplied(dims, rgba.as_flat_samples().as_slice());
     let handle = ctx.load_texture(name, color_img, egui::TextureOptions::LINEAR);
 
-    Ok(LoadedTextureInfo {
-        handle,
-        warning,
-    })
+    Ok(LoadedTextureInfo { handle, warning })
 }
 
 pub fn load_texture_from_path(
@@ -2164,28 +2706,13 @@ pub fn load_texture_from_path(
 ) -> Result<LoadedTextureInfo, String> {
     if let Ok(meta) = std::fs::metadata(path) {
         if meta.len() > 60 * 1024 * 1024 {
-            return Err(match lang {
-                AppLanguage::Ru => format!(
-                    "Файл текстуры слишком большой ({:.1} МБ). Максимальный размер файла: 60 МБ.",
-                    meta.len() as f64 / (1024.0 * 1024.0)
-                ),
-                AppLanguage::Uk => format!(
-                    "Файл текстури занадто великий ({:.1} МБ). Максимальний розмір файлу: 60 МБ.",
-                    meta.len() as f64 / (1024.0 * 1024.0)
-                ),
-                _ => format!(
-                    "Texture file is too large ({:.1} MB). Maximum supported file size is 60 MB.",
-                    meta.len() as f64 / (1024.0 * 1024.0)
-                ),
-            });
+            let mb = format!("{:.1}", meta.len() as f64 / (1024.0 * 1024.0));
+            return Err(lang.tf("fmt.tex_too_large_err", &[&mb]));
         }
     }
 
-    let img_bytes = std::fs::read(path).map_err(|e| match lang {
-        AppLanguage::Ru => format!("Не удалось прочитать файл текстуры: {}", e),
-        AppLanguage::Uk => format!("Не вдалося прочитати файл текстури: {}", e),
-        _ => format!("Failed to read texture file: {}", e),
-    })?;
+    let img_bytes =
+        std::fs::read(path).map_err(|e| lang.tf("fmt.tex_read_err", &[&e]))?;
 
     load_texture_from_memory(ctx, &img_bytes, name, lang)
 }
@@ -2238,11 +2765,7 @@ pub fn resolve_and_load_material_texture(
         }
     }
 
-    Err(match lang {
-        AppLanguage::Ru => format!("Файл текстуры для «{}» не найден", m.name),
-        AppLanguage::Uk => format!("Файл текстури для «{}» не знайдено", m.name),
-        _ => format!("Texture file for \"{}\" not found", m.name),
-    })
+    Err(lang.tf("fmt.tex_not_found_err", &[&m.name]))
 }
 
 /// "Specification and Export" tab
@@ -2252,53 +2775,33 @@ pub fn ui_specification_tab(
     status_msg: &mut String,
     lang: AppLanguage,
 ) {
-    let mm_unit = lang.tr("мм", "mm");
+    let mm_unit = lang.t("mm");
     ui.horizontal(|ui| {
-        ui.heading(lang.tr(
-            "Ведомость деталей (Спецификация)",
-            "Parts List (Specification)",
-        ));
+        ui.heading(lang.t("Parts List (Specification)"));
         ui.separator();
         ui.checkbox(
             &mut project.cutting_settings.group_identical_parts,
-            lang.tr(
-                "Группировать одинаковые детали (объединять в Кол-во: N шт.)",
-                "Group identical parts (merge into Qty: N pcs)",
-            ),
+            lang.t("Group identical parts (merge into Qty: N pcs)"),
         );
 
         ui.separator();
         if ui
-            .button(lang.tr("💾 Экспорт в CSV (Excel)", "💾 Export to CSV (Excel)"))
-            .on_hover_text(lang.tr(
-                "Сохранить полную таблицу деталей с габаритными и пилильными размерами в файл .csv",
-                "Save full specification table with full and net saw dimensions to .csv",
-            ))
+            .button(lang.t("💾 Export to CSV (Excel)"))
+            .on_hover_text(
+                lang.t("Save full specification table with full and net saw dimensions to .csv"),
+            )
             .clicked()
         {
             #[cfg(not(target_arch = "wasm32"))]
             {
                 if let Some(path) = rfd::FileDialog::new()
                     .set_file_name("spec_quadfurn.csv")
-                    .add_filter(lang.tr("Таблица CSV (Excel)", "CSV Spreadsheet"), &["csv"])
+                    .add_filter(lang.t("CSV Spreadsheet"), &["csv"])
                     .save_file()
                 {
                     match export_spec_to_csv_file_i18n(project, &path, lang) {
                         Ok(()) => {
-                            *status_msg = match lang {
-                                AppLanguage::Ru => format!(
-                                    "Спецификация успешно экспортирована в {}",
-                                    path.display()
-                                ),
-                                AppLanguage::Uk => format!(
-                                    "Специфікація успішно експортована до {}",
-                                    path.display()
-                                ),
-                                _ => format!(
-                                    "Specification exported to {}",
-                                    path.display()
-                                ),
-                            };
+                            *status_msg = lang.tf("fmt.spec_exported_csv", &[&path.display()]);
                         }
                         Err(e) => *status_msg = e,
                     }
@@ -2306,24 +2809,21 @@ pub fn ui_specification_tab(
             }
             #[cfg(target_arch = "wasm32")]
             {
-                let clean_name = project.name.replace(['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'], "_");
+                let clean_name = project
+                    .name
+                    .replace(['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'], "_");
                 let def_name = format!("{}_specification.csv", clean_name);
                 let csv = crate::export::generate_csv_string_i18n(project, lang);
                 let mut data = vec![0xEF, 0xBB, 0xBF];
                 data.extend_from_slice(csv.as_bytes());
                 crate::web::download_file(&def_name, "text/csv;charset=utf-8", &data);
-                *status_msg = match lang {
-                    AppLanguage::Ru => format!("Спецификация скачана: {}", def_name),
-                    AppLanguage::Uk => format!("Специфікацію завантажено: {}", def_name),
-                    _ => format!("Specification downloaded: {}", def_name),
-                };
+                *status_msg = lang.tf("fmt.spec_downloaded_csv", &[&def_name]);
             }
         }
 
         if ui
-            .button(lang.tr("📄 Экспорт в PDF", "📄 Export to PDF"))
-            .on_hover_text(lang.tr(
-                "Сохранить полный паспорт изделия в .pdf (Спецификация + 4 проекции конструктора + Карты раскроя + Материалы и кромки)",
+            .button(lang.t("📄 Export to PDF"))
+            .on_hover_text(lang.t(
                 "Save complete product passport to .pdf (Specification + 4 Designer Views + Cutting Layouts + Materials & Edges)",
             ))
             .clicked()
@@ -2333,25 +2833,12 @@ pub fn ui_specification_tab(
                 let default_pdf_name = format!("spec_{}.pdf", project.name.replace(' ', "_"));
                 if let Some(path) = rfd::FileDialog::new()
                     .set_file_name(&default_pdf_name)
-                    .add_filter(lang.tr("Документ PDF", "PDF Document"), &["pdf"])
+                    .add_filter(lang.t("PDF Document"), &["pdf"])
                     .save_file()
                 {
                     match export_spec_to_pdf_file(project, &path, lang) {
                         Ok(()) => {
-                            *status_msg = match lang {
-                                AppLanguage::Ru => format!(
-                                    "Паспорт изделия (спецификация, проекции, раскрой и материалы) экспортирован в PDF: {}",
-                                    path.display()
-                                ),
-                                AppLanguage::Uk => format!(
-                                    "Паспорт виробу (специфікація, проекції, розкрій та матеріали) експортовано до PDF: {}",
-                                    path.display()
-                                ),
-                                _ => format!(
-                                    "Product passport (specification, views, cutting layouts & materials) exported to PDF: {}",
-                                    path.display()
-                                ),
-                            };
+                            *status_msg = lang.tf("fmt.spec_exported_pdf", &[&path.display()]);
                         }
                         Err(e) => *status_msg = e,
                     }
@@ -2359,16 +2846,14 @@ pub fn ui_specification_tab(
             }
             #[cfg(target_arch = "wasm32")]
             {
-                let clean_name = project.name.replace(['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'], "_");
+                let clean_name = project
+                    .name
+                    .replace(['/', '\\', '?', '%', '*', ':', '|', '"', '<', '>'], "_");
                 let def_name = format!("{}_drawings.pdf", clean_name);
                 match crate::export::generate_spec_pdf_bytes(project, lang) {
                     Ok(bytes) => {
                         crate::web::download_file(&def_name, "application/pdf", &bytes);
-                        *status_msg = match lang {
-                            AppLanguage::Ru => format!("PDF-документ скачан: {}", def_name),
-                            AppLanguage::Uk => format!("PDF-документ завантажено: {}", def_name),
-                            _ => format!("PDF document downloaded: {}", def_name),
-                        };
+                        *status_msg = lang.tf("fmt.spec_downloaded_pdf", &[&def_name]);
                     }
                     Err(e) => *status_msg = e,
                 }
@@ -2376,23 +2861,14 @@ pub fn ui_specification_tab(
         }
 
         if ui
-            .button(lang.tr(
-                "📋 Копировать список раскроя",
-                "📋 Copy Cutting List",
-            ))
-            .on_hover_text(lang.tr(
-                "Скопировать таблицу пилильных размеров в буфер обмена",
-                "Copy net saw cutting list to clipboard",
-            ))
+            .button(lang.t("📋 Copy Cutting List"))
+            .on_hover_text(lang.t("Copy net saw cutting list to clipboard"))
             .clicked()
         {
             let text = generate_cutting_clipboard_text_i18n(project, lang);
             ui.ctx().copy_text(text);
             *status_msg = lang
-                .tr(
-                    "Список деталей (пилильные размеры и кромки) скопирован в буфер обмена!",
-                    "Parts cutting list (saw dimensions & edges) copied to clipboard!",
-                )
+                .t("Parts cutting list (saw dimensions & edges) copied to clipboard!")
                 .to_string();
         }
     });
@@ -2404,287 +2880,265 @@ pub fn ui_specification_tab(
     egui::ScrollArea::both()
         .auto_shrink([false, false])
         .show(ui, |ui| {
-        egui::Grid::new("spec_full_grid")
-            .striped(true)
-            .num_columns(12)
-            .spacing([14.0, 6.0])
-            .show(ui, |ui| {
-                ui.label(RichText::new("№").strong());
-                ui.label(RichText::new(lang.tr("Группа", "Group")).strong());
-                ui.label(RichText::new(lang.tr("Наименование", "Part Name")).strong());
-                ui.label(RichText::new(lang.tr("Материал", "Material")).strong());
-                ui.label(RichText::new(lang.tr("Габарит Д×Ш (мм)", "Full L×W (mm)")).strong());
-                ui.label(
-                    RichText::new(lang.tr("ПИЛ Д×Ш (мм)", "CUT L×W (mm)"))
-                        .strong()
-                        .color(Color32::from_rgb(110, 235, 145)),
-                );
-                ui.label(RichText::new(lang.tr("Кол-во", "Qty")).strong());
-                ui.label(RichText::new(lang.tr("Волокна", "Grain")).strong());
-                ui.label(RichText::new(lang.tr("Кромка Д1", "Edge L1")).strong());
-                ui.label(RichText::new(lang.tr("Кромка Д2", "Edge L2")).strong());
-                ui.label(RichText::new(lang.tr("Кромка Ш1", "Edge W1")).strong());
-                ui.label(RichText::new(lang.tr("Кромка Ш2", "Edge W2")).strong());
-                ui.end_row();
-
-                for r in &rows {
-                    ui.label(format!("{}", r.index));
-                    ui.label(&r.group_name);
-                    ui.label(RichText::new(&r.name).strong());
-                    ui.label(format!("{} ({:.0}{})", r.material_name, r.thickness_mm, mm_unit));
-                    ui.label(format!("{:.1} × {:.1}", r.full_length_mm, r.full_width_mm));
+            egui::Grid::new("spec_full_grid")
+                .striped(true)
+                .num_columns(12)
+                .spacing([14.0, 6.0])
+                .show(ui, |ui| {
+                    ui.label(RichText::new("№").strong());
+                    ui.label(RichText::new(lang.t("Group")).strong());
+                    ui.label(RichText::new(lang.t("Part Name")).strong());
+                    ui.label(RichText::new(lang.t("Material")).strong());
+                    ui.label(RichText::new(lang.t("Full L×W (mm)")).strong());
                     ui.label(
-                        RichText::new(format!("{:.1} × {:.1}", r.cut_length_mm, r.cut_width_mm))
+                        RichText::new(lang.t("CUT L×W (mm)"))
                             .strong()
                             .color(Color32::from_rgb(110, 235, 145)),
                     );
-                    let qty_lbl = format!("{} {}", r.quantity, lang.dict().unit_pcs);
-                    ui.label(RichText::new(qty_lbl).strong());
-                    ui.label(if r.grain_fixed {
-                        lang.tr("🌲 Фикс. (По текстуре)", "🌲 Locked (Along grain)")
-                    } else {
-                        lang.tr("🔄 Вращ. свободно", "🔄 Free rotation")
-                    });
-                    ui.label(SpecRow::edge_label_i18n(r.edges.l1, &project.edge_bandings, lang));
-                    ui.label(SpecRow::edge_label_i18n(r.edges.l2, &project.edge_bandings, lang));
-                    ui.label(SpecRow::edge_label_i18n(r.edges.w1, &project.edge_bandings, lang));
-                    ui.label(SpecRow::edge_label_i18n(r.edges.w2, &project.edge_bandings, lang));
+                    ui.label(RichText::new(lang.t("Qty")).strong());
+                    ui.label(RichText::new(lang.t("Grain")).strong());
+                    ui.label(RichText::new(lang.t("Edge L1")).strong());
+                    ui.label(RichText::new(lang.t("Edge L2")).strong());
+                    ui.label(RichText::new(lang.t("Edge W1")).strong());
+                    ui.label(RichText::new(lang.t("Edge W2")).strong());
                     ui.end_row();
-                }
-            });
-    });
+
+                    for r in &rows {
+                        ui.label(format!("{}", r.index));
+                        ui.label(&r.group_name);
+                        ui.label(RichText::new(&r.name).strong());
+                        ui.label(format!(
+                            "{} ({:.0}{})",
+                            r.material_name, r.thickness_mm, mm_unit
+                        ));
+                        ui.label(format!("{:.1} × {:.1}", r.full_length_mm, r.full_width_mm));
+                        ui.label(
+                            RichText::new(format!(
+                                "{:.1} × {:.1}",
+                                r.cut_length_mm, r.cut_width_mm
+                            ))
+                            .strong()
+                            .color(Color32::from_rgb(110, 235, 145)),
+                        );
+                        let qty_lbl = format!("{} {}", r.quantity, lang.dict().unit_pcs);
+                        ui.label(RichText::new(qty_lbl).strong());
+                        ui.label(if r.grain_fixed {
+                            lang.t("🌲 Locked (Along grain)")
+                        } else {
+                            lang.t("🔄 Free rotation")
+                        });
+                        ui.label(SpecRow::edge_label_i18n(
+                            r.edges.l1,
+                            &project.edge_bandings,
+                            lang,
+                        ));
+                        ui.label(SpecRow::edge_label_i18n(
+                            r.edges.l2,
+                            &project.edge_bandings,
+                            lang,
+                        ));
+                        ui.label(SpecRow::edge_label_i18n(
+                            r.edges.w1,
+                            &project.edge_bandings,
+                            lang,
+                        ));
+                        ui.label(SpecRow::edge_label_i18n(
+                            r.edges.w2,
+                            &project.edge_bandings,
+                            lang,
+                        ));
+                        ui.end_row();
+                    }
+                });
+        });
 }
 
-/// "Cutting Layout" tab
+/// "Cutting Layout" tab (Variant A: dedicated Left Sidebar replacing Tools dock, Right Parts table, Central full-size diagram)
 pub fn ui_cutting_layout_tab(
-    ui: &mut egui::Ui,
+    ctx: &egui::Context,
     project: &mut Project,
     selected_sheet_idx: &mut usize,
+    hovered_part: &mut Option<PartId>,
+    loaded_textures: &HashMap<MaterialId, TextureHandle>,
+    status_msg: &mut String,
     lang: AppLanguage,
 ) {
-    let mm_suffix = lang.tr(" мм", " mm");
-    // Top cutting settings toolbar (sheet dimensions, edge trim margins, saw kerf width)
-    ui.horizontal_wrapped(|ui| {
-        ui.heading(lang.tr("Карта раскроя", "Cutting Layout"));
-        ui.separator();
-
-        ui.label(lang.tr("Ширина реза фрезы/пилы:", "Saw kerf width:"));
-        ui.add(
-            math_drag_value(&mut project.cutting_settings.kerf_mm)
-                .speed(0.2)
-                .range(0.0..=25.0)
-                .suffix(mm_suffix),
-        );
-
-        ui.separator();
-        ui.label(lang.tr(
-            "Отступы от края листа (торцовка):",
-            "Sheet edge trim margins:",
-        ));
-        ui.label(lang.tr("Слева:", "Left:"));
-        ui.add(
-            math_drag_value(&mut project.cutting_settings.trim_left_mm)
-                .speed(1.0)
-                .range(0.0..=100.0)
-                .suffix(mm_suffix),
-        );
-        ui.label(lang.tr("Справа:", "Right:"));
-        ui.add(
-            math_drag_value(&mut project.cutting_settings.trim_right_mm)
-                .speed(1.0)
-                .range(0.0..=100.0)
-                .suffix(mm_suffix),
-        );
-        ui.label(lang.tr("Сверху:", "Top:"));
-        ui.add(
-            math_drag_value(&mut project.cutting_settings.trim_top_mm)
-                .speed(1.0)
-                .range(0.0..=100.0)
-                .suffix(mm_suffix),
-        );
-        ui.label(lang.tr("Снизу:", "Bottom:"));
-        ui.add(
-            math_drag_value(&mut project.cutting_settings.trim_bottom_mm)
-                .speed(1.0)
-                .range(0.0..=100.0)
-                .suffix(mm_suffix),
-        );
-
-        ui.separator();
-        ui.checkbox(
-            &mut project.cutting_settings.group_identical_parts,
-            lang.tr("Группировать одинаковые номера", "Group identical part numbers"),
-        );
-    });
-
-    // Quick editing of sheet dimensions for each material directly from cutting layout view
-    ui.horizontal_wrapped(|ui| {
-        ui.label(
-            RichText::new(lang.tr("Формат листов материалов:", "Material sheet sizes:")).strong(),
-        );
-        for m in &mut project.materials {
-            ui.separator();
-            ui.label(&m.name);
-            ui.add(
-                math_drag_value(&mut m.sheet_length_mm)
-                    .speed(10.0)
-                    .range(500.0..=6000.0)
-                    .prefix(lang.tr("Д: ", "L: "))
-                    .suffix(mm_suffix),
-            );
-            ui.add(
-                math_drag_value(&mut m.sheet_width_mm)
-                    .speed(10.0)
-                    .range(500.0..=4000.0)
-                    .prefix(lang.tr("Ш: ", "W: "))
-                    .suffix(mm_suffix),
-            );
-        }
-    });
-
-    ui.separator();
-
     let report: CuttingReport = compute_cutting_layout(project);
+    let d = lang.dict();
 
-    if !report.unplaced_parts.is_empty() {
-        for err in &report.unplaced_parts {
-            let err_msg = crate::glossary::format_unplaced_warning(lang, &err.format_message(lang));
-            ui.colored_label(Color32::from_rgb(255, 95, 95), err_msg);
-        }
-        ui.separator();
-    }
+    // 1. LEFT SIDEBAR: Cutting Sheets Navigator (grouped by material)
+    let is_dark = ctx.style().visuals.dark_mode;
 
-    // Summary statistics of cutting layout and edge banding lengths
-    ui.horizontal_wrapped(|ui| {
-        let d = lang.dict();
-        let sheets_txt = crate::glossary::format_cutting_total_sheets(lang, report.total_sheets_count, d.unit_pcs);
-        ui.label(
-            RichText::new(sheets_txt)
-                .strong()
-                .color(Color32::from_rgb(255, 215, 90)),
-        );
-        ui.separator();
-        let area_txt = crate::glossary::format_cutting_parts_area(
-            lang,
-            report.total_parts_area_m2 as f64,
-            report.total_sheets_area_m2 as f64,
-            report.overall_utilization_percent as f64,
-            d.unit_m2,
-        );
-        ui.label(area_txt);
-        ui.separator();
-        let cut_len_txt = crate::glossary::format_cutting_cut_length(
-            lang,
-            report.total_cut_length_m as f64,
-            d.unit_mp,
-        );
-        ui.label(cut_len_txt);
-
-        for (ename, meters, rgb) in &report.edge_banding_totals_m {
+    egui::SidePanel::left("cutting_sheets_sidebar")
+        .default_width(240.0)
+        .width_range(180.0..=450.0)
+        .resizable(true)
+        .show(ctx, |ui| {
+            ui.add_space(4.0);
+            ui.horizontal(|ui| {
+                ui.heading(lang.t("Cutting sheets list"));
+            });
+            let sheets_count_color = if is_dark {
+                Color32::from_rgb(255, 215, 90)
+            } else {
+                Color32::from_rgb(160, 110, 15)
+            };
+            ui.label(
+                RichText::new(format!(
+                    "{}: {} {}",
+                    lang.t("Sheets to cut"),
+                    report.sheets.len(),
+                    d.unit_pcs
+                ))
+                .small()
+                .color(sheets_count_color),
+            );
             ui.separator();
-            let edge_tot_txt = format!("{}: {:.2} {}", ename, meters, d.unit_mp);
-            ui.colored_label(Color32::from_rgb(rgb[0], rgb[1], rgb[2]), edge_tot_txt);
-        }
-    });
 
-    ui.separator();
-
-    if report.sheets.is_empty() {
-        ui.label(lang.tr(
-            "В проекте пока нет деталей для раскроя.",
-            "No parts in the project for cutting yet.",
-        ));
-        return;
-    }
-
-    if *selected_sheet_idx >= report.sheets.len() {
-        *selected_sheet_idx = 0;
-    }
-
-    // Sheet selection for preview
-    ui.horizontal_wrapped(|ui| {
-        ui.label(RichText::new(lang.tr("Листы раскроя:", "Cutting sheets:")).strong());
-        for (idx, sh) in report.sheets.iter().enumerate() {
-            let d = lang.dict();
-            let title = match lang {
-                AppLanguage::Ru => format!(
-                    "Лист #{} (Мат. лист №{}) — {} ({:.0}×{:.0} {}, КПИ {:.1}%)",
-                    idx + 1,
-                    sh.sheet_number,
-                    sh.material_name,
-                    sh.sheet_length_mm,
-                    sh.sheet_width_mm,
-                    d.unit_mm,
-                    sh.utilization_percent
-                ),
-                AppLanguage::Uk => format!(
-                    "Лист #{} (Мат. лист №{}) — {} ({:.0}×{:.0} {}, КВМ {:.1}%)",
-                    idx + 1,
-                    sh.sheet_number,
-                    sh.material_name,
-                    sh.sheet_length_mm,
-                    sh.sheet_width_mm,
-                    d.unit_mm,
-                    sh.utilization_percent
-                ),
-                _ => format!(
-                    "Sheet #{} (Mat. sheet #{}) — {} ({:.0}×{:.0} {}, Yield {:.1}%)",
-                    idx + 1,
-                    sh.sheet_number,
-                    sh.material_name,
-                    sh.sheet_length_mm,
-                    sh.sheet_width_mm,
-                    d.unit_mm,
-                    sh.utilization_percent
-                ),
-            };
-            if ui.selectable_label(*selected_sheet_idx == idx, title).clicked() {
-                *selected_sheet_idx = idx;
+            if report.sheets.is_empty() {
+                ui.label(lang.t("No parts in the project for cutting yet."));
+                return;
             }
-        }
-    });
 
-    ui.add_space(4.0);
+            if *selected_sheet_idx >= report.sheets.len() {
+                *selected_sheet_idx = 0;
+            }
 
-    // Rendering selected cutting sheet diagram and parts table on this sheet
-    let active_sheet = &report.sheets[*selected_sheet_idx];
-    let avail = ui.available_rect_before_wrap();
-    let diagram_width = (avail.width() * 0.68).max(300.0);
+            egui::ScrollArea::vertical()
+                .id_salt("cutting_sheets_scroll")
+                .show(ui, |ui| {
+                    // Group sheets by material
+                    for mat in &project.materials {
+                        let matching_indices: Vec<usize> = report
+                            .sheets
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, s)| s.material_id == mat.id)
+                            .map(|(i, _)| i)
+                            .collect();
 
-    ui.horizontal(|ui| {
-        let (canvas_rect, _) = ui.allocate_exact_size(
-            EguiVec2::new(diagram_width, avail.height().max(260.0)),
-            Sense::hover(),
-        );
-        draw_cutting_sheet_diagram(ui, canvas_rect, active_sheet, project, lang);
+                        if matching_indices.is_empty() {
+                            continue;
+                        }
 
-        ui.vertical(|ui| {
-            let sheet_parts_hdr = match lang {
-                AppLanguage::Ru => format!(
-                    "Детали на листе #{} ({} шт.)",
-                    *selected_sheet_idx + 1,
-                    active_sheet.placed_parts.len()
-                ),
-                AppLanguage::Uk => format!(
-                    "Деталі на листі #{} ({} {})",
-                    *selected_sheet_idx + 1,
-                    active_sheet.placed_parts.len(),
-                    lang.dict().unit_pcs
-                ),
-                _ => format!(
-                    "Parts on Sheet #{} ({} pcs)",
-                    *selected_sheet_idx + 1,
-                    active_sheet.placed_parts.len()
-                ),
-            };
+                        let avg_kpi: f64 = matching_indices
+                            .iter()
+                            .map(|&idx| report.sheets[idx].utilization_percent as f64)
+                            .sum::<f64>()
+                            / matching_indices.len() as f64;
+
+                        ui.add_space(6.0);
+                        // Material group header
+                        ui.horizontal(|ui| {
+                            let (swatch, _) = ui.allocate_exact_size(EguiVec2::new(12.0, 12.0), Sense::hover());
+                            ui.painter().rect_filled(
+                                swatch,
+                                2.0,
+                                Color32::from_rgb(mat.color_rgb[0], mat.color_rgb[1], mat.color_rgb[2]),
+                            );
+                            ui.painter().rect_stroke(swatch, 2.0, Stroke::new(1.0, Color32::from_gray(100)));
+                            ui.label(RichText::new(&mat.name).strong());
+                        });
+
+                        ui.label(
+                            RichText::new(format!(
+                                "{:.0} {} | {} {} | КПИ: {:.1}%",
+                                mat.thickness_mm,
+                                d.unit_mm,
+                                matching_indices.len(),
+                                d.unit_sheets,
+                                avg_kpi
+                            ))
+                            .small()
+                            .color(Color32::GRAY),
+                        );
+                        ui.add_space(2.0);
+
+                        for &sheet_idx in &matching_indices {
+                            let sh = &report.sheets[sheet_idx];
+                            let is_selected = *selected_sheet_idx == sheet_idx;
+
+                            let kpi_color = if is_dark {
+                                if sh.utilization_percent >= 85.0 {
+                                    Color32::from_rgb(110, 235, 145)
+                                } else if sh.utilization_percent >= 70.0 {
+                                    Color32::from_rgb(255, 215, 90)
+                                } else {
+                                    Color32::from_rgb(255, 140, 90)
+                                }
+                            } else {
+                                if sh.utilization_percent >= 85.0 {
+                                    Color32::from_rgb(30, 145, 60)
+                                } else if sh.utilization_percent >= 70.0 {
+                                    Color32::from_rgb(180, 115, 15)
+                                } else {
+                                    Color32::from_rgb(210, 65, 30)
+                                }
+                            };
+
+                            let card_resp = ui.selectable_label(
+                                is_selected,
+                                RichText::new(format!(
+                                    "#{:<2} ({:.0}×{:.0}) — {:.1}%",
+                                    sheet_idx + 1,
+                                    sh.sheet_length_mm,
+                                    sh.sheet_width_mm,
+                                    sh.utilization_percent
+                                ))
+                                .color(if is_selected {
+                                    if is_dark { Color32::WHITE } else { Color32::from_rgb(15, 20, 30) }
+                                } else {
+                                    kpi_color
+                                }),
+                            );
+
+                            if card_resp.clicked() {
+                                *selected_sheet_idx = sheet_idx;
+                            }
+
+                            card_resp.on_hover_ui(|ui| {
+                                ui.label(format!("Лист #{} (Материал: {})", sheet_idx + 1, sh.material_name));
+                                ui.label(format!("Формат: {:.0} × {:.0} {}", sh.sheet_length_mm, sh.sheet_width_mm, d.unit_mm));
+                                ui.label(format!("Деталей на листе: {} {}", sh.placed_parts.len(), d.unit_pcs));
+                                ui.label(format!("Коэффициент использования: {:.1}%", sh.utilization_percent));
+                                ui.label(format!("Остатков (обрезков): {}", sh.remnants.len()));
+                            });
+                        }
+                        ui.separator();
+                    }
+                });
+        });
+
+    // 2. RIGHT PANEL: Parts table on active sheet & remnants
+    egui::SidePanel::right("cutting_parts_panel")
+        .default_width(290.0)
+        .width_range(220.0..=550.0)
+        .resizable(true)
+        .show(ctx, |ui| {
+            if report.sheets.is_empty() {
+                return;
+            }
+
+            let cur_idx = (*selected_sheet_idx).min(report.sheets.len() - 1);
+            let active_sheet = &report.sheets[cur_idx];
+
+            let sheet_parts_hdr = lang.tf(
+                "fmt.sheet_parts_heading",
+                &[
+                    &(cur_idx + 1),
+                    &active_sheet.placed_parts.len(),
+                    &d.unit_pcs,
+                ],
+            );
+            ui.add_space(4.0);
             ui.heading(sheet_parts_hdr);
             ui.label(
-                RichText::new(lang.tr(
-                    "В раскрой передаются пилильные размеры (за вычетом кромок):",
-                    "Net saw cutting sizes (after subtracting edge bandings):",
-                ))
-                .color(Color32::GRAY),
+                RichText::new(lang.t("Net saw cutting sizes (after subtracting edge bandings):"))
+                    .small()
+                    .color(Color32::GRAY),
             );
+            ui.separator();
+
             egui::ScrollArea::vertical()
                 .id_salt("sheet_parts_list")
                 .show(ui, |ui| {
@@ -2694,30 +3148,64 @@ pub fn ui_cutting_layout_tab(
                         .spacing([8.0, 4.0])
                         .show(ui, |ui| {
                             ui.label(RichText::new("№").strong());
-                            ui.label(RichText::new(lang.tr("Деталь", "Part")).strong());
-                            ui.label(RichText::new(lang.tr("Пил (мм)", "Cut (mm)")).strong());
-                            ui.label(RichText::new(lang.tr("Габарит", "Full")).strong());
-                            ui.label(RichText::new(lang.tr("Поворот", "Rotation")).strong());
+                            ui.label(RichText::new(lang.t("Part")).strong());
+                            ui.label(RichText::new(lang.t("Cut (mm)")).strong());
+                            ui.label(RichText::new(lang.t("Full")).strong());
+                            ui.label(RichText::new(lang.t("Rotation")).strong());
                             ui.end_row();
 
+                            let hover_highlight = if is_dark {
+                                Color32::from_rgb(0, 240, 255)
+                            } else {
+                                Color32::from_rgb(0, 130, 210)
+                            };
+
+                            let cut_dim_color = if is_dark {
+                                Color32::from_rgb(110, 235, 145)
+                            } else {
+                                Color32::from_rgb(25, 135, 60)
+                            };
+
                             for p in &active_sheet.placed_parts {
-                                ui.label(format!("#{}", p.spec_index));
-                                ui.label(&p.name);
-                                ui.label(
+                                let is_part_hovered = *hovered_part == Some(p.part_id);
+
+                                let num_text = RichText::new(format!("#{}", p.spec_index));
+                                let num_resp = ui.label(if is_part_hovered {
+                                    num_text.color(hover_highlight).strong()
+                                } else {
+                                    num_text
+                                });
+
+                                let name_text = RichText::new(&p.name);
+                                let name_resp = ui.label(if is_part_hovered {
+                                    name_text.color(hover_highlight).strong()
+                                } else {
+                                    name_text
+                                });
+
+                                let cut_resp = ui.label(
                                     RichText::new(format!(
                                         "{:.1}×{:.1}",
                                         p.cut_length_mm, p.cut_width_mm
                                     ))
-                                    .color(Color32::from_rgb(110, 235, 145)),
+                                    .color(cut_dim_color),
                                 );
-                                ui.label(format!("{:.0}×{:.0}", p.full_length_mm, p.full_width_mm));
-                                ui.label(if p.rotated_90 {
-                                    lang.tr("Повернута 90°", "Rotated 90°")
+
+                                let full_resp = ui.label(format!("{:.0}×{:.0}", p.full_length_mm, p.full_width_mm));
+
+                                let rot_str = if p.rotated_90 {
+                                    lang.t("Rotated 90°")
                                 } else if p.grain_fixed {
-                                    lang.tr("🌲 По волокнам", "🌲 Along grain")
+                                    lang.t("🌲 Along grain")
                                 } else {
                                     "0°"
-                                });
+                                };
+                                let rot_resp = ui.label(rot_str);
+
+                                if num_resp.hovered() || name_resp.hovered() || cut_resp.hovered() || full_resp.hovered() || rot_resp.hovered() {
+                                    *hovered_part = Some(p.part_id);
+                                }
+
                                 ui.end_row();
                             }
                         });
@@ -2726,51 +3214,271 @@ pub fn ui_cutting_layout_tab(
                         ui.add_space(10.0);
                         ui.separator();
                         ui.label(
-                            RichText::new(lang.tr(
-                                "Деловые остатки (обрезки) на листе:",
-                                "Usable offcuts (remnants) on sheet:",
-                            ))
-                            .strong(),
+                            RichText::new(lang.t("Usable offcuts (remnants) on sheet:")).strong(),
                         );
                         for (ri, rem) in active_sheet.remnants.iter().enumerate() {
-                            let rem_lbl = match lang {
-                                AppLanguage::Ru => format!(
-                                    "• Остаток {}: {:.0} × {:.0} мм",
-                                    ri + 1,
-                                    rem.w_mm,
-                                    rem.h_mm
-                                ),
-                                AppLanguage::Uk => format!(
-                                    "• Залишок {}: {:.0} × {:.0} мм",
-                                    ri + 1,
-                                    rem.w_mm,
-                                    rem.h_mm
-                                ),
-                                _ => format!(
-                                    "• Offcut {}: {:.0} × {:.0} mm",
-                                    ri + 1,
-                                    rem.w_mm,
-                                    rem.h_mm
-                                ),
-                            };
+                            let rem_lbl = lang.tf(
+                                "fmt.remnant_bullet",
+                                &[
+                                    &(ri + 1),
+                                    &format!("{:.0}", rem.w_mm),
+                                    &format!("{:.0}", rem.h_mm),
+                                    &d.unit_mm,
+                                ],
+                            );
                             ui.label(rem_lbl);
                         }
                     }
                 });
         });
+
+    // 3. CENTRAL PANEL: Toolbar, Summary Chips, Diagram
+    egui::CentralPanel::default().show(ctx, |ui| {
+        let mm_suffix = lang.t(" mm");
+
+        // Top Toolbar: Row 1 (Parameters: Kerf & Trim Margins)
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 6.0;
+
+            ui.label(RichText::new(lang.t("Saw kerf width:")).strong());
+            ui.add(
+                math_drag_value(&mut project.cutting_settings.kerf_mm)
+                    .speed(0.2)
+                    .range(0.0..=25.0)
+                    .suffix(mm_suffix),
+            );
+
+            ui.separator();
+            ui.label(RichText::new(lang.t("Sheet edge trim margins:")).strong());
+
+            if project.cutting_settings.separate_trim_margins {
+                ui.label(lang.t("Left:"));
+                ui.add(
+                    math_drag_value(&mut project.cutting_settings.trim_left_mm)
+                        .speed(1.0)
+                        .range(0.0..=100.0)
+                        .suffix(mm_suffix),
+                );
+                ui.label(lang.t("Right:"));
+                ui.add(
+                    math_drag_value(&mut project.cutting_settings.trim_right_mm)
+                        .speed(1.0)
+                        .range(0.0..=100.0)
+                        .suffix(mm_suffix),
+                );
+                ui.label(lang.t("Top:"));
+                ui.add(
+                    math_drag_value(&mut project.cutting_settings.trim_top_mm)
+                        .speed(1.0)
+                        .range(0.0..=100.0)
+                        .suffix(mm_suffix),
+                );
+                ui.label(lang.t("Bottom:"));
+                ui.add(
+                    math_drag_value(&mut project.cutting_settings.trim_bottom_mm)
+                        .speed(1.0)
+                        .range(0.0..=100.0)
+                        .suffix(mm_suffix),
+                );
+            } else {
+                let mut unified_trim = project.cutting_settings.trim_left_mm;
+                let trim_resp = ui.add(
+                    math_drag_value(&mut unified_trim)
+                        .speed(1.0)
+                        .range(0.0..=100.0)
+                        .suffix(mm_suffix),
+                );
+                if trim_resp.changed() {
+                    project.cutting_settings.trim_left_mm = unified_trim;
+                    project.cutting_settings.trim_right_mm = unified_trim;
+                    project.cutting_settings.trim_top_mm = unified_trim;
+                    project.cutting_settings.trim_bottom_mm = unified_trim;
+                }
+            }
+
+            let prev_separate = project.cutting_settings.separate_trim_margins;
+            if ui
+                .checkbox(
+                    &mut project.cutting_settings.separate_trim_margins,
+                    lang.t("Custom margins"),
+                )
+                .changed()
+            {
+                if prev_separate && !project.cutting_settings.separate_trim_margins {
+                    let unified = project.cutting_settings.trim_left_mm;
+                    project.cutting_settings.trim_right_mm = unified;
+                    project.cutting_settings.trim_top_mm = unified;
+                    project.cutting_settings.trim_bottom_mm = unified;
+                }
+            }
+        });
+
+        ui.add_space(3.0);
+
+        // Top Toolbar: Row 2 (Algorithm & Cut Cost)
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 6.0;
+
+            ui.label(RichText::new(lang.t("cutting.algo_label")).strong());
+            egui::ComboBox::from_id_salt("cutting_algorithm_choice")
+                .selected_text(project.cutting_settings.algorithm.label_i18n(lang))
+                .show_ui(ui, |ui| {
+                    for algo in crate::model::CuttingAlgorithm::ALL {
+                        ui.selectable_value(
+                            &mut project.cutting_settings.algorithm,
+                            algo,
+                            algo.label_i18n(lang),
+                        );
+                    }
+                });
+
+            ui.separator();
+            ui.label(RichText::new(lang.t("cutting.cut_price_per_m")).strong());
+            ui.add(
+                math_drag_value_f64(&mut project.cutting_settings.cut_price_per_m)
+                    .speed(1.0)
+                    .range(0.0..=100_000.0),
+            );
+        });
+
+        ui.add_space(3.0);
+
+        // Top Toolbar: Row 3 (Options & Actions)
+        ui.horizontal(|ui| {
+            ui.spacing_mut().item_spacing.x = 8.0;
+
+            ui.checkbox(
+                &mut project.cutting_settings.group_identical_parts,
+                lang.t("Group identical part numbers"),
+            );
+
+            ui.separator();
+            ui.checkbox(
+                &mut project.cutting_settings.show_textures_on_sheet,
+                lang.t("Show material textures"),
+            );
+
+            ui.separator();
+            if ui.button(lang.t("📋 Copy Cutting List")).clicked() {
+                let txt = crate::export::generate_cutting_clipboard_text_i18n(project, lang);
+                ui.output_mut(|o| o.copied_text = txt);
+                *status_msg = lang
+                    .t("Parts cutting list (saw dimensions & edges) copied to clipboard!")
+                    .to_string();
+            }
+        });
+
+        ui.separator();
+
+        // Summary Statistics Badges
+        ui.horizontal_wrapped(|ui| {
+            let sheets_txt = crate::glossary::format_cutting_total_sheets(
+                lang,
+                report.total_sheets_count,
+                d.unit_pcs,
+            );
+            let total_sheets_color = if is_dark {
+                Color32::from_rgb(255, 215, 90)
+            } else {
+                Color32::from_rgb(160, 110, 15)
+            };
+            ui.label(
+                RichText::new(sheets_txt)
+                    .strong()
+                    .color(total_sheets_color),
+            );
+            ui.separator();
+            let area_txt = crate::glossary::format_cutting_parts_area(
+                lang,
+                report.total_parts_area_m2 as f64,
+                report.total_sheets_area_m2 as f64,
+                report.overall_utilization_percent as f64,
+                d.unit_m2,
+            );
+            ui.label(area_txt);
+            ui.separator();
+            let cut_len_txt = crate::glossary::format_cutting_cut_length(
+                lang,
+                report.total_cut_length_m as f64,
+                d.unit_mp,
+            );
+            ui.label(cut_len_txt);
+
+            for (ename, meters, rgb) in &report.edge_banding_totals_m {
+                ui.separator();
+                let edge_tot_txt = format!("{}: {:.2} {}", ename, meters, d.unit_mp);
+                ui.colored_label(Color32::from_rgb(rgb[0], rgb[1], rgb[2]), edge_tot_txt);
+            }
+        });
+
+        if !report.unplaced_parts.is_empty() {
+            ui.separator();
+            for err in &report.unplaced_parts {
+                let err_msg = crate::glossary::format_unplaced_warning(lang, &err.format_message(lang));
+                ui.colored_label(Color32::from_rgb(255, 95, 95), err_msg);
+            }
+        }
+
+        ui.separator();
+
+        if report.sheets.is_empty() {
+            ui.label(lang.t("No parts in the project for cutting yet."));
+            return;
+        }
+
+        let cur_idx = (*selected_sheet_idx).min(report.sheets.len() - 1);
+        let active_sheet = &report.sheets[cur_idx];
+
+        let panel_clip = ui.clip_rect();
+        let margin_x = 8.0;
+        let margin_y = 6.0;
+        let available_w = (panel_clip.width() - margin_x * 2.0).max(100.0);
+        let available_h = (panel_clip.max.y - ui.cursor().top() - margin_y).max(100.0);
+
+        let canvas_rect = Rect::from_min_size(
+            Pos2::new(panel_clip.min.x + margin_x, ui.cursor().top() + 2.0),
+            EguiVec2::new(available_w, available_h),
+        );
+        ui.allocate_rect(canvas_rect, Sense::hover());
+
+        draw_cutting_sheet_diagram(
+            ui,
+            canvas_rect,
+            active_sheet,
+            project,
+            hovered_part,
+            loaded_textures,
+            lang,
+        );
     });
 }
 
-/// Renders graphical cutting sheet layout diagram with offcuts and edge markers
+/// Renders graphical cutting sheet layout diagram with offcuts, textures, and edge markers
 fn draw_cutting_sheet_diagram(
     ui: &egui::Ui,
     canvas_rect: Rect,
     sheet: &SheetLayout,
     project: &Project,
+    hovered_part: &mut Option<PartId>,
+    loaded_textures: &HashMap<MaterialId, TextureHandle>,
     lang: AppLanguage,
 ) {
+    let is_dark = ui.visuals().dark_mode;
     let painter = ui.painter_at(canvas_rect);
-    painter.rect_filled(canvas_rect, 4.0, Color32::from_rgb(20, 24, 29));
+
+    let canvas_bg = if is_dark {
+        Color32::from_rgb(20, 24, 29)
+    } else {
+        Color32::from_rgb(238, 241, 246)
+    };
+    painter.rect_filled(canvas_rect, 4.0, canvas_bg);
+    if !is_dark {
+        painter.rect_stroke(
+            canvas_rect,
+            4.0,
+            Stroke::new(1.0, Color32::from_rgb(215, 220, 228)),
+        );
+    }
 
     let pad = 28.0;
     let usable = canvas_rect.shrink(pad);
@@ -2787,49 +3495,72 @@ fn draw_cutting_sheet_diagram(
     let sheet_rect = Rect::from_min_size(origin, EguiVec2::new(sheet_px_w, sheet_px_h));
 
     // Raw sheet background (trim margins zone)
-    painter.rect_filled(sheet_rect, 0.0, Color32::from_rgb(62, 48, 42));
-    painter.rect_stroke(sheet_rect, 0.0, Stroke::new(2.0, Color32::WHITE));
+    let margin_bg = if is_dark {
+        Color32::from_rgb(62, 48, 42)
+    } else {
+        Color32::from_rgb(218, 206, 194)
+    };
+    let margin_stroke = if is_dark {
+        Stroke::new(2.0, Color32::WHITE)
+    } else {
+        Stroke::new(2.0, Color32::from_rgb(85, 90, 100))
+    };
+    painter.rect_filled(sheet_rect, 0.0, margin_bg);
+    painter.rect_stroke(sheet_rect, 0.0, margin_stroke);
 
     // Caption for sheet dimensions and grain direction
-    let top_caption = match lang {
-        AppLanguage::Ru => format!(
-            "Длина листа: {:.0} мм (Направление текстуры / волокон ───►) | Ширина реза фрезы: {:.1} мм",
-            sheet.sheet_length_mm, project.cutting_settings.kerf_mm
-        ),
-        AppLanguage::Uk => format!(
-            "Довжина листа: {:.0} мм (Напрямок текстури / волокон ───►) | Ширина різу фрези: {:.1} мм",
-            sheet.sheet_length_mm, project.cutting_settings.kerf_mm
-        ),
-        _ => format!(
-            "Sheet length: {:.0} mm (Grain direction ───►) | Saw kerf: {:.1} mm",
-            sheet.sheet_length_mm, project.cutting_settings.kerf_mm
-        ),
+    let top_caption = lang.tf(
+        "fmt.sheet_top_caption",
+        &[
+            &format!("{:.0}", sheet.sheet_length_mm),
+            &lang.dict().unit_mm,
+            &format!("{:.1}", project.cutting_settings.kerf_mm),
+        ],
+    );
+    let caption_color = if is_dark {
+        Color32::from_rgb(220, 225, 235)
+    } else {
+        Color32::from_rgb(35, 40, 50)
     };
     painter.text(
         Pos2::new(sheet_rect.center().x, sheet_rect.top() - 12.0),
         egui::Align2::CENTER_CENTER,
         top_caption,
         FontId::proportional(11.5),
-        Color32::from_rgb(220, 225, 235),
+        caption_color,
     );
 
     // 1. Render free offcuts (remnants) with dimensions
+    let (rem_bg, rem_stroke_color, rem_text_color) = if is_dark {
+        (
+            Color32::from_rgb(35, 42, 48),
+            Color32::from_gray(90),
+            Color32::from_gray(145),
+        )
+    } else {
+        (
+            Color32::from_rgb(226, 230, 236),
+            Color32::from_rgb(175, 180, 190),
+            Color32::from_rgb(95, 105, 115),
+        )
+    };
+
     for rem in &sheet.remnants {
         let r_min = Pos2::new(origin.x + rem.x_mm * scale, origin.y + rem.y_mm * scale);
         let r_rect = Rect::from_min_size(
             r_min,
             EguiVec2::new(rem.w_mm * scale, rem.h_mm * scale),
         );
-        painter.rect_filled(r_rect, 0.0, Color32::from_rgb(35, 42, 48));
-        painter.rect_stroke(r_rect, 0.0, Stroke::new(1.0, Color32::from_gray(90)));
+        painter.rect_filled(r_rect, 0.0, rem_bg);
+        painter.rect_stroke(r_rect, 0.0, Stroke::new(1.0, rem_stroke_color));
         if r_rect.width() > 45.0 && r_rect.height() > 22.0 {
-            let rem_word = lang.tr("Остаток", "Offcut");
+            let rem_word = lang.t("Offcut");
             painter.text(
                 r_rect.center(),
                 egui::Align2::CENTER_CENTER,
                 format!("{}\n{:.0}×{:.0}", rem_word, rem.w_mm, rem.h_mm),
                 FontId::monospace(9.5),
-                Color32::from_gray(145),
+                rem_text_color,
             );
         }
     }
@@ -2840,6 +3571,14 @@ fn draw_cutting_sheet_diagram(
         .map(|m| m.color_rgb)
         .unwrap_or([215, 195, 165]);
 
+    let pointer_pos = ui.input(|i| i.pointer.hover_pos());
+
+    let (hover_stroke_color, normal_stroke_color) = if is_dark {
+        (Color32::from_rgb(0, 240, 255), Color32::from_rgb(20, 20, 20))
+    } else {
+        (Color32::from_rgb(0, 145, 220), Color32::from_rgb(50, 55, 65))
+    };
+
     for p in &sheet.placed_parts {
         let p_min = Pos2::new(origin.x + p.x_mm * scale, origin.y + p.y_mm * scale);
         let p_rect = Rect::from_min_size(
@@ -2847,12 +3586,45 @@ fn draw_cutting_sheet_diagram(
             EguiVec2::new(p.w_on_sheet_mm * scale, p.h_on_sheet_mm * scale),
         );
 
-        painter.rect_filled(
-            p_rect,
-            0.0,
-            Color32::from_rgb(mat_rgb[0], mat_rgb[1], mat_rgb[2]),
-        );
-        painter.rect_stroke(p_rect, 0.0, Stroke::new(1.2, Color32::from_rgb(20, 20, 20)));
+        let is_hovered = if let Some(ptr) = pointer_pos {
+            if p_rect.contains(ptr) {
+                *hovered_part = Some(p.part_id);
+                true
+            } else {
+                *hovered_part == Some(p.part_id)
+            }
+        } else {
+            *hovered_part == Some(p.part_id)
+        };
+
+        if project.cutting_settings.show_textures_on_sheet {
+            if let Some(tex) = loaded_textures.get(&sheet.material_id) {
+                painter.image(
+                    tex.id(),
+                    p_rect,
+                    Rect::from_min_max(Pos2::new(0.0, 0.0), Pos2::new(1.0, 1.0)),
+                    Color32::WHITE,
+                );
+            } else {
+                painter.rect_filled(
+                    p_rect,
+                    0.0,
+                    Color32::from_rgb(mat_rgb[0], mat_rgb[1], mat_rgb[2]),
+                );
+            }
+        } else {
+            painter.rect_filled(
+                p_rect,
+                0.0,
+                Color32::from_rgb(mat_rgb[0], mat_rgb[1], mat_rgb[2]),
+            );
+        }
+
+        if is_hovered {
+            painter.rect_stroke(p_rect, 0.0, Stroke::new(2.5, hover_stroke_color));
+        } else {
+            painter.rect_stroke(p_rect, 0.0, Stroke::new(1.2, normal_stroke_color));
+        }
 
         // Render edge banding markers inside part on cutting layout
         let inset = 3.0;
@@ -2914,38 +3686,66 @@ fn draw_cutting_sheet_diagram(
                     p.spec_index, p.name, p.w_on_sheet_mm, p.h_on_sheet_mm
                 )
             } else {
-                format!("#{} {:.0}×{:.0}", p.spec_index, p.w_on_sheet_mm, p.h_on_sheet_mm)
+                format!(
+                    "#{} {:.0}×{:.0}",
+                    p.spec_index, p.w_on_sheet_mm, p.h_on_sheet_mm
+                )
             };
-            painter.text(
-                p_rect.center(),
-                egui::Align2::CENTER_CENTER,
-                label,
-                FontId::monospace(10.0),
-                Color32::from_rgb(15, 15, 15),
-            );
+
+            // If textures are displayed, draw semi-transparent backing so text remains readable
+            if project.cutting_settings.show_textures_on_sheet {
+                let badge_h = if p_rect.width() > 85.0 && p_rect.height() > 34.0 { 28.0 } else { 16.0 };
+                let badge_w = (p_rect.width() - 8.0).min(110.0).max(30.0);
+                painter.rect_filled(
+                    Rect::from_center_size(p_rect.center(), EguiVec2::new(badge_w, badge_h)),
+                    3.0,
+                    Color32::from_black_alpha(170),
+                );
+                painter.text(
+                    p_rect.center(),
+                    egui::Align2::CENTER_CENTER,
+                    label,
+                    FontId::monospace(10.0),
+                    Color32::WHITE,
+                );
+            } else {
+                painter.text(
+                    p_rect.center(),
+                    egui::Align2::CENTER_CENTER,
+                    label,
+                    FontId::monospace(10.0),
+                    Color32::from_rgb(15, 15, 15),
+                );
+            }
         }
     }
 
     // 3. Render through-cut guillotine saw/blade lines
+    let cut_line_color = if is_dark {
+        Color32::from_rgb(250, 75, 75)
+    } else {
+        Color32::from_rgb(220, 45, 45)
+    };
     for cl in &sheet.cut_lines {
         let p1 = Pos2::new(origin.x + cl.x1 * scale, origin.y + cl.y1 * scale);
         let p2 = Pos2::new(origin.x + cl.x2 * scale, origin.y + cl.y2 * scale);
-        painter.line_segment([p1, p2], Stroke::new(1.2, Color32::from_rgb(250, 75, 75)));
+        painter.line_segment([p1, p2], Stroke::new(1.2, cut_line_color));
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::{
-        copy_selected_parts_to_clipboard, eval_math_expression, paste_parts_into_project,
+        can_move_hierarchy_item, copy_selected_parts_to_clipboard, eval_math_expression,
+        move_hierarchy_item, paste_parts_into_project,
     };
-    use crate::model::Project;
+    use crate::model::{PartGroup, Project};
 
     #[test]
     fn test_eval_math_expression() {
         assert_eq!(eval_math_expression("600+100"), Some(700.0));
         assert_eq!(eval_math_expression("600-4"), Some(596.0));
-        assert_eq!(eval_math_expression("600 мм + 100"), Some(700.0));
+        assert_eq!(eval_math_expression("600 mm + 100"), Some(700.0));
         assert_eq!(eval_math_expression("800-18-18"), Some(764.0));
         assert_eq!(eval_math_expression("(800 - 36) / 2"), Some(382.0));
         assert_eq!(eval_math_expression("600,5 + 0,5"), Some(601.0));
@@ -2958,11 +3758,14 @@ mod tests {
         let selected_ids: Vec<_> = src_proj.parts.iter().take(4).map(|p| p.id).collect();
         assert_eq!(selected_ids.len(), 4);
 
-        let copied =
-            copy_selected_parts_to_clipboard(&src_proj, selected_ids.first().copied(), &selected_ids);
+        let copied = copy_selected_parts_to_clipboard(
+            &src_proj,
+            selected_ids.first().copied(),
+            &selected_ids,
+        );
         assert_eq!(copied.len(), 4);
 
-        let mut dst_proj = Project::new_empty("Новый проект".to_string());
+        let mut dst_proj = Project::new_empty("New Project".to_string());
         assert_eq!(dst_proj.parts.len(), 0);
 
         let new_ids = paste_parts_into_project(&mut dst_proj, &copied);
@@ -2974,6 +3777,48 @@ mod tests {
         let pasted_delta = dst_proj.parts[1].position_mm - dst_proj.parts[0].position_mm;
         assert!((orig_delta - pasted_delta).length() < 1e-4);
     }
+
+    #[test]
+    fn test_move_part_up_down_within_group_and_group_reorder() {
+        let mut proj = Project::new_demo_cabinet();
+        // Keep only the first group and create a second group
+        proj.groups.truncate(1);
+        let grp1_id = proj.groups[0].id;
+        let grp2_id = proj.alloc_id();
+        proj.groups.push(PartGroup {
+            id: grp2_id,
+            name: "Group 2".to_string(),
+            visible: true,
+            locked: false,
+            expanded: true,
+        });
+
+        let p0_id = proj.parts[0].id; // Group 1
+        let p1_id = proj.parts[1].id; // Group 2
+        let p2_id = proj.parts[2].id; // Group 1
+        proj.parts[0].group_id = Some(grp1_id);
+        proj.parts[1].group_id = Some(grp2_id);
+        proj.parts[2].group_id = Some(grp1_id);
+
+        // p0 is first in Group 1 -> cannot move up
+        assert!(!can_move_hierarchy_item(&proj, None, Some(p0_id), -1));
+        assert!(can_move_hierarchy_item(&proj, None, Some(p0_id), 1));
+
+        // p1 is the only part in Group 2 -> cannot move up or down (must NOT jump into Group 1)
+        assert!(!can_move_hierarchy_item(&proj, None, Some(p1_id), -1));
+        assert!(!can_move_hierarchy_item(&proj, None, Some(p1_id), 1));
+        assert!(!move_hierarchy_item(&mut proj, None, Some(p1_id), -1));
+
+        // Move p2 up within Group 1 -> swaps with p0 (skipping p1 which is in Group 2!)
+        assert!(move_hierarchy_item(&mut proj, None, Some(p2_id), -1));
+        assert_eq!(proj.parts[0].id, p2_id);
+        assert_eq!(proj.parts[1].id, p1_id);
+        assert_eq!(proj.parts[2].id, p0_id);
+
+        // Group reorder: move Group 2 up -> becomes first group
+        assert!(can_move_hierarchy_item(&proj, Some(grp2_id), None, -1));
+        assert!(move_hierarchy_item(&mut proj, Some(grp2_id), None, -1));
+        assert_eq!(proj.groups[0].id, grp2_id);
+        assert_eq!(proj.groups[1].id, grp1_id);
+    }
 }
-
-
