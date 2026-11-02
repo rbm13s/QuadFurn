@@ -130,9 +130,9 @@ Umiddelbart språkbytte uten omstart via **`🌐`**-knappen i verktøylinjen, au
 ## Hovedfunksjoner
 
 - **Synkronisert 4-visnings arbeidsflate**: Arbeid i Plan (`XY`), Front (`XZ`), Side (`YZ`), eller maksimer en hvilken som helst rute med ett klikk (`[Maksimer]` / `[Gjenopprett 4 visninger]`).
-- **Maskinvareakselerert 3D-forhåndsvisning**: Orbit-kamera (`Høyre museknapp`/`Midtknapp`) + frifluktkamera i førsteperson (`tast Z` + `WASD`/`Mellomrom`/`Ctrl`) med UV-teksturer og presis OBB-strålekasting.
+- **Maskinvareakselerert 3D-forhåndsvisning**: Orbit-kamera (`Høyre museknapp`/`Midtknapp`) + frifluktkamera i førsteperson (`tast Z` + `WASD`/`Mellomrom`/`Ctrl (Command ⌘)`) med UV-teksturer og presis OBB-strålekasting.
 - **Magnetisk festefunksjon og dynamiske avstandsmål**: Automatisk snapping til rutenett (`1`, `9`, `18`, `50 mm` eller egendefinert), magnetisk låsing mot tilstøtende flater og kanter (`0 mm`) og visning av faktiske avstander i millimeter til naboplater.
-- **Rammemarkering og gruppetransformasjon**: Dra en markeringsramme i en 2D-visning for å flytte flere plater samlet, duplisere (`Ctrl+D`) eller kopiere dem på tvers av åpne møbelprosjekter (`Ctrl+C` / `Ctrl+V`).
+- **Rammemarkering og gruppetransformasjon**: Dra en markeringsramme i en 2D-visning for å flytte flere plater samlet, duplisere (`Ctrl+D` / `Command (⌘)+D`) eller kopiere dem på tvers av åpne møbelprosjekter (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Innebygd formelregner**: Alle numeriske felt godtar matematiske uttrykk som `600+100`, `800-36`, `720/2` eller `45+15`.
 - **Automatisk fradrag for kantlister ved saging**: Tildel kantlist (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm` osv.) til de 4 sidene (`L1`, `L2`, `W1`, `W2`), og systemet regner straks ut kuttmålet:
   $$\text{Kuttlengde} = L_{\text{ferdig}} - E_{L1} - E_{L2}, \quad \text{Kuttbredde} = W_{\text{ferdig}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ Fanen **Designer** (`📐 1. Designer`) består av tre hovedområder:
 
 1. **Øvre verktøylinjer**:
    - **Tegneverktøy**:
-     - `↖ Velg / Flytt (V)`: Klikk for å velge et element, dra for å flytte, eller bruk håndtakene (8 størrelseshåndtak på flaten og 2 kanthåndtak fra siden). Dra i tomt rom for å åpne en markeringsramme. Under flytting i 2D: hold **`Shift`** for å låse bevegelsen til vannrett eller loddrett akse, hold **`Ctrl` (`Command вЊ`)** for å omgå kantfeste, og hold **`Alt`** for å duplisere delen når du slipper musen.
+     - `↖ Velg / Flytt (V)`: Klikk for å velge et element, dra for å flytte, eller bruk håndtakene (8 størrelseshåndtak på flaten og 2 kanthåndtak fra siden). Dra i tomt rom for å åpne en markeringsramme. Under flytting i 2D: hold **`Shift`** for å låse bevegelsen til vannrett eller loddrett akse, hold **`Ctrl` (`Command ⌘`)** for å omgå kantfeste, og hold **`Alt`** for å duplisere delen når du slipper musen.
      - `➕ Opprett element med ramme (B)`: Dra et rektangel i en 2D-visning (`Plan XY`, `Front XZ` eller `Side YZ`) for å sette inn en plate i det planet.
      - `📏 Målebånd (M)`: Mål nøyaktige avstander punkt til punkt (`ΔX`, `ΔY`, `L`) i millimeter.
    - **Hurtiginnsetting**: Knapper for rask innsetting av hyller (`+ Hylle (XY)`), sider (`+ Side (YZ)`) eller dører/bakplater (`+ Dør/Bakplate (XZ)`).
@@ -165,7 +165,7 @@ Fanen **Designer** (`📐 1. Designer`) består av tre hovedområder:
 
 2. **Fire visningsruter**:
    - **2D ortogonale visninger (`Plan XY`, `Front XZ`, `Side YZ`)** med rullefelt, millimeterlinjaler og fargede kantlistmarkeringer.
-   - **3D-visning**: Bane-rotasjon (`Høyre` eller `Midtre museknapp`), zoom med rullehjul, 3D-valg og **Førstepersons Flymodus (Noclip)** (trykk **`Z`** over 3D-ruten og fly med `WASD`, `Mellomrom`, `Ctrl`/`Shift`).
+   - **3D-visning**: Bane-rotasjon (`Høyre` eller `Midtre museknapp`), zoom med rullehjul, 3D-valg og **Førstepersons Flymodus (Noclip)** (trykk **`Z`** over 3D-ruten og fly med `WASD`, `Mellomrom`, `Ctrl (Command ⌘)`/`Shift`).
 
 3. **Høyre Elementinspektør**:
    - Gruppering av elementer i **Grupper** (*Skrog*, *Dører*, *Skuffer*).
@@ -212,7 +212,7 @@ Fanen **Kappeskjema** (`🪚 3. Kappeskjema`) beregner den mest optimale fordeli
 
 - **Startside og nylige prosjekter**: Opprett et tomt møbel, start ut fra en 2-dørs mal, åpne `.qfurn`/`.json`-filer eller velg blant de **10 sist åpnede prosjektene**.
 - **Flere møbelfaner samtidig**: Konstruer flere moduler parallelt (dobbeltklikk på fanenavnet for å endre navn).
-- **Kopier og lim inn mellom prosjekter**: Merk elementer i én fane, trykk `Ctrl+C`, bytt til en annen fane (eller en annen åpen instans av QuadFurn), og trykk `Ctrl+V`. Manglende materialer og kantlister opprettes automatisk i målprosjektet.
+- **Kopier og lim inn mellom prosjekter**: Merk elementer i én fane, trykk `Ctrl+C` (`Command (⌘)+C`), bytt til en annen fane (eller en annen åpen instans av QuadFurn), og trykk `Ctrl+V` (`Command (⌘)+V`). Manglende materialer og kantlister opprettes automatisk i målprosjektet.
 - **Sikkerhet mot datatap**: Ved lukking av en endret fane eller avslutning av programmet vises en bekreftelsesdialog (`Lagre og avslutt`, `Avslutt uten å lagre`, `Avbryt`).
 
 ---
@@ -265,19 +265,19 @@ I fanen **Materialer** (`🎨 4. Materialer`):
 | **`M`** | Aktiver **Målebånd** i 2D-visninger |
 | **Dra med `Venstre museknapp` (2D)** | Flytt elementer, juster håndtak eller dra markeringsramme i tomt rom |
 | **`Shift + Venstreklikk` Dra (2D)** | Lås delens bevegelse strengt til vannrett eller loddrett akse |
-| **`Ctrl / Command (вЊ) + Venstreklikk` Dra (2D)** | Deaktiver magnetisk kantfeste midlertidig under flytting |
+| **`Ctrl / Command (⌘) + Venstreklikk` Dra (2D)** | Deaktiver magnetisk kantfeste midlertidig under flytting |
 | **`Alt + Venstreklikk` Dra (2D)** | Dupliser valgt(e) del(er) til målposisjonen ved slipp |
 | **`Skift / Ctrl (Cmd) + Venstre museknapp` (2D)** | Legg til eller fjern element fra flervalg |
 | **Dra med `Høyre` / `Midtre museknap` (2D)** | Panorer visningen (2D pan) |
 | **`Rullehjul på mus` (2D / 3D)** | Zoom inn/ut sentrert rundt markøren |
 | **Dra med `Høyre` / `Midtre museknap` (3D)** | Bane-rotasjon av 3D-kameraet |
 | **`Z` (over 3D-ruten)** | Slå av/på **Førstepersons Flymodus (Noclip)** |
-| **`W` `A` `S` `D` / `Mellomrom` / `Ctrl (Command вЊ)`** | Fly frem/venstre/tilbake/høyre/opp/ned i 3D (`Skift` for høyere fart) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Lagre det aktive møbelet (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Angre siste handling (historikk på inntil 40 trinn) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Kopier valgte deler til utklippstavlen |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Lim inn deler (fungerer på tvers av faner) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Dupliser merkede elementer |
+| **`W` `A` `S` `D` / `Mellomrom` / `Ctrl (Command ⌘)`** | Fly frem/venstre/tilbake/høyre/opp/ned i 3D (`Skift` for høyere fart) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Lagre det aktive møbelet (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Angre siste handling (historikk på inntil 40 trinn) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Kopier valgte deler til utklippstavlen |
+| **`Ctrl + V` / `Command (⌘) + V`** | Lim inn deler (fungerer på tvers av faner) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Dupliser merkede elementer |
 | **`Delete` / `Backspace`** | Slett merkede elementer |
 | **`←` `→` `↑` `↓` (2D-visninger)** | Flytt valgte deler med valgt rutenettstrinn (`Shift` for dobbelt trinn) |
 

@@ -130,9 +130,9 @@ Cambio istantaneo della lingua senza riavvio tramite il selettore **`🌐`** nel
 ## Caratteristiche principali
 
 - **Area di lavoro sincronizzata a 4 viste**: Modifica nelle viste Dall'alto (`XY`), Frontale (`XZ`), Laterale (`YZ`), oppure massimizza qualsiasi vista con un solo clic (`[Massimizza]` / `[Ripristina 4 viste]`).
-- **Anteprima 3D accelerata da GPU**: Telecamera orbitale (`Tasto destro`/`Tasto centrale`) + modalità volo libero in prima persona in prima persona (`tasto Z` + `WASD`/`Spazio`/`Ctrl`) con rendering delle texture e raycasting OBB preciso.
+- **Anteprima 3D accelerata da GPU**: Telecamera orbitale (`Tasto destro`/`Tasto centrale`) + modalità volo libero in prima persona in prima persona (`tasto Z` + `WASD`/`Spazio`/`Ctrl (Command ⌘)`) con rendering delle texture e raycasting OBB preciso.
 - **Snap magnetico e quote dinamiche delle distanze**: Aggancio automatico al passo della griglia (`1`, `9`, `18`, `50 mm` o personalizzato), snap magnetico a spigoli e facce vicine (`0 mm`), e indicazione in tempo reale della distanza dalle parti adiacenti.
-- **Selezione rettangolare e trasformazione di gruppo**: Traccia un riquadro di selezione in qualsiasi vista 2D per selezionare più parti, spostarle assieme, duplicarle (`Ctrl+D`) o copiarle/incollarle tra diversi progetti di arredo (`Ctrl+C` / `Ctrl+V`).
+- **Selezione rettangolare e trasformazione di gruppo**: Traccia un riquadro di selezione in qualsiasi vista 2D per selezionare più parti, spostarle assieme, duplicarle (`Ctrl+D` / `Command (⌘)+D`) o copiarle/incollarle tra diversi progetti di arredo (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Calcolatrice matematica integrata**: Ogni casella numerica supporta espressioni aritmetiche quali `600+100`, `800-36`, `720/2` o `45+15`.
 - **Detrazione automatica dei bordi per il taglio**: Assegna bordi in PVC/ABS (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm`, ecc.) a ciascuno dei 4 lati (`L1`, `L2`, `W1`, `W2`) e calcola subito la dimensione di taglio:
   $$\text{Lunghezza taglio} = L_{\text{finito}} - E_{L1} - E_{L2}, \quad \text{Larghezza taglio} = W_{\text{finito}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ La scheda **Progettista** (`📐 1. Progettista`) include tre aree principali:
 
 1. **Barre degli strumenti superiori**:
    - **Strumenti di disegno**:
-     - `↖ Seleziona / Sposta (V)`: Clicca su un elemento per selezionarlo, trascina per spostarlo, o manipola le maniglie (8 maniglie per pezzi frontali e 2 per pezzi di taglio). Trascina sull'area vuota per disegnare un riquadro di selezione multipla. Durante il trascinamento 2D: tieni premuto **`Shift`** per vincolare il movimento all'asse orizzontale o verticale, **`Ctrl` (`Command вЊ`)** per disattivare l'aggancio magnetico ai bordi e **`Alt`** per duplicare la parte al rilascio.
+     - `↖ Seleziona / Sposta (V)`: Clicca su un elemento per selezionarlo, trascina per spostarlo, o manipola le maniglie (8 maniglie per pezzi frontali e 2 per pezzi di taglio). Trascina sull'area vuota per disegnare un riquadro di selezione multipla. Durante il trascinamento 2D: tieni premuto **`Shift`** per vincolare il movimento all'asse orizzontale o verticale, **`Ctrl` (`Command ⌘`)** per disattivare l'aggancio magnetico ai bordi e **`Alt`** per duplicare la parte al rilascio.
      - `➕ Crea elemento con riquadro (B)`: Traccia un rettangolo in una vista 2D (`Dall'alto XY`, `Frontale XZ` o `Laterale YZ`) per inserire un pannello orientato secondo quel piano.
      - `📏 Metro a nastro (M)`: Misura distanze punto-punto esatte (`ΔX`, `ΔY`, `L`) in millimetri.
    - **Inserimento rapido**: Pulsanti per aggiungere con un clic ripiani (`+ Ripiano (XY)`), montanti (`+ Montante (YZ)`) o frontali/schienali (`+ Frontale/Schienale (XZ)`).
@@ -212,7 +212,7 @@ La scheda **Schema di taglio** (`🪚 3. Schema di taglio`) ottimizza la disposi
 
 - **Pagina iniziale e progetti recenti**: Creazione di un nuovo mobile vuoto, avvio da modello predefinito di mobile a 2 ante, apertura di file `.qfurn`/`.json` o selezione rapida tra gli **ultimi 10 progetti aperti**.
 - **Schede di lavoro multiple**: Lavora su più elementi d'arredo contemporaneamente (fai doppio clic sul titolo di una scheda per rinominarlo).
-- **Copia e incolla tra progetti**: Seleziona le parti in una scheda, premi `Ctrl+C`, passa a un'altra scheda (o a un'altra istanza di QuadFurn) e premi `Ctrl+V`. Eventuali materiali o bordi mancanti vengono creati o associati automaticamente nel progetto di destinazione.
+- **Copia e incolla tra progetti**: Seleziona le parti in una scheda, premi `Ctrl+C` (`Command (⌘)+C`), passa a un'altra scheda (o a un'altra istanza di QuadFurn) e premi `Ctrl+V` (`Command (⌘)+V`). Eventuali materiali o bordi mancanti vengono creati o associati automaticamente nel progetto di destinazione.
 - **Protezione contro modifiche non salvate**: Alla chiusura di una scheda modificata o all'uscita dal programma appare una finestra di conferma (`Salva ed esci`, `Esci senza salvare`, `Annulla`).
 
 ---
@@ -265,19 +265,19 @@ Nella scheda **Materiali** (`🎨 4. Materiali`):
 | **`M`** | Attiva lo strumento **Metro a nastro** nelle viste 2D |
 | **Trascina `Tasto sinistro` (2D)** | Sposta le parti selezionate, ridimensiona con maniglia o crea riquadro di selezione su spazio vuoto |
 | **`Shift + Clic sin.` Trascina (2D)** | Vincola lo spostamento rigorosamente all'asse orizzontale o verticale |
-| **`Ctrl / Command (вЊ) + Clic sin.` Trascina (2D)** | Disattiva l'aggancio magnetico ai bordi durante il trascinamento |
+| **`Ctrl / Command (⌘) + Clic sin.` Trascina (2D)** | Disattiva l'aggancio magnetico ai bordi durante il trascinamento |
 | **`Alt + Clic sin.` Trascina (2D)** | Duplica le parti selezionate nella posizione di destinazione al rilascio |
 | **`Maiusc / Ctrl (Cmd) + Tasto sinistro` (2D)** | Aggiunge o rimuove una parte dalla selezione multipla |
 | **Trascina `Tasto destro` / `Tasto centrale` (2D)** | Panoramica della vista 2D |
 | **`Rotellina mouse` (2D / 3D)** | Zoom avanti e indietro rispetto al cursore |
 | **Trascina `Tasto destro` / `Tasto centrale` (3D)** | Rotazione orbitale della telecamera 3D |
 | **`Z` (sopra la vista 3D)** | Attiva / disattiva la **Modalità Volo Libero in Prima Persona (Noclip)** |
-| **`W` `A` `S` `D` / `Spazio` / `Ctrl (Command вЊ)`** | Movimento avanti/sinistra/indietro/destra/alto/basso in volo 3D (`Maiusc` per accelerare) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Salva il mobile corrente (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Annulla l'ultima azione (cronologia fino a 40 passaggi) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Copia i pezzi selezionati negli appunti |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Incolla i pezzi (funziona tra schede diverse) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplica le parti selezionate |
+| **`W` `A` `S` `D` / `Spazio` / `Ctrl (Command ⌘)`** | Movimento avanti/sinistra/indietro/destra/alto/basso in volo 3D (`Maiusc` per accelerare) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Salva il mobile corrente (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Annulla l'ultima azione (cronologia fino a 40 passaggi) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Copia i pezzi selezionati negli appunti |
+| **`Ctrl + V` / `Command (⌘) + V`** | Incolla i pezzi (funziona tra schede diverse) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplica le parti selezionate |
 | **`Canc` / `Backspace`** | Elimina le parti selezionate |
 | **`←` `→` `↑` `↓` (viste 2D)** | Sposta le parti selezionate del passo della griglia (`Shift` per raddoppiare) |
 

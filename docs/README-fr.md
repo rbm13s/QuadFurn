@@ -130,9 +130,9 @@ Changement de langue instantané sans redémarrage via le sélecteur **`🌐`** 
 ## Fonctionnalités clés
 
 - **Espace de travail 4 vues synchronisé** : Travaillez dans Haut (`XY`), Face (`XZ`), Côté (`YZ`), ou maximisez n'importe quelle vue en un clic (`[Agrandir]` / `[Restaurer 4 vues]`).
-- **Prévisualisation 3D accélérée par GPU** : Caméra orbitale (`Bouton droit`/`Bouton central`) + mode vol libre à la première personne en vue première personne (`touche Z` + `ZQSD`/`Espace`/`Ctrl`) avec texturation UV et sélection précise par lancer de rayons OBB.
+- **Prévisualisation 3D accélérée par GPU** : Caméra orbitale (`Bouton droit`/`Bouton central`) + mode vol libre à la première personne en vue première personne (`touche Z` + `ZQSD`/`Espace`/`Ctrl (Command ⌘)`) avec texturation UV et sélection précise par lancer de rayons OBB.
 - **Magnétisme et cotation dynamique des jeux** : Accrochage automatique à la grille (`1`, `9`, `18`, `50 mm` ou personnalisée), collage magnétique aux faces et coins adjacents (`0 mm`), et affichage dynamique des distances aux pièces voisines.
-- **Sélection par rectangle et transformation de groupe** : Tracez un cadre de sélection dans n'importe quelle vue 2D pour manipuler plusieurs pièces, les dupliquer (`Ctrl+D`) ou les copier/coller d'un meuble à un autre (`Ctrl+C` / `Ctrl+V`).
+- **Sélection par rectangle et transformation de groupe** : Tracez un cadre de sélection dans n'importe quelle vue 2D pour manipuler plusieurs pièces, les dupliquer (`Ctrl+D` / `Command (⌘)+D`) ou les copier/coller d'un meuble à un autre (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Calculatrice arithmétique intégrée** : Tous les champs numériques acceptent des formules telles que `600+100`, `800-36`, `720/2` ou `45+15`.
 - **Déduction automatique des chants au sciage** : Attribuez des chants PVC/ABS (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm`, etc.) sur les 4 rives (`L1`, `L2`, `W1`, `W2`) et visualisez immédiatement la cote brute :
   $$\text{Longueur de sciage} = L_{\text{finie}} - E_{L1} - E_{L2}, \quad \text{Largeur de sciage} = W_{\text{finie}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ L'onglet **Concepteur** (`📐 1. Concepteur`) comprend trois zones :
 
 1. **Barres d'outils supérieures** :
    - **Outils d'édition** :
-     - `↖ Sélectionner / Déplacer (V)` : Clic pour sélectionner, glisser pour déplacer, ou manipuler les poignées (8 poignées de face et 2 poignées de chant). Glisser sur le vide trace un cadre de sélection multiple. Lors du glissement 2D : maintenez **`Maj`** pour contraindre le mouvement à l'axe horizontal ou vertical, **`Ctrl` (`Command вЊ`)** pour désactiver l'aimantation aux arêtes, et **`Alt`** pour dupliquer la pièce à la position de dépôt.
+     - `↖ Sélectionner / Déplacer (V)` : Clic pour sélectionner, glisser pour déplacer, ou manipuler les poignées (8 poignées de face et 2 poignées de chant). Glisser sur le vide trace un cadre de sélection multiple. Lors du glissement 2D : maintenez **`Maj`** pour contraindre le mouvement à l'axe horizontal ou vertical, **`Ctrl` (`Command ⌘`)** pour désactiver l'aimantation aux arêtes, et **`Alt`** pour dupliquer la pièce à la position de dépôt.
      - `➕ Créer une pièce par rectangle (B)` : Tracer un rectangle dans une vue 2D (`Haut XY`, `Face XZ` ou `Côté YZ`) pour insérer un panneau orienté selon ce plan.
      - `📏 Mètre ruban (M)` : Mesurer les cotes exactes point à point (`ΔX`, `ΔY`, `L`) en millimètres.
    - **Insertion rapide** : Boutons d'ajout rapide (`+ Étagère (XY)`, `+ Montant (YZ)`, `+ Façade/Fond (XZ)`).
@@ -212,7 +212,7 @@ L'onglet **Plan de découpe** (`🪚 3. Plan de découpe`) optimise le calepinag
 
 - **Page d'accueil et projets récents** : Création d'un meuble vierge, départ depuis un modèle de meuble bas à 2 portes, ouverture de fichiers `.qfurn`/`.json` ou réouverture rapide parmi les **10 projets récents**.
 - **Onglets multi-meubles** : Travaillez sur plusieurs modules ou caissons simultanément (double-cliquez sur un onglet pour le renommer).
-- **Copier-coller inter-projets** : Sélectionnez des pièces dans un meuble, faites `Ctrl+C`, basculez sur un autre onglet (ou une autre instance de l'application), et faites `Ctrl+V`. Les matériaux et chants manquants sont automatiquement créés dans le projet cible.
+- **Copier-coller inter-projets** : Sélectionnez des pièces dans un meuble, faites `Ctrl+C` (`Command (⌘)+C`), basculez sur un autre onglet (ou une autre instance de l'application), et faites `Ctrl+V` (`Command (⌘)+V`). Les matériaux et chants manquants sont automatiquement créés dans le projet cible.
 - **Protection contre la perte de données** : Confirmation automatique lors de la fermeture d'un onglet non enregistré ou lors de la sortie de l'application (`Enregistrer et quitter`, `Quitter sans enregistrer`, `Annuler`).
 
 ---
@@ -265,19 +265,19 @@ Dans l'onglet **Matériaux** (`🎨 4. Matériaux`) :
 | **`M`** | Activer le **Mètre ruban** dans les vues 2D |
 | **Glisser `Clic gauche` (2D)** | Déplacer la pièce, ajuster une poignée ou tracer un cadre de sélection dans le vide |
 | **`Maj + Clic gche` Glisser (2D)** | Contraindre le déplacement strictement à l'axe horizontal ou vertical |
-| **`Ctrl / Command (вЊ) + Clic gche` Glisser (2D)** | Désactiver l'aimantation magnétique aux arêtes pendant le glissement |
+| **`Ctrl / Command (⌘) + Clic gche` Glisser (2D)** | Désactiver l'aimantation magnétique aux arêtes pendant le glissement |
 | **`Alt + Clic gche` Glisser (2D)** | Dupliquer la ou les pièces à la position de destination en relâchant |
 | **`Maj / Ctrl (Cmd) + Clic gauche` (2D)** | Ajouter / retirer une pièce de la sélection multiple |
 | **Glisser `Clic droit` / `Clic central` (2D)** | Déplacer la vue (Panoramique 2D) |
 | **`Molette souris` (2D / 3D)** | Zoom avant / arrière centré sur le curseur |
 | **Glisser `Clic droit` / `Clic central` (3D)** | Rotation orbitale de la caméra 3D |
 | **`Z` (au-dessus de la vue 3D)** | Activer / désactiver le **Mode Vol Libre Première Personne (Noclip)** |
-| **`Z` `Q` `S` `D` / `Espace` / `Ctrl (Command вЊ)`** | Voler en avant/gauche/arrière/droite/haut/bas en vue 3D (`Maj` pour accélérer) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Enregistrer le meuble actif (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Annuler la dernière action (historique jusqu'à 40 étapes) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Copier les pièces sélectionnées dans le presse-papiers |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Coller les pièces (fonctionne entre onglets) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Dupliquer les pièces sélectionnées |
+| **`Z` `Q` `S` `D` / `Espace` / `Ctrl (Command ⌘)`** | Voler en avant/gauche/arrière/droite/haut/bas en vue 3D (`Maj` pour accélérer) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Enregistrer le meuble actif (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Annuler la dernière action (historique jusqu'à 40 étapes) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Copier les pièces sélectionnées dans le presse-papiers |
+| **`Ctrl + V` / `Command (⌘) + V`** | Coller les pièces (fonctionne entre onglets) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Dupliquer les pièces sélectionnées |
 | **`Suppr` / `Retour arrière`** | Supprimer les pièces sélectionnées |
 | **`←` `→` `↑` `↓` (vues 2D)** | Déplacer les pièces sélectionnées du pas de grille choisi (`Shift` pour doubler le pas) |
 

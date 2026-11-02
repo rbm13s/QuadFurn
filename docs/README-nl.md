@@ -130,9 +130,9 @@ Direct wisselen van taal zonder herstart via de knop **`🌐`** in de bovenbalk,
 ## Belangrijkste kenmerken
 
 - **Gesynchroniseerde 4-weergaven werkruimte**: Bewerk in Boven (`XY`), Voor (`XZ`), Zij (`YZ`), of maximaliseer elk aanzicht met één klik (`[Maximaliseren]` / `[4 weergaven herstellen]`).
-- **Hardware-versnelde 3D-weergave**: Orbit-camera (`Rechtermuisknop`/`Middelste knop`) + vrije vluchtcamera in eerstepersoonsperspectief (`Z-toets` + `WASD`/`Spatie`/`Ctrl`) met UV-texturen en precieze OBB-raycasting.
+- **Hardware-versnelde 3D-weergave**: Orbit-camera (`Rechtermuisknop`/`Middelste knop`) + vrije vluchtcamera in eerstepersoonsperspectief (`Z-toets` + `WASD`/`Spatie`/`Ctrl (Command ⌘)`) met UV-texturen en precieze OBB-raycasting.
 - **Magnetisch snappen en dynamische tussenruimtematen**: Automatisch snappen op het raster (`1`, `9`, `18`, `50 mm` of aangepast), magnetisch vastklikken op aangrenzende vlakken en randen (`0 mm`) en dynamische afstandsmetingen in millimeters naar naburige panelen.
-- **Kaderselectie en groepstransformatie**: Sleep een selectiekader in een willekeurig 2D-aanzicht om meerdere panelen tegelijk te selecteren, verplaatsen, dupliceren (`Ctrl+D`) of tussen verschillende meubels te kopiëren (`Ctrl+C` / `Ctrl+V`).
+- **Kaderselectie en groepstransformatie**: Sleep een selectiekader in een willekeurig 2D-aanzicht om meerdere panelen tegelijk te selecteren, verplaatsen, dupliceren (`Ctrl+D` / `Command (⌘)+D`) of tussen verschillende meubels te kopiëren (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Ingebouwde rekenmachine**: Elk invoerveld accepteert formules zoals `600+100`, `800-36`, `720/2` of `45+15`.
 - **Automatische zaagmaataftrek voor kantenband**: Wijs kantenband toe (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm`, enz.) aan de 4 zijden (`L1`, `L2`, `W1`, `W2`) en zie direct de zaagmaat:
   $$\text{Zaaglengte} = L_{\text{eind}} - E_{L1} - E_{L2}, \quad \text{Zaagbreedte} = W_{\text{eind}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ Het tabblad **Ontwerper** (`📐 1. Ontwerper`) bestaat uit drie hoofdgebieden:
 
 1. **Bovenste werkbalken**:
    - **Teken- en bewerkgereedschappen**:
-     - `↖ Selecteren / Verplaatsen (V)`: Klik op een onderdeel om het te selecteren, sleep om te verplaatsen, of gebruik de formaatgrepen (8 handgrepen bij vooraanzicht & 2 randgrepen bij kopse kant). Sleep in de lege ruimte voor een selectiekader. Tijdens slepen in 2D: houd **`Shift`** ingedrukt om verplaatsing vast te zetten op de horizontale of verticale as, houd **`Ctrl` (`Command вЊ`)** ingedrukt om magnetisch vastklikken aan randen te omzeilen, en houd **`Alt`** ingedrukt om het onderdeel bij loslaten te dupliceren.
+     - `↖ Selecteren / Verplaatsen (V)`: Klik op een onderdeel om het te selecteren, sleep om te verplaatsen, of gebruik de formaatgrepen (8 handgrepen bij vooraanzicht & 2 randgrepen bij kopse kant). Sleep in de lege ruimte voor een selectiekader. Tijdens slepen in 2D: houd **`Shift`** ingedrukt om verplaatsing vast te zetten op de horizontale of verticale as, houd **`Ctrl` (`Command ⌘`)** ingedrukt om magnetisch vastklikken aan randen te omzeilen, en houd **`Alt`** ingedrukt om het onderdeel bij loslaten te dupliceren.
      - `➕ Onderdeel maken via kader (B)`: Sleep een rechthoek in een 2D-aanzicht (`Boven XY`, `Voor XZ` of `Zij YZ`) om direct een paneel in dat vlak te plaatsen.
      - `📏 Rolmaat (M)`: Meet afstanden van punt tot punt (`ΔX`, `ΔY`, `L`) in millimeters.
    - **Snelle invoeging**: Knoppen voor het snel toevoegen van legplanken (`+ Legplank (XY)`), zijwanden (`+ Zijwand (YZ)`) of deuren/achterwanden (`+ Deur/Achterwand (XZ)`).
@@ -165,7 +165,7 @@ Het tabblad **Ontwerper** (`📐 1. Ontwerper`) bestaat uit drie hoofdgebieden:
 
 2. **Vier aanzichtsvensters**:
    - **2D orthogonale aanzichten (`Boven XY`, `Voor XZ`, `Zij YZ`)** met schuifbalken, millimeterlinialen en gekleurde markeringen van kantenband.
-   - **3D-weergave**: Orbit-rotatie (`Rechter` of `Middelste muisknop`), zoomen met het muiswiel, 3D-selectie en **Eerstepersoons Vrije Vlucht (Noclip)** (druk op **`Z`** boven het 3D-venster en vlieg met `WASD`, `Spatie`, `Ctrl`/`Shift`).
+   - **3D-weergave**: Orbit-rotatie (`Rechter` of `Middelste muisknop`), zoomen met het muiswiel, 3D-selectie en **Eerstepersoons Vrije Vlucht (Noclip)** (druk op **`Z`** boven het 3D-venster en vlieg met `WASD`, `Spatie`, `Ctrl (Command ⌘)`/`Shift`).
 
 3. **Rechter Onderdeleninspecteur**:
    - Indeling van onderdelen in **Groepen** (*Kastombouw*, *Deuren*, *Laden*).
@@ -212,7 +212,7 @@ Het tabblad **Zaagplan** (`🪚 3. Zaagplan`) berekent de optimale verdeling van
 
 - **Startpagina en recente bestanden**: Maak een leeg meubel aan, start vanuit een 2-deurs kastsjabloon, open `.qfurn`/`.json`-bestanden of kies uit de **10 recent geopende projecten**.
 - **Meerdere meubels gelijktijdig**: Werk aan verschillende modules in parallelle tabbladen (dubbelklik op een tabblad om de naam te wijzigen).
-- **Kopiëren en plakken tussen projecten**: Selecteer panelen in het ene meubel, druk op `Ctrl+C`, wissel naar een ander tabblad (of een tweede geopend QuadFurn-venster) en druk op `Ctrl+V`. Ontbrekende materialen en kantenbanden worden automatisch overgenomen in het doelproject.
+- **Kopiëren en plakken tussen projecten**: Selecteer panelen in het ene meubel, druk op `Ctrl+C` (`Command (⌘)+C`), wissel naar een ander tabblad (of een tweede geopend QuadFurn-venster) en druk op `Ctrl+V` (`Command (⌘)+V`). Ontbrekende materialen en kantenbanden worden automatisch overgenomen in het doelproject.
 - **Beveiliging tegen dataverlies**: Bij het sluiten van een gewijzigd tabblad of het afsluiten van de software verschijnt een bevestigingsvenster (`Opslaan en afsluiten`, `Afsluiten zonder opslaan`, `Annuleren`).
 
 ---
@@ -265,19 +265,19 @@ In het tabblad **Materialen** (`🎨 4. Materialen`):
 | **`M`** | Activeer **Rolmaat** in 2D-aanzichten |
 | **Slepen `Linkermuisknop` (2D)** | Panelen verplaatsen, afmetingen aanpassen via greep of kaderselectie in de vrije ruimte |
 | **`Shift + Linkermuisknop` Slepen (2D)** | Verplaatsing strikt beperken tot horizontale of verticale as |
-| **`Ctrl / Command (вЊ) + Linkermuisknop` Slepen (2D)** | Magnetisch vastklikken aan paneelranden tijdelijk uitschakelen |
+| **`Ctrl / Command (⌘) + Linkermuisknop` Slepen (2D)** | Magnetisch vastklikken aan paneelranden tijdelijk uitschakelen |
 | **`Alt + Linkermuisknop` Slepen (2D)** | Geselecteerd(e) onderdeel(en) direct dupliceren naar doelpositie bij loslaten |
-| **`Shift / Ctrl (Command вЊ) + Linkermuisknop` (2D)** | Onderdeel toevoegen aan of verwijderen uit meervoudige selectie |
+| **`Shift / Ctrl (Command ⌘) + Linkermuisknop` (2D)** | Onderdeel toevoegen aan of verwijderen uit meervoudige selectie |
 | **Slepen `Rechter` / `Middelste muisknop` (2D)** | Weergave verschuiven (Pan 2D) |
 | **`Muiswiel` (2D / 3D)** | In- en uitzoomen gecentreerd op de cursor |
 | **Slepen `Rechter` / `Middelste muisknop` (3D)** | Orbitale rotatie van de 3D-camera |
 | **`Z` (boven het 3D-venster)** | In-/uitschakelen van **Eerstepersoons Vrije Vlucht (Noclip)** |
-| **`W` `A` `S` `D` / `Spatie` / `Ctrl (Command вЊ)`** | Vliegen naar voor/links/achter/rechts/omhoog/omlaag in 3D (`Shift` versnelt) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Huidig meubel opslaan (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Laatste bewerking ongedaan maken (geschiedenis tot 40 stappen) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Geselecteerde onderdelen naar het klembord kopiëren |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Onderdelen plakken (werkt ook tussen tabbladen) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Geselecteerde onderdelen dupliceren |
+| **`W` `A` `S` `D` / `Spatie` / `Ctrl (Command ⌘)`** | Vliegen naar voor/links/achter/rechts/omhoog/omlaag in 3D (`Shift` versnelt) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Huidig meubel opslaan (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Laatste bewerking ongedaan maken (geschiedenis tot 40 stappen) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Geselecteerde onderdelen naar het klembord kopiëren |
+| **`Ctrl + V` / `Command (⌘) + V`** | Onderdelen plakken (werkt ook tussen tabbladen) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Geselecteerde onderdelen dupliceren |
 | **`Delete` / `Backspace`** | Geselecteerde onderdelen verwijderen |
 | **`←` `→` `↑` `↓` (2D-weergaven)** | Geselecteerde onderdelen verplaatsen met geselecteerde rasterstap (`Shift` voor dubbele stap) |
 

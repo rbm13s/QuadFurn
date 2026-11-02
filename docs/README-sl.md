@@ -130,9 +130,9 @@ Takojšnje preklapljanje med jeziki brez ponovnega zagona prek gumba **`🌐`** 
 ## Ključne funkcije
 
 - **Sinhroniziran 4-pogledni delovni prostor**: Delajte v Tlorisu (`XY`), Narisu (`XZ`), Stranskem risu (`YZ`), ali poljuben pogled povečajte čez celotno okno (`[Povečaj]` / `[Obnovi 4 poglede]`).
-- **Strojno pospešen 3D predogled**: Orbitalna kamera (`Desni`/`Srednji gumb miške`) + prosti let iz prve osebe iz prve osebe (`tipka Z` + `WASD`/`Preslednica`/`Ctrl`) s teksturiranjem UV in natančnim žarkovnim zaznavanjem OBB.
+- **Strojno pospešen 3D predogled**: Orbitalna kamera (`Desni`/`Srednji gumb miške`) + prosti let iz prve osebe iz prve osebe (`tipka Z` + `WASD`/`Preslednica`/`Ctrl (Command ⌘)`) s teksturiranjem UV in natančnim žarkovnim zaznavanjem OBB.
 - **Magnetno pripenjanje in dinamično kotiranje odmikov**: Samodejni skok na mrežo (`1`, `9`, `18`, `50 mm` ali po meri), magnetni oprijem na robove in ploskve sosednjih kosov (`0 mm`) ter prikaz razdalj v milimetrih do sosednjih elementov.
-- **Izbira z okvirjem in skupinsko preoblikovanje**: Z vlečenjem miške v poljubnem 2D pogledu označite več elementov hkrati, jih skupaj premikajte, podvajajte (`Ctrl+D`) ali kopirajte med odprtimi projekti (`Ctrl+C` / `Ctrl+V`).
+- **Izbira z okvirjem in skupinsko preoblikovanje**: Z vlečenjem miške v poljubnem 2D pogledu označite več elementov hkrati, jih skupaj premikajte, podvajajte (`Ctrl+D` / `Command (⌘)+D`) ali kopirajte med odprtimi projekti (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Vgrajen računski modul**: Vsa številska polja omogočajo vnos računskih izrazov, kot so `600+100`, `800-36`, `720/2` ali `45+15`.
 - **Samodejni odštevek trakov pri razrezu**: Določite ABS robne trakove (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm` itd.) na poljubni od 4 stranic (`L1`, `L2`, `W1`, `W2`) in takoj prejmite mero za razrez:
   $$\text{Dolžina reza} = L_{\text{končna}} - E_{L1} - E_{L2}, \quad \text{Širina reza} = W_{\text{končna}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ Zavihek **Načrtovalec** (`📐 1. Načrtovalec`) obsega tri poglavitna območja
 
 1. **Zgornje orodne vrstice**:
    - **Orodja za risanje**:
-     - `↖ Izberi / Premakni (V)`: Kliknite element za izbiro, povlecite za premik, ali uporabite ročice (8 ročic za elemente plosko in 2 ročici z roba). Vlečenje po praznem prostoru odpre izbirni pravokotnik za več elementov. Med vlečenjem v 2D: držite **`Shift`**, da premikanje zaklenete na vodoravno ali navpično os, **`Ctrl` (`Command вЊ`)**, da začasno izklopite magnetno pritrjevanje na robove, in **`Alt`**, da ustvarite kopijo kosa ob spustu.
+     - `↖ Izberi / Premakni (V)`: Kliknite element za izbiro, povlecite za premik, ali uporabite ročice (8 ročic za elemente plosko in 2 ročici z roba). Vlečenje po praznem prostoru odpre izbirni pravokotnik za več elementov. Med vlečenjem v 2D: držite **`Shift`**, da premikanje zaklenete na vodoravno ali navpično os, **`Ctrl` (`Command ⌘`)**, da začasno izklopite magnetno pritrjevanje na robove, in **`Alt`**, da ustvarite kopijo kosa ob spustu.
      - `➕ Ustvari element z okvirjem (B)`: Povlecite pravokotnik v 2D pogledu (`Tloris XY`, `Naris XZ` ali `Stranski ris YZ`), da ustvarite ploščo, usmerjeno v tej ravnini.
      - `📏 Merilni trak (M)`: Natančno merjenje razdalj od točke do točke (`ΔX`, `ΔY`, `L`) v milimetrih.
    - **Hitro vstavljanje**: Gumbi za hitro dodajanje polic (`+ Polica (XY)`), stranic (`+ Stranica (YZ)`) ali ličnic/hrbtišč (`+ Ličnica/Hrbet (XZ)`).
@@ -165,7 +165,7 @@ Zavihek **Načrtovalec** (`📐 1. Načrtovalec`) obsega tri poglavitna območja
 
 2. **Štiri delovna okna**:
    - **2D pravokotne projekcije (`Tloris XY`, `Naris XZ`, `Stranski ris YZ`)** z drsniki, milimetrskimi merili in barvnimi črtami nanesenih robnih trakov.
-   - **3D pogled**: Orbitalno vrtenje (`Desni` ali `Srednji gumb miške`), približevanje s kolescem, izbira v 3D in **Način prostega leta iz prve osebe (Noclip)** (pritisnite **`Z`** nad 3D oknom in letite s tipkami `WASD`, `Preslednica`, `Ctrl`/`Shift`).
+   - **3D pogled**: Orbitalno vrtenje (`Desni` ali `Srednji gumb miške`), približevanje s kolescem, izbira v 3D in **Način prostega leta iz prve osebe (Noclip)** (pritisnite **`Z`** nad 3D oknom in letite s tipkami `WASD`, `Preslednica`, `Ctrl (Command ⌘)`/`Shift`).
 
 3. **Desni Inšpektor elementov**:
    - Razvrščanje elementov v poljubne **Skupine** (*Korpus*, *Vrata*, *Predali*).
@@ -212,7 +212,7 @@ Zavihek **Načrt razreza** (`🪚 3. Načrt razreza`) izračuna najugodnejšo ra
 
 - **Začetna stran in zgodovina**: Ustvarjanje novega praznega pohištva, začetek iz predloge 2-vratne omare, odpiranje datotek `.qfurn`/`.json` ali hiter dostop do **10 zadnjih projektov**.
 - **Delo v več zavihkih hkrati**: Načrtujte več omar hkrati v zgornji vrstici zavihkov (z dvoklikom na zavihek ga lahko preimenujete).
-- **Kopiranje in lepljenje med projekti**: Izberite elemente v enem zavihku, pritisnite `Ctrl+C`, preklopite v drug zavihek (ali drugo odprto okno programa) in pritisnite `Ctrl+V`. Manjkajoči materiali in robni trakovi se samodejno prenesejo v ciljni projekt.
+- **Kopiranje in lepljenje med projekti**: Izberite elemente v enem zavihku, pritisnite `Ctrl+C` (`Command (⌘)+C`), preklopite v drug zavihek (ali drugo odprto okno programa) in pritisnite `Ctrl+V` (`Command (⌘)+V`). Manjkajoči materiali in robni trakovi se samodejno prenesejo v ciljni projekt.
 - **Varstvo pred izgubo podatkov**: Ob zapiranju neshranjenega zavihka ali izhodu iz programa se prikaže potrditveno okno (`Shrani in zapri`, `Zapri brez shranjevanja`, `Prekliči`).
 
 ---
@@ -265,19 +265,19 @@ V zavihku **Materiali** (`🎨 4. Materiali`):
 | **`M`** | Vključi orodje **Merilni trak** v 2D pogledih |
 | **Vlečenje z `Levim gumbom` (2D)** | Premik elementov, spreminjanje velikosti z ročico ali risanje izbirnega okvirja na praznem |
 | **`Shift + Levi klik` Vlečenje (2D)** | Omejitev premikanja kosa strogo na vodoravno ali navpično os |
-| **`Ctrl / Command (вЊ) + Levi klik` Vlečenje (2D)** | Izklop magnetnega pritrjevanja na robove med vlečenjem |
+| **`Ctrl / Command (⌘) + Levi klik` Vlečenje (2D)** | Izklop magnetnega pritrjevanja na robove med vlečenjem |
 | **`Alt + Levi klik` Vlečenje (2D)** | Podvajanje izbranega kosa na ciljno mesto ob spustu miške |
-| **`Shift / Ctrl (Command вЊ) + Levi gumb` (2D)** | Dodajanje ali odstranjevanje elementa iz večkratne izbire |
+| **`Shift / Ctrl (Command ⌘) + Levi gumb` (2D)** | Dodajanje ali odstranjevanje elementa iz večkratne izbire |
 | **Vlečenje z `Desnim` / `Srednjim gumbom` (2D)** | Premik pogleda (Panoramski 2D pomik) |
 | **`Kolesce miške` (2D / 3D)** | Približevanje / oddaljevanje pogleda glede na kazalec |
 | **Vlečenje z `Desnim` / `Srednjim gumbom` (3D)** | Orbitalno vrtenje 3D kamere |
 | **`Z` (nad 3D oknom)** | Vklop / izklop **Načina prostega leta iz prve osebe (Noclip)** |
-| **`W` `A` `S` `D` / `Preslednica` / `Ctrl (Command вЊ)`** | Letenje naprej/levo/nazaj/desno/gor/dol v 3D pogledu (`Shift` pospeši) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Shrani trenutno pohištvo (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Razveljavi zadnje dejanje (zgodovina do 40 korakov) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Kopiraj izbrane elemente v odložišče |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Prilepi elemente (deluje tudi med različnimi zavihki) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Podvoji izbrane elemente |
+| **`W` `A` `S` `D` / `Preslednica` / `Ctrl (Command ⌘)`** | Letenje naprej/levo/nazaj/desno/gor/dol v 3D pogledu (`Shift` pospeši) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Shrani trenutno pohištvo (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Razveljavi zadnje dejanje (zgodovina do 40 korakov) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Kopiraj izbrane elemente v odložišče |
+| **`Ctrl + V` / `Command (⌘) + V`** | Prilepi elemente (deluje tudi med različnimi zavihki) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Podvoji izbrane elemente |
 | **`Delete` / `Backspace`** | Izbriši izbrane elemente |
 | **`←` `→` `↑` `↓` (2D pogledi)** | Premik izbranih delov za korak izbrane mreže (`Shift` za dvojni korak) |
 

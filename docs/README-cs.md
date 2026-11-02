@@ -130,9 +130,9 @@ Okamžité přepínání jazyků bez restartu tlačítkem **`🌐`** v horní li
 ## Klíčové vlastnosti
 
 - **Synchronizovaný 4pohledový pracovní prostor**: Navrhujte v Půdorysu (`XY`), Nárysu (`XZ`), Bokorysu (`YZ`), nebo libovolné okno zvětšete na celou plochu (`[Zvětšit]` / `[Obnovit 4 pohledy]`).
-- **Hardwarově akcelerovaný 3D náhled**: Orbitální kamera (`Pravé`/`Prostřední tlačítko myši`) + volný let z první osoby z pohledu první osoby (`klávesa Z` + `WASD`/`Mezerník`/`Ctrl`) s perspektivní UV texturací a přesným OBB paprskovým výběrem.
+- **Hardwarově akcelerovaný 3D náhled**: Orbitální kamera (`Pravé`/`Prostřední tlačítko myši`) + volný let z první osoby z pohledu první osoby (`klávesa Z` + `WASD`/`Mezerník`/`Ctrl (Command ⌘)`) s perspektivní UV texturací a přesným OBB paprskovým výběrem.
 - **Magnetické přichytávání a dynamické kótování mezer**: Automatický úchyt k mřížce (`1`, `9`, `18`, `50 mm` nebo vlastní), přilnutí k plochám a hranám sousedních dílců (`0 mm`) a zobrazení reálných vzdáleností v milimetrech k sousedním deskám.
-- **Rámečkový výběr a skupinová transformace**: Tažením myši ve 2D pohledech vyberte více dílců naráz, posouvejte je společně, duplikujte (`Ctrl+D`) nebo kopírujte mezi otevřenými výrobky (`Ctrl+C` / `Ctrl+V`).
+- **Rámečkový výběr a skupinová transformace**: Tažením myši ve 2D pohledech vyberte více dílců naráz, posouvejte je společně, duplikujte (`Ctrl+D` / `Command (⌘)+D`) nebo kopírujte mezi otevřenými výrobky (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Integrovaná kalkulačka**: Všechna číselná pole přijímají matematické vzorce jako `600+100`, `800-36`, `720/2` nebo `45+15`.
 - **Automatický odpočet hran při řezání**: Přiřaďte ABS hrany (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm` atd.) na kteroukoli ze 4 stran dílce (`L1`, `L2`, `W1`, `W2`) a systém okamžitě vypočítá řezný rozměr:
   $$\text{Délka řezu} = L_{\text{hotová}} - E_{L1} - E_{L2}, \quad \text{Šířka řezu} = W_{\text{hotová}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ Záložka **Konstruktér** (`📐 1. Konstruktér`) se skládá ze tří hlavní
 
 1. **Horní nástrojové lišty**:
    - **Kreslicí nástroje**:
-     - `↖ Vybrat / Posunout (V)`: Kliknutím vyberete dílec, tažením posouváte, nebo měníte rozměry pomocí úchopů (8 úchopů pro dílce naplocho a 2 pro dílce z hrany). Tažením v prázdném prostoru vytvoříte obdélníkový výběr více dílců. Při přetahování ve 2D: přidržením **`Shift`** omezíte pohyb pouze na vodorovnou nebo svislou osu, **`Ctrl` (`Command вЊ`)** deaktivujete magnetické přichytávání k hranám a **`Alt`** vytvoříte kopii dílu v místě puštění.
+     - `↖ Vybrat / Posunout (V)`: Kliknutím vyberete dílec, tažením posouváte, nebo měníte rozměry pomocí úchopů (8 úchopů pro dílce naplocho a 2 pro dílce z hrany). Tažením v prázdném prostoru vytvoříte obdélníkový výběr více dílců. Při přetahování ve 2D: přidržením **`Shift`** omezíte pohyb pouze na vodorovnou nebo svislou osu, **`Ctrl` (`Command ⌘`)** deaktivujete magnetické přichytávání k hranám a **`Alt`** vytvoříte kopii dílu v místě puštění.
      - `➕ Vytvořit dílec rámečkem (B)`: Tažením obdélníku ve 2D pohledu (`Půdorys XY`, `Nárys XZ` nebo `Bokorys YZ`) vytvoříte novou desku odpovídající dané rovině.
      - `📏 Měřicí pásmo (M)`: Měření přesných vzdáleností bod od bodu (`ΔX`, `ΔY`, `L`) v milimetrech.
    - **Rychlé vkládání dílců**: Tlačítka pro vložení police (`+ Police (XY)`), boku (`+ Bok (YZ)`) nebo dvířek/zad (`+ Dvířka/Záda (XZ)`).
@@ -165,7 +165,7 @@ Záložka **Konstruktér** (`📐 1. Konstruktér`) se skládá ze tří hlavní
 
 2. **Čtyři pracovní okna**:
    - **2D pravoúhlé průměty (`Půdorys XY`, `Nárys XZ`, `Bokorys YZ`)** s posuvníky, milimetrovými pravítky a barevným zvýrazněním olepených hran.
-   - **3D pohled**: Orbitální otáčení (`Pravé` nebo `Prostřední tlačítko myši`), přibližování kolečkem, 3D výběr a **Režim volného letu (Noclip)** (stiskněte **`Z`** nad 3D oknem a létejte pomocí kláves `WASD`, `Mezerník`, `Ctrl`/`Shift`).
+   - **3D pohled**: Orbitální otáčení (`Pravé` nebo `Prostřední tlačítko myši`), přibližování kolečkem, 3D výběr a **Režim volného letu (Noclip)** (stiskněte **`Z`** nad 3D oknem a létejte pomocí kláves `WASD`, `Mezerník`, `Ctrl (Command ⌘)`/`Shift`).
 
 3. **Pravý Inspektor dílců**:
    - Třídění dílců do uživatelských **Skupin** (*Korpus*, *Dvířka*, *Zásuvky*).
@@ -212,7 +212,7 @@ Záložka **Nářezový plán** (`🪚 3. Nářezový plán`) vypočítá optim�
 
 - **Úvodní stránka a historie**: Vytvoření nového prázdného výrobku, start ze šablony 2dveřové skříňky, otevření souborů `.qfurn`/`.json` nebo rychlý výběr z **10 naposledy otevřených projektů**.
 - **Práce ve více záložkách současně**: Navrhujte více skříněk najednou v horní liště záložek (dvojitým kliknutím lze výrobek přejmenovat).
-- **Kopírování a vkládání dílců mezi projekty**: Vyberte dílce v jednom výrobku, stiskněte `Ctrl+C`, přepněte se do jiné záložky (nebo jiné spuštěné instance QuadFurn) a stiskněte `Ctrl+V`. Chybějící materiály a hrany se v cílovém projektu automaticky vytvoří.
+- **Kopírování a vkládání dílců mezi projekty**: Vyberte dílce v jednom výrobku, stiskněte `Ctrl+C` (`Command (⌘)+C`), přepněte se do jiné záložky (nebo jiné spuštěné instance QuadFurn) a stiskněte `Ctrl+V` (`Command (⌘)+V`). Chybějící materiály a hrany se v cílovém projektu automaticky vytvoří.
 - **Ochrana před ztrátou dat**: Při zavírání neuloženého výrobku nebo ukončení programu se zobrazí potvrzovací dialog (`Uložit a odejít`, `Odejít bez uložení`, `Zrušit`).
 
 ---
@@ -265,19 +265,19 @@ V záložce **Materiály** (`🎨 4. Materiály`):
 | **`M`** | Aktivovat nástroj **Měřicí pásmo** ve 2D pohledech |
 | **Tažení `Levým tlačítkem` (2D)** | Posunout vybrané dílce, upravit rozměr úchopem nebo táhnout výběrový rámeček v prázdnu |
 | **`Shift + Levé tl.` Přetažení (2D)** | Omezení pohybu dílu striktně na vodorovnou nebo svislou osu |
-| **`Ctrl / Command (вЊ) + Levé tl.` Přetažení (2D)** | Deaktivace magnetického přichytávání k hranám během přetahování |
+| **`Ctrl / Command (⌘) + Levé tl.` Přetažení (2D)** | Deaktivace magnetického přichytávání k hranám během přetahování |
 | **`Alt + Levé tl.` Přetažení (2D)** | Duplikování vybraného dílu do cílového místa při puštění |
-| **`Shift / Ctrl (Command вЊ) + Levým tlačítkem` (2D)** | Přidat nebo odebrat dílec z vícenásobného výběru |
+| **`Shift / Ctrl (Command ⌘) + Levým tlačítkem` (2D)** | Přidat nebo odebrat dílec z vícenásobného výběru |
 | **Tažení `Pravým` / `Prostředním tlačítkem` (2D)** | Posun zobrazení (Panoráma 2D) |
 | **`Kolečko myši` (2D / 3D)** | Přiblížení / oddálení pohledu na pozici kurzoru |
 | **Tažení `Pravým` / `Prostředním tlačítkem` (3D)** | Orbitální rotace 3D kamery |
 | **`Z` (nad 3D oknem)** | Zapnout / vypnout **Režim volného letu (Noclip)** |
-| **`W` `A` `S` `D` / `Mezerník` / `Ctrl (Command вЊ)`** | Pohyb dopředu/doleva/dozadu/doprava/nahoru/dolů ve 3D letu (`Shift` zrychluje) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Uložit aktuální výrobek (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Vrátit zpět poslední krok (historie až 40 kroků) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Kopírovat vybrané dílce do schránky |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Vložit vybrané dílce (funguje mezi různými záložkami) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplikovat vybrané dílce |
+| **`W` `A` `S` `D` / `Mezerník` / `Ctrl (Command ⌘)`** | Pohyb dopředu/doleva/dozadu/doprava/nahoru/dolů ve 3D letu (`Shift` zrychluje) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Uložit aktuální výrobek (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Vrátit zpět poslední krok (historie až 40 kroků) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Kopírovat vybrané dílce do schránky |
+| **`Ctrl + V` / `Command (⌘) + V`** | Vložit vybrané dílce (funguje mezi různými záložkami) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplikovat vybrané dílce |
 | **`Delete` / `Backspace`** | Smazat vybrané dílce |
 | **`←` `→` `↑` `↓` (2D pohledy)** | Posun vybraných dílů o krok zvolené mřížky (`Shift` pro dvojnásobný krok) |
 

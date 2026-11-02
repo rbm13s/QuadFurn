@@ -130,9 +130,9 @@ Przełączanie języka w czasie rzeczywistym przyciskiem **`🌐`**, automatyczn
 ## Główne funkcje
 
 - **Zsynchronizowana przestrzeń 4 rzutów**: Edycja w rzutach Góra (`XY`), Przód (`XZ`), Bok (`YZ`) lub powiększenie dowolnego widoku jednym kliknięciem (`[Maksymalizuj]` / `[4 widoki]`).
-- **Podgląd 3D ze sprzętową akceleracją**: Obrót wokół modelu (`PPM`/`ŚPM`) + swobodny lot pierwszoosobowy (`Z` + `WASD`/`Spacja`/`Ctrl`) z teksturami i rzutowaniem promieni OBB.
+- **Podgląd 3D ze sprzętową akceleracją**: Obrót wokół modelu (`PPM`/`ŚPM`) + swobodny lot pierwszoosobowy (`Z` + `WASD`/`Spacja`/`Ctrl (Command ⌘)`) z teksturami i rzutowaniem promieni OBB.
 - **Magnetyczne przyciąganie i wymiary szczelin na żywo**: Przyciąganie do siatki (`1`, `9`, `18`, `50 mm`) oraz do krawędzi sąsiednich formatek na styk (`0 mm`), a także dynamiczne linie wymiarowe do sąsiednich elementów.
-- **Zaznaczanie ramką i transformacja grupowa**: Rysowanie ramki zaznaczenia w 2D, jednoczesne przesuwanie, duplikowanie (`Ctrl+D`) i kopiowanie między projektami (`Ctrl+C` / `Ctrl+V`).
+- **Zaznaczanie ramką i transformacja grupowa**: Rysowanie ramki zaznaczenia w 2D, jednoczesne przesuwanie, duplikowanie (`Ctrl+D` / `Command (⌘)+D`) i kopiowanie między projektami (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Wbudowany kalkulator**: Wszystkie pola liczbowe przyjmują wyrażenia takie jak `600+100`, `800-36`, `720/2` czy `45+15`.
 - **Automatyczne odliczanie obrzeża**: Przypisanie obrzeża PCV/ABS (`0.4 mm`, `0.8 mm`, `1.0 mm`, `2.0 mm` itd.) na dowolną z 4 krawędzi formatek:
   $$\text{Długość cięcia} = L_{\text{gab}} - O_{L1} - O_{L2}, \quad \text{Szerokość cięcia} = W_{\text{gab}} - O_{W1} - O_{W2}$$
@@ -153,7 +153,7 @@ Zakładka **Projektant** (`📐 1. Projektant`) składa się z trzech głównych
 
 1. **Górny pasek narzędzi**:
    - **Narzędzia edytora**:
-     - `↖ Zaznacz / Przesuń (V)`: Kliknięcie zaznacza formatkę, przeciąganie wewnątrz przesuwa ją, przeciąganie uchwytów (8 uchwytów dla formatek na płasko i 2 uchwyty z krawędzi) zmienia jej wymiary. Przeciąganie po pustym tle rozwija **ramkę zaznaczenia**. Podczas przeciągania w 2D: przytrzymanie **`Shift`** blokuje ruch do jednej osi (tylko poziom lub pion), **`Ctrl` (`Command вЊ`)** wyłącza przyciąganie do krawędzi, a **`Alt`** tworzy duplikat elementu w miejscu upuszczenia.
+     - `↖ Zaznacz / Przesuń (V)`: Kliknięcie zaznacza formatkę, przeciąganie wewnątrz przesuwa ją, przeciąganie uchwytów (8 uchwytów dla formatek na płasko i 2 uchwyty z krawędzi) zmienia jej wymiary. Przeciąganie po pustym tle rozwija **ramkę zaznaczenia**. Podczas przeciągania w 2D: przytrzymanie **`Shift`** blokuje ruch do jednej osi (tylko poziom lub pion), **`Ctrl` (`Command ⌘`)** wyłącza przyciąganie do krawędzi, a **`Alt`** tworzy duplikat elementu w miejscu upuszczenia.
      - `➕ Utwórz element ramką (B)`: Rozciągnięcie prostokąta w oknie 2D tworzy formatkę zorientowaną w płaszczyźnie tego rzutu (`Półka XY`, `Bok YZ`, `Front/Tył XZ`).
      - `📏 Miarka (M)`: Pomiar dokładnych odległości (`ΔX`, `ΔY`, `L`) w milimetrach w rzutach 2D.
    - **Szybkie wstawianie elementów**: Przyciski jednoetapowe (`+ Półka (XY)`, `+ Bok (YZ)`, `+ Front (XZ)`).
@@ -207,7 +207,7 @@ Zakładka **Rozkrój** (`🪚 3. Rozkrój`) automatycznie rozmieszcza wszystkie 
 
 - **Strona startowa**: Dostęp do pustych projektów, szablonów szafek lub **10 ostatnio otwieranych plików**.
 - **Wiele zakładek**: Równoległa praca nad wieloma meblami (dwuklik zmienia nazwę).
-- **Kopiowanie między projektami (`Ctrl+C` / `Ctrl+V`)**: Kopiuj elementy między zakładkami — brakujące materiały i obrzeża zostaną zaimportowane automatycznie.
+- **Kopiowanie między projektami (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`)**: Kopiuj elementy między zakładkami — brakujące materiały i obrzeża zostaną zaimportowane automatycznie.
 - **Ochrona przed utratą danych**: Okno potwierdzenia przy zamykaniu niezapisanych kart.
 
 ---
@@ -253,19 +253,19 @@ W zakładce **Materiały** (`🎨 4. Materiały`):
 | **`M`** | Narzędzie **Miarka** w oknach 2D |
 | **Przeciąganie `LPM` (2D)** | Przesuwanie elementów, zmiana rozmiaru lub ramka zaznaczenia |
 | **`Shift + LPM` Przeciąganie (2D)** | Ograniczenie ruchu elementu ściśle do osi poziomej lub pionowej |
-| **`Ctrl / Command (вЊ) + LPM` Przeciąganie (2D)** | Wyłączenie magnetycznego przyciągania do krawędzi podczas przeciągania |
+| **`Ctrl / Command (⌘) + LPM` Przeciąganie (2D)** | Wyłączenie magnetycznego przyciągania do krawędzi podczas przeciągania |
 | **`Alt + LPM` Przeciąganie (2D)** | Duplikowanie (szybkie kopiowanie) elementu w miejsce upuszczenia |
-| **`Shift / Ctrl (Command вЊ) + LPM` (2D)** | Dodanie / usunięcie elementu z zaznaczenia |
+| **`Shift / Ctrl (Command ⌘) + LPM` (2D)** | Dodanie / usunięcie elementu z zaznaczenia |
 | **Przeciąganie `PPM` / `ŚPM` (2D)** | Przesuwanie kamery (Pan) |
 | **`Kółko myszy` (2D / 3D)** | Przybliżanie / oddalanie kamery |
 | **Przeciąganie `PPM` / `ŚPM` (3D)** | Obrót orbity 3D wokół modelu |
 | **`Z` (nad oknem 3D)** | Włączenie / wyłączenie **Trybu swobodnego lotu 3D (Noclip)** |
-| **`W` `A` `S` `D` / `Spacja` / `Ctrl (Command вЊ)`** | Poruszanie się w trybie 3D (`Shift` przyspiesza) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Zapisanie bieżącego projektu mebla (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Cofnięcie ostatniej operacji (do 40 kroków) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Kopiowanie zaznaczonych elementów do schowka |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Wklejanie elementów (działa także między różnymi zakładkami) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplikowanie zaznaczonych elementów |
+| **`W` `A` `S` `D` / `Spacja` / `Ctrl (Command ⌘)`** | Poruszanie się w trybie 3D (`Shift` przyspiesza) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Zapisanie bieżącego projektu mebla (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Cofnięcie ostatniej operacji (do 40 kroków) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Kopiowanie zaznaczonych elementów do schowka |
+| **`Ctrl + V` / `Command (⌘) + V`** | Wklejanie elementów (działa także między różnymi zakładkami) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplikowanie zaznaczonych elementów |
 | **`Delete` / `Backspace`** | Usunięcie zaznaczonych elementów |
 | **`←` `→` `↑` `↓` (widoki 2D)** | Przesunięcie zaznaczonych części o krok wybranej siatki (`Shift` — podwójny krok) |
 

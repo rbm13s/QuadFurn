@@ -130,9 +130,9 @@ Schimbare instantanee a limbii fără repornire prin butonul **`🌐`** din bara
 ## Funcționalități principale
 
 - **Spațiu de lucru sincronizat cu 4 vederi**: Proiectați în Sus (`XY`), Față (`XZ`), Lateral (`YZ`), sau măriți orice fereastră pe tot ecranul cu un clic (`[Maximizează]` / `[Restaurează cele 4 vederi]`).
-- **Previzualizare 3D accelerată grafic**: Cameră orbitală (`Click dreapta`/`Click mijloc`) + mod zbor liber la persoana întâi la persoana întâi (`tasta Z` + `WASD`/`Spațiu`/`Ctrl`) cu texturi UV și selecție precisă prin raze OBB.
+- **Previzualizare 3D accelerată grafic**: Cameră orbitală (`Click dreapta`/`Click mijloc`) + mod zbor liber la persoana întâi la persoana întâi (`tasta Z` + `WASD`/`Spațiu`/`Ctrl (Command ⌘)`) cu texturi UV și selecție precisă prin raze OBB.
 - **Atragere magnetică și cote dinamice de distanță**: Fixare automată la grilă (`1`, `9`, `18`, `50 mm` sau personalizat), atragere magnetică la fețe și muchii învecinate (`0 mm`) și afișarea cotelor reale în milimetri până la piesele adiacente.
-- **Selecție cadru și transformare de grup**: Trageți un cadru de selecție în orice vedere 2D pentru a muta mai multe piese deodată, a le duplica (`Ctrl+D`) sau a le copia între diferite corpuri de mobilier deschise (`Ctrl+C` / `Ctrl+V`).
+- **Selecție cadru și transformare de grup**: Trageți un cadru de selecție în orice vedere 2D pentru a muta mai multe piese deodată, a le duplica (`Ctrl+D` / `Command (⌘)+D`) sau a le copia între diferite corpuri de mobilier deschise (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Calculator integrat**: Toate câmpurile numerice acceptă formule matematice precum `600+100`, `800-36`, `720/2` sau `45+15`.
 - **Scădere automată a cantului la tăiere**: Asociați canturi PVC/ABS (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm` etc.) pe oricare din cele 4 muchii (`L1`, `L2`, `W1`, `W2`), iar aplicația determină instant cota brută de debitare:
   $$\text{Lungime tăiere} = L_{\text{final}} - E_{L1} - E_{L2}, \quad \text{Lățime tăiere} = W_{\text{final}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ Fila **Proiectant** (`📐 1. Proiectant`) este compusă din trei zone principal
 
 1. **Bare de instrumente superioare**:
    - **Instrumente de desen**:
-     - `↖ Selectare / Mutare (V)`: Click pe o piesă pentru selectare, trageți pentru mutare sau folosiți mânerele (8 mânere pentru piesele din față și 2 pe cant). Trageți pe fundal liber pentru a deschide un dreptunghi de selecție multiplă. În timpul tragerii 2D: țineți apăsat **`Shift`** pentru a bloca deplasarea pe axa orizontală sau verticală, **`Ctrl` (`Command вЊ`)** pentru a dezactiva alinierea la muchii și **`Alt`** pentru a duplica piesa la eliberare.
+     - `↖ Selectare / Mutare (V)`: Click pe o piesă pentru selectare, trageți pentru mutare sau folosiți mânerele (8 mânere pentru piesele din față și 2 pe cant). Trageți pe fundal liber pentru a deschide un dreptunghi de selecție multiplă. În timpul tragerii 2D: țineți apăsat **`Shift`** pentru a bloca deplasarea pe axa orizontală sau verticală, **`Ctrl` (`Command ⌘`)** pentru a dezactiva alinierea la muchii și **`Alt`** pentru a duplica piesa la eliberare.
      - `➕ Creare piesă prin cadru (B)`: Trageți un dreptunghi într-o vedere 2D (`Sus XY`, `Față XZ` sau `Lateral YZ`) pentru a crea un panou orientat în planul respectiv.
      - `📏 Ruletă de măsurare (M)`: Măsurați distanțe exacte punct la punct (`ΔX`, `ΔY`, `L`) în milimetri.
    - **Inserare rapidă**: Butoane pentru adăugarea unei polițe (`+ Poliță (XY)`), a unui perete lateral (`+ Perete lateral (YZ)`) sau a unei uși/spate (`+ Ușă/Spate (XZ)`).
@@ -165,7 +165,7 @@ Fila **Proiectant** (`📐 1. Proiectant`) este compusă din trei zone principal
 
 2. **Cele patru ferestre de vizualizare**:
    - **Vederi ortogonale 2D (`Sus XY`, `Față XZ`, `Lateral YZ`)** prevăzute cu bare de derulare, rigle gradate în milimetri și benzi colorate ce indică muchiile cantuite.
-   - **Vedere 3D**: Rotație orbitală (`Click dreapta` sau `Click mijloc`), zoom cu rotița, selecție 3D și **Mod de zbor liber la persoana întâi (Noclip)** (apăsați **`Z`** deasupra ferestrei 3D și zburați cu `WASD`, `Spațiu`, `Ctrl`/`Shift`).
+   - **Vedere 3D**: Rotație orbitală (`Click dreapta` sau `Click mijloc`), zoom cu rotița, selecție 3D și **Mod de zbor liber la persoana întâi (Noclip)** (apăsați **`Z`** deasupra ferestrei 3D și zburați cu `WASD`, `Spațiu`, `Ctrl (Command ⌘)`/`Shift`).
 
 3. **Inspectorul de piese din dreapta**:
    - Organizare pe **Grupuri** (*Carcasă*, *Uși*, *Sertare*).
@@ -212,7 +212,7 @@ Fila **Plan de debitare** (`🪚 3. Plan de debitare`) calculează așezarea ide
 
 - **Pagină de start și proiecte recente**: Crearea unui corp nou, pornire din șablonul de corp cu 2 uși, deschiderea fișierelor `.qfurn`/`.json` sau acces rapid la **ultimele 10 proiecte deschise**.
 - **Lucru în file multiple simultan**: Proiectați mai multe corpuri în paralel (dublu-click pe titlul unei file pentru redenumire).
-- **Copiere și lipire între proiecte**: Selectați piese dintr-o filă, apăsați `Ctrl+C`, treceți în altă filă (sau altă fereastră QuadFurn) și apăsați `Ctrl+V`. Materialele și canturile inexistente sunt create automat în proiectul destinație.
+- **Copiere și lipire între proiecte**: Selectați piese dintr-o filă, apăsați `Ctrl+C` (`Command (⌘)+C`), treceți în altă filă (sau altă fereastră QuadFurn) și apăsați `Ctrl+V` (`Command (⌘)+V`). Materialele și canturile inexistente sunt create automat în proiectul destinație.
 - **Protecție împotriva pierderii datelor**: La închiderea unei file modificate sau la ieșirea din program se afișează o fereastră de confirmare (`Salvează și ieși`, `Ieși fără salvare`, `Anulează`).
 
 ---
@@ -265,19 +265,19 @@ Fila **Plan de debitare** (`🪚 3. Plan de debitare`) calculează așezarea ide
 | **`M`** | Activează **Ruleta de măsurare** în vederile 2D |
 | **Trage cu `Click stânga` (2D)** | Mută piesele, ajustează dimensiunea de un punct sau deschide cadru pe spațiul liber |
 | **`Shift + Clic stânga` Trage (2D)** | Restrânge deplasarea piesei strict pe axa orizontală sau verticală |
-| **`Ctrl / Command (вЊ) + Clic stânga` Trage (2D)** | Dezactivează alinierea magnetică la muchii în timpul tragerii |
+| **`Ctrl / Command (⌘) + Clic stânga` Trage (2D)** | Dezactivează alinierea magnetică la muchii în timpul tragerii |
 | **`Alt + Clic stânga` Trage (2D)** | Duplică piesa/piesele selectate la poziția țintă la eliberarea mouse-ului |
-| **`Shift / Ctrl (Command вЊ) + Click stânga` (2D)** | Adaugă sau elimină piesa din selecția multiplă |
+| **`Shift / Ctrl (Command ⌘) + Click stânga` (2D)** | Adaugă sau elimină piesa din selecția multiplă |
 | **Trage cu `Click dreapta` / `Click mijloc` (2D)** | Deplasează vederea (Panoramare 2D) |
 | **`Rotiță mouse` (2D / 3D)** | Mărire / micșorare centrată pe cursor |
 | **Trage cu `Click dreapta` / `Click mijloc` (3D)** | Rotație orbitală a camerei 3D |
 | **`Z` (deasupra ferestrei 3D)** | Activează / dezactivează **Modul de zbor liber (Noclip)** |
-| **`W` `A` `S` `D` / `Spațiu` / `Ctrl (Command вЊ)`** | Zbor înainte/stânga/înapoi/dreapta/sus/jos în 3D (`Shift` mărește viteza) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Salvează corpul curent (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Anulează ultima acțiune (istoric de până la 40 de pași) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Copiază piesele selectate în clipboard |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Lipește piesele (funcționează între file) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplică piesele selectate |
+| **`W` `A` `S` `D` / `Spațiu` / `Ctrl (Command ⌘)`** | Zbor înainte/stânga/înapoi/dreapta/sus/jos în 3D (`Shift` mărește viteza) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Salvează corpul curent (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Anulează ultima acțiune (istoric de până la 40 de pași) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Copiază piesele selectate în clipboard |
+| **`Ctrl + V` / `Command (⌘) + V`** | Lipește piesele (funcționează între file) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplică piesele selectate |
 | **`Delete` / `Backspace`** | Șterge piesele selectate |
 | **`←` `→` `↑` `↓` (vederi 2D)** | Deplasare piese selectate cu pasul grilei selectate (`Shift` pentru pas dublu) |
 

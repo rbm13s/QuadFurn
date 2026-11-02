@@ -130,9 +130,9 @@ Koyu temanın yanı sıra modern yüksek kontrastlı Açık Tema ve işletim sis
 ## Önemli Özellikler
 
 - **Senkronize 4 Görünümlü Çalışma Alanı**: Üst (`XY`), Ön (`XZ`), Yan (`YZ`) görünümlerinde çalışın veya dilediğiniz pencereyi tek tıkla büyütün (`[Ekranı Kapla]` / `[4 Görünüme Dön]`).
-- **Donanım Hızlandırmalı 3D Önizleme**: Yörünge kamerası (`Sağ fare tuşu`/`Orta tuş`) + birinci şahıs serbest uçuş kamerası (`Z tuşu` + `WASD`/`Boşluk`/`Ctrl`) ile UV doku kaplama ve hassas OBB ışın seçimi.
+- **Donanım Hızlandırmalı 3D Önizleme**: Yörünge kamerası (`Sağ fare tuşu`/`Orta tuş`) + birinci şahıs serbest uçuş kamerası (`Z tuşu` + `WASD`/`Boşluk`/`Ctrl (Command ⌘)`) ile UV doku kaplama ve hassas OBB ışın seçimi.
 - **Manyetik Yakalama ve Dinamik Boşluk Ölçüleri**: Izgaraya otomatik yakalama (`1`, `9`, `18`, `50 mm` veya özel), komşu parça yüzey ve kenarlarına manyetik yapışma (`0 mm`) ve bitişik panellere olan net mesafelerin canlı gösterimi.
-- **Kutu Seçimi ve Grup Hareketi**: Herhangi bir 2D görünümde çerçeve çizerek birden fazla parçayı seçin, birlikte taşıyın, çoğaltın (`Ctrl+D`) veya farklı mobilya sekmeleri arasında kopyalayıp yapıştırın (`Ctrl+C` / `Ctrl+V`).
+- **Kutu Seçimi ve Grup Hareketi**: Herhangi bir 2D görünümde çerçeve çizerek birden fazla parçayı seçin, birlikte taşıyın, çoğaltın (`Ctrl+D` / `Command (⌘)+D`) veya farklı mobilya sekmeleri arasında kopyalayıp yapıştırın (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Dahili Hesap Makinesi**: Tüm sayısal alanlar `600+100`, `800-36`, `720/2` veya `45+15` gibi matematiksel ifadeleri doğrudan kabul eder.
 - **Otomatik Kenar Bandı Düşümü**: 4 kenara (`L1`, `L2`, `W1`, `W2`) PVC/ABS kenar bandı (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm` vb.) atayın; program testere kesim ölçüsünü anında hesaplar:
   $$\text{Kesim Boyu} = L_{\text{bitmiş}} - E_{L1} - E_{L2}, \quad \text{Kesim Eni} = W_{\text{bitmiş}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ Koyu temanın yanı sıra modern yüksek kontrastlı Açık Tema ve işletim sis
 
 1. **Üst Araç Çubukları**:
    - **Çizim Araçları**:
-     - `↖ Seç / Taşı (V)`: Seçmek için tıklayın, taşımak için sürükleyin veya tutamaçları (yüzeyden 8 tutamaç, kesitten 2 kenar tutamacı) kullanarak boyutlandırın. Boş alanda sürükleyerek seçim kutusu açın. 2D sürükleme sırasında: hareketi yalnızca yatay veya dikey eksene kilitlemek için **`Shift`**, kenarlara yapışmayı yok saymak için **`Ctrl` (`Command вЊ`)** ve parçayı bırakıldığında çoğaltmak için **`Alt`** tuşunu basılı tutun.
+     - `↖ Seç / Taşı (V)`: Seçmek için tıklayın, taşımak için sürükleyin veya tutamaçları (yüzeyden 8 tutamaç, kesitten 2 kenar tutamacı) kullanarak boyutlandırın. Boş alanda sürükleyerek seçim kutusu açın. 2D sürükleme sırasında: hareketi yalnızca yatay veya dikey eksene kilitlemek için **`Shift`**, kenarlara yapışmayı yok saymak için **`Ctrl` (`Command ⌘`)** ve parçayı bırakıldığında çoğaltmak için **`Alt`** tuşunu basılı tutun.
      - `➕ Kutu ile Parça Oluştur (B)`: 2D görünümlerde (`Üst XY`, `Ön XZ` veya `Yan YZ`) bir dikdörtgen sürükleyerek o düzleme uygun yeni bir panel ekleyin.
      - `📏 Mezura (M)`: Milimetre cinsinden noktadan noktaya net mesafe ölçümü (`ΔX`, `ΔY`, `L`).
    - **Hızlı Parça Ekleme**: Raf (`+ Raf (XY)`), dikme (`+ Dikme/Yan (YZ)`) veya kapak/arkalık (`+ Kapak/Arkalık (XZ)`) ekleme butonları.
@@ -165,7 +165,7 @@ Koyu temanın yanı sıra modern yüksek kontrastlı Açık Tema ve işletim sis
 
 2. **Dört Çalışma Penceresi**:
    - **2D Dik Projeksiyonlar (`Üst XY`, `Ön XZ`, `Yan YZ`)**: Kaydırma çubukları, milimetrik cetveller ve bantlı kenarların renkli çizgileri.
-   - **3D Görünüm**: Yörünge dönüşü (`Sağ` veya `Orta fare tuşu`), tekerlekle yakınlaştırma, 3D parça seçimi ve **Birinci Şahıs Serbest Uçuş Modu (Noclip)** (3D penceresi üzerindeyken **`Z`** tuşuna basın ve `WASD`, `Boşluk`, `Ctrl`/`Shift` ile uçun).
+   - **3D Görünüm**: Yörünge dönüşü (`Sağ` veya `Orta fare tuşu`), tekerlekle yakınlaştırma, 3D parça seçimi ve **Birinci Şahıs Serbest Uçuş Modu (Noclip)** (3D penceresi üzerindeyken **`Z`** tuşuna basın ve `WASD`, `Boşluk`, `Ctrl (Command ⌘)`/`Shift` ile uçun).
 
 3. **Sağ Parça Denetçisi**:
    - Parçaları özel **Gruplar** altında düzenleme (*Gövde*, *Kapaklar*, *Çekmeceler*).
@@ -212,7 +212,7 @@ Programdaki tüm sayısal giriş kutuları matematiksel ifadeleri destekler:
 
 - **Başlangıç Sayfası ve Son Projeler**: Boş mobilya oluşturma, hazır 2 kapaklı dolap şablonuyla başlama, `.qfurn`/`.json` dosyalarını açma veya son açılan **10 projeye** hızlı erişim.
 - **Eşzamanlı Çoklu Sekme**: Üst sekme çubuğunda birden fazla mobilyayı aynı anda tasarlayın (yeniden adlandırmak için sekme başlığına çift tıklayın).
-- **Projeler Arası Kopyala ve Yapıştır**: Bir sekmedeki parçaları seçin, `Ctrl+C` yapın, diğer sekmeye geçin ve `Ctrl+V` tuşlarına basın. Eksik malzemeler hedef projede otomatik oluşturulur.
+- **Projeler Arası Kopyala ve Yapıştır**: Bir sekmedeki parçaları seçin, `Ctrl+C` (`Command (⌘)+C`) yapın, diğer sekmeye geçin ve `Ctrl+V` (`Command (⌘)+V`) tuşlarına basın. Eksik malzemeler hedef projede otomatik oluşturulur.
 - **Veri Kaybı Koruması**: Değiştirilmiş bir sekme kapatılırken veya programdan çıkılırken onay penceresi görüntülenir (`Kaydet ve Çık`, `Kaydetmeden Çık`, `İptal`).
 
 ---
@@ -265,19 +265,19 @@ Programdaki tüm sayısal giriş kutuları matematiksel ifadeleri destekler:
 | **`M`** | 2D görünümlerde **Mezura** aracını etkinleştir |
 | **`Sol Fare Tuşu` Sürükleme (2D)** | Parçaları taşıma, tutamaçla boyutlandırma veya boşlukta seçim kutusu açma |
 | **`Shift + Sol tık` Sürükleme (2D)** | Parça hareketini kesinlikle yatay veya dikey eksene kilitleme |
-| **`Ctrl / Command (вЊ) + Sol tık` Sürükleme (2D)** | Sürükleme sırasında kenarlara manyetik yapışmayı geçici olarak devre dışı bırakma |
+| **`Ctrl / Command (⌘) + Sol tık` Sürükleme (2D)** | Sürükleme sırasında kenarlara manyetik yapışmayı geçici olarak devre dışı bırakma |
 | **`Alt + Sol tık` Sürükleme (2D)** | Bırakma noktasında seçili parça(lar)yı anında çoğaltma (kopyalama) |
-| **`Shift / Ctrl (Command вЊ) + Sol Fare Tuşu` (2D)** | Parçayı çoklu seçime ekleme veya seçimden çıkarma |
+| **`Shift / Ctrl (Command ⌘) + Sol Fare Tuşu` (2D)** | Parçayı çoklu seçime ekleme veya seçimden çıkarma |
 | **`Sağ` / `Orta Tuş` Sürükleme (2D)** | Görünümü kaydırma (2D pan) |
 | **`Fare Tekerleği` (2D / 3D)** | İmlece odaklı yakınlaştırma / uzaklaştırma |
 | **`Sağ` / `Orta Tuş` Sürükleme (3D)** | 3D kamerayı yörüngede döndürme |
 | **`Z` (3D penceresi üzerinde)** | **Birinci Şahıs Uçuş Modunu (Noclip)** aç / kapat |
-| **`W` `A` `S` `D` / `Boşluk` / `Ctrl (Command вЊ)`** | 3D uçuşta ileri/sola/geri/sağa/yukarı/aşağı hareket (`Shift` hızlandırır) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Mevcut mobilyayı kaydet (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Son işlemi geri al (40 adıma kadar geçmiş) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Seçili parçaları panoya kopyala |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Parçaları yapıştır (sekmeler arasında çalışır) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Seçili parçaları çoğalt |
+| **`W` `A` `S` `D` / `Boşluk` / `Ctrl (Command ⌘)`** | 3D uçuşta ileri/sola/geri/sağa/yukarı/aşağı hareket (`Shift` hızlandırır) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Mevcut mobilyayı kaydet (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Son işlemi geri al (40 adıma kadar geçmiş) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Seçili parçaları panoya kopyala |
+| **`Ctrl + V` / `Command (⌘) + V`** | Parçaları yapıştır (sekmeler arasında çalışır) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Seçili parçaları çoğalt |
 | **`Delete` / `Backspace`** | Seçili parçaları sil |
 | **`←` `→` `↑` `↓` (2D görünümler)** | Seçili parçaları seçilen ızgara adımı kadar kaydır (`Shift` ile iki katı) |
 

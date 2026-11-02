@@ -130,9 +130,9 @@ Moderne lyst tema med høj kontrast ved siden af det mørke tema, inklusive auto
 ## Nøglefunktioner
 
 - **Synkroniseret 4-visnings arbejdsområde**: Arbejd i Plan (`XY`), Front (`XZ`), Side (`YZ`), eller maksimér enhver visning med et enkelt klik (`[Maksimer]` / `[Gendan 4 visninger]`).
-- **Hardwareaccelereret 3D-forhåndsvisning**: Orbit-kamera (`Højre museknap`/`Midterknap`) + fri flyvetilstand i førstepersonsperspektiv (`tast Z` + `WASD`/`Mellemrum`/`Ctrl`) med UV-teksturer og præcis OBB-strålekastning.
+- **Hardwareaccelereret 3D-forhåndsvisning**: Orbit-kamera (`Højre museknap`/`Midterknap`) + fri flyvetilstand i førstepersonsperspektiv (`tast Z` + `WASD`/`Mellemrum`/`Ctrl (Command ⌘)`) med UV-teksturer og præcis OBB-strålekastning.
 - **Magnetisk snappe-funktion og dynamiske mellemrumsmål**: Automatisk snapping til gitter (`1`, `9`, `18`, `50 mm` eller brugerdefineret), magnetisk fasthæftning til tilstødende flader og kanter (`0 mm`) og visning af reelle afstande i millimeter til naboplader.
-- **Rammemarkering og gruppetransformation**: Træk en markeringsramme i en 2D-visning for at flytte flere plader sammen, duplikere (`Ctrl+D`) eller kopiere dem på tværs af åbne møbelprojekter (`Ctrl+C` / `Ctrl+V`).
+- **Rammemarkering og gruppetransformation**: Træk en markeringsramme i en 2D-visning for at flytte flere plader sammen, duplikere (`Ctrl+D` / `Command (⌘)+D`) eller kopiere dem på tværs af åbne møbelprojekter (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Indbygget lommeregner**: Alle numeriske felter accepterer matematiske formler som `600+100`, `800-36`, `720/2` eller `45+15`.
 - **Automatisk fradrag for kantbånd ved tilskæring**: Tildel kantbånd (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm` osv.) til de 4 sider (`L1`, `L2`, `W1`, `W2`), og programmet beregner straks savmålet:
   $$\text{Savlængde} = L_{\text{færdig}} - E_{L1} - E_{L2}, \quad \text{Savbredde} = W_{\text{færdig}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ Fanen **Designer** (`📐 1. Designer`) består af tre primære sektioner:
 
 1. **Øverste værktøjslinjer**:
    - **Tegneværktøjer**:
-     - `↖ Vælg / Flyt (V)`: Klik for at vælge et element, træk for at flytte, eller brug håndtagene (8 håndtag på fladen og 2 kanthåndtag fra siden). Træk i tomt rum for at oprette en markeringsramme. Under træk i 2D: hold **`Shift`** nede for at låse bevægelsen til vandret eller lodret akse, hold **`Ctrl` (`Command вЊ`)** for at ignorere kantfastgørelse, og hold **`Alt`** for at duplikere delen ved slip.
+     - `↖ Vælg / Flyt (V)`: Klik for at vælge et element, træk for at flytte, eller brug håndtagene (8 håndtag på fladen og 2 kanthåndtag fra siden). Træk i tomt rum for at oprette en markeringsramme. Under træk i 2D: hold **`Shift`** nede for at låse bevægelsen til vandret eller lodret akse, hold **`Ctrl` (`Command ⌘`)** for at ignorere kantfastgørelse, og hold **`Alt`** for at duplikere delen ved slip.
      - `➕ Opret element med ramme (B)`: Træk et rektangel i en 2D-visning (`Plan XY`, `Front XZ` eller `Side YZ`) for at indsætte en plade i det plan.
      - `📏 Målebånd (M)`: Mål nøjagtige afstande punkt til punkt (`ΔX`, `ΔY`, `L`) i millimeter.
    - **Hurtig indsættelse**: Knapper til at indsætte hylder (`+ Hylde (XY)`), sider (`+ Side (YZ)`) eller låger/bagbeklædning (`+ Låge/Bagplade (XZ)`).
@@ -165,7 +165,7 @@ Fanen **Designer** (`📐 1. Designer`) består af tre primære sektioner:
 
 2. **Fire visningsruder**:
    - **2D ortogonale visninger (`Plan XY`, `Front XZ`, `Side YZ`)** med rullebjælker, millimeterlinealer og farvede kantbåndsmarkeringer.
-   - **3D-visning**: Orbit-rotation (`Højre` eller `Midterste museknap`), zoom med rullehjul, 3D-valg og **Førstepersons Flyvetilstand (Noclip)** (tryk **`Z`** over 3D-ruden og flyv med `WASD`, `Mellemrum`, `Ctrl`/`Skift`).
+   - **3D-visning**: Orbit-rotation (`Højre` eller `Midterste museknap`), zoom med rullehjul, 3D-valg og **Førstepersons Flyvetilstand (Noclip)** (tryk **`Z`** over 3D-ruden og flyv med `WASD`, `Mellemrum`, `Ctrl (Command ⌘)`/`Skift`).
 
 3. **Højre Elementinspektør**:
    - Gruppering af elementer i **Grupper** (*Korpus*, *Låger*, *Skuffer*).
@@ -212,7 +212,7 @@ Fanen **Skæreplan** (`🪚 3. Skæreplan`) beregner den mest fordelagtige forde
 
 - **Startside og seneste projekter**: Opret et tomt møbel, start ud fra en 2-dørs skabelon, åbn `.qfurn`/`.json`-filer eller vælg blandt de **10 senest åbnede projekter**.
 - **Flere møbelfaner på én gang**: Konstruer flere moduler parallelt (dobbeltklik på fanenavnet for at omdøbe det).
-- **Kopier og indsæt mellem projekter**: Markér elementer i én fane, tryk `Ctrl+C`, skift til en anden fane (eller en anden åben instans af QuadFurn), og tryk `Ctrl+V`. Manglende materialer og kantbånd oprettes automatisk i destinationsprojektet.
+- **Kopier og indsæt mellem projekter**: Markér elementer i én fane, tryk `Ctrl+C` (`Command (⌘)+C`), skift til en anden fane (eller en anden åben instans af QuadFurn), og tryk `Ctrl+V` (`Command (⌘)+V`). Manglende materialer og kantbånd oprettes automatisk i destinationsprojektet.
 - **Sikkerhed mod datatab**: Ved lukning af en ændret fane eller afslutning af programmet vises en bekræftelsesdialog (`Gem og afslut`, `Afslut uden at gemme`, `Annuller`).
 
 ---
@@ -265,19 +265,19 @@ I fanen **Materialer** (`🎨 4. Materialer`):
 | **`M`** | Aktivér **Målebånd** i 2D-visninger |
 | **Træk med `Venstre museknap` (2D)** | Flyt elementer, justér håndtag eller træk markeringsramme i tomt rum |
 | **`Shift + Venstreklik` Træk (2D)** | Lås delens bevægelse strengt til vandret eller lodret akse |
-| **`Ctrl / Command (вЊ) + Venstreklik` Træk (2D)** | Deaktiver magnetisk kantfastgørelse midlertidigt under træk |
+| **`Ctrl / Command (⌘) + Venstreklik` Træk (2D)** | Deaktiver magnetisk kantfastgørelse midlertidigt under træk |
 | **`Alt + Venstreklik` Træk (2D)** | Dupliker valgte del(e) til destinationspositionen ved slip |
 | **`Skift / Ctrl (Cmd) + Venstre museknap` (2D)** | Tilføj eller fjern element fra flervalgsmarkeringen |
 | **Træk med `Højre` / `Midterste museknap` (2D)** | Panorér visningen (2D pan) |
 | **`Rullehjul på mus` (2D / 3D)** | Zoom ind/ud centreret på markøren |
 | **Træk med `Højre` / `Midterste museknap` (3D)** | Orbit-rotation af 3D-kameraet |
 | **`Z` (over 3D-ruden)** | Slå **Førstepersons Flyvetilstand (Noclip)** til/fra |
-| **`W` `A` `S` `D` / `Mellemrum` / `Ctrl (Command вЊ)`** | Flyv frem/venstre/tilbage/højre/op/ned i 3D (`Skift` for højere fart) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Gem det aktive møbel (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Fortryd sidste handling (historik på op til 40 trin) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Kopiér markerede dele til udklipsholderen |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Indsæt dele (fungerer på tværs af faner) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplikér markerede elementer |
+| **`W` `A` `S` `D` / `Mellemrum` / `Ctrl (Command ⌘)`** | Flyv frem/venstre/tilbage/højre/op/ned i 3D (`Skift` for højere fart) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Gem det aktive møbel (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Fortryd sidste handling (historik på op til 40 trin) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Kopiér markerede dele til udklipsholderen |
+| **`Ctrl + V` / `Command (⌘) + V`** | Indsæt dele (fungerer på tværs af faner) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplikér markerede elementer |
 | **`Delete` / `Backspace`** | Slet markerede elementer |
 | **`←` `→` `↑` `↓` (2D-visninger)** | Flyt valgte dele med det valgte gittertrin (`Shift` for dobbelt trin) |
 

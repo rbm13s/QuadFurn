@@ -130,9 +130,9 @@ Troca instantânea de idioma sem reiniciar através do seletor **`🌐`** na bar
 ## Principais funcionalidades
 
 - **Espaço de trabalho de 4 vistas sincronizado**: Alterne ou edite livremente em Planta (`XY`), Frontal (`XZ`), Lateral (`YZ`), ou expanda qualquer janela com um clique (`[Maximizar]` / `[Restaurar 4 vistas]`).
-- **Pré-visualização 3D acelerada por hardware**: Câmara orbital (`Botão direito`/`Botão central`) + voo livre em primeira pessoa em primeira pessoa (`tecla Z` + `WASD`/`Espaço`/`Ctrl`) com mapeamento de texturas e seleção precisa por raycasting OBB.
+- **Pré-visualização 3D acelerada por hardware**: Câmara orbital (`Botão direito`/`Botão central`) + voo livre em primeira pessoa em primeira pessoa (`tecla Z` + `WASD`/`Espaço`/`Ctrl (Command ⌘)`) com mapeamento de texturas e seleção precisa por raycasting OBB.
 - **Encaixe magnético e cotas dinâmicas de folga**: Atração automática à grelha (`1`, `9`, `18`, `50 mm` ou personalizada), encaixe magnético a faces e cantos adjacentes (`0 mm`) e medição dinâmica da distância entre peças vizinhas.
-- **Seleção por caixa e transformação em grupo**: Arraste um retângulo de seleção em qualquer vista 2D para mover várias peças juntas, duplicá-las (`Ctrl+D`) ou copiá-las e colá-las entre móveis diferentes (`Ctrl+C` / `Ctrl+V`).
+- **Seleção por caixa e transformação em grupo**: Arraste um retângulo de seleção em qualquer vista 2D para mover várias peças juntas, duplicá-las (`Ctrl+D` / `Command (⌘)+D`) ou copiá-las e colá-las entre móveis diferentes (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Calculadora aritmética integrada**: Todos os campos numéricos aceitam fórmulas como `600+100`, `800-36`, `720/2` ou `45+15`.
 - **Dedução automática da fita de bordo no corte**: Defina fitas de bordo em PVC/ABS (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm`, etc.) nos 4 lados (`L1`, `L2`, `W1`, `W2`) e visualize a dimensão exata de corte:
   $$\text{Comprimento de corte} = L_{\text{final}} - E_{L1} - E_{L2}, \quad \text{Largura de corte} = W_{\text{final}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ O separador **Modelador** (`📐 1. Modelador`) divide-se em três áreas fundam
 
 1. **Barras de ferramentas superiores**:
    - **Ferramentas de desenho**:
-     - `↖ Selecionar / Mover (V)`: Clique numa peça para selecioná-la, arraste para movê-la, ou use os manipuladores (8 pegas em vista frontal e 2 em vista de topo). Arraste no espaço vazio para abrir uma caixa de seleção múltipla. Ao arrastar em 2D: segure **`Shift`** para restringir o movimento ao eixo horizontal ou vertical, **`Ctrl` (`Command вЊ`)** para desativar o encaixe magnético e **`Alt`** para duplicar a peça na posição de destino.
+     - `↖ Selecionar / Mover (V)`: Clique numa peça para selecioná-la, arraste para movê-la, ou use os manipuladores (8 pegas em vista frontal e 2 em vista de topo). Arraste no espaço vazio para abrir uma caixa de seleção múltipla. Ao arrastar em 2D: segure **`Shift`** para restringir o movimento ao eixo horizontal ou vertical, **`Ctrl` (`Command ⌘`)** para desativar o encaixe magnético e **`Alt`** para duplicar a peça na posição de destino.
      - `➕ Criar peça por retângulo (B)`: Desenhe um retângulo numa vista 2D (`Planta XY`, `Frontal XZ` ou `Lateral YZ`) para inserir um painel correspondente àquele plano.
      - `📏 Fita métrica (M)`: Meça distâncias precisas ponto a ponto (`ΔX`, `ΔY`, `L`) em milímetros.
    - **Inserção rápida de peças**: Botões para adicionar com um clique prateleiras (`+ Prateleira (XY)`), laterais (`+ Lateral (YZ)`) ou portas/fundos (`+ Porta/Fundo (XZ)`).
@@ -165,7 +165,7 @@ O separador **Modelador** (`📐 1. Modelador`) divide-se em três áreas fundam
 
 2. **Janelas de 4 vistas**:
    - **Vistas ortogonais 2D (`Planta XY`, `Frontal XZ`, `Lateral YZ`)** com barras de rolagem dinâmicas, réguas milimétricas e linhas coloridas indicando as fitas de bordo aplicadas.
-   - **Vista 3D**: Rotação orbital (`Botão direito` ou `Botão central`), zoom com roda do rato, seleção 3D e **Modo Voo Livre em Primeira Pessoa** (prima **`Z`** com o rato sobre a janela 3D para voar com `WASD`, `Espaço`, `Ctrl`/`Shift`).
+   - **Vista 3D**: Rotação orbital (`Botão direito` ou `Botão central`), zoom com roda do rato, seleção 3D e **Modo Voo Livre em Primeira Pessoa** (prima **`Z`** com o rato sobre a janela 3D para voar com `WASD`, `Espaço`, `Ctrl (Command ⌘)`/`Shift`).
 
 3. **Inspetor de peças lateral direito**:
    - Organização de peças em **Grupos** (*Estrutura*, *Portas*, *Gavetas*).
@@ -212,7 +212,7 @@ O separador **Plano de corte** (`🪚 3. Plano de corte`) calcula a melhor distr
 
 - **Ecrã inicial e projetos recentes**: Crie um móvel em branco, inicie a partir do modelo de armário de 2 portas, abra ficheiros `.qfurn`/`.json` ou aceda a qualquer um dos **10 projetos mais recentes**.
 - **Múltiplos separadores de móveis**: Desenhe vários móveis em simultâneo (clique duas vezes no nome do separador para renomeá-lo).
-- **Copiar e colar entre projetos**: Selecione peças num separador, prima `Ctrl+C`, mude para outro separador (ou outra janela aberta do QuadFurn) e prima `Ctrl+V`. Quaisquer materiais ou fitas de bordo em falta são criados automaticamente no projeto de destino.
+- **Copiar e colar entre projetos**: Selecione peças num separador, prima `Ctrl+C` (`Command (⌘)+C`), mude para outro separador (ou outra janela aberta do QuadFurn) e prima `Ctrl+V` (`Command (⌘)+V`). Quaisquer materiais ou fitas de bordo em falta são criados automaticamente no projeto de destino.
 - **Proteção contra perdas acidentais**: Ao fechar um separador alterado ou fechar a aplicação, uma janela de aviso pergunta (`Guardar e sair`, `Sair sem guardar`, `Cancelar`).
 
 ---
@@ -265,19 +265,19 @@ No separador **Materiais** (`🎨 4. Materiais`):
 | **`M`** | Ativar ferramenta **Fita métrica** nas vistas 2D |
 | **Arrastar `Botão esquerdo` (2D)** | Mover peças selecionadas, redimensionar ou abrir caixa de seleção múltipla em espaço vazio |
 | **`Shift + Botão esq.` Arrastar (2D)** | Restringir o movimento estritamente ao eixo horizontal ou vertical |
-| **`Ctrl / Command (вЊ) + Botão esq.` Arrastar (2D)** | Desativar o encaixe magnético às bordas durante o arrasto |
+| **`Ctrl / Command (⌘) + Botão esq.` Arrastar (2D)** | Desativar o encaixe magnético às bordas durante o arrasto |
 | **`Alt + Botão esq.` Arrastar (2D)** | Duplicar a(s) peça(s) selecionada(s) na posição de destino ao soltar |
-| **`Shift / Ctrl (Command вЊ) + Botão esquerdo` (2D)** | Adicionar ou remover peças da seleção |
+| **`Shift / Ctrl (Command ⌘) + Botão esquerdo` (2D)** | Adicionar ou remover peças da seleção |
 | **Arrastar `Botão direito` / `Botão central` (2D)** | Mover a vista (Panorâmica 2D) |
 | **`Roda do rato` (2D / 3D)** | Zoom de aproximação/afastamento centrado no cursor |
 | **Arrastar `Botão direito` / `Botão central` (3D)** | Rotação orbital da câmara 3D |
 | **`Z` (com o cursor na vista 3D)** | Ativar / desativar **Modo Voo Livre em Primeira Pessoa (Noclip)** |
-| **`W` `A` `S` `D` / `Espaço` / `Ctrl (Command вЊ)`** | Movimento para a frente/esquerda/trás/direita/cima/baixo em voo 3D (`Shift` acelera) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Guardar o móvel atual (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Desfazer a última ação (histórico até 40 passos) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Copiar peças selecionadas para a área de transferência |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Colar peças (funciona entre diferentes separadores) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplicar peças selecionadas |
+| **`W` `A` `S` `D` / `Espaço` / `Ctrl (Command ⌘)`** | Movimento para a frente/esquerda/trás/direita/cima/baixo em voo 3D (`Shift` acelera) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Guardar o móvel atual (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Desfazer a última ação (histórico até 40 passos) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Copiar peças selecionadas para a área de transferência |
+| **`Ctrl + V` / `Command (⌘) + V`** | Colar peças (funciona entre diferentes separadores) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplicar peças selecionadas |
 | **`Delete` / `Backspace`** | Eliminar peças selecionadas |
 | **`←` `→` `↑` `↓` (vistas 2D)** | Mover as peças selecionadas pelo passo da grade (`Shift` para duplicar) |
 

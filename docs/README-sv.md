@@ -130,9 +130,9 @@ Omedelbart språkbyte utan omstart via **`🌐`**-knappen i verktygsraden, autom
 ## Nyckelfunktioner
 
 - **Synkroniserad 4-vyers arbetsyta**: Arbeta i Plan (`XY`), Front (`XZ`), Sida (`YZ`), eller maximera valfri vy med ett klick (`[Maximera]` / `[Återställ 4 vyer]`).
-- **Hårdvaruaccelererad 3D-förhandsgranskning**: Orbit-kamera (`Höger musknapp`/`Mittenknapp`) + friflygande kamera i förstapersonsperspektiv (`tangent Z` + `WASD`/`Mellanslag`/`Ctrl`) med UV-texturer och precis OBB-strålkastning.
+- **Hårdvaruaccelererad 3D-förhandsgranskning**: Orbit-kamera (`Höger musknapp`/`Mittenknapp`) + friflygande kamera i förstapersonsperspektiv (`tangent Z` + `WASD`/`Mellanslag`/`Ctrl (Command ⌘)`) med UV-texturer och precis OBB-strålkastning.
 - **Magnetisk snäppfunktion och dynamiska avståndsmått**: Automatisk snäppning till rutnät (`1`, `9`, `18`, `50 mm` eller valfritt), magnetisk anslutning mot intilliggande ytor och kanter (`0 mm`) samt visning av verkliga avstånd i millimeter till intilliggande paneler.
-- **Rektangelmarkering och grupptransformation**: Dra en markeringsrektangel i valfri 2D-vy för att flytta flera skivor samtidigt, duplicera (`Ctrl+D`) eller kopiera mellan olika öppna möbelprojekt (`Ctrl+C` / `Ctrl+V`).
+- **Rektangelmarkering och grupptransformation**: Dra en markeringsrektangel i valfri 2D-vy för att flytta flera skivor samtidigt, duplicera (`Ctrl+D` / `Command (⌘)+D`) eller kopiera mellan olika öppna möbelprojekt (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Inbyggd miniräknare**: Alla numeriska fält hanterar matematiska formler som `600+100`, `800-36`, `720/2` eller `45+15`.
 - **Automatiskt avdrag för kantlister vid kapning**: Tilldela kantlist (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm` osv.) på de 4 sidorna (`L1`, `L2`, `W1`, `W2`), så beräknar programmet omedelbart sågmåttet:
   $$\text{Såglängd} = L_{\text{färdig}} - E_{L1} - E_{L2}, \quad \text{Sågbredd} = W_{\text{färdig}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ Fliken **Konstruktör** (`📐 1. Konstruktör`) omfattar tre huvuddelar:
 
 1. **Övre verktygsrader**:
    - **Ritverktyg**:
-     - `↖ Välj / Flytta (V)`: Klicka för att välja ett element, dra för att flytta, eller använd handtagen (8 storlekshandtag på ytan och 2 kanthandtag från kanten). Dra i tomt utrymme för att öppna en markeringsrektangel. Under förflyttning i 2D: håll ned **`Shift`** för att låsa rörelsen till horisontell eller vertikal axel, håll **`Ctrl` (`Command вЊ`)** för att kringgå magnetsnäppning, och håll **`Alt`** för att duplicera detaljen vid släpp.
+     - `↖ Välj / Flytta (V)`: Klicka för att välja ett element, dra för att flytta, eller använd handtagen (8 storlekshandtag på ytan och 2 kanthandtag från kanten). Dra i tomt utrymme för att öppna en markeringsrektangel. Under förflyttning i 2D: håll ned **`Shift`** för att låsa rörelsen till horisontell eller vertikal axel, håll **`Ctrl` (`Command ⌘`)** för att kringgå magnetsnäppning, och håll **`Alt`** för att duplicera detaljen vid släpp.
      - `➕ Skapa komponent med ram (B)`: Dra en rektangel i en 2D-vy (`Plan XY`, `Front XZ` eller `Sida YZ`) för att skapa en skiva i det planet.
      - `📏 Måttband (M)`: Mät exakta avstånd från punkt till punkt (`ΔX`, `ΔY`, `L`) i millimeter.
    - **Snabbinsättning**: Knappar för snabb placering av hyllplan (`+ Hyllplan (XY)`), gavlar (`+ Gavel (YZ)`) eller luckor/ryggar (`+ Lucka/Rygg (XZ)`).
@@ -165,7 +165,7 @@ Fliken **Konstruktör** (`📐 1. Konstruktör`) omfattar tre huvuddelar:
 
 2. **Fyra arbetsfönster**:
    - **2D ortogonala vyer (`Plan XY`, `Front XZ`, `Sida YZ`)** med rullningslister, millimeterlinjaler och färgade kantlistmarkeringar.
-   - **3D-vy**: Orbit-rotation (`Höger` eller `Mittenmusknapp`), zoom med rullhjul, 3D-markering och **Förstaperson flygläge (Noclip)** (tryck **`Z`** över 3D-rutan och flyg med `WASD`, `Mellanslag`, `Ctrl`/`Skift`).
+   - **3D-vy**: Orbit-rotation (`Höger` eller `Mittenmusknapp`), zoom med rullhjul, 3D-markering och **Förstaperson flygläge (Noclip)** (tryck **`Z`** över 3D-rutan och flyg med `WASD`, `Mellanslag`, `Ctrl (Command ⌘)`/`Skift`).
 
 3. **Höger Komponentinspektör**:
    - Gruppering av element i **Grupper** (*Stomme*, *Luckor*, *Lådor*).
@@ -212,7 +212,7 @@ Fliken **Skivoptimeringsplan** (`🪚 3. Skivoptimeringsplan`) räknar ut bästa
 
 - **Startsida och senaste projekt**: Skapa en tom möbel, starta från en 2-dörrars mall, öppna `.qfurn`/`.json`-filer eller välj bland de **10 senast öppnade projekten**.
 - **Flera möbelflikar samtidigt**: Konstruera flera skåpmoduler parallellt (dubbelklicka på fliknamnet för att byta namn).
-- **Kopiera och klistra in mellan projekt**: Markera komponenter i en flik, tryck `Ctrl+C`, växla till en annan flik (eller en annan öppen instans av QuadFurn), och tryck `Ctrl+V`. Saknade material och kantlister skapas automatiskt i målprojektet.
+- **Kopiera och klistra in mellan projekt**: Markera komponenter i en flik, tryck `Ctrl+C` (`Command (⌘)+C`), växla till en annan flik (eller en annan öppen instans av QuadFurn), och tryck `Ctrl+V` (`Command (⌘)+V`). Saknade material och kantlister skapas automatiskt i målprojektet.
 - **Skydd mot dataförlust**: Vid stängning av en ändrad flik eller avslutning av programmet visas en bekräftelsedialog (`Spara och avsluta`, `Avsluta utan att spara`, `Avbryt`).
 
 ---
@@ -265,19 +265,19 @@ I fliken **Material** (`🎨 4. Material`):
 | **`M`** | Aktivera **Måttband** i 2D-vyer |
 | **Dra med `Vänster musknapp` (2D)** | Flytta komponenter, justera handtag eller dra markeringsram i tomt utrymme |
 | **`Shift + Vänsterklick` Dra (2D)** | Begränsa detaljens förflyttning strikt till horisontell eller vertikal axel |
-| **`Ctrl / Command (вЊ) + Vänsterklick` Dra (2D)** | Inaktivera magnetisk snäppning mot kanter tillfälligt under dragning |
+| **`Ctrl / Command (⌘) + Vänsterklick` Dra (2D)** | Inaktivera magnetisk snäppning mot kanter tillfälligt under dragning |
 | **`Alt + Vänsterklick` Dra (2D)** | Duplicera markerad(e) del(ar) till målpositionen när musknappen släpps |
 | **`Skift / Ctrl (Cmd) + Vänster musknapp` (2D)** | Lägg till eller ta bort komponent från flerval |
 | **Dra med `Höger` / `Mittenmusknapp` (2D)** | Panorera vyn (2D pan) |
 | **`Rullhjul på mus` (2D / 3D)** | Zooma in/ut centrerat kring markören |
 | **Dra med `Höger` / `Mittenmusknapp` (3D)** | Orbit-rotation av 3D-kameran |
 | **`Z` (över 3D-rutan)** | Slå på/av **Förstaperson flygläge (Noclip)** |
-| **`W` `A` `S` `D` / `Mellanslag` / `Ctrl (Command вЊ)`** | Flyg fram/vänster/bakåt/höger/upp/ner i 3D (`Skift` för högre fart) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Spara den aktiva möbeln (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Ångra senaste åtgärd (historik upp till 40 steg) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Kopiera markerade delar till urklipp |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Klistra in delar (fungerar mellan olika flikar) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplicera markerade komponenter |
+| **`W` `A` `S` `D` / `Mellanslag` / `Ctrl (Command ⌘)`** | Flyg fram/vänster/bakåt/höger/upp/ner i 3D (`Skift` för högre fart) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Spara den aktiva möbeln (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Ångra senaste åtgärd (historik upp till 40 steg) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Kopiera markerade delar till urklipp |
+| **`Ctrl + V` / `Command (⌘) + V`** | Klistra in delar (fungerar mellan olika flikar) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplicera markerade komponenter |
 | **`Delete` / `Backspace`** | Ta bort markerade komponenter |
 | **`←` `→` `↑` `↓` (2D-vyer)** | Flytta markerade delar med valt rutnätssteg (`Shift` för dubbelt steg) |
 

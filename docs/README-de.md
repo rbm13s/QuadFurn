@@ -130,9 +130,9 @@ Sofortige Umschaltung der Sprache über die Schaltfläche **`🌐`** in der ober
 ## Hauptfunktionen
 
 - **Synchronisierter 4-Projektionen-Arbeitsbereich**: Bearbeitung in Draufsicht (`XY`), Front (`XZ`), Seite (`YZ`) oder Maximierung jedes Fensters mit einem Klick (`[Maximieren]` / `[4 Ansichten]`).
-- **Hardwarebeschleunigte 3D-Vorschau**: Orbit-Kamera (`RMB`/`MMB`) + Ego-Freiflug-Kamera (`Z`-Taste + `WASD`/`Leertaste`/`Ctrl`) mit OBB-Raycasting.
+- **Hardwarebeschleunigte 3D-Vorschau**: Orbit-Kamera (`RMB`/`MMB`) + Ego-Freiflug-Kamera (`Z`-Taste + `WASD`/`Leertaste`/`Ctrl (Command ⌘)`) mit OBB-Raycasting.
 - **Magnetisches Fangen & Live-Abstandsmessung**: Automatisches Fangen an Rasterschritten (`1`, `9`, `18`, `50 mm`) und an Kanten benachbarter Bauteile (`0 mm` Bündigstoß) mit Abstandsanzeigen.
-- **Rahmenauswahl & Gruppentransformation**: Rechteckige Rahmenauswahl in 2D-Ansichten, gemeinsames Verschieben, Duplizieren (`Ctrl+D`) und Kopieren/Einfügen zwischen Projekten (`Ctrl+C` / `Ctrl+V`).
+- **Rahmenauswahl & Gruppentransformation**: Rechteckige Rahmenauswahl in 2D-Ansichten, gemeinsames Verschieben, Duplizieren (`Ctrl+D` / `Command (⌘)+D`) und Kopieren/Einfügen zwischen Projekten (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Integrierter Rechner**: Alle numerischen Felder akzeptieren mathematische Ausdrücke wie `600+100`, `800-36`, `720/2` oder `45+15`.
 - **Automatischer Kantenabzug**: Zuweisung von Kantenbändern (`0.4 mm`, `0.8 mm`, `1.0 mm`, `2.0 mm` usw.) an beliebige der 4 Kanten (`L1`, `L2`, `B1`, `B2`):
   $$\text{Schnittlänge} = L_{\text{voll}} - K_{L1} - K_{L2}, \quad \text{Schnittbreite} = B_{\text{voll}} - K_{B1} - K_{B2}$$
@@ -153,7 +153,7 @@ Der Reiter **Designer** (`📐 1. Designer`) gliedert sich in drei Hauptbereiche
 
 1. **Obere Werkzeugleiste**:
    - **Editor-Werkzeuge**:
-     - `↖ Auswählen / Verschieben (V)`: Klick wählt ein Bauteil aus, Ziehen verschiebt es, Ziehen an Griffen (8 Griffe bei Frontalansicht & 2 Kanten-Griffe bei Stirnansicht) skaliert es. Ziehen auf freier Fläche spannt einen **Auswahlrahmen** auf. Beim Ziehen in 2D: Halten Sie **`Shift`** gedrückt, um die Bewegung auf die horizontale oder vertikale Achse zu beschränken, **`Ctrl` (`Command вЊ`)**, um das magnetische Einrasten an Kanten zu umgehen, und **`Alt`**, um das Bauteil beim Loslassen zu duplizieren.
+     - `↖ Auswählen / Verschieben (V)`: Klick wählt ein Bauteil aus, Ziehen verschiebt es, Ziehen an Griffen (8 Griffe bei Frontalansicht & 2 Kanten-Griffe bei Stirnansicht) skaliert es. Ziehen auf freier Fläche spannt einen **Auswahlrahmen** auf. Beim Ziehen in 2D: Halten Sie **`Shift`** gedrückt, um die Bewegung auf die horizontale oder vertikale Achse zu beschränken, **`Ctrl` (`Command ⌘`)**, um das magnetische Einrasten an Kanten zu umgehen, und **`Alt`**, um das Bauteil beim Loslassen zu duplizieren.
      - `➕ Bauteil per Rahmen erstellen (B)`: Ziehen eines Rechtecks in einer 2D-Ansicht erzeugt eine Platte in dieser Ebene (`Fachboden XY`, `Seitenwand YZ`, `Front/Rückwand XZ`).
      - `📏 Messband (M)`: Misst exakte Abstände (`ΔX`, `ΔY`, `L`) in Millimetern.
    - **Schnellbausteine**: Direkte Tasten (`+ Fachboden (XY)`, `+ Seitenwand (YZ)`, `+ Front (XZ)`).
@@ -207,7 +207,7 @@ Der Reiter **Zuschnitt** (`🪚 3. Zuschnitt`) verschachtelt alle sichtbaren Bau
 
 - **Startseite & Zuletzt geöffnet**: Schneller Zugriff auf neue leere Projekte, 2-türige Schrankvorlagen oder die **10 zuletzt geöffneten Dateien**.
 - **Mehrere offene Möbelstücke**: Paralleles Arbeiten in Tabs (Doppelklick zum Umbenennen).
-- **Tabübergreifendes Kopieren (`Ctrl+C` / `Ctrl+V`)**: Bauteile markieren, kopieren und in ein anderes Produkt einfügen — Materialien und Kanten werden automatisch abgeglichen.
+- **Tabübergreifendes Kopieren (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`)**: Bauteile markieren, kopieren und in ein anderes Produkt einfügen — Materialien und Kanten werden automatisch abgeglichen.
 - **Schutz vor Datenverlust**: Bestätigungsdialog beim Schließen ungespeicherter Dokumente.
 
 ---
@@ -253,19 +253,19 @@ Im Reiter **Materialien** (`🎨 4. Materialien`):
 | **`M`** | Werkzeug **Messband** in 2D-Fenstern |
 | **`LMB` Ziehen (2D)** | Ausgewählte Bauteile verschieben, Griffe ziehen oder Rahmen aufziehen |
 | **`Shift + LMB` Ziehen (2D)** | Bauteilbewegung strikt auf horizontale oder vertikale Achse beschränken |
-| **`Ctrl / Command (вЊ) + LMB` Ziehen (2D)** | Magnetisches Einrasten an Bauteilkanten beim Ziehen vorübergehend deaktivieren |
+| **`Ctrl / Command (⌘) + LMB` Ziehen (2D)** | Magnetisches Einrasten an Bauteilkanten beim Ziehen vorübergehend deaktivieren |
 | **`Alt + LMB` Ziehen (2D)** | Ausgewähltes Bauteil am Zielort duplizieren (Original bleibt erhalten) |
-| **`Shift / Ctrl (Command вЊ) + LMB` (2D)** | Bauteil zur Mehrfachauswahl hinzufügen/entfernen |
+| **`Shift / Ctrl (Command ⌘) + LMB` (2D)** | Bauteil zur Mehrfachauswahl hinzufügen/entfernen |
 | **`RMB` / `MMB` Ziehen (2D)** | 2D-Kamera verschieben (Pan) |
 | **`Mausrad` (2D / 3D)** | Kamera zoomen |
 | **`RMB` / `MMB` Ziehen (3D)** | 3D-Kamera um das Modell drehen (Orbit) |
 | **`Z` (über 3D-Fenster)** | **3D-Freiflugmodus (Noclip)** ein-/ausschalten (tastaturlayout-unabhängig) |
-| **`W` `A` `S` `D` / `Leertaste` / `Ctrl (Command вЊ)`** | Vorwärts/links/rückwärts/rechts/auf/ab im 3D-Flugmodus (`Shift` für Turbo) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Aktuelles Möbelprojekt speichern (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Letzte Aktion im aktiven Tab rückgängig machen (bis zu 40 Schritte, layout-unabhängig) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Ausgewählte Bauteile in die Zwischenablage kopieren |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Bauteile einfügen (tabübergreifend) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Ausgewählte Bauteile duplizieren |
+| **`W` `A` `S` `D` / `Leertaste` / `Ctrl (Command ⌘)`** | Vorwärts/links/rückwärts/rechts/auf/ab im 3D-Flugmodus (`Shift` für Turbo) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Aktuelles Möbelprojekt speichern (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Letzte Aktion im aktiven Tab rückgängig machen (bis zu 40 Schritte, layout-unabhängig) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Ausgewählte Bauteile in die Zwischenablage kopieren |
+| **`Ctrl + V` / `Command (⌘) + V`** | Bauteile einfügen (tabübergreifend) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Ausgewählte Bauteile duplizieren |
 | **`Delete` / `Backspace`** | Ausgewählte Bauteile löschen |
 | **`←` `→` `↑` `↓` (2D-Ansichten)** | Ausgewählte Teile um gewählten Rasterschritt verschieben (`Shift` verdoppelt den Schritt) |
 

@@ -130,9 +130,9 @@ Okamžité prepínanie jazykov bez reštartu tlačidlom **`🌐`** v hornej liš
 ## Kľúčové vlastnosti
 
 - **Synchronizovaný 4-pohľadový pracovný priestor**: Navrhujte v Pôdoryse (`XY`), Náryse (`XZ`), Bokoryse (`YZ`), alebo ľubovoľné okno zväčšite na celú plochu (`[Zväčšiť]` / `[Obnoviť 4 pohľady]`).
-- **Hardvérovo akcelerovaný 3D náhľad**: Orbitálna kamera (`Pravé`/`Stredné tlačidlo myši`) + voľný let z prvej osoby z pohľadu prvej osoby (`kláves Z` + `WASD`/`Medzerník`/`Ctrl`) s perspektívnym UV textúrovaním a presným OBB lúčovým výberom.
+- **Hardvérovo akcelerovaný 3D náhľad**: Orbitálna kamera (`Pravé`/`Stredné tlačidlo myši`) + voľný let z prvej osoby z pohľadu prvej osoby (`kláves Z` + `WASD`/`Medzerník`/`Ctrl (Command ⌘)`) s perspektívnym UV textúrovaním a presným OBB lúčovým výberom.
 - **Magnetické prichytávanie a dynamické kótovanie medzier**: Automatický úchyt k mriežke (`1`, `9`, `18`, `50 mm` alebo vlastná), prichytenie k plochám a hranám susedných dielcov (`0 mm`) a zobrazenie reálnych vzdialeností v milimetroch k susedným doskám.
-- **Rámčekový výber a skupinová transformácia**: Ťahaním myši v 2D pohľadoch vyberte viac dielcov naraz, posúvajte ich spoločne, duplikujte (`Ctrl+D`) alebo kopírujte medzi otvorenými výrobkami (`Ctrl+C` / `Ctrl+V`).
+- **Rámčekový výber a skupinová transformácia**: Ťahaním myši v 2D pohľadoch vyberte viac dielcov naraz, posúvajte ich spoločne, duplikujte (`Ctrl+D` / `Command (⌘)+D`) alebo kopírujte medzi otvorenými výrobkami (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Integrovaná kalkulačka**: Všetky číselné polia prijímajú matematické vzorce ako `600+100`, `800-36`, `720/2` alebo `45+15`.
 - **Automatický odpočet hrán pri rezaní**: Priraďte ABS hrany (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm` atď.) na ktorúkoľvek zo 4 strán dielca (`L1`, `L2`, `W1`, `W2`) a systém okamžite vypočíta rezný rozmer:
   $$\text{Dĺžka rezu} = L_{\text{hotová}} - E_{L1} - E_{L2}, \quad \text{Šírka rezu} = W_{\text{hotová}} - E_{W1} - E_{W2}$$
@@ -153,7 +153,7 @@ Záložka **Konštruktér** (`📐 1. Konštruktér`) sa skladá z troch hlavný
 
 1. **Horné nástrojové lišty**:
    - **Kresliace nástroje**:
-     - `↖ Vybrať / Posunúť (V)`: Kliknutím vyberiete dielec, ťahaním posúvate, alebo meníte rozmery pomocou úchopov (8 úchopov pre dielce naplocho a 2 pre dielce z hrany). Ťahaním v prázdnom priestore vytvoríte obdĺžnikový výber viacerých dielcov. Pri preťahovaní v 2D: podržaním **`Shift`** obmedzíte pohyb iba na vodorovnú alebo zvislú os, **`Ctrl` (`Command вЊ`)** deaktivujete magnetické prichytávanie k hranám a **`Alt`** vytvoríte kópiu dielu v mieste pustenia.
+     - `↖ Vybrať / Posunúť (V)`: Kliknutím vyberiete dielec, ťahaním posúvate, alebo meníte rozmery pomocou úchopov (8 úchopov pre dielce naplocho a 2 pre dielce z hrany). Ťahaním v prázdnom priestore vytvoríte obdĺžnikový výber viacerých dielcov. Pri preťahovaní v 2D: podržaním **`Shift`** obmedzíte pohyb iba na vodorovnú alebo zvislú os, **`Ctrl` (`Command ⌘`)** deaktivujete magnetické prichytávanie k hranám a **`Alt`** vytvoríte kópiu dielu v mieste pustenia.
      - `➕ Vytvoriť dielec rámčekom (B)`: Ťahaním obdĺžnika v 2D pohľade (`Pôdorys XY`, `Nárys XZ` alebo `Bokorys YZ`) vytvoríte novú dosku zodpovedajúcu danej rovine.
      - `📏 Meracie pásmo (M)`: Meranie presných vzdialeností bod od bodu (`ΔX`, `ΔY`, `L`) v milimetroch.
    - **Rýchle vkladanie dielcov**: Tlačidlá na vloženie police (`+ Polica (XY)`), boku (`+ Bok (YZ)`) alebo dvierok/chrbta (`+ Dvierka/Chrbát (XZ)`).
@@ -165,7 +165,7 @@ Záložka **Konštruktér** (`📐 1. Konštruktér`) sa skladá z troch hlavný
 
 2. **Štyri pracovné okná**:
    - **2D pravouhlé priemety (`Pôdorys XY`, `Nárys XZ`, `Bokorys YZ`)** s posuvníkmi, milimetrovými pravítkami a farebným zvýraznením olepených hrán.
-   - **3D pohľad**: Orbitálne otáčanie (`Pravé` alebo `Stredné tlačidlo myši`), približovanie kolieskom, 3D výber a **Režim voľného letu (Noclip)** (stlačte **`Z`** nad 3D oknom a lietajte pomocou klávesov `WASD`, `Medzerník`, `Ctrl`/`Shift`).
+   - **3D pohľad**: Orbitálne otáčanie (`Pravé` alebo `Stredné tlačidlo myši`), približovanie kolieskom, 3D výber a **Režim voľného letu (Noclip)** (stlačte **`Z`** nad 3D oknom a lietajte pomocou klávesov `WASD`, `Medzerník`, `Ctrl (Command ⌘)`/`Shift`).
 
 3. **Pravý Inšpektor dielcov**:
    - Triedenie dielcov do používateľských **Skupín** (*Korpus*, *Dvierka*, *Zásuvky*).
@@ -212,7 +212,7 @@ Záložka **Nárezový plán** (`🪚 3. Nárezový plán`) vypočíta optimáln
 
 - **Úvodná stránka a história**: Vytvorenie nového prázdneho výrobku, štart zo šablóny 2-dverovej skrinky, otvorenie súborov `.qfurn`/`.json` alebo rýchly výber z **10 naposledy otvorených projektov**.
 - **Práca vo viacerých záložkách súčasne**: Navrhujte viac skriniek naraz v hornej lište záložiek (dvojitým kliknutím možno výrobok premenovať).
-- **Kopírovanie a vkladanie dielcov medzi projektmi**: Vyberte dielce v jednom výrobku, stlačte `Ctrl+C`, prepnite sa do inej záložky (alebo inej spustenej inštancie QuadFurn) a stlačte `Ctrl+V`. Chýbajúce materiály a hrany sa v cieľovom projekte automaticky vytvoria.
+- **Kopírovanie a vkladanie dielcov medzi projektmi**: Vyberte dielce v jednom výrobku, stlačte `Ctrl+C` (`Command (⌘)+C`), prepnite sa do inej záložky (alebo inej spustenej inštancie QuadFurn) a stlačte `Ctrl+V` (`Command (⌘)+V`). Chýbajúce materiály a hrany sa v cieľovom projekte automaticky vytvoria.
 - **Ochrana pred stratou údajov**: Pri zatváraní neuloženého výrobku alebo ukončení programu sa zobrazí potvrdzovací dialóg (`Uložiť a odísť`, `Odísť bez uloženia`, `Zrušiť`).
 
 ---
@@ -265,19 +265,19 @@ V záložke **Materiály** (`🎨 4. Materiály`):
 | **`M`** | Aktivovať nástroj **Meracie pásmo** v 2D pohľadoch |
 | **Ťahanie `Ľavým tlačidlom` (2D)** | Posunúť vybrané dielce, upraviť rozmer úchopom alebo ťahať výberový rámček v prázdne |
 | **`Shift + Ľavé tl.` Pretiahnutie (2D)** | Obmedzenie pohybu dielu striktne na vodorovnú alebo zvislú os |
-| **`Ctrl / Command (вЊ) + Ľavé tl.` Pretiahnutie (2D)** | Deaktivácia magnetického prichytávania k hranám počas preťahovania |
+| **`Ctrl / Command (⌘) + Ľavé tl.` Pretiahnutie (2D)** | Deaktivácia magnetického prichytávania k hranám počas preťahovania |
 | **`Alt + Ľavé tl.` Pretiahnutie (2D)** | Duplikovanie vybraného dielu do cieľového miesta pri pustení |
-| **`Shift / Ctrl (Command вЊ) + Ľavým tlačidlom` (2D)** | Pridať alebo odobrať dielec z viacnásobného výberu |
+| **`Shift / Ctrl (Command ⌘) + Ľavým tlačidlom` (2D)** | Pridať alebo odobrať dielec z viacnásobného výberu |
 | **Ťahanie `Pravým` / `Stredným tlačidlom` (2D)** | Posun zobrazenia (Panoráma 2D) |
 | **`Koliesko myši` (2D / 3D)** | Priblíženie / oddialenie pohľadu na pozíciu kurzora |
 | **Ťahanie `Pravým` / `Stredným tlačidlom` (3D)** | Orbitálna rotácia 3D kamery |
 | **`Z` (nad 3D oknom)** | Zapnúť / vypnúť **Režim voľného letu (Noclip)** |
-| **`W` `A` `S` `D` / `Medzerník` / `Ctrl (Command вЊ)`** | Pohyb dopredu/doľava/dozadu/doprava/hore/dole v 3D lete (`Shift` zrýchľuje) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Uložiť aktuálny výrobok (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Vrátiť späť posledný krok (história až 40 krokov) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Kopírovať vybrané dielce do schránky |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Vložiť vybrané dielce (funguje medzi rôznymi záložkami) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplikovať vybrané dielce |
+| **`W` `A` `S` `D` / `Medzerník` / `Ctrl (Command ⌘)`** | Pohyb dopredu/doľava/dozadu/doprava/hore/dole v 3D lete (`Shift` zrýchľuje) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Uložiť aktuálny výrobok (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Vrátiť späť posledný krok (história až 40 krokov) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Kopírovať vybrané dielce do schránky |
+| **`Ctrl + V` / `Command (⌘) + V`** | Vložiť vybrané dielce (funguje medzi rôznymi záložkami) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplikovať vybrané dielce |
 | **`Delete` / `Backspace`** | Zmazať vybrané dielce |
 | **`←` `→` `↑` `↓` (2D pohľady)** | Posun vybraných dielov o krok zvolenej mriežky (`Shift` pre dvojnásobný krok) |
 

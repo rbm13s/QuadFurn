@@ -134,9 +134,9 @@ Instant runtime language switching via the **`🌐`** selector in the top toolba
 ## Key Features
 
 - **Synchronized 4-Viewport Workspace**: Edit in Top (`XY`), Front (`XZ`), Side (`YZ`), or maximize any viewport with one click (`[Maximize]` / `[Restore 4 Views]`).
-- **3D Hardware-Accelerated Preview**: Orbit camera (`RMB`/`MMB`) + first-person free-fly camera (`Z` key + `WASD`/`Space`/`Ctrl`) with perspective-correct subdivided texture rendering and exact OBB raycasting.
+- **3D Hardware-Accelerated Preview**: Orbit camera (`RMB`/`MMB`) + first-person free-fly camera (`Z` key + `WASD`/`Space`/`Ctrl (Command ⌘)`) with perspective-correct subdivided texture rendering and exact OBB raycasting.
 - **Magnetic Snapping & Live Gap Dimensions**: Automatic snapping to grid steps (`1`, `9`, `18`, `50 mm`, or custom) and adjacent part faces/corners (`0 mm` flush joint), plus real-time distance callouts to neighboring parts.
-- **Box-Selection & Group Transform**: Drag a marquee selection box in any 2D viewport to select multiple parts, move them together, duplicate (`Ctrl+D`), or copy/paste them across different open furniture projects (`Ctrl+C` / `Ctrl+V`).
+- **Box-Selection & Group Transform**: Drag a marquee selection box in any 2D viewport to select multiple parts, move them together, duplicate (`Ctrl+D` / `Command (⌘)+D`), or copy/paste them across different open furniture projects (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Inline Math Calculator**: Every numeric input field accepts arithmetic expressions like `600+100`, `800-36`, `720/2`, or `45+15`.
 - **Automatic Saw Cut Deduction**: Assign PVC/ABS edge banding (`0.4 mm`, `0.5 mm`, `1.0 mm`, `2.0 mm`, etc.) to any of the 4 part edges (`L1`, `L2`, `W1`, `W2`) and immediately see the net saw size:
   $$\text{Cut Length} = L_{\text{full}} - E_{L1} - E_{L2}, \quad \text{Cut Width} = W_{\text{full}} - E_{W1} - E_{W2}$$
@@ -157,7 +157,7 @@ The **Designer** tab (`📐 1. Designer`) is divided into three main areas:
 
 1. **Top Toolbars**:
    - **Editor Tools**:
-     - `↖ Select / Move (V)`: Click a part to select it, drag inside to move it, or drag any of the resize handles (8 handles on face-on parts & 2 edge handles on edge-on parts) in 2D views to resize it in place. Drag on empty space to draw a **marquee selection box** for multi-part selection. During 2D dragging: hold **`Shift`** to constrain movement strictly to horizontal or vertical axis, hold **`Ctrl` (`Command вЊ`)** to bypass magnetic edge snapping, and hold **`Alt`** to duplicate the part at the drop position.
+     - `↖ Select / Move (V)`: Click a part to select it, drag inside to move it, or drag any of the resize handles (8 handles on face-on parts & 2 edge handles on edge-on parts) in 2D views to resize it in place. Drag on empty space to draw a **marquee selection box** for multi-part selection. During 2D dragging: hold **`Shift`** to constrain movement strictly to horizontal or vertical axis, hold **`Ctrl` (`Command ⌘`)** to bypass magnetic edge snapping, and hold **`Alt`** to duplicate the part at the drop position.
      - `➕ Create Part by Box (B)`: Drag a rectangle in any 2D view (`Top XY`, `Front XZ`, or `Side YZ`) to create a new board oriented to that plane (`Shelf XY`, `Side Panel YZ`, or `Front/Back XZ`).
      - `📏 Tape Measure (M)`: Measure exact point-to-point distances (`ΔX`, `ΔY`, `L`) in millimeters in any 2D view.
    - **Quick Part Insertion**: One-click buttons (`+ Shelf (XY)`, `+ Side Panel (YZ)`, `+ Front/Back (XZ)`) to drop standard panels into the workspace.
@@ -169,7 +169,7 @@ The **Designer** tab (`📐 1. Designer`) is divided into three main areas:
 
 2. **Quad Viewports**:
    - **Top View (`Top XY — Plan`)**, **Front View (`Front XZ — Elevation`)**, and **Side View (`Side YZ — Section`)** feature interactive horizontal and vertical scrollbars, dynamic millimeter rulers, and edge-banding color highlights along panel perimeters.
-   - **3D View**: Supports orbit rotation (`RMB` or `MMB` drag), zoom (`Mouse Wheel`), left-click 3D part selection, and **First-Person Fly Mode** (press **`Z`** while hovering over the 3D pane to lock the cursor and fly with `WASD`, `Space`, `Ctrl`/`Shift`).
+   - **3D View**: Supports orbit rotation (`RMB` or `MMB` drag), zoom (`Mouse Wheel`), left-click 3D part selection, and **First-Person Fly Mode** (press **`Z`** while hovering over the 3D pane to lock the cursor and fly with `WASD`, `Space`, `Ctrl (Command ⌘)`/`Shift`).
 
 3. **Right-Hand Part Inspector (`Part Inspector` & `Part Properties`)**:
    - Organize parts into custom **Groups** (e.g., *Carcass*, *Doors & Fronts*, *Drawers*).
@@ -223,7 +223,7 @@ The **Cutting Layout** tab (`🪚 3. Cutting Layout`) automatically packs all vi
 
 - **Start Page & Recent Projects**: On launch, QuadFurn opens a Start Page where you can create a new empty product, start from a ready-made 2-door cabinet template, browse for a `.qfurn`/`.json` project file, or pick from the **10 most recently opened projects**.
 - **Multiple Open Products**: Open or create several furniture items simultaneously in the **Products** tab bar (double-click any tab title to rename the product).
-- **Cross-Project Multi-Part Copy & Paste**: Select one or multiple parts in one product tab, press `Ctrl+C`, switch to another open product tab (or another running instance of QuadFurn), and press `Ctrl+V`. Missing materials and edge bandings referenced by the copied parts are automatically transferred or matched by name/thickness in the target project.
+- **Cross-Project Multi-Part Copy & Paste**: Select one or multiple parts in one product tab, press `Ctrl+C` (`Command (⌘)+C`), switch to another open product tab (or another running instance of QuadFurn), and press `Ctrl+V` (`Command (⌘)+V`). Missing materials and edge bandings referenced by the copied parts are automatically transferred or matched by name/thickness in the target project.
 - **Unsaved Changes Protection**: Closing a modified product tab or exiting the application prompts a confirmation dialog (`Save and exit`, `Exit without saving`, `Cancel`).
 
 ---
@@ -282,19 +282,19 @@ In the **Materials** tab (`🎨 4. Materials`):
 | **`M`** | Activate **Tape Measure** tool in 2D viewports |
 | **`LMB` Drag (2D View)** | Move selected part(s), drag resize handles, or draw marquee selection box on empty space |
 | **`Shift + LMB` Drag (2D View)** | Constrain part movement strictly along horizontal or vertical axis |
-| **`Ctrl / Command (вЊ) + LMB` Drag (2D View)** | Bypass magnetic edge snapping while dragging part(s) |
+| **`Ctrl / Command (⌘) + LMB` Drag (2D View)** | Bypass magnetic edge snapping while dragging part(s) |
 | **`Alt + LMB` Drag (2D View)** | Duplicate selected part(s) at destination (leaves original in place) |
-| **`Shift / Ctrl (Command вЊ) + LMB` (2D View)** | Toggle part in/out of current multi-selection group |
+| **`Shift / Ctrl (Command ⌘) + LMB` (2D View)** | Toggle part in/out of current multi-selection group |
 | **`RMB` / `MMB` Drag (2D View)** | Pan 2D orthographic camera |
 | **`Mouse Wheel` (2D / 3D)** | Zoom camera in/out around cursor |
 | **`RMB` / `MMB` Drag (3D View)** | Orbit 3D camera around target |
 | **`Z` (hovering 3D View)** | Toggle **3D First-Person Fly Mode (Noclip)** (layout-independent) |
-| **`W` `A` `S` `D` / `Space` / `Ctrl (Command вЊ)`** | Fly forward/left/back/right/up/down in 3D Fly Mode (`Shift` for speed boost) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Save current furniture product (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Undo last action in active product tab (up to 40 steps, layout-independent) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Copy selected part(s) to shared clipboard |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Paste selected part(s) (works across different product tabs) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplicate selected part(s) |
+| **`W` `A` `S` `D` / `Space` / `Ctrl (Command ⌘)`** | Fly forward/left/back/right/up/down in 3D Fly Mode (`Shift` for speed boost) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Save current furniture product (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Undo last action in active product tab (up to 40 steps, layout-independent) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Copy selected part(s) to shared clipboard |
+| **`Ctrl + V` / `Command (⌘) + V`** | Paste selected part(s) (works across different product tabs) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplicate selected part(s) |
 | **`Delete` / `Backspace`** | Delete selected part(s) |
 | **`←` `→` `↑` `↓` (2D View)** | Nudge selected part(s) by current grid step (`Shift` for double step) |
 

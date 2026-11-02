@@ -130,9 +130,9 @@ Cambio de idioma instantaneo desde la barra superior mediante el boton **`??`** 
 ## Caracteristicas principales
 
 - **Espacio de trabajo sincronizado de 4 vistas**: Edite en Superior (`XY`), Frontal (`XZ`), Lateral (`YZ`) o maximice cualquier vista con un solo clic (`[Maximizar]` / `[4 Vistas]`).
-- **Vista 3D acelerada por hardware**: Camara orbital (`BDR`/`BMR`) y modo de vuelo en primera persona (`Z` + `WASD`/`Espacio`/`Ctrl`).
+- **Vista 3D acelerada por hardware**: Camara orbital (`BDR`/`BMR`) y modo de vuelo en primera persona (`Z` + `WASD`/`Espacio`/`Ctrl (Command ⌘)`).
 - **Ajuste magnetico y cotas de holgura en vivo**: Ajuste a la cuadricula (`1`, `9`, `18`, `50 mm`) y a los bordes de piezas vecinas a tope (`0 mm`).
-- **Seleccion por recuadro y transformacion grupal**: Recuadro de seleccion en 2D, traslacion coordinada, duplicacion (`Ctrl+D`) y copiado/pegado entre proyectos (`Ctrl+C` / `Ctrl+V`).
+- **Seleccion por recuadro y transformacion grupal**: Recuadro de seleccion en 2D, traslacion coordinada, duplicacion (`Ctrl+D` / `Command (⌘)+D`) y copiado/pegado entre proyectos (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`).
 - **Calculadora en campos numericos**: Los campos aceptan formulas como `600+100`, `800-36`, `720/2` o `45+15`.
 - **Deduccion automatica de cantos**:
   $$\text{Longitud de corte} = L_{\text{total}} - C_{L1} - C_{L2}, \quad \text{Ancho de corte} = An_{\text{total}} - C_{An1} - C_{An2}$$
@@ -151,7 +151,7 @@ Cambio de idioma instantaneo desde la barra superior mediante el boton **`??`** 
 La pestana **Disenador** (`?? 1. Disenador`) se divide en tres areas principales:
 
 1. **Barra de herramientas superior**:
-   - `? Seleccionar / Mover (V)`: Seleccionar piezas, mover arrastrando, o modificar tamano con los tiradores (8 tiradores en cara y 2 en cantos). Arrastrar en espacio vacio crea un **recuadro de seleccion**. Al arrastrar en 2D: mantenga presionado **`Shift`** para restringir el movimiento al eje horizontal o vertical, **`Ctrl` (`Command вЊ`)** para desactivar el ajuste magnetico a bordes y **`Alt`** para duplicar la pieza en la posicion de destino.
+   - `? Seleccionar / Mover (V)`: Seleccionar piezas, mover arrastrando, o modificar tamano con los tiradores (8 tiradores en cara y 2 en cantos). Arrastrar en espacio vacio crea un **recuadro de seleccion**. Al arrastrar en 2D: mantenga presionado **`Shift`** para restringir el movimiento al eje horizontal o vertical, **`Ctrl` (`Command ⌘`)** para desactivar el ajuste magnetico a bordes y **`Alt`** para duplicar la pieza en la posicion de destino.
    - `? Crear pieza mediante recuadro (B)`: Dibujar un rectangulo en cualquier vista 2D crea una pieza orientada a ese plano (`Balda XY`, `Lateral YZ`, `Frontal/Trasera XZ`).
    - `?? Cinta metrica (M)`: Medicion milimetrica precisa en vistas 2D.
    - **Insercion rapida**: Botones de un clic (`+ Balda (XY)`, `+ Lateral (YZ)`, `+ Frontal (XZ)`).
@@ -201,7 +201,7 @@ La pestana **Corte** (`?? 3. Corte`) anida las piezas en tableros de sus materia
 
 - **Pagina de inicio**: Acceso a proyectos vacios, plantillas de muebles y **10 proyectos recientes**.
 - **Multiples pestanas**: Trabajo simultaneo en varios muebles (doble clic para renombrar).
-- **Copiado inter-proyectos (`Ctrl+C` / `Ctrl+V`)**: Copie piezas entre pestanas � los materiales y cantos se sincronizan automaticamente.
+- **Copiado inter-proyectos (`Ctrl+C` / `Ctrl+V` / `Command (⌘)+C / V`)**: Copie piezas entre pestanas � los materiales y cantos se sincronizan automaticamente.
 
 ---
 
@@ -246,19 +246,19 @@ En la pestana **Materiales** (`?? 4. Materiales`):
 | **`M`** | Herramienta **Cinta metrica** en 2D |
 | **Arrastrar `Click Izq` (2D)** | Mover piezas, arrastrar manejadores o recuadro de seleccion |
 | **`Shift + Clic izq.` Arrastrar (2D)** | Restringir el movimiento estrictamente al eje horizontal o vertical |
-| **`Ctrl / Command (вЊ) + Clic izq.` Arrastrar (2D)** | Desactivar el ajuste magnetico a los bordes durante el arrastre |
+| **`Ctrl / Command (⌘) + Clic izq.` Arrastrar (2D)** | Desactivar el ajuste magnetico a los bordes durante el arrastre |
 | **`Alt + Clic izq.` Arrastrar (2D)** | Duplicar la(s) pieza(s) en la posicion de destino al soltar |
-| **`Shift / Ctrl (Command вЊ) + Click Izq` (2D)** | Anadir o quitar pieza de la seleccion multiple |
+| **`Shift / Ctrl (Command ⌘) + Click Izq` (2D)** | Anadir o quitar pieza de la seleccion multiple |
 | **Arrastrar `Click Der` / `Medio` (2D)** | Encuadre (Pan) de la camara 2D |
 | **`Rueda del raton` (2D / 3D)** | Zoom de la camara |
 | **Arrastrar `Click Der` / `Medio` (3D)** | Rotacion orbital 3D |
 | **`Z` (sobre ventana 3D)** | Alternar **Modo de vuelo libre 3D (Noclip)** |
-| **`W` `A` `S` `D` / `Espacio` / `Ctrl (Command вЊ)`** | Movimiento en modo vuelo (`Shift` acelera) |
-| **`Ctrl + S` / `Command (вЊ) + S`** | Guardar proyecto actual (`.qfurn` / `.json`) |
-| **`Ctrl + Z` / `Command (вЊ) + Z`** | Deshacer ultima accion (hasta 40 pasos) |
-| **`Ctrl + C` / `Command (вЊ) + C`** | Copiar piezas seleccionadas al portapapeles |
-| **`Ctrl + V` / `Command (вЊ) + V`** | Pegar piezas (funciona entre diferentes pestanas) |
-| **`Ctrl + D` / `Command (вЊ) + D`** | Duplicar piezas seleccionadas |
+| **`W` `A` `S` `D` / `Espacio` / `Ctrl (Command ⌘)`** | Movimiento en modo vuelo (`Shift` acelera) |
+| **`Ctrl + S` / `Command (⌘) + S`** | Guardar proyecto actual (`.qfurn` / `.json`) |
+| **`Ctrl + Z` / `Command (⌘) + Z`** | Deshacer ultima accion (hasta 40 pasos) |
+| **`Ctrl + C` / `Command (⌘) + C`** | Copiar piezas seleccionadas al portapapeles |
+| **`Ctrl + V` / `Command (⌘) + V`** | Pegar piezas (funciona entre diferentes pestanas) |
+| **`Ctrl + D` / `Command (⌘) + D`** | Duplicar piezas seleccionadas |
 | **`Delete` / `Backspace`** | Eliminar piezas seleccionadas |
 | **`<` `>` `^` `v` (vistas 2D)** | Desplazar las piezas seleccionadas segun el paso de cuadricula (`Shift` para duplicar) |
 
