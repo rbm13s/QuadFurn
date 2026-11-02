@@ -586,8 +586,6 @@ pub fn ui_left_tools_dock(
                     col_idx += 1;
                     if col_idx % cols != 0 {
                         ui.end_row();
-                    } else {
-                        ui.end_row();
                     }
                 });
 
@@ -681,8 +679,6 @@ pub fn ui_left_tools_dock(
                     }
                     col_idx += 1;
                     if col_idx % cols != 0 {
-                        ui.end_row();
-                    } else {
                         ui.end_row();
                     }
                 });
@@ -806,8 +802,6 @@ pub fn ui_left_tools_dock(
                     col_idx += 1;
                     if col_idx % cols != 0 {
                         ui.end_row();
-                    } else {
-                        ui.end_row();
                     }
                 });
 
@@ -849,8 +843,6 @@ pub fn ui_left_tools_dock(
                     }
                     col_idx += 1;
                     if col_idx % cols != 0 {
-                        ui.end_row();
-                    } else {
                         ui.end_row();
                     }
                 });
