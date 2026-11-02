@@ -201,9 +201,15 @@ In furniture manufacturing, edge banding thickness must be subtracted from the f
 ### 4. Guillotine 2D Sheet Cutting Optimization
 
 The **Cutting Layout** tab (`🪚 3. Cutting Layout`) automatically packs all visible parts onto sheets of their respective materials:
-- **Configurable Saw Parameters**:
-  - **Saw Kerf Width** (default `6.0 mm`)
-  - **Sheet Edge Trim Margins** (`Left`, `Right`, `Top`, `Bottom`, default `10 mm`) to clean factory board edges before cutting.
+- **4 Cutting Optimization Strategies**:
+  - **Strip Cutting (Panel Saw)**: standard industrial guillotine through-cuts for format/panel saws.
+  - **Large Usable Offcut**: packs parts densely into corners to maximize the single largest contiguous reusable offcut remnant for future projects.
+  - **Minimize Remnants**: optimizes part arrangement to minimize the total count of offcut scraps.
+  - **Minimize Toolpath / Cuts**: optimizes cut lines to minimize the total linear blade travel distance.
+- **Configurable Saw Parameters & Cost Calculation**:
+  - **Saw Kerf Width** (default `4.0 mm` / configurable).
+  - **Unified & Separate Trim Margins**: Default single input (e.g. `10 mm`) for all 4 edges, with an optional "Separate margins" toggle for distinct Left, Right, Top, and Bottom margins.
+  - **Cutting Cost Calculation**: Real-time project cut cost calculation based on configurable cost per linear meter (`Cost per linear meter`).
 - **Grain Direction Enforcement**:
   - Parts with **Locked Grain (`🌲`)** are never rotated $90^\circ$ against the sheet's grain direction (`Sheet Length L`).
   - Parts with **Free Grain** may be rotated $90^\circ$ by the optimizer whenever it improves sheet yield.
@@ -239,6 +245,8 @@ From the **Specification** tab (`📋 2. Specification`), you can export product
 ### 7. Sheet Materials, Textures & Edge Banding Catalog
 
 In the **Materials** tab (`🎨 4. Materials`):
+- **Sheet & Edge Banding Pricing**: Define **Price per full sheet** for materials and **Price per linear meter** for edge bandings, enabling complete automated material costing for the entire furniture project.
+- **Perceptual Contrast Color Generator**: Adding new materials or edge bandings automatically picks distinct, harmonious decor colors (for boards) and vibrant marker colors (for edge bandings) using human perception-weighted color distance algorithms ($2\Delta R^2 + 4\Delta G^2 + 3\Delta B^2$), ensuring no two materials share indistinguishable tones.
 - Add, edit, or delete **Sheet Materials** (`18 mm Chipboard`, `16 mm MDF`, `3 mm HDF`, etc.) with custom RGB colors, sheet dimensions (`Length × Width`), and default grain lock settings.
 - Load surface textures in **`PNG`**, **`JPG`/`JPEG`**, or **`WEBP`** formats for realistic 3D rendering.
 - **Texture Portability & Relative Path Fallbacks**: When saving, QuadFurn computes relative paths from the project file to external texture images. When reopening a `.qfurn` file on another PC or from a moved folder, it automatically searches for texture files:
@@ -250,13 +258,15 @@ In the **Materials** tab (`🎨 4. Materials`):
 - **Interactive Missing Textures Resolver (`🔍 Locate Missing Textures`)**: If a project references external textures that cannot be found when opening, QuadFurn presents a sequential modal dialog displaying each missing texture by material name and expected filename with options to `📂 Browse for file...`, `⏭ Skip`, or `✖ Skip all`.
 - **Drag & Drop Support**: Drag and drop `.qfurn` project files or texture images (`PNG`, `JPG`, `WEBP`) directly onto the application window to open projects or immediately attach and resolve missing textures.
 - **GPU Safety & Auto-Downscaling**: Files exceeding 60 MB are blocked with a clear warning, while ultra-high resolution images (> 4096 px or hardware limit) are automatically downscaled to preserve GPU performance.
-- Add, edit, or delete **Edge Banding Types** with custom thicknesses (`mm`) and drawing marker colors. Deleting a material or edge banding that is in use shows a safety confirmation dialog and cleanly reassigns/clears affected parts.
+- Add, edit, or delete **Edge Banding Types** with custom thicknesses (`mm`), marker colors, and linear meter prices. Deleting a material or edge banding that is in use shows a safety confirmation dialog and cleanly reassigns/clears affected parts.
 
 ---
 
-### 8. Themes & 37-Language Localization
+### 8. Themes, UI Ergonomics & 37-Language Localization
 
-- **Color Themes**: Switch between **🌙 Dark**, **☀ Light**, and **🖥 System** themes from the top bar.
+- **23 Curated Color Themes**: Choose from 3 default styles (**🌙 Studio Dark**, **☀ Studio Light**, **🖥 System**) plus 10 premium Dark themes (Nord Frost, Dracula, Tokyo Night, Catppuccin Mocha, One Dark, Gruvbox Dark, Monokai Pro, Ayu Dark, Solarized Dark, Rosé Pine) and 10 premium Light themes (GitHub Light, Solarized Light, Catppuccin Latte, Nord Snow, One Light, Gruvbox Light, Ayu Light, Rosé Pine Dawn, Everforest Light, PaperColor Light).
+- **Redesigned Left Tools Dock**: Clean square icon buttons (38×34 px, 6 px rounding) inspired by Figma and Blender, with rich localized hover tooltips, 4 logical clusters, and high-contrast rendering across all light and dark themes.
+- **Full Size Green Highlighting**: Finished dimensions (`Full L×W`) in the parts specification table are highlighted in emerald green with bold text for clear communication when ordering cut parts.
 - **37 Built-in Languages**:
   `Čeština`, `Dansk`, `Deutsch`, `English`, `Español`, `Français`, `Italiano`, `Korean (한국어)`, `Magyar`, `Nederlands`, `Norsk (Bokmål)`, `Polski`, `Português`, `Română`, `Russian (Русский)`, `Slovenski`, `Slovenský`, `Svenska`, `Türkçe`, `Українська (Ukrainian)`, `简体中文 (Chinese Simplified)`, and `日本語 (Japanese)`.
 - **First-Launch OS Language Detection**: On first launch, QuadFurn detects your operating system's UI language and starts in that language automatically (falling back to `English` if the OS language is not in the supported list). Both your chosen language and theme are saved automatically in `%APPDATA%\QuadFurn\settings.json`.
@@ -298,7 +308,7 @@ Every push and release automatically builds ready-to-run packages via [GitHub Ac
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — Debian/Ubuntu installer package (installs binary, desktop menu entry, and application icon):
     ```bash
-    sudo apt install ./quadfurn_0.2.7_amd64.deb
+    sudo apt install ./quadfurn_0.3.0_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — portable standalone Linux archive.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` bundle with Retina `.icns` icon.
