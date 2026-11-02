@@ -1102,6 +1102,7 @@ impl QuadFurnApp {
             .default_pos(ctx.screen_rect().center())
             .show(ctx, |ui| {
                 ui.set_min_width(420.0);
+                let is_mac = crate::i18n::is_macos_platform();
                 let shortcuts = [
                     ("V", lang.t("↖ Select / Move (V)")),
                     ("B", lang.t("➕ Create Part by Box (B)")),
@@ -1109,40 +1110,40 @@ impl QuadFurnApp {
                     ("Tab", lang.t("Orientation:")),
                     ("Z", "3D Fly / Noclip (WASD + Mouse)"),
                     (
-                        if crate::i18n::is_macos_platform() {
-                            "Cmd + S"
+                        if is_mac {
+                            "Command (⌘) + S"
                         } else {
                             "Ctrl + S"
                         },
                         lang.dict().save_current_product,
                     ),
                     (
-                        if crate::i18n::is_macos_platform() {
-                            "Cmd + Z"
+                        if is_mac {
+                            "Command (⌘) + Z"
                         } else {
                             "Ctrl + Z"
                         },
                         lang.dict().undo_btn,
                     ),
                     (
-                        if crate::i18n::is_macos_platform() {
-                            "Cmd + C"
+                        if is_mac {
+                            "Command (⌘) + C"
                         } else {
                             "Ctrl + C"
                         },
                         lang.t("📄 Copy (Ctrl+C)"),
                     ),
                     (
-                        if crate::i18n::is_macos_platform() {
-                            "Cmd + V"
+                        if is_mac {
+                            "Command (⌘) + V"
                         } else {
                             "Ctrl + V"
                         },
                         lang.t("📥 Paste (Ctrl+V)"),
                     ),
                     (
-                        if crate::i18n::is_macos_platform() {
-                            "Cmd + D"
+                        if is_mac {
+                            "Command (⌘) + D"
                         } else {
                             "Ctrl + D"
                         },
@@ -1150,6 +1151,22 @@ impl QuadFurnApp {
                     ),
                     ("Del / Backspace", lang.t("🗑 Delete (Del)")),
                     ("Alt + Drag (2D)", lang.t("📋 Duplicate (Ctrl+D)")),
+                    (
+                        if is_mac {
+                            "Shift / Command (⌘) + Click"
+                        } else {
+                            "Shift / Ctrl + Click"
+                        },
+                        lang.t("Click to select part; Shift/Ctrl + click to toggle in multi-selection"),
+                    ),
+                    (
+                        if is_mac {
+                            "Command (⌘) + Drag (2D)"
+                        } else {
+                            "Ctrl + Drag (2D)"
+                        },
+                        lang.t("Snap to edges"),
+                    ),
                 ];
 
                 egui::Grid::new("hotkeys_modal_grid")

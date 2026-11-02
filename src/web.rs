@@ -279,13 +279,21 @@ pub fn is_web_key_space_down() -> bool {
     WEB_KEY_SPACE_DOWN.load(Ordering::SeqCst)
 }
 
-/// Checks if browser is running on macOS
+/// Checks if browser is running on macOS (via navigator.platform or navigator.userAgent)
 pub fn is_macos_web() -> bool {
     #[cfg(target_arch = "wasm32")]
     {
         if let Some(w) = web_sys::window() {
-            if let Ok(ua) = w.navigator().user_agent() {
-                return ua.contains("Macintosh") || ua.contains("Mac OS X");
+            let nav = w.navigator();
+            if let Ok(platform) = nav.platform() {
+                if platform.contains("Mac") || platform.contains("iPad") || platform.contains("iPhone") {
+                    return true;
+                }
+            }
+            if let Ok(ua) = nav.user_agent() {
+                if ua.contains("Macintosh") || ua.contains("Mac OS X") || ua.contains("Mac_PowerPC") {
+                    return true;
+                }
             }
         }
     }

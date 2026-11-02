@@ -2855,9 +2855,9 @@ pub fn ui_specification_tab(
         ui.separator();
         if ui
             .button(lang.t("💾 Export to CSV (Excel)"))
-            .on_hover_text(
+            .on_hover_text(crate::i18n::adapt_shortcuts(
                 lang.t("Save full specification table with full and net saw dimensions to .csv"),
-            )
+            ))
             .clicked()
         {
             #[cfg(not(target_arch = "wasm32"))]

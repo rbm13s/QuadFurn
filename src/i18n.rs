@@ -603,12 +603,18 @@ pub fn is_macos_platform() -> bool {
     }
 }
 
-/// Dynamically adapts shortcut text from Windows/Linux (Ctrl) to macOS (Cmd) if running on macOS.
+/// Dynamically adapts shortcut text from Windows/Linux (Ctrl) to macOS (Command (⌘)) if running on macOS.
 pub fn adapt_shortcuts(text: &str) -> String {
     if is_macos_platform() {
-        text.replace("Ctrl+", "Cmd+")
-            .replace("Ctrl +", "Cmd +")
-            .replace("Shift/Ctrl", "Shift/Cmd")
+        text.replace("Ctrl+", "Command (⌘)+")
+            .replace("Ctrl +", "Command (⌘) +")
+            .replace("Shift/Ctrl", "Shift/Command (⌘)")
+            .replace("Shift / Ctrl", "Shift / Command (⌘)")
+            .replace("Cmd+", "Command (⌘)+")
+            .replace("Cmd +", "Command (⌘) +")
+            .replace("Shift/Cmd", "Shift/Command (⌘)")
+            .replace("Shift / Cmd", "Shift / Command (⌘)")
+            .replace("Ctrl", "Command (⌘)")
     } else {
         text.to_string()
     }
@@ -798,12 +804,32 @@ mod tests {
     #[test]
     fn test_adapt_shortcuts_logic() {
         let orig = "Save (Ctrl+S) and Copy (Ctrl+C), Shift/Ctrl + click";
+        let expected_mac = "Save (Command (⌘)+S) and Copy (Command (⌘)+C), Shift/Command (⌘) + click";
         if is_macos_platform() {
             let adapted = adapt_shortcuts(orig);
-            assert_eq!(adapted, "Save (Cmd+S) and Copy (Cmd+C), Shift/Cmd + click");
+            assert_eq!(adapted, expected_mac);
         } else {
             let adapted = adapt_shortcuts(orig);
             assert_eq!(adapted, orig);
         }
+    }
+
+    #[test]
+    fn test_adapt_shortcuts_mac_formatting() {
+        let text = "Undo (Ctrl+Z), Copy (Ctrl+C), Paste (Ctrl+V), Duplicate (Ctrl+D), Save (Ctrl+S), Shift/Ctrl + click, hold Ctrl";
+        let mac_adapted = text
+            .replace("Ctrl+", "Command (⌘)+")
+            .replace("Ctrl +", "Command (⌘) +")
+            .replace("Shift/Ctrl", "Shift/Command (⌘)")
+            .replace("Shift / Ctrl", "Shift / Command (⌘)")
+            .replace("Cmd+", "Command (⌘)+")
+            .replace("Cmd +", "Command (⌘) +")
+            .replace("Shift/Cmd", "Shift/Command (⌘)")
+            .replace("Shift / Cmd", "Shift / Command (⌘)")
+            .replace("Ctrl", "Command (⌘)");
+        assert_eq!(
+            mac_adapted,
+            "Undo (Command (⌘)+Z), Copy (Command (⌘)+C), Paste (Command (⌘)+V), Duplicate (Command (⌘)+D), Save (Command (⌘)+S), Shift/Command (⌘) + click, hold Command (⌘)"
+        );
     }
 }
