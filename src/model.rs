@@ -33,6 +33,9 @@ pub struct Material {
     pub sheet_width_mm: f32,
     /// Default fixed grain direction for new parts made from this material.
     pub default_grain_fixed: bool,
+    /// Price per full sheet (numeric value, currency set elsewhere).
+    #[serde(default)]
+    pub price_per_sheet: f64,
 }
 
 impl Default for Material {
@@ -48,6 +51,7 @@ impl Default for Material {
             sheet_length_mm: 2800.0,
             sheet_width_mm: 2070.0,
             default_grain_fixed: false,
+            price_per_sheet: 0.0,
         }
     }
 }
@@ -72,6 +76,162 @@ pub struct EdgeBanding {
     pub thickness_mm: f32,
     /// Edge marker color in drawings and 3D [R, G, B].
     pub color_rgb: [u8; 3],
+    /// Price per linear meter (numeric value, currency set elsewhere).
+    #[serde(default)]
+    pub price_per_m: f64,
+}
+
+impl Default for EdgeBanding {
+    fn default() -> Self {
+        Self {
+            id: 1,
+            name: "PVC 2.0 mm".to_string(),
+            thickness_mm: 2.0,
+            color_rgb: [235, 85, 45],
+            price_per_m: 0.0,
+        }
+    }
+}
+
+/// Curated harmonious furniture decor colors (wood tones, stone, matte decors).
+pub const MATERIAL_PALETTE: [[u8; 3]; 16] = [
+    [205, 160, 115], // Oak / Honey Wood
+    [75, 80, 85],    // Graphite / Anthracite
+    [230, 222, 208], // Cashmere / Sand Beige
+    [130, 95, 65],   // Classic Walnut
+    [145, 160, 135], // Muted Sage Olive
+    [120, 140, 155], // Dusty Blue / Slate
+    [185, 110, 85],  // Terracotta / Clay
+    [65, 50, 42],    // Wenge / Dark Chocolate
+    [225, 205, 175], // Bleached Birch
+    [160, 162, 165], // Ash Grey
+    [68, 92, 78],    // Deep Forest Green
+    [185, 130, 80],  // Caramel Alder
+    [140, 125, 120], // Smoked Taupe
+    [190, 145, 75],  // Mustard / Ochre
+    [85, 95, 115],   // Deep Navy Slate
+    [242, 238, 230], // Warm Off-White / Alabaster
+];
+
+/// Curated high-contrast marker colors for edge bandings in 3D and cutting diagrams.
+pub const EDGE_BANDING_PALETTE: [[u8; 3]; 16] = [
+    [235, 85, 45],   // Vivid Orange
+    [40, 190, 95],   // Emerald Green
+    [35, 135, 245],  // Vivid Azure Blue
+    [175, 70, 230],  // Purple / Violet
+    [245, 170, 25],  // Amber Gold
+    [235, 55, 75],   // Coral Red
+    [20, 190, 210],  // Cyan / Turquoise
+    [135, 205, 40],  // Lime
+    [235, 60, 150],  // Hot Pink
+    [110, 65, 225],  // Indigo
+    [25, 160, 150],  // Teal
+    [245, 215, 30],  // Bright Yellow
+    [195, 30, 60],   // Ruby Crimson
+    [50, 80, 240],   // Electric Cobalt
+    [190, 115, 235], // Orchid Lavender
+    [210, 95, 25],   // Burnt Orange
+];
+
+/// Human-perception weighted squared color distance (Red: 2, Green: 4, Blue: 3).
+#[inline]
+pub fn color_dist_sq(c1: [u8; 3], c2: [u8; 3]) -> u32 {
+    let dr = (c1[0] as i32) - (c2[0] as i32);
+    let dg = (c1[1] as i32) - (c2[1] as i32);
+    let db = (c1[2] as i32) - (c2[2] as i32);
+    (2 * dr * dr + 4 * dg * dg + 3 * db * db) as u32
+}
+
+/// Converts HSV color representation (H: [0.0..1.0], S: [0.0..1.0], V: [0.0..1.0]) to RGB `[u8; 3]`.
+pub fn hsv_to_rgb(h: f32, s: f32, v: f32) -> [u8; 3] {
+    let h = (h.fract() + 1.0).fract();
+    let s = s.clamp(0.0, 1.0);
+    let v = v.clamp(0.0, 1.0);
+
+    let c = v * s;
+    let x = c * (1.0 - ((h * 6.0) % 2.0 - 1.0).abs());
+    let m = v - c;
+
+    let (r_prime, g_prime, b_prime) = match (h * 6.0) as u32 {
+        0 => (c, x, 0.0),
+        1 => (x, c, 0.0),
+        2 => (0.0, c, x),
+        3 => (0.0, x, c),
+        4 => (x, 0.0, c),
+        _ => (c, 0.0, x),
+    };
+
+    [
+        ((r_prime + m) * 255.0).round().clamp(0.0, 255.0) as u8,
+        ((g_prime + m) * 255.0).round().clamp(0.0, 255.0) as u8,
+        ((b_prime + m) * 255.0).round().clamp(0.0, 255.0) as u8,
+    ]
+}
+
+/// Selects the best distinct furniture material decor color given existing materials.
+/// Picks the curated palette color with maximum distance from existing materials,
+/// or falls back to golden-ratio HSV generation if palette is exhausted.
+pub fn generate_next_material_color(existing: &[Material], seed: u64) -> [u8; 3] {
+    if existing.is_empty() {
+        return MATERIAL_PALETTE[(seed as usize) % MATERIAL_PALETTE.len()];
+    }
+
+    let mut best_color = MATERIAL_PALETTE[0];
+    let mut max_min_dist = 0;
+
+    for &candidate in &MATERIAL_PALETTE {
+        let min_dist = existing
+            .iter()
+            .map(|m| color_dist_sq(m.color_rgb, candidate))
+            .min()
+            .unwrap_or(u32::MAX);
+
+        if min_dist > max_min_dist {
+            max_min_dist = min_dist;
+            best_color = candidate;
+        }
+    }
+
+    if max_min_dist < 600 {
+        let h = ((existing.len() as f32 + (seed as f32 * 0.17)) * 0.618_034).fract();
+        let s = 0.35 + ((seed % 3) as f32) * 0.1;
+        let v = 0.65 + (((seed / 3) % 3) as f32) * 0.1;
+        hsv_to_rgb(h, s, v)
+    } else {
+        best_color
+    }
+}
+
+/// Selects the best distinct high-contrast marker color for a newly created edge banding type.
+pub fn generate_next_edge_color(existing: &[EdgeBanding], seed: u64) -> [u8; 3] {
+    if existing.is_empty() {
+        return EDGE_BANDING_PALETTE[(seed as usize) % EDGE_BANDING_PALETTE.len()];
+    }
+
+    let mut best_color = EDGE_BANDING_PALETTE[0];
+    let mut max_min_dist = 0;
+
+    for &candidate in &EDGE_BANDING_PALETTE {
+        let min_dist = existing
+            .iter()
+            .map(|e| color_dist_sq(e.color_rgb, candidate))
+            .min()
+            .unwrap_or(u32::MAX);
+
+        if min_dist > max_min_dist {
+            max_min_dist = min_dist;
+            best_color = candidate;
+        }
+    }
+
+    if max_min_dist < 600 {
+        let h = ((existing.len() as f32 + (seed as f32 * 0.23)) * 0.618_034).fract();
+        let s = 0.85 + ((seed % 2) as f32) * 0.1;
+        let v = 0.90 + (((seed / 2) % 2) as f32) * 0.05;
+        hsv_to_rgb(h, s, v)
+    } else {
+        best_color
+    }
 }
 
 /// Base spatial orientation of the part within the cabinet.
@@ -91,28 +251,10 @@ impl PartOrientation {
     }
 
     pub fn label_i18n(&self, lang: crate::i18n::AppLanguage) -> &'static str {
-        match (self, lang) {
-            (PartOrientation::HorizontalXY, crate::i18n::AppLanguage::Ru) => {
-                "Горизонтальная (Полка/Дно XY)"
-            }
-            (PartOrientation::VerticalYZ, crate::i18n::AppLanguage::Ru) => {
-                "Боковая стойка (Профиль YZ)"
-            }
-            (PartOrientation::FrontalXZ, crate::i18n::AppLanguage::Ru) => {
-                "Фронтальная (Фасад/Стенка XZ)"
-            }
-            (PartOrientation::HorizontalXY, crate::i18n::AppLanguage::Uk) => {
-                "Горизонтальна (Полиця/Дно XY)"
-            }
-            (PartOrientation::VerticalYZ, crate::i18n::AppLanguage::Uk) => {
-                "Бокова стійка (Профіль YZ)"
-            }
-            (PartOrientation::FrontalXZ, crate::i18n::AppLanguage::Uk) => {
-                "Фронтальна (Фасад/Стінка XZ)"
-            }
-            (PartOrientation::HorizontalXY, _) => "Horizontal (Shelf/Bottom XY)",
-            (PartOrientation::VerticalYZ, _) => "Side Panel (Profile YZ)",
-            (PartOrientation::FrontalXZ, _) => "Frontal (Door/Back XZ)",
+        match self {
+            PartOrientation::HorizontalXY => lang.t("orient.horizontal_xy"),
+            PartOrientation::VerticalYZ => lang.t("orient.vertical_yz"),
+            PartOrientation::FrontalXZ => lang.t("orient.frontal_xz"),
         }
     }
 
@@ -121,16 +263,10 @@ impl PartOrientation {
     }
 
     pub fn short_label_i18n(&self, lang: crate::i18n::AppLanguage) -> &'static str {
-        match (self, lang) {
-            (PartOrientation::HorizontalXY, crate::i18n::AppLanguage::Ru) => "Полка (XY)",
-            (PartOrientation::VerticalYZ, crate::i18n::AppLanguage::Ru) => "Стойка (YZ)",
-            (PartOrientation::FrontalXZ, crate::i18n::AppLanguage::Ru) => "Фасад (XZ)",
-            (PartOrientation::HorizontalXY, crate::i18n::AppLanguage::Uk) => "Полиця (XY)",
-            (PartOrientation::VerticalYZ, crate::i18n::AppLanguage::Uk) => "Стійка (YZ)",
-            (PartOrientation::FrontalXZ, crate::i18n::AppLanguage::Uk) => "Фасад (XZ)",
-            (PartOrientation::HorizontalXY, _) => "Shelf (XY)",
-            (PartOrientation::VerticalYZ, _) => "Side (YZ)",
-            (PartOrientation::FrontalXZ, _) => "Door (XZ)",
+        match self {
+            PartOrientation::HorizontalXY => lang.t("orient.short_xy"),
+            PartOrientation::VerticalYZ => lang.t("orient.short_yz"),
+            PartOrientation::FrontalXZ => lang.t("orient.short_xz"),
         }
     }
 }
@@ -330,6 +466,38 @@ impl PartBlock {
     }
 }
 
+/// Optimization criteria / strategy for 2D guillotine sheet cutting
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub enum CuttingAlgorithm {
+    /// Maximizes overall sheet utilization and reduces waste (Best Short Side Fit)
+    #[default]
+    MinimizeRemnants,
+    /// Groups parts into continuous lengthwise cuts, reducing cutting passes and tool travel
+    MinimizeToolpath,
+    /// Packs parts tightly into one corner to leave the largest single usable rectangular offcut
+    LargeUsableOffcut,
+    /// Standard 2-stage strip cutting: rips sheet into strips first, then cross-cuts (ideal for panel saws)
+    StripCutting,
+}
+
+impl CuttingAlgorithm {
+    pub const ALL: [CuttingAlgorithm; 4] = [
+        CuttingAlgorithm::MinimizeRemnants,
+        CuttingAlgorithm::MinimizeToolpath,
+        CuttingAlgorithm::LargeUsableOffcut,
+        CuttingAlgorithm::StripCutting,
+    ];
+
+    pub fn label_i18n(self, lang: AppLanguage) -> &'static str {
+        match self {
+            Self::MinimizeRemnants => lang.t("cutting.algo_min_remnants"),
+            Self::MinimizeToolpath => lang.t("cutting.algo_min_toolpath"),
+            Self::LargeUsableOffcut => lang.t("cutting.algo_large_offcut"),
+            Self::StripCutting => lang.t("cutting.algo_strip_cutting"),
+        }
+    }
+}
+
 /// Guillotine sheet cutting settings.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(default)]
@@ -344,8 +512,21 @@ pub struct CuttingSettings {
     pub trim_top_mm: f32,
     /// Bottom trim margin of sheet (mm).
     pub trim_bottom_mm: f32,
+    /// Whether sheet trim margins are configured separately for each edge (L/R/T/B).
+    /// Defaults to false (single unified trim margin for all 4 edges).
+    #[serde(default)]
+    pub separate_trim_margins: bool,
+    /// Active 2D guillotine cutting algorithm / optimization strategy.
+    #[serde(default)]
+    pub algorithm: CuttingAlgorithm,
+    /// Price per linear meter of cut.
+    #[serde(default)]
+    pub cut_price_per_m: f64,
     /// Whether to group identical parts in specification and cutting report.
     pub group_identical_parts: bool,
+    /// Whether to display material textures on cutting diagram panels.
+    #[serde(default)]
+    pub show_textures_on_sheet: bool,
 }
 
 impl Default for CuttingSettings {
@@ -356,7 +537,11 @@ impl Default for CuttingSettings {
             trim_right_mm: 10.0,
             trim_top_mm: 10.0,
             trim_bottom_mm: 10.0,
+            separate_trim_margins: false,
+            algorithm: CuttingAlgorithm::default(),
+            cut_price_per_m: 0.0,
             group_identical_parts: true,
+            show_textures_on_sheet: false,
         }
     }
 }
@@ -529,6 +714,7 @@ impl Project {
             sheet_length_mm: 2800.0,
             sheet_width_mm: 2070.0,
             default_grain_fixed: false,
+            price_per_sheet: 0.0,
         };
         let mat_oak_18 = Material {
             id: 2,
@@ -541,6 +727,7 @@ impl Project {
             sheet_length_mm: 2800.0,
             sheet_width_mm: 2070.0,
             default_grain_fixed: true,
+            price_per_sheet: 0.0,
         };
         let mat_hdf_3 = Material {
             id: 3,
@@ -553,6 +740,7 @@ impl Project {
             sheet_length_mm: 2800.0,
             sheet_width_mm: 2070.0,
             default_grain_fixed: false,
+            price_per_sheet: 0.0,
         };
 
         let edge_pvc_2 = EdgeBanding {
@@ -560,18 +748,21 @@ impl Project {
             name: l10n.edge_pvc_2.to_string(),
             thickness_mm: 2.0,
             color_rgb: [235, 85, 45], // Bright orange/red marker for 2 mm
+            price_per_m: 0.0,
         };
         let edge_pvc_08 = EdgeBanding {
             id: 11,
             name: l10n.edge_pvc_08.to_string(),
             thickness_mm: 0.8,
             color_rgb: [50, 195, 95], // Green marker for 0.8 mm
+            price_per_m: 0.0,
         };
         let edge_pvc_04 = EdgeBanding {
             id: 12,
             name: l10n.edge_pvc_04.to_string(),
             thickness_mm: 0.4,
             color_rgb: [65, 150, 245], // Blue marker for 0.4 mm
+            price_per_m: 0.0,
         };
 
         let grp_carcass = PartGroup {
@@ -1046,5 +1237,67 @@ mod tests {
         let deserialized: CuttingSettings = serde_json::from_str(empty_json).expect("Must deserialize default settings");
         assert_eq!(deserialized.kerf_mm, 6.0);
         assert_eq!(deserialized.trim_left_mm, 10.0);
+    }
+
+    #[test]
+    fn test_color_generation_distinct() {
+        let mut materials = Vec::new();
+        // Add 5 materials sequentially and check that each gets a distinct color
+        for i in 1..=5 {
+            let color = generate_next_material_color(&materials, i);
+            assert!(
+                !materials.iter().any(|m: &Material| m.color_rgb == color),
+                "Sequential material additions must generate distinct colors"
+            );
+            materials.push(Material {
+                id: i,
+                color_rgb: color,
+                ..Default::default()
+            });
+        }
+
+        let mut edges = Vec::new();
+        // Add 5 edge bandings sequentially and check that each gets a distinct color
+        for i in 1..=5 {
+            let color = generate_next_edge_color(&edges, i);
+            assert!(
+                !edges.iter().any(|e: &EdgeBanding| e.color_rgb == color),
+                "Sequential edge additions must generate distinct colors"
+            );
+            edges.push(EdgeBanding {
+                id: i,
+                color_rgb: color,
+                ..Default::default()
+            });
+        }
+    }
+
+    #[test]
+    fn test_export_sample_materials_project() {
+        let mut proj = Project::new_demo_cabinet();
+        for i in 1..=3 {
+            let id = proj.alloc_id();
+            let col = generate_next_material_color(&proj.materials, id);
+            proj.materials.push(Material {
+                id,
+                name: format!("Материал декор {}", i),
+                color_rgb: col,
+                price_per_sheet: (3500 + i * 800) as f64,
+                ..Default::default()
+            });
+        }
+        for i in 1..=4 {
+            let id = proj.alloc_id();
+            let col = generate_next_edge_color(&proj.edge_bandings, id);
+            proj.edge_bandings.push(EdgeBanding {
+                id,
+                name: format!("Кромка тип {}", i),
+                color_rgb: col,
+                thickness_mm: 1.0,
+                price_per_m: (30 + i * 15) as f64,
+            });
+        }
+        let json = serde_json::to_string_pretty(&proj).unwrap();
+        let _ = std::fs::write("target/sample_materials.qfurn", json);
     }
 }
