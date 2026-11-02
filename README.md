@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
+<img src="assets/icon_256.jpg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
 # QuadFurn CAD
 
@@ -359,7 +359,7 @@ QuadFurn/
 │   └── workflows/
 │       └── build.yml          # GitHub Actions CI/CD (Linux .deb/.tar.gz, macOS Universal .app, Windows .zip)
 ├── assets/
-│   ├── icon.jpeg              # Application logo & source image for Windows/Linux/macOS icons
+│   ├── icon_256.jpg              # Application logo & source image for Windows/Linux/macOS icons
 │   └── icon.ico               # Windows application icon
 ├── docs/                      # Localized documentation & GitHub Pages (22 languages)
 │   └── screenshots/           # UI screenshots for all 22 supported languages
@@ -372,7 +372,7 @@ QuadFurn/
 │   ├── export.rs              # Multi-page localized vector PDF generator, CSV & cutting list exporters
 │   ├── ui_panels.rs           # Top transform bar, right Part Inspector, Specification, Cutting & Materials UI
 │   └── i18n.rs                # 22-language localization dictionaries & OS locale auto-detection
-├── build.rs                   # Converts assets/icon.jpeg into multi-size ICO & embeds PE resource on Windows
+├── build.rs                   # Converts assets/icon_256.jpg into multi-size ICO & embeds PE resource on Windows
 ├── Cargo.toml                 # Package manifest & dependencies
 └── LICENSE                    # MIT License
 ```

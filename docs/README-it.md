@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
+<img src="../assets/icon_256.jpg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
 # QuadFurn CAD
 
@@ -352,7 +352,7 @@ QuadFurn/
 │   └── workflows/
 │       └── build.yml          # Pipeline CI/CD GitHub Actions (Linux .deb/.tar.gz, macOS .app, Windows .zip)
 ├── assets/
-│   ├── icon.jpeg              # Logo dell'applicazione e icona sorgente ad alta risoluzione
+│   ├── icon_256.jpg              # Logo dell'applicazione e icona sorgente ad alta risoluzione
 │   └── screenshots/           # Schermate per la documentazione
 ├── docs/                      # Documentazione localizzata in 37 lingue
 ├── src/

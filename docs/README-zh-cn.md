@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
+<img src="../assets/icon_256.jpg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
 # QuadFurn CAD
 
@@ -352,7 +352,7 @@ QuadFurn/
 │   └── workflows/
 │       └── build.yml          # GitHub Actions 跨平台持续集成与发布（Linux .deb/.tar.gz, macOS .app, Windows .zip）
 ├── assets/
-│   ├── icon.jpeg              # 应用程序 Logo 及 Windows/Linux/macOS 原始图标资源
+│   ├── icon_256.jpg              # 应用程序 Logo 及 Windows/Linux/macOS 原始图标资源
 │   └── screenshots/           # 软件说明文档截图
 ├── docs/                      # 37 种语言的完整本地化文档
 ├── src/

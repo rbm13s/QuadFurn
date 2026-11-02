@@ -75,7 +75,7 @@ jobs:
           mkdir -p dist/QuadFurn-linux-x86_64
           cp target/release/quadfurn dist/QuadFurn-linux-x86_64/
           cp README.md dist/QuadFurn-linux-x86_64/
-          convert assets/icon.jpeg -resize 256x256 dist/QuadFurn-linux-x86_64/quadfurn.png
+          convert assets/icon_2048.jpg -resize 256x256 dist/QuadFurn-linux-x86_64/quadfurn.png
           tar -czvf QuadFurn-linux-x86_64.tar.gz -C dist QuadFurn-linux-x86_64
 
           # 2. Debian package: quadfurn_<version>_amd64.deb
@@ -87,7 +87,7 @@ jobs:
 
           cp target/release/quadfurn "${DEB_DIR}/usr/bin/quadfurn"
           chmod 755 "${DEB_DIR}/usr/bin/quadfurn"
-          convert assets/icon.jpeg -resize 256x256 "${DEB_DIR}/usr/share/icons/hicolor/256x256/apps/quadfurn.png"
+          convert assets/icon_2048.jpg -resize 256x256 "${DEB_DIR}/usr/share/icons/hicolor/256x256/apps/quadfurn.png"
 
           cat > "${DEB_DIR}/usr/share/applications/quadfurn.desktop" << 'EOF'
           [Desktop Entry]
@@ -167,19 +167,19 @@ jobs:
           cp target/universal-apple-darwin/release/quadfurn "${APP_DIR}/Contents/MacOS/quadfurn"
           chmod +x "${APP_DIR}/Contents/MacOS/quadfurn"
 
-          # Generate macOS .icns icon from assets/icon.jpeg
+          # Generate macOS .icns icon from assets/icon_2048.jpg
           ICONSET_DIR="AppIcon.iconset"
           mkdir -p "${ICONSET_DIR}"
-          sips -s format png -z 16 16     assets/icon.jpeg --out "${ICONSET_DIR}/icon_16x16.png"
-          sips -s format png -z 32 32     assets/icon.jpeg --out "${ICONSET_DIR}/icon_16x16@2x.png"
-          sips -s format png -z 32 32     assets/icon.jpeg --out "${ICONSET_DIR}/icon_32x32.png"
-          sips -s format png -z 64 64     assets/icon.jpeg --out "${ICONSET_DIR}/icon_32x32@2x.png"
-          sips -s format png -z 128 128   assets/icon.jpeg --out "${ICONSET_DIR}/icon_128x128.png"
-          sips -s format png -z 256 256   assets/icon.jpeg --out "${ICONSET_DIR}/icon_128x128@2x.png"
-          sips -s format png -z 256 256   assets/icon.jpeg --out "${ICONSET_DIR}/icon_256x256.png"
-          sips -s format png -z 512 512   assets/icon.jpeg --out "${ICONSET_DIR}/icon_256x256@2x.png"
-          sips -s format png -z 512 512   assets/icon.jpeg --out "${ICONSET_DIR}/icon_512x512.png"
-          sips -s format png -z 1024 1024 assets/icon.jpeg --out "${ICONSET_DIR}/icon_512x512@2x.png"
+          sips -s format png -z 16 16     assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_16x16.png"
+          sips -s format png -z 32 32     assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_16x16@2x.png"
+          sips -s format png -z 32 32     assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_32x32.png"
+          sips -s format png -z 64 64     assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_32x32@2x.png"
+          sips -s format png -z 128 128   assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_128x128.png"
+          sips -s format png -z 256 256   assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_128x128@2x.png"
+          sips -s format png -z 256 256   assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_256x256.png"
+          sips -s format png -z 512 512   assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_256x256@2x.png"
+          sips -s format png -z 512 512   assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_512x512.png"
+          sips -s format png -z 1024 1024 assets/icon_2048.jpg --out "${ICONSET_DIR}/icon_512x512@2x.png"
           iconutil -c icns "${ICONSET_DIR}" -o "${APP_DIR}/Contents/Resources/AppIcon.icns"
 
           cat > "${APP_DIR}/Contents/Info.plist" << EOF

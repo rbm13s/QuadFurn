@@ -23,7 +23,7 @@
 # Linux packaging artifacts
 /deb_pkg/
 
-# Generated Windows ICO (rebuilt automatically from assets/icon.jpeg by build.rs)
+# Generated Windows ICO (rebuilt automatically from assets/icon_2048.jpg by build.rs)
 /assets/icon.ico
 
 # Local fallback settings file (if run without APPDATA)

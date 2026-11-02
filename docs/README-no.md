@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="../assets/icon.jpeg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
+<img src="../assets/icon_256.jpg" alt="QuadFurn CAD Logo" width="128" height="128" style="border-radius: 18px;" />
 
 # QuadFurn CAD
 
@@ -352,7 +352,7 @@ QuadFurn/
 │   └── workflows/
 │       └── build.yml          # CI/CD-arbeidsflyter på GitHub Actions (Linux .deb/.tar.gz, macOS .app, Windows .zip)
 ├── assets/
-│   ├── icon.jpeg              # Programikon og kildebilde
+│   ├── icon_256.jpg              # Programikon og kildebilde
 │   └── screenshots/           # Skjermbilder til dokumentasjonen
 ├── docs/                      # Dokumentasjon oversatt til 37 språk
 ├── src/

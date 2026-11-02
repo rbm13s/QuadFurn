@@ -93,7 +93,7 @@ fn write_res_entry(
     }
 }
 
-/// Creates multi-size `.ico` file and binary resource file `.res` (16, 32, 48, 64, 128, 256 px) from `assets/icon.jpeg`
+/// Creates multi-size `.ico` file and binary resource file `.res` (16, 32, 48, 64, 128, 256 px) from `assets/icon_2048.jpg`
 fn build_multi_size_ico_and_res(
     jpeg_path: &Path,
     ico_path: &Path,
@@ -219,7 +219,7 @@ fn find_rc_exe() -> Option<PathBuf> {
 }
 
 fn main() {
-    println!("cargo:rerun-if-changed=assets/icon.jpeg");
+    println!("cargo:rerun-if-changed=assets/icon_2048.jpg");
     println!("cargo:rerun-if-changed=build.rs");
 
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap_or_default();
@@ -229,14 +229,21 @@ fn main() {
 
     let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
-    let jpeg_path = manifest_dir.join("assets").join("icon.jpeg");
+    let jpeg_path = {
+        let p2048 = manifest_dir.join("assets").join("icon_2048.jpg");
+        if p2048.exists() {
+            p2048
+        } else {
+            manifest_dir.join("assets").join("icon_256.jpg")
+        }
+    };
 
     let out_ico_path = out_dir.join("icon.ico");
     let assets_ico_path = manifest_dir.join("assets").join("icon.ico");
     let res_path = out_dir.join("app_icon.res");
 
     build_multi_size_ico_and_res(&jpeg_path, &out_ico_path, &res_path)
-        .expect("Failed to generate icon.ico and app_icon.res from assets/icon.jpeg");
+        .expect("Failed to generate icon.ico and app_icon.res from assets/icon_2048.jpg");
     let _ = fs::copy(&out_ico_path, &assets_ico_path);
 
     let rc_path = out_dir.join("app_icon.rc");
