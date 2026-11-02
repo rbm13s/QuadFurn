@@ -20,19 +20,16 @@ pub fn export_spec_to_csv_file_i18n(
     path: &Path,
     lang: AppLanguage,
 ) -> Result<(), String> {
-    let mut file = File::create(path).map_err(|e| {
-        format!("{}: {}", lang.tr("Ошибка создания файла", "Error creating file"), e)
-    })?;
+    let mut file = File::create(path)
+        .map_err(|e| format!("{}: {}", lang.t("Error creating file"), e))?;
 
     // UTF-8 BOM so Microsoft Excel correctly displays Unicode characters
-    file.write_all(&[0xEF, 0xBB, 0xBF]).map_err(|e| {
-        format!("{}: {}", lang.tr("Ошибка записи BOM", "Error writing BOM"), e)
-    })?;
+    file.write_all(&[0xEF, 0xBB, 0xBF])
+        .map_err(|e| format!("{}: {}", lang.t("Error writing BOM"), e))?;
 
     let content = generate_csv_string_i18n(project, lang);
-    file.write_all(content.as_bytes()).map_err(|e| {
-        format!("{}: {}", lang.tr("Ошибка записи CSV", "Error writing CSV"), e)
-    })?;
+    file.write_all(content.as_bytes())
+        .map_err(|e| format!("{}: {}", lang.t("Error writing CSV"), e))?;
 
     Ok(())
 }
@@ -48,27 +45,14 @@ pub fn generate_csv_string_i18n(project: &Project, lang: AppLanguage) -> String 
     let rows = build_specification(project);
     let mut out = String::new();
 
-    if lang == AppLanguage::Ru {
-        out.push_str("№;Группа;Наименование;Материал;Толщина (мм);Габарит Длина (мм);Габарит Ширина (мм);Пил Длина (мм);Пил Ширина (мм);Кол-во (шт);Текстура (Вращение);Кромка Д1;Кромка Д2;Кромка Ш1;Кромка Ш2\r\n");
-    } else if lang == AppLanguage::Uk {
-        out.push_str("№;Група;Найменування;Матеріал;Товщина (мм);Габарит Довжина (мм);Габарит Ширина (мм);Пил Довжина (мм);Пил Ширина (мм);Кіл-ть (шт);Текстура (Обертання);Крайка Д1;Крайка Д2;Крайка Ш1;Крайка Ш2\r\n");
-    } else {
-        out.push_str("#;Group;Name;Material;Thickness (mm);Full Length (mm);Full Width (mm);Cut Length (mm);Cut Width (mm);Qty (pcs);Grain (Rotation);Edge L1;Edge L2;Edge W1;Edge W2\r\n");
-    }
+    out.push_str(lang.t("export.csv_header"));
+    out.push_str("\r\n");
 
     for r in rows {
         let grain_str = if r.grain_fixed {
-            match lang {
-                AppLanguage::Ru => "Фикс. (По текстуре)",
-                AppLanguage::Uk => "Фікс. (За текстурою)",
-                _ => "Locked (With grain)",
-            }
+            lang.t("export.csv_grain_locked")
         } else {
-            match lang {
-                AppLanguage::Ru => "Свободно (Вращ. Да)",
-                AppLanguage::Uk => "Вільно (Оберт. Так)",
-                _ => "Free (Can rotate)",
-            }
+            lang.t("export.csv_grain_free")
         };
         let l1 = SpecRow::edge_label_i18n(r.edges.l1, &project.edge_bandings, lang);
         let l2 = SpecRow::edge_label_i18n(r.edges.l2, &project.edge_bandings, lang);
@@ -102,17 +86,8 @@ pub fn generate_csv_string_i18n(project: &Project, lang: AppLanguage) -> String 
 pub fn generate_cutting_clipboard_text_i18n(project: &Project, lang: AppLanguage) -> String {
     let rows = build_specification(project);
     let mut out = String::new();
-    match lang {
-        AppLanguage::Ru => {
-            out.push_str("# Материал\tПил Длина (мм)\tПил Ширина (мм)\tКол-во\tТекстура\tД1\tД2\tШ1\tШ2\tНаименование (Габарит)\r\n");
-        }
-        AppLanguage::Uk => {
-            out.push_str("# Матеріал\tПил Довжина (мм)\tПил Ширина (мм)\tКіл-ть\tТекстура\tД1\tД2\tШ1\tШ2\tНайменування (Габарит)\r\n");
-        }
-        _ => {
-            out.push_str("# Material\tCut Length (mm)\tCut Width (mm)\tQty\tGrain\tL1\tL2\tW1\tW2\tName (Bounds)\r\n");
-        }
-    }
+    out.push_str(lang.t("export.clipboard_header"));
+    out.push_str("\r\n");
     for r in rows {
         let tex = if r.grain_fixed { "1" } else { "0" };
         let l1 = SpecRow::edge_short_mm(r.edges.l1, &project.edge_bandings);
@@ -315,17 +290,7 @@ impl PdfTrueTypeFont {
             }
         }
 
-        Err(match lang {
-            AppLanguage::Ru => {
-                "Не удалось найти шрифт TrueType для экспорта в PDF".to_string()
-            }
-            AppLanguage::Uk => {
-                "Не вдалося знайти шрифт TrueType для експорту в PDF".to_string()
-            }
-            _ => {
-                "Failed to find a TrueType font for PDF export".to_string()
-            }
-        })
+        Err(lang.t("export.pdf_font_err").to_string())
     }
 
     fn load_for_lang(lang: AppLanguage, bold: bool) -> Result<Self, String> {
@@ -588,10 +553,10 @@ pub fn export_spec_to_pdf_file(
 ) -> Result<(), String> {
     let pdf_bytes = generate_spec_pdf_bytes(project, lang)?;
     let mut file = File::create(path).map_err(|e| {
-        format!("{}: {}", lang.tr("Ошибка создания PDF-файла", "Error creating PDF file"), e)
+        format!("{}: {}", lang.t("Error creating PDF file"), e)
     })?;
     file.write_all(&pdf_bytes).map_err(|e| {
-        format!("{}: {}", lang.tr("Ошибка записи PDF-файла", "Error writing PDF file"), e)
+        format!("{}: {}", lang.t("Error writing PDF file"), e)
     })?;
     Ok(())
 }

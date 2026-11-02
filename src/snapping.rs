@@ -19,17 +19,10 @@ impl OrthoAxis {
     }
 
     pub fn title_i18n(&self, lang: AppLanguage) -> &'static str {
-        let d = lang.dict();
-        match (self, lang) {
-            (OrthoAxis::TopXY, AppLanguage::Ru) => "Вид сверху (Top XY — План)",
-            (OrthoAxis::FrontXZ, AppLanguage::Ru) => "Вид спереди (Front XZ — Фасад)",
-            (OrthoAxis::SideYZ, AppLanguage::Ru) => "Вид сбоку (Side YZ — Разрез)",
-            (OrthoAxis::TopXY, AppLanguage::En) => "Top View (Top XY — Plan)",
-            (OrthoAxis::FrontXZ, AppLanguage::En) => "Front View (Front XZ — Elevation)",
-            (OrthoAxis::SideYZ, AppLanguage::En) => "Side View (Side YZ — Section)",
-            (OrthoAxis::TopXY, _) => d.pdf_view_top,
-            (OrthoAxis::FrontXZ, _) => d.pdf_view_front,
-            (OrthoAxis::SideYZ, _) => d.pdf_view_side,
+        match self {
+            OrthoAxis::TopXY => lang.t("ortho.top_xy"),
+            OrthoAxis::FrontXZ => lang.t("ortho.front_xz"),
+            OrthoAxis::SideYZ => lang.t("ortho.side_yz"),
         }
     }
 

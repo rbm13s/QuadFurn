@@ -965,23 +965,16 @@ impl QuadViewportController {
                 let grp_rect = Rect::from_min_max(p_min_scr, p_max_scr).expand(3.0);
                 let grp_col = Color32::from_rgb(90, 215, 255);
                 painter.rect_stroke(grp_rect, 2.0, Stroke::new(1.5, grp_col));
-                let badge_text = match self.lang {
-                    crate::i18n::AppLanguage::Ru => format!(
-                        "Группа ({} шт.): {:.0}×{:.0} мм",
-                        self.selected_parts.len(),
-                        max_uv.x - min_uv.x,
-                        max_uv.y - min_uv.y
-                    ),
-                    _ => format!(
-                        "{} ({} {}): {:.0}×{:.0} {}",
-                        self.lang.dict().pdf_col_group,
-                        self.selected_parts.len(),
-                        self.lang.dict().unit_pcs,
-                        max_uv.x - min_uv.x,
-                        max_uv.y - min_uv.y,
-                        self.lang.dict().unit_mm
-                    ),
-                };
+                let badge_text = self.lang.tf(
+                    "fmt.viewport_group_badge",
+                    &[
+                        &self.selected_parts.len(),
+                        &self.lang.dict().unit_pcs,
+                        &format!("{:.0}", max_uv.x - min_uv.x),
+                        &format!("{:.0}", max_uv.y - min_uv.y),
+                        &self.lang.dict().unit_mm,
+                    ],
+                );
                 painter.text(
                     Pos2::new(grp_rect.center().x, grp_rect.top() - 8.0),
                     egui::Align2::CENTER_BOTTOM,
@@ -1519,25 +1512,14 @@ impl QuadViewportController {
                         Color32::from_rgba_unmultiplied(80, 240, 140, 45),
                     );
                     painter.rect_stroke(preview_rect, 0.0, Stroke::new(1.8, col));
-                    let preview_msg = match self.lang {
-                        crate::i18n::AppLanguage::Ru => format!(
-                            "Новая деталь: {:.0} × {:.0} мм\n(Tab — сменить тип)",
-                            max_uv.x - min_uv.x,
-                            max_uv.y - min_uv.y
-                        ),
-                        crate::i18n::AppLanguage::Uk => format!(
-                            "Нова деталь: {:.0} × {:.0} мм\n(Tab — змінити тип)",
-                            max_uv.x - min_uv.x,
-                            max_uv.y - min_uv.y
-                        ),
-                        _ => format!(
-                            "{}: {:.0} × {:.0} {}\n(Tab — switch type)",
-                            self.lang.tr("Новая деталь", "New part"),
-                            max_uv.x - min_uv.x,
-                            max_uv.y - min_uv.y,
-                            self.lang.dict().unit_mm
-                        ),
-                    };
+                    let preview_msg = self.lang.tf(
+                        "fmt.viewport_new_part_preview",
+                        &[
+                            &format!("{:.0}", max_uv.x - min_uv.x),
+                            &format!("{:.0}", max_uv.y - min_uv.y),
+                            &self.lang.dict().unit_mm,
+                        ],
+                    );
                     painter.text(
                         preview_rect.center(),
                         egui::Align2::CENTER_CENTER,
@@ -1802,11 +1784,10 @@ impl QuadViewportController {
                 );
                 painter.rect_stroke(box_rect, 0.0, Stroke::new(1.5, col));
                 if box_rect.width() > 40.0 && box_rect.height() > 18.0 {
-                    let count_msg = match self.lang {
-                        crate::i18n::AppLanguage::Ru => format!("Выделено: {} шт.", self.selected_parts.len()),
-                        crate::i18n::AppLanguage::Uk => format!("Виділено: {} шт.", self.selected_parts.len()),
-                        _ => format!("Selected: {} {}", self.selected_parts.len(), self.lang.dict().unit_pcs),
-                    };
+                    let count_msg = self.lang.tf(
+                        "fmt.viewport_selected_count",
+                        &[&self.selected_parts.len(), &self.lang.dict().unit_pcs],
+                    );
                     painter.text(
                         box_rect.center(),
                         egui::Align2::CENTER_CENTER,
@@ -2091,7 +2072,7 @@ impl QuadViewportController {
                         let delta_3d = cur_pos - orig_pos;
                         if delta_3d.length() >= 1.0 {
                             let mut new_clones = Vec::new();
-                            let copy_word = self.lang.tr("копия", "copy");
+                            let copy_word = self.lang.t("copy");
                             for &(pid, orig_pos) in &drag.group_orig_positions {
                                 if let Some(idx) = project.parts.iter().position(|p| p.id == pid) {
                                     let orig_name = project.parts[idx].name.clone();
@@ -2578,9 +2559,9 @@ impl QuadViewportController {
             btn_rect.center(),
             egui::Align2::CENTER_CENTER,
             if is_max {
-                self.lang.tr("[4 окна]", "[4 Views]")
+                self.lang.t("[4 Views]")
             } else {
-                self.lang.tr("[На весь]", "[Maximize]")
+                self.lang.t("[Maximize]")
             },
             FontId::proportional(11.0),
             Color32::WHITE,
@@ -3352,17 +3333,11 @@ impl QuadViewportController {
         );
         let mode_text = if self.cam_3d.noclip_active {
             self.lang
-                .tr(
-                    "3D ВИД [Z: ПОЛЕТ ВКЛ — WASD + Мышь | ЛКМ — Выбор по прицелу | Z/Esc — Выход]",
-                    "3D VIEW [Z: FLY ON — WASD + Mouse | LMB — Pick at Crosshair | Z/Esc — Exit]",
-                )
+                .t("3D VIEW [Z: FLY ON — WASD + Mouse | LMB — Pick at Crosshair | Z/Esc — Exit]")
                 .to_string()
         } else {
             self.lang
-                .tr(
-                    "3D ВИД [ЛКМ — Выбор | ПКМ/СКМ — Вращать | Нажмите Z над окном для полета]",
-                    "3D VIEW [LMB — Select | RMB/MMB — Orbit | Press Z over pane for Fly mode]",
-                )
+                .t("3D VIEW [LMB — Select | RMB/MMB — Orbit | Press Z over pane for Fly mode]")
                 .to_string()
         };
         painter.text(
@@ -3397,9 +3372,9 @@ impl QuadViewportController {
             btn_rect.center(),
             egui::Align2::CENTER_CENTER,
             if is_max {
-                self.lang.tr("[4 окна]", "[4 Views]")
+                self.lang.t("[4 Views]")
             } else {
-                self.lang.tr("[На весь]", "[Maximize]")
+                self.lang.t("[Maximize]")
             },
             FontId::proportional(11.0),
             Color32::WHITE,
@@ -3475,9 +3450,9 @@ impl QuadViewportController {
             );
         }
         let label_text = if self.cam_3d.z_order {
-            "Enhanced"
+            self.lang.t("viewport.render_enhanced")
         } else {
-            "Normal"
+            self.lang.t("viewport.render_normal")
         };
         painter.text(
             Pos2::new(box_rect.right() + 6.0, zorder_rect.center().y),
@@ -3490,8 +3465,7 @@ impl QuadViewportController {
                 Color32::from_gray(210)
             },
         );
-        z_resp.on_hover_text(self.lang.tr(
-            "Режим отображения:\n• Enhanced (Улучшенный): фотореалистичные текстуры с перспективной коррекцией и сглаживанием.\n• Normal (Обычный): быстрые чистые заливки без текстур для слабых видеокарт и максимального FPS.",
+        z_resp.on_hover_text(self.lang.t(
             "Display mode:\n• Enhanced: photorealistic textures with perspective correction and anti-aliasing.\n• Normal: fast flat solid shading without textures for weak GPUs and maximum FPS.",
         ));
     }

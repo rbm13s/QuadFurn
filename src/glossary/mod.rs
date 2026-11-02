@@ -7,8 +7,8 @@ pub mod formatters;
 pub mod slavic;
 pub mod west_eu;
 
-pub use defaults::default_project_l10n;
-pub use formatters::*;
+pub use self::defaults::default_project_l10n;
+pub use self::formatters::*;
 
 use crate::i18n::AppLanguage;
 
