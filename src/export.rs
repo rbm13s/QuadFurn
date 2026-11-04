@@ -278,7 +278,7 @@ impl PdfTrueTypeFont {
             .or_else(|| def.font_data.get("Ubuntu-Light"))
             .or_else(|| def.font_data.get("Hack"))
         {
-            let bytes = font_data.font.to_vec();
+            let bytes = (*font_data.font).as_ref().to_vec();
             if let Ok(font) = FontArc::try_from_vec(bytes.clone()) {
                 let upm = font.units_per_em().unwrap_or(2048.0).max(1.0);
                 return Ok(Self {

@@ -1128,7 +1128,12 @@ pub fn handle_batch_screenshot_step(app: &mut QuadFurnApp, ctx: &egui::Context) 
         ctx.request_repaint();
     } else if app.batch_frame_delay == 5 {
         app.batch_frame_delay += 1;
-        ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
+        let holder = app.pending_screenshot.clone();
+        ctx.request_screenshot(move |img| {
+            if let Ok(mut lock) = holder.lock() {
+                *lock = Some(img);
+            }
+        });
         ctx.request_repaint();
     } else {
         ctx.request_repaint();

@@ -384,7 +384,7 @@ pub fn ui_left_tools_dock(
                 } else {
                     Color32::from_black_alpha(15)
                 };
-                painter.rect_filled(rect, egui::Rounding::same(4.0), hover_bg);
+                painter.rect_filled(rect, egui::CornerRadius::same(4), hover_bg);
             }
             let toggle_col = if resp.hovered() {
                 if is_dark {
@@ -444,7 +444,7 @@ pub fn ui_left_tools_dock(
                     EguiVec2::new(btn_w, btn_h),
                     if enabled { Sense::click() } else { Sense::hover() },
                 );
-                let rounding = egui::Rounding::same(6.0);
+                let rounding = egui::CornerRadius::same(6);
                 let painter = ui.painter();
 
                 if selected {
@@ -472,7 +472,7 @@ pub fn ui_left_tools_dock(
                             Stroke::new(1.0, Color32::from_black_alpha(40))
                         };
                         painter.rect_filled(rect, rounding, hover_bg);
-                        painter.rect_stroke(rect, rounding, hover_stroke);
+                        painter.rect_stroke(rect, rounding, hover_stroke, egui::StrokeKind::Inside);
                     }
                 }
 
@@ -2114,7 +2114,7 @@ fn draw_interactive_edge_diagram(
     painter.rect_filled(rect, 4.0, Color32::from_rgb(24, 28, 34));
     let inner = rect.shrink2(EguiVec2::new(38.0, 22.0));
     painter.rect_filled(inner, 0.0, Color32::from_rgb(45, 52, 62));
-    painter.rect_stroke(inner, 0.0, Stroke::new(1.0, Color32::from_gray(110)));
+    painter.rect_stroke(inner, 0, Stroke::new(1.0, Color32::from_gray(110)), egui::StrokeKind::Inside);
 
     let part = &project.parts[part_idx];
     let (cut_l, cut_w) = part.cut_dimensions_mm(&project.edge_bandings);
@@ -2492,7 +2492,7 @@ pub fn ui_materials_manager_tab(
             .collapsible(false)
             .resizable(false)
             .pivot(egui::Align2::CENTER_CENTER)
-            .default_pos(ui.ctx().screen_rect().center())
+            .default_pos(ui.ctx().viewport_rect().center())
             .show(ui.ctx(), |ui| {
                 ui.set_width(380.0);
                 ui.vertical_centered(|ui| {
@@ -2643,7 +2643,7 @@ pub fn ui_materials_manager_tab(
             .collapsible(false)
             .resizable(false)
             .pivot(egui::Align2::CENTER_CENTER)
-            .default_pos(ui.ctx().screen_rect().center())
+            .default_pos(ui.ctx().viewport_rect().center())
             .show(ui.ctx(), |ui| {
                 ui.set_width(380.0);
                 ui.vertical_centered(|ui| {
@@ -3030,7 +3030,7 @@ pub fn ui_specification_tab(
 
 /// "Cutting Layout" tab (Variant A: dedicated Left Sidebar replacing Tools dock, Right Parts table, Central full-size diagram)
 pub fn ui_cutting_layout_tab(
-    ctx: &egui::Context,
+    ui: &mut egui::Ui,
     project: &mut Project,
     selected_sheet_idx: &mut usize,
     hovered_part: &mut Option<PartId>,
@@ -3042,13 +3042,13 @@ pub fn ui_cutting_layout_tab(
     let d = lang.dict();
 
     // 1. LEFT SIDEBAR: Cutting Sheets Navigator (grouped by material)
-    let is_dark = ctx.style().visuals.dark_mode;
+    let is_dark = ui.ctx().global_style().visuals.dark_mode;
 
-    egui::SidePanel::left("cutting_sheets_sidebar")
-        .default_width(240.0)
-        .width_range(180.0..=450.0)
+    egui::Panel::left("cutting_sheets_sidebar")
+        .default_size(240.0)
+        .size_range(180.0..=450.0)
         .resizable(true)
-        .show(ctx, |ui| {
+        .show(ui, |ui| {
             ui.add_space(4.0);
             ui.horizontal(|ui| {
                 ui.heading(lang.t("Cutting sheets list"));
@@ -3111,7 +3111,7 @@ pub fn ui_cutting_layout_tab(
                                 2.0,
                                 Color32::from_rgb(mat.color_rgb[0], mat.color_rgb[1], mat.color_rgb[2]),
                             );
-                            ui.painter().rect_stroke(swatch, 2.0, Stroke::new(1.0, Color32::from_gray(100)));
+                            ui.painter().rect_stroke(swatch, 2, Stroke::new(1.0, Color32::from_gray(100)), egui::StrokeKind::Inside);
                             ui.label(RichText::new(&mat.name).strong());
                         });
 
@@ -3185,11 +3185,11 @@ pub fn ui_cutting_layout_tab(
         });
 
     // 2. RIGHT PANEL: Parts table on active sheet & remnants
-    egui::SidePanel::right("cutting_parts_panel")
-        .default_width(290.0)
-        .width_range(220.0..=550.0)
+    egui::Panel::right("cutting_parts_panel")
+        .default_size(290.0)
+        .size_range(220.0..=550.0)
         .resizable(true)
-        .show(ctx, |ui| {
+        .show(ui, |ui| {
             if report.sheets.is_empty() {
                 return;
             }
@@ -3308,7 +3308,7 @@ pub fn ui_cutting_layout_tab(
         });
 
     // 3. CENTRAL PANEL: Toolbar, Summary Chips, Diagram
-    egui::CentralPanel::default().show(ctx, |ui| {
+    egui::CentralPanel::default().show(ui, |ui| {
         let mm_suffix = lang.t(" mm");
 
         // Top Toolbar: Row 1 (Parameters: Kerf & Trim Margins)
@@ -3436,7 +3436,7 @@ pub fn ui_cutting_layout_tab(
             ui.separator();
             if ui.button(lang.t("📋 Copy Cutting List")).clicked() {
                 let txt = crate::export::generate_cutting_clipboard_text_i18n(project, lang);
-                ui.output_mut(|o| o.copied_text = txt);
+                ui.ctx().copy_text(txt);
                 *status_msg = lang
                     .t("Parts cutting list (saw dimensions & edges) copied to clipboard!")
                     .to_string();
@@ -3550,8 +3550,9 @@ fn draw_cutting_sheet_diagram(
     if !is_dark {
         painter.rect_stroke(
             canvas_rect,
-            4.0,
+            4,
             Stroke::new(1.0, Color32::from_rgb(215, 220, 228)),
+            egui::StrokeKind::Inside,
         );
     }
 
@@ -3581,7 +3582,7 @@ fn draw_cutting_sheet_diagram(
         Stroke::new(2.0, Color32::from_rgb(85, 90, 100))
     };
     painter.rect_filled(sheet_rect, 0.0, margin_bg);
-    painter.rect_stroke(sheet_rect, 0.0, margin_stroke);
+    painter.rect_stroke(sheet_rect, 0, margin_stroke, egui::StrokeKind::Inside);
 
     // Caption for sheet dimensions and grain direction
     let top_caption = lang.tf(
@@ -3627,7 +3628,7 @@ fn draw_cutting_sheet_diagram(
             EguiVec2::new(rem.w_mm * scale, rem.h_mm * scale),
         );
         painter.rect_filled(r_rect, 0.0, rem_bg);
-        painter.rect_stroke(r_rect, 0.0, Stroke::new(1.0, rem_stroke_color));
+        painter.rect_stroke(r_rect, 0, Stroke::new(1.0, rem_stroke_color), egui::StrokeKind::Inside);
         if r_rect.width() > 45.0 && r_rect.height() > 22.0 {
             let rem_word = lang.t("Offcut");
             painter.text(
@@ -3696,9 +3697,9 @@ fn draw_cutting_sheet_diagram(
         }
 
         if is_hovered {
-            painter.rect_stroke(p_rect, 0.0, Stroke::new(2.5, hover_stroke_color));
+            painter.rect_stroke(p_rect, 0, Stroke::new(2.5, hover_stroke_color), egui::StrokeKind::Inside);
         } else {
-            painter.rect_stroke(p_rect, 0.0, Stroke::new(1.2, normal_stroke_color));
+            painter.rect_stroke(p_rect, 0, Stroke::new(1.2, normal_stroke_color), egui::StrokeKind::Inside);
         }
 
         // Render edge banding markers inside part on cutting layout

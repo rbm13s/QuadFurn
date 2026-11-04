@@ -585,7 +585,7 @@ impl QuadViewportController {
         selected_part: Option<PartId>,
         on_before_mutate: &mut impl FnMut(&Project),
     ) {
-        if ui.ctx().wants_keyboard_input() {
+        if ui.ctx().egui_wants_keyboard_input() {
             return;
         }
         if self.cam_3d.noclip_active {
@@ -668,7 +668,7 @@ impl QuadViewportController {
         }
 
         // Check Tab shortcut to cycle orientation of newly created part
-        if ui.input(|i| i.key_pressed(Key::Tab)) && !ui.ctx().wants_keyboard_input() {
+        if ui.input(|i| i.key_pressed(Key::Tab)) && !ui.ctx().egui_wants_keyboard_input() {
             self.create_orientation_override = Some(match self.create_orientation_override {
                 None | Some(PartOrientation::HorizontalXY) => PartOrientation::VerticalYZ,
                 Some(PartOrientation::VerticalYZ) => PartOrientation::FrontalXZ,
@@ -843,7 +843,7 @@ impl QuadViewportController {
                     Pos2::new(avail.right(), mid_y + 4.0),
                 );
 
-                let v_resp = ui.interact(v_split_rect, ui.id().with("quad_v_split"), Sense::drag());
+                let v_resp = ui.interact(v_split_rect, ui.scope_id().with("quad_v_split"), Sense::drag());
                 if v_resp.hovered() || v_resp.dragged() {
                     ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeHorizontal);
                 }
@@ -852,7 +852,7 @@ impl QuadViewportController {
                         .clamp(0.2, 0.8);
                 }
 
-                let h_resp = ui.interact(h_split_rect, ui.id().with("quad_h_split"), Sense::drag());
+                let h_resp = ui.interact(h_split_rect, ui.scope_id().with("quad_h_split"), Sense::drag());
                 if h_resp.hovered() || h_resp.dragged() {
                     ui.ctx().set_cursor_icon(egui::CursorIcon::ResizeVertical);
                 }
@@ -910,7 +910,7 @@ impl QuadViewportController {
         );
         let corner_rect = Rect::from_min_max(canvas_rect.max, rect.max);
 
-        let id = ui.id().with(("ortho_pane", vp.axis as u8));
+        let id = ui.scope_id().with(("ortho_pane", vp.axis as u8));
         let resp = ui.interact(canvas_rect, id, Sense::click_and_drag());
         if resp.hovered() || resp.clicked() || resp.dragged() {
             self.last_active_ortho = vp.axis;
@@ -964,7 +964,7 @@ impl QuadViewportController {
                 let p_max_scr = vp.world_to_screen(canvas_rect, Vec2::new(max_uv.x, min_uv.y));
                 let grp_rect = Rect::from_min_max(p_min_scr, p_max_scr).expand(3.0);
                 let grp_col = Color32::from_rgb(90, 215, 255);
-                painter.rect_stroke(grp_rect, 2.0, Stroke::new(1.5, grp_col));
+                painter.rect_stroke(grp_rect, 2, Stroke::new(1.5, grp_col), egui::StrokeKind::Inside);
                 let badge_text = self.lang.tf(
                     "fmt.viewport_group_badge",
                     &[
@@ -1031,7 +1031,7 @@ impl QuadViewportController {
             project,
         );
         ui.painter_at(rect)
-            .rect_stroke(rect, 0.0, Stroke::new(1.0, Color32::from_gray(55)));
+            .rect_stroke(rect, 0, Stroke::new(1.0, Color32::from_gray(55)), egui::StrokeKind::Inside);
     }
 
     fn draw_ortho_grid(&self, painter: &Painter, rect: Rect, vp: &OrthoViewportState) {
@@ -1168,8 +1168,9 @@ impl QuadViewportController {
         };
         painter.rect_stroke(
             stroke_rect,
-            0.0,
+            0,
             Stroke::new(stroke_w, stroke_color),
+            egui::StrokeKind::Inside,
         );
 
         // Display edge banding on part faces in 2D projections
@@ -1318,7 +1319,7 @@ impl QuadViewportController {
         for (hp, _handle) in get_allowed_handles_2d(r, mode) {
             let hrect = Rect::from_center_size(hp, EguiVec2::splat(7.0));
             painter.rect_filled(hrect, 1.0, Color32::WHITE);
-            painter.rect_stroke(hrect, 1.0, Stroke::new(1.2, Color32::from_rgb(20, 20, 20)));
+            painter.rect_stroke(hrect, 1, Stroke::new(1.2, Color32::from_rgb(20, 20, 20)), egui::StrokeKind::Inside);
         }
     }
 
@@ -1344,7 +1345,7 @@ impl QuadViewportController {
         let text = format!("{:.0} {}", distance_mm, self.lang.dict().unit_mm);
         let bg_rect = Rect::from_center_size(mid, EguiVec2::new(48.0, 16.0));
         painter.rect_filled(bg_rect, 3.0, Color32::from_rgba_unmultiplied(10, 25, 35, 220));
-        painter.rect_stroke(bg_rect, 3.0, Stroke::new(1.0, color));
+        painter.rect_stroke(bg_rect, 3, Stroke::new(1.0, color), egui::StrokeKind::Inside);
         painter.text(
             mid,
             egui::Align2::CENTER_CENTER,
@@ -1511,7 +1512,7 @@ impl QuadViewportController {
                         0.0,
                         Color32::from_rgba_unmultiplied(80, 240, 140, 45),
                     );
-                    painter.rect_stroke(preview_rect, 0.0, Stroke::new(1.8, col));
+                    painter.rect_stroke(preview_rect, 0, Stroke::new(1.8, col), egui::StrokeKind::Inside);
                     let preview_msg = self.lang.tf(
                         "fmt.viewport_new_part_preview",
                         &[
@@ -1782,7 +1783,7 @@ impl QuadViewportController {
                     0.0,
                     Color32::from_rgba_unmultiplied(70, 175, 255, 38),
                 );
-                painter.rect_stroke(box_rect, 0.0, Stroke::new(1.5, col));
+                painter.rect_stroke(box_rect, 0, Stroke::new(1.5, col), egui::StrokeKind::Inside);
                 if box_rect.width() > 40.0 && box_rect.height() > 18.0 {
                     let count_msg = self.lang.tf(
                         "fmt.viewport_selected_count",
@@ -2033,7 +2034,7 @@ impl QuadViewportController {
                                 let s2 = vp.world_to_screen(rect, Vec2::new(omax_uv.x, omin_uv.y));
                                 let o_rect = Rect::from_min_max(s1, s2);
                                 painter.rect_filled(o_rect, 0.0, Color32::from_rgba_unmultiplied(80, 180, 255, 30));
-                                painter.rect_stroke(o_rect, 0.0, Stroke::new(1.2, Color32::from_rgba_unmultiplied(90, 200, 255, 180)));
+                                painter.rect_stroke(o_rect, 0, Stroke::new(1.2, Color32::from_rgba_unmultiplied(90, 200, 255, 180)), egui::StrokeKind::Inside);
                             }
                         }
                     }
@@ -2162,17 +2163,17 @@ impl QuadViewportController {
             Pos2::new(right_btn.left(), horiz_rect.bottom()),
         );
 
-        let l_resp = ui.interact(left_btn, ui.id().with(("sb_hl", vp.axis as u8)), Sense::click());
+        let l_resp = ui.interact(left_btn, ui.scope_id().with(("sb_hl", vp.axis as u8)), Sense::click());
         h_painter.rect_filled(left_btn, 0.0, if l_resp.hovered() { btn_hover_bg } else { btn_bg });
-        h_painter.rect_stroke(left_btn, 0.0, border_stroke);
+        h_painter.rect_stroke(left_btn, 0, border_stroke, egui::StrokeKind::Inside);
         h_painter.text(left_btn.center(), egui::Align2::CENTER_CENTER, "◄", FontId::proportional(9.0), Color32::LIGHT_GRAY);
         if l_resp.clicked() {
             vp.pan_uv_mm.x -= vis_w_mm * 0.18;
         }
 
-        let r_resp = ui.interact(right_btn, ui.id().with(("sb_hr", vp.axis as u8)), Sense::click());
+        let r_resp = ui.interact(right_btn, ui.scope_id().with(("sb_hr", vp.axis as u8)), Sense::click());
         h_painter.rect_filled(right_btn, 0.0, if r_resp.hovered() { btn_hover_bg } else { btn_bg });
-        h_painter.rect_stroke(right_btn, 0.0, border_stroke);
+        h_painter.rect_stroke(right_btn, 0, border_stroke, egui::StrokeKind::Inside);
         h_painter.text(right_btn.center(), egui::Align2::CENTER_CENTER, "►", FontId::proportional(9.0), Color32::LIGHT_GRAY);
         if r_resp.clicked() {
             vp.pan_uv_mm.x += vis_w_mm * 0.18;
@@ -2191,7 +2192,7 @@ impl QuadViewportController {
 
             let ht_resp = ui.interact(
                 h_track,
-                ui.id().with(("sb_htrack", vp.axis as u8)),
+                ui.scope_id().with(("sb_htrack", vp.axis as u8)),
                 Sense::click_and_drag(),
             );
             let thumb_active = ht_resp.hovered() || ht_resp.dragged();
@@ -2200,7 +2201,7 @@ impl QuadViewportController {
                 2.0,
                 if thumb_active { thumb_hover_bg } else { thumb_bg },
             );
-            h_painter.rect_stroke(h_thumb, 2.0, Stroke::new(1.0, Color32::from_gray(135)));
+            h_painter.rect_stroke(h_thumb, 2, Stroke::new(1.0, Color32::from_gray(135)), egui::StrokeKind::Inside);
 
             // 3 grip marks in the middle of the slider (|||)
             let cx = h_thumb.center().x;
@@ -2243,17 +2244,17 @@ impl QuadViewportController {
             Pos2::new(vert_rect.right(), bot_btn.top()),
         );
 
-        let t_resp = ui.interact(top_btn, ui.id().with(("sb_vt", vp.axis as u8)), Sense::click());
+        let t_resp = ui.interact(top_btn, ui.scope_id().with(("sb_vt", vp.axis as u8)), Sense::click());
         v_painter.rect_filled(top_btn, 0.0, if t_resp.hovered() { btn_hover_bg } else { btn_bg });
-        v_painter.rect_stroke(top_btn, 0.0, border_stroke);
+        v_painter.rect_stroke(top_btn, 0, border_stroke, egui::StrokeKind::Inside);
         v_painter.text(top_btn.center(), egui::Align2::CENTER_CENTER, "▲", FontId::proportional(9.0), Color32::LIGHT_GRAY);
         if t_resp.clicked() {
             vp.pan_uv_mm.y += vis_h_mm * 0.18;
         }
 
-        let b_resp = ui.interact(bot_btn, ui.id().with(("sb_vb", vp.axis as u8)), Sense::click());
+        let b_resp = ui.interact(bot_btn, ui.scope_id().with(("sb_vb", vp.axis as u8)), Sense::click());
         v_painter.rect_filled(bot_btn, 0.0, if b_resp.hovered() { btn_hover_bg } else { btn_bg });
-        v_painter.rect_stroke(bot_btn, 0.0, border_stroke);
+        v_painter.rect_stroke(bot_btn, 0, border_stroke, egui::StrokeKind::Inside);
         v_painter.text(bot_btn.center(), egui::Align2::CENTER_CENTER, "▼", FontId::proportional(9.0), Color32::LIGHT_GRAY);
         if b_resp.clicked() {
             vp.pan_uv_mm.y -= vis_h_mm * 0.18;
@@ -2273,7 +2274,7 @@ impl QuadViewportController {
 
             let vt_resp = ui.interact(
                 v_track,
-                ui.id().with(("sb_vtrack", vp.axis as u8)),
+                ui.scope_id().with(("sb_vtrack", vp.axis as u8)),
                 Sense::click_and_drag(),
             );
             let thumb_active = vt_resp.hovered() || vt_resp.dragged();
@@ -2282,7 +2283,7 @@ impl QuadViewportController {
                 2.0,
                 if thumb_active { thumb_hover_bg } else { thumb_bg },
             );
-            v_painter.rect_stroke(v_thumb, 2.0, Stroke::new(1.0, Color32::from_gray(135)));
+            v_painter.rect_stroke(v_thumb, 2, Stroke::new(1.0, Color32::from_gray(135)), egui::StrokeKind::Inside);
 
             // 3 horizontal grip marks in the middle of the slider (≡)
             let cy = v_thumb.center().y;
@@ -2543,7 +2544,7 @@ impl QuadViewportController {
         let is_max = self.maximized == target_pane;
         let btn_resp = ui.interact(
             btn_rect,
-            ui.id().with(("max_btn", vp.axis as u8)),
+            ui.scope_id().with(("max_btn", vp.axis as u8)),
             Sense::click(),
         );
         painter.rect_filled(
@@ -2586,7 +2587,7 @@ impl QuadViewportController {
     ) {
         self.last_pane_sizes[3] = rect.size();
 
-        let id = ui.id().with("pane_3d_view");
+        let id = ui.scope_id().with("pane_3d_view");
         let resp = ui.interact(rect, id, Sense::click_and_drag());
         let painter = ui.painter().with_clip_rect(rect);
 
@@ -2594,7 +2595,7 @@ impl QuadViewportController {
         painter.rect_filled(rect, 0.0, Color32::from_rgb(22, 26, 32));
 
         // Toggle first-person Noclip on unmodified `Z` key (WITHOUT Ctrl/Alt) only when cursor is over the 3D window!
-        let text_input_busy = ui.ctx().wants_keyboard_input();
+        let text_input_busy = ui.ctx().egui_wants_keyboard_input();
         let pointer_in_3d = ui
             .input(|i| i.pointer.hover_pos())
             .map(|p| rect.contains(p))
@@ -3320,7 +3321,7 @@ impl QuadViewportController {
         } else {
             Color32::from_gray(55)
         };
-        painter.rect_stroke(rect, 0.0, Stroke::new(if self.cam_3d.noclip_active { 2.0 } else { 1.0 }, border_col));
+        painter.rect_stroke(rect, 0, Stroke::new(if self.cam_3d.noclip_active { 2.0 } else { 1.0 }, border_col), egui::StrokeKind::Inside);
 
         let header_rect = Rect::from_min_size(
             rect.min + EguiVec2::new(6.0, 6.0),
@@ -3358,7 +3359,7 @@ impl QuadViewportController {
             EguiVec2::new(72.0, 22.0),
         );
         let is_max = self.maximized == MaximizedPane::Perspective3D;
-        let btn_resp = ui.interact(btn_rect, ui.id().with("max_btn_3d"), Sense::click());
+        let btn_resp = ui.interact(btn_rect, ui.scope_id().with("max_btn_3d"), Sense::click());
         painter.rect_filled(
             btn_rect,
             4.0,
@@ -3392,7 +3393,7 @@ impl QuadViewportController {
             Pos2::new(rect.right() - 92.0, rect.bottom() - 28.0),
             EguiVec2::new(86.0, 22.0),
         );
-        let z_resp = ui.interact(zorder_rect, ui.id().with("hq_render_toggle_3d"), Sense::click());
+        let z_resp = ui.interact(zorder_rect, ui.scope_id().with("hq_render_toggle_3d"), Sense::click());
         if z_resp.clicked() {
             self.cam_3d.z_order = !self.cam_3d.z_order;
         }
@@ -3408,7 +3409,7 @@ impl QuadViewportController {
         );
         painter.rect_stroke(
             zorder_rect,
-            4.0,
+            4,
             Stroke::new(
                 1.0,
                 if self.cam_3d.z_order {
@@ -3417,6 +3418,7 @@ impl QuadViewportController {
                     Color32::from_gray(70)
                 },
             ),
+            egui::StrokeKind::Inside,
         );
         let box_size = 12.0;
         let box_rect = Rect::from_min_size(
@@ -3432,7 +3434,7 @@ impl QuadViewportController {
                 Color32::from_gray(40)
             },
         );
-        painter.rect_stroke(box_rect, 2.0, Stroke::new(1.0, Color32::from_gray(120)));
+        painter.rect_stroke(box_rect, 2, Stroke::new(1.0, Color32::from_gray(120)), egui::StrokeKind::Inside);
         if self.cam_3d.z_order {
             painter.line_segment(
                 [
@@ -3667,7 +3669,7 @@ impl QuadViewportController {
         }
 
         if !mesh.is_empty() {
-            painter.add(Shape::Mesh(mesh));
+            painter.add(Shape::mesh(mesh));
         }
     }
 
@@ -3841,7 +3843,7 @@ fn draw_solid_polygon(painter: &Painter, pts: &[Pos2], color: Color32) {
     for i in 1..(pts.len() - 1) {
         mesh.add_triangle(0, i as u32, (i + 1) as u32);
     }
-    painter.add(Shape::Mesh(mesh));
+    painter.add(Shape::mesh(mesh));
 }
 
 /// Checks if point `pt` is inside a 2D convex polygon

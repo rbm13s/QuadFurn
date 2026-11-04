@@ -415,6 +415,7 @@ pub struct QuadFurnApp {
     #[cfg(not(target_arch = "wasm32"))]
     pub update_receiver: Option<std::sync::mpsc::Receiver<String>>,
     pub available_update: Option<String>,
+    pub pending_screenshot: std::sync::Arc<std::sync::Mutex<Option<std::sync::Arc<egui::ColorImage>>>>,
 }
 
 impl Default for QuadFurnApp {
@@ -457,6 +458,7 @@ impl Default for QuadFurnApp {
             #[cfg(not(target_arch = "wasm32"))]
             update_receiver: update_checker::start_background_check(),
             available_update: None,
+            pending_screenshot: std::sync::Arc::new(std::sync::Mutex::new(None)),
         }
     }
 }
@@ -588,15 +590,15 @@ impl QuadFurnApp {
                     ui.add_space(top_pad);
 
                     egui::Frame::group(ui.style())
-                        .inner_margin(egui::Margin::symmetric(36.0, 26.0))
-                        .rounding(8.0)
+                        .inner_margin(egui::Margin::symmetric(36, 26))
+                        .corner_radius(8)
                         .show(ui, |ui| {
                             ui.set_max_width(560.0);
                             ui.vertical_centered(|ui| {
                                 if let Some(tex) = &self.app_icon_tex {
                                     ui.add(
                                         egui::Image::new((tex.id(), egui::vec2(72.0, 72.0)))
-                                            .rounding(10.0),
+                                            .corner_radius(10),
                                     );
                                     ui.add_space(6.0);
                                 }
@@ -865,7 +867,7 @@ impl QuadFurnApp {
         let (wants_kb, noclip_on) = {
             let doc = &self.documents[self.active_doc_idx];
             (
-                ctx.wants_keyboard_input(),
+                ctx.egui_wants_keyboard_input(),
                 doc.viewport_ctrl.cam_3d.noclip_active,
             )
         };
@@ -1099,7 +1101,7 @@ impl QuadFurnApp {
             .collapsible(false)
             .resizable(false)
             .pivot(egui::Align2::CENTER_CENTER)
-            .default_pos(ctx.screen_rect().center())
+            .default_pos(ctx.viewport_rect().center())
             .show(ctx, |ui| {
                 ui.set_min_width(420.0);
                 let is_mac = crate::i18n::is_macos_platform();
@@ -1211,13 +1213,13 @@ impl QuadFurnApp {
             .collapsible(false)
             .resizable(false)
             .pivot(egui::Align2::CENTER_CENTER)
-            .default_pos(ctx.screen_rect().center())
+            .default_pos(ctx.viewport_rect().center())
             .show(ctx, |ui| {
                 ui.set_min_width(380.0);
                 ui.vertical_centered(|ui| {
                     if let Some(tex) = &self.app_icon_tex {
                         ui.add(
-                            egui::Image::new((tex.id(), egui::vec2(64.0, 64.0))).rounding(10.0),
+                            egui::Image::new((tex.id(), egui::vec2(64.0, 64.0))).corner_radius(10),
                         );
                         ui.add_space(6.0);
                     }
@@ -1247,7 +1249,8 @@ impl QuadFurnApp {
 }
 
 impl eframe::App for QuadFurnApp {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        let ctx = &ui.ctx().clone();
         if self.startup_maximize_frames < 2 {
             self.startup_maximize_frames += 1;
             ctx.send_viewport_cmd(egui::ViewportCommand::Maximized(true));
@@ -1362,20 +1365,33 @@ impl eframe::App for QuadFurnApp {
 
         // Drag & Drop files handler (supported on both Desktop and Web)
         for file in ctx.input(|i| i.raw.dropped_files.clone()) {
-            let lower_name = file.name.to_lowercase();
+            let file_name = file
+                .path()
+                .file_name()
+                .and_then(|s| s.to_str())
+                .unwrap_or("")
+                .to_string();
+            let lower_name = file_name.to_lowercase();
             // 1. Project file (.qfurn / .json)
             if lower_name.ends_with(".qfurn") || lower_name.ends_with(".json") {
                 #[cfg(not(target_arch = "wasm32"))]
-                if let Some(ref p) = file.path {
-                    self.open_project_from_path(ctx, p);
-                    continue;
+                {
+                    let p = file.path();
+                    if p.exists() {
+                        self.open_project_from_path(ctx, p);
+                        continue;
+                    }
                 }
 
-                if let Some(ref bytes) = file.bytes {
+                #[cfg(not(target_arch = "wasm32"))]
+                let project_bytes = file.bytes().ok();
+                #[cfg(target_arch = "wasm32")]
+                let project_bytes: Option<Vec<u8>> = None;
+
+                if let Some(ref bytes) = project_bytes {
                     if let Ok(mut proj) = serde_json::from_slice::<Project>(bytes) {
                         if proj.name.is_empty() {
-                            proj.name = file
-                                .name
+                            proj.name = file_name
                                 .trim_end_matches(".qfurn")
                                 .trim_end_matches(".json")
                                 .to_string();
@@ -1400,18 +1416,11 @@ impl eframe::App for QuadFurnApp {
                 || lower_name.ends_with(".webp");
 
             if is_img {
-                let img_bytes: Option<Vec<u8>> = if let Some(ref b) = file.bytes {
-                    Some(b.to_vec())
-                } else {
-                    #[cfg(not(target_arch = "wasm32"))]
-                    {
-                        file.path.as_ref().and_then(|p| std::fs::read(p).ok())
-                    }
-                    #[cfg(target_arch = "wasm32")]
-                    {
-                        None
-                    }
-                };
+                #[cfg(not(target_arch = "wasm32"))]
+                let img_bytes: Option<Vec<u8>> =
+                    file.bytes().ok().or_else(|| std::fs::read(file.path()).ok());
+                #[cfg(target_arch = "wasm32")]
+                let img_bytes: Option<Vec<u8>> = None;
 
                 if let Some(bytes) = img_bytes {
                     if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
@@ -1445,10 +1454,11 @@ impl eframe::App for QuadFurnApp {
                             {
                                 #[cfg(not(target_arch = "wasm32"))]
                                 {
-                                    if let Some(ref p) = file.path {
-                                        m.texture_path = Some(p.clone());
+                                    let p = file.path();
+                                    if p.exists() {
+                                        m.texture_path = Some(p.to_path_buf());
                                     }
-                                    m.texture_relative_path = Some(file.name.clone());
+                                    m.texture_relative_path = Some(file_name.clone());
                                     if doc.project.embed_textures {
                                         m.texture_base64 = Some(b64);
                                     }
@@ -1456,7 +1466,7 @@ impl eframe::App for QuadFurnApp {
                                 #[cfg(target_arch = "wasm32")]
                                 {
                                     m.texture_base64 = Some(b64);
-                                    m.texture_relative_path = Some(file.name.clone());
+                                    m.texture_relative_path = Some(file_name.clone());
                                     m.texture_path = None;
                                 }
 
@@ -1475,7 +1485,7 @@ impl eframe::App for QuadFurnApp {
                                         }
                                         self.status_msg = self.language.tf(
                                             "fmt.texture_loaded",
-                                            &[&m.name, &file.name],
+                                            &[&m.name, &file_name],
                                         );
                                     }
                                     Err(e) => {
@@ -1490,71 +1500,70 @@ impl eframe::App for QuadFurnApp {
             }
         }
 
-        // Automated window screenshot via egui::ViewportCommand::Screenshot
-        for event in ctx.input(|i| i.raw.events.clone()) {
-            if let egui::Event::Screenshot { image, .. } = event {
-                if let Some(ref batch_dir) = self.batch_screenshots_dir {
-                    let (lang_code, _) = crate::batch_screenshot::BATCH_LANGS[self.batch_lang_idx];
-                    let shot_name = match self.batch_shot_idx {
-                        0 => "1designer.png",
-                        1 => "2specs.png",
-                        2 => "3cutting.png",
-                        3 => "4materials.png",
-                        4 => "5lighttheme.png",
-                        _ => "6languages.png",
-                    };
-                    let out_dir = batch_dir.join(lang_code);
-                    let _ = std::fs::create_dir_all(&out_dir);
-                    let out_path = out_dir.join(shot_name);
-                    let (w, h) = (image.width() as u32, image.height() as u32);
-                    let _ = image::save_buffer(
-                        &out_path,
-                        image.as_raw(),
-                        w,
-                        h,
-                        image::ExtendedColorType::Rgba8,
-                    );
-                    let log_line = format!(
-                        "Saved [{}/{}]: {}\n",
-                        lang_code,
-                        shot_name,
-                        out_path.display()
-                    );
-                    eprint!("{}", log_line);
-                    let _ = std::fs::OpenOptions::new()
-                        .create(true)
-                        .append(true)
-                        .open(batch_dir.join("progress.log"))
-                        .and_then(|mut f| {
-                            use std::io::Write;
-                            f.write_all(log_line.as_bytes())
-                        });
+        // Automated window screenshot via pending_screenshot callback
+        let received_screenshot = self.pending_screenshot.lock().ok().and_then(|mut g| g.take());
+        if let Some(image) = received_screenshot {
+            if let Some(ref batch_dir) = self.batch_screenshots_dir {
+                let (lang_code, _) = crate::batch_screenshot::BATCH_LANGS[self.batch_lang_idx];
+                let shot_name = match self.batch_shot_idx {
+                    0 => "1designer.png",
+                    1 => "2specs.png",
+                    2 => "3cutting.png",
+                    3 => "4materials.png",
+                    4 => "5lighttheme.png",
+                    _ => "6languages.png",
+                };
+                let out_dir = batch_dir.join(lang_code);
+                let _ = std::fs::create_dir_all(&out_dir);
+                let out_path = out_dir.join(shot_name);
+                let (w, h) = (image.width() as u32, image.height() as u32);
+                let _ = image::save_buffer(
+                    &out_path,
+                    image.as_raw(),
+                    w,
+                    h,
+                    image::ExtendedColorType::Rgba8,
+                );
+                let log_line = format!(
+                    "Saved [{}/{}]: {}\n",
+                    lang_code,
+                    shot_name,
+                    out_path.display()
+                );
+                eprint!("{}", log_line);
+                let _ = std::fs::OpenOptions::new()
+                    .create(true)
+                    .append(true)
+                    .open(batch_dir.join("progress.log"))
+                    .and_then(|mut f| {
+                        use std::io::Write;
+                        f.write_all(log_line.as_bytes())
+                    });
 
-                    self.batch_shot_idx += 1;
-                    self.batch_frame_delay = 0;
-                    if self.batch_shot_idx >= 6 {
-                        self.batch_shot_idx = 0;
-                        self.batch_lang_idx += 1;
-                    }
-                    if self.batch_lang_idx >= crate::batch_screenshot::BATCH_LANGS.len() {
-                        self.batch_screenshots_dir = None;
-                        self.allow_exit = true;
-                        ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                    } else {
-                        ctx.request_repaint();
-                    }
-                } else if let Some(path) = self.screenshot_target.take() {
-                    let (w, h) = (image.width() as u32, image.height() as u32);
-                    let _ = image::save_buffer(
-                        &path,
-                        image.as_raw(),
-                        w,
-                        h,
-                        image::ExtendedColorType::Rgba8,
-                    );
+                self.batch_shot_idx += 1;
+                self.batch_frame_delay = 0;
+                if self.batch_shot_idx >= 6 {
+                    self.batch_shot_idx = 0;
+                    self.batch_lang_idx += 1;
+                }
+                if self.batch_lang_idx >= crate::batch_screenshot::BATCH_LANGS.len() {
+                    self.batch_screenshots_dir = None;
                     self.allow_exit = true;
                     ctx.send_viewport_cmd(egui::ViewportCommand::Close);
+                } else {
+                    ctx.request_repaint();
                 }
+            } else if let Some(path) = self.screenshot_target.take() {
+                let (w, h) = (image.width() as u32, image.height() as u32);
+                let _ = image::save_buffer(
+                    &path,
+                    image.as_raw(),
+                    w,
+                    h,
+                    image::ExtendedColorType::Rgba8,
+                );
+                self.allow_exit = true;
+                ctx.send_viewport_cmd(egui::ViewportCommand::Close);
             }
         }
 
@@ -1566,7 +1575,12 @@ impl eframe::App for QuadFurnApp {
                 ctx.request_repaint();
             } else if self.screenshot_frame_delay == 6 {
                 self.screenshot_frame_delay += 1;
-                ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot);
+                let pending = self.pending_screenshot.clone();
+                ctx.request_screenshot(move |img| {
+                    if let Ok(mut g) = pending.lock() {
+                        *g = Some(img);
+                    }
+                });
                 ctx.request_repaint();
             } else {
                 ctx.request_repaint();
@@ -1596,14 +1610,14 @@ impl eframe::App for QuadFurnApp {
         // =========================================================================
         // ROW 1: Classic Main Menu Bar (File, Edit, Product, View, Language, Help, Theme)
         // =========================================================================
-        egui::TopBottomPanel::top("main_menu_bar")
-            .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(egui::Margin::symmetric(8.0, 3.0)))
-            .show(ctx, |ui| {
+        egui::Panel::top("main_menu_bar")
+            .frame(egui::Frame::side_top_panel(&ctx.global_style()).inner_margin(egui::Margin::symmetric(8, 3)))
+            .show(ui, |ui| {
                 ui.spacing_mut().interact_size.y = 22.0;
-                egui::menu::bar(ui, |ui| {
+                egui::MenuBar::new().ui(ui, |ui| {
                     ui.spacing_mut().interact_size.y = 22.0;
                 if let Some(tex) = &self.app_icon_tex {
-                    ui.add(egui::Image::new((tex.id(), egui::vec2(18.0, 18.0))).rounding(4.0));
+                    ui.add(egui::Image::new((tex.id(), egui::vec2(18.0, 18.0))).corner_radius(4));
                 }
                 ui.label(
                     RichText::new("QuadFurn CAD")
@@ -1618,15 +1632,15 @@ impl eframe::App for QuadFurnApp {
                     ui.set_min_width(220.0);
                     if ui.button(d.empty_object_btn).clicked() {
                         self.create_empty_product_tab();
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui.button(d.cabinet_template_btn).clicked() {
                         self.create_template_product_tab();
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui.button(d.open_in_new_tab).clicked() {
                         self.open_project_interactive(ctx);
-                        ui.close_menu();
+                        ui.close();
                     }
                     ui.separator();
                     if ui
@@ -1646,7 +1660,7 @@ impl eframe::App for QuadFurnApp {
                         if let Some(path) = saved_path {
                             self.record_recent_project(path);
                         }
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     if has_open_docs {
@@ -1674,7 +1688,7 @@ impl eframe::App for QuadFurnApp {
                                     .unwrap_or("project.qfurn");
                                 if ui.button(format!("🗄 {}", label)).on_hover_text(format!("{}", rpath.display())).clicked() {
                                     self.open_project_from_path(ctx, rpath);
-                                    ui.close_menu();
+                                    ui.close();
                                 }
                             }
                         });
@@ -1685,7 +1699,7 @@ impl eframe::App for QuadFurnApp {
                         ui.separator();
                         if ui.button(lang.t("menu.file.exit")).clicked() {
                             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                            ui.close_menu();
+                            ui.close();
                         }
                     }
                 });
@@ -1707,7 +1721,7 @@ impl eframe::App for QuadFurnApp {
                                 doc.project = prev;
                             }
                         }
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     ui.separator();
@@ -1741,7 +1755,7 @@ impl eframe::App for QuadFurnApp {
                                 lang,
                             );
                         }
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     if ui
@@ -1766,7 +1780,7 @@ impl eframe::App for QuadFurnApp {
                                 |proj| Self::push_undo(undo_ref, proj),
                             );
                         }
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     if ui
@@ -1789,7 +1803,7 @@ impl eframe::App for QuadFurnApp {
                                 |proj| Self::push_undo(undo_ref, proj),
                             );
                         }
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     if ui
@@ -1807,7 +1821,7 @@ impl eframe::App for QuadFurnApp {
                                 |proj| Self::push_undo(undo_ref, proj),
                             );
                         }
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 
@@ -1816,11 +1830,11 @@ impl eframe::App for QuadFurnApp {
                     ui.set_min_width(210.0);
                     if ui.button(d.empty_object_btn).clicked() {
                         self.create_empty_product_tab();
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui.button(d.cabinet_template_btn).clicked() {
                         self.create_template_product_tab();
-                        ui.close_menu();
+                        ui.close();
                     }
                     if has_open_docs {
                         ui.separator();
@@ -1837,7 +1851,7 @@ impl eframe::App for QuadFurnApp {
                                 doc.viewport_ctrl.selected_parts = vec![id];
                                 self.active_tab = AppTab::Designer4View;
                             }
-                            ui.close_menu();
+                            ui.close();
                         }
                         if ui.button(lang.t("+ Side Panel (YZ)")).clicked() {
                             if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
@@ -1852,7 +1866,7 @@ impl eframe::App for QuadFurnApp {
                                 doc.viewport_ctrl.selected_parts = vec![id];
                                 self.active_tab = AppTab::Designer4View;
                             }
-                            ui.close_menu();
+                            ui.close();
                         }
                         if ui.button(lang.t("+ Front/Back (XZ)")).clicked() {
                             if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
@@ -1867,7 +1881,7 @@ impl eframe::App for QuadFurnApp {
                                 doc.viewport_ctrl.selected_parts = vec![id];
                                 self.active_tab = AppTab::Designer4View;
                             }
-                            ui.close_menu();
+                            ui.close();
                         }
                     }
                 });
@@ -1883,7 +1897,7 @@ impl eframe::App for QuadFurnApp {
                         .clicked()
                     {
                         self.active_tab = AppTab::Designer4View;
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui
                         .selectable_label(
@@ -1893,7 +1907,7 @@ impl eframe::App for QuadFurnApp {
                         .clicked()
                     {
                         self.active_tab = AppTab::Specification;
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui
                         .selectable_label(
@@ -1903,7 +1917,7 @@ impl eframe::App for QuadFurnApp {
                         .clicked()
                     {
                         self.active_tab = AppTab::CuttingLayout;
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui
                         .selectable_label(
@@ -1913,18 +1927,18 @@ impl eframe::App for QuadFurnApp {
                         .clicked()
                     {
                         self.active_tab = AppTab::MaterialsManager;
-                        ui.close_menu();
+                        ui.close();
                     }
 
                     if let Some(doc) = self.documents.get_mut(self.active_doc_idx) {
                         ui.separator();
                         if ui.button(lang.t("⊞ Equal Views")).clicked() {
                             doc.viewport_ctrl.equalize_viewports();
-                            ui.close_menu();
+                            ui.close();
                         }
                         if ui.button(lang.t("📐 Fit to Window")).clicked() {
                             doc.viewport_ctrl.fit_all_to_window(&doc.project);
-                            ui.close_menu();
+                            ui.close();
                         }
                         ui.separator();
                         ui.checkbox(&mut doc.viewport_ctrl.grid_snap_enabled, lang.t("Grid"));
@@ -1957,66 +1971,59 @@ impl eframe::App for QuadFurnApp {
                 let btn_resp =
                     ui.button(RichText::new(self.language.switcher_button_text()).strong());
                 let pop_id = ui.make_persistent_id("lang_switcher_menu_popup");
-                if btn_resp.clicked() {
-                    ui.memory_mut(|m| m.toggle_popup(pop_id));
-                }
+                let mut lang_popup = egui::Popup::from_toggle_button_response(&btn_resp)
+                    .id(pop_id)
+                    .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside);
                 if self.force_open_lang_menu {
-                    ui.memory_mut(|m| m.open_popup(pop_id));
+                    lang_popup = lang_popup.open(true);
                 } else if self.batch_screenshots_dir.is_some() {
-                    ui.memory_mut(|m| m.close_popup());
+                    lang_popup = lang_popup.open(false);
                 }
-                egui::popup_below_widget(
-                    ui,
-                    pop_id,
-                    &btn_resp,
-                    egui::PopupCloseBehavior::CloseOnClickOutside,
-                    |ui| {
-                        ui.set_min_width(600.0);
-                        ui.set_max_width(640.0);
-                        ui.label(
-                            RichText::new(self.language.t("🌐 Select interface language:"))
-                                .strong()
-                                .size(13.0),
-                        );
-                        ui.separator();
-                        egui::ScrollArea::vertical()
-                            .id_salt("language_selector_scroll")
-                            .max_height(480.0)
-                            .show(ui, |ui| {
-                                egui::Grid::new("language_grid_selector")
-                                    .num_columns(3)
-                                    .spacing([12.0, 3.0])
-                                    .show(ui, |ui| {
-                                        let all = AppLanguage::ALL;
-                                        let total = all.len();
-                                        let rows = total.div_ceil(3);
-                                        for r in 0..rows {
-                                            for c in 0..3 {
-                                                let idx = r + c * rows;
-                                                if idx < total {
-                                                    let candidate = all[idx];
-                                                    let is_selected = self.language == candidate;
-                                                    let label = format!("🌐 {}", candidate.label());
-                                                    if ui
-                                                        .selectable_label(is_selected, label)
-                                                        .clicked()
-                                                    {
-                                                        self.set_language_interactive(
-                                                            ctx, candidate,
-                                                        );
-                                                        ui.memory_mut(|m| m.close_popup());
-                                                        ui.close_menu();
-                                                    }
-                                                } else {
-                                                    ui.label("");
+                lang_popup.show(|ui| {
+                    ui.set_min_width(600.0);
+                    ui.set_max_width(640.0);
+                    ui.label(
+                        RichText::new(self.language.t("🌐 Select interface language:"))
+                            .strong()
+                            .size(13.0),
+                    );
+                    ui.separator();
+                    egui::ScrollArea::vertical()
+                        .id_salt("language_selector_scroll")
+                        .max_height(480.0)
+                        .show(ui, |ui| {
+                            egui::Grid::new("language_grid_selector")
+                                .num_columns(3)
+                                .spacing([12.0, 3.0])
+                                .show(ui, |ui| {
+                                    let all = AppLanguage::ALL;
+                                    let total = all.len();
+                                    let rows = total.div_ceil(3);
+                                    for r in 0..rows {
+                                        for c in 0..3 {
+                                            let idx = r + c * rows;
+                                            if idx < total {
+                                                let candidate = all[idx];
+                                                let is_selected = self.language == candidate;
+                                                let label = format!("🌐 {}", candidate.label());
+                                                if ui
+                                                    .selectable_label(is_selected, label)
+                                                    .clicked()
+                                                {
+                                                    self.set_language_interactive(
+                                                        ctx, candidate,
+                                                    );
+                                                    ui.close();
                                                 }
+                                            } else {
+                                                ui.label("");
                                             }
-                                            ui.end_row();
                                         }
-                                    });
-                            });
-                    },
-                );
+                                        ui.end_row();
+                                    }
+                                });
+                        });
+                });
                 btn_resp.on_hover_text(self.language.switcher_hover_tooltip());
 
                 // 6. HELP MENU
@@ -2024,11 +2031,11 @@ impl eframe::App for QuadFurnApp {
                     ui.set_min_width(210.0);
                     if ui.button(lang.t("menu.help.hotkeys")).clicked() {
                         self.show_hotkeys_modal = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                     if ui.button(lang.t("menu.help.about")).clicked() {
                         self.show_about_modal = true;
-                        ui.close_menu();
+                        ui.close();
                     }
                 });
 
@@ -2042,110 +2049,104 @@ impl eframe::App for QuadFurnApp {
                     );
                     let theme_btn_resp = ui.button(RichText::new(theme_btn_txt).strong());
                     let theme_pop_id = ui.make_persistent_id("theme_switcher_menu_popup");
-                    if theme_btn_resp.clicked() {
-                        ui.memory_mut(|m| m.toggle_popup(theme_pop_id));
-                    }
+                    let mut theme_popup = egui::Popup::from_toggle_button_response(&theme_btn_resp)
+                        .id(theme_pop_id)
+                        .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside);
                     if self.force_open_theme_menu {
-                        ui.memory_mut(|m| m.open_popup(theme_pop_id));
+                        theme_popup = theme_popup.open(true);
                     }
-                    egui::popup_below_widget(
-                        ui,
-                        theme_pop_id,
-                        &theme_btn_resp,
-                        egui::PopupCloseBehavior::CloseOnClickOutside,
-                        |ui| {
-                            ui.set_min_width(390.0);
+                    theme_popup.show(|ui| {
+                        ui.set_min_width(390.0);
 
-                            // 1. DEFAULT / STANDARD THEMES AT TOP
-                            ui.label(
-                                RichText::new(lang.t("theme.group_standard"))
-                                    .strong()
-                                    .size(12.0),
-                            );
-                            for choice in ThemeChoice::DEFAULT_THEMES {
-                                if ui
-                                    .selectable_label(
-                                        self.theme_choice == choice,
-                                        choice.label_i18n(lang),
-                                    )
-                                    .clicked()
-                                {
-                                    self.theme_choice = choice;
-                                    self.theme_choice.apply(ctx);
-                                    if let Ok(saved_path) = self.save_settings() {
-                                        self.status_msg = lang.tf(
-                                            "fmt.theme_saved",
-                                            &[&self.theme_choice.label_i18n(lang), &saved_path.display()],
-                                        );
-                                    }
-                                    ui.memory_mut(|m| m.close_popup());
+                        // 1. DEFAULT / STANDARD THEMES AT TOP
+                        ui.label(
+                            RichText::new(lang.t("theme.group_standard"))
+                                .strong()
+                                .size(12.0),
+                        );
+                        for choice in ThemeChoice::DEFAULT_THEMES {
+                            if ui
+                                .selectable_label(
+                                    self.theme_choice == choice,
+                                    choice.label_i18n(lang),
+                                )
+                                .clicked()
+                            {
+                                self.theme_choice = choice;
+                                self.theme_choice.apply(ctx);
+                                if let Ok(saved_path) = self.save_settings() {
+                                    self.status_msg = lang.tf(
+                                        "fmt.theme_saved",
+                                        &[&self.theme_choice.label_i18n(lang), &saved_path.display()],
+                                    );
                                 }
+                                ui.close();
                             }
+                        }
+
+                        ui.separator();
+
+                        // 2 & 3. TWO COLUMNS: DARK THEMES (LEFT) & LIGHT THEMES (RIGHT)
+                        ui.horizontal(|ui| {
+                            ui.vertical(|ui| {
+                                ui.set_min_width(185.0);
+                                ui.label(
+                                    RichText::new(lang.t("theme.group_dark"))
+                                        .strong()
+                                        .size(12.0),
+                                );
+                                for choice in ThemeChoice::DARK_THEMES {
+                                    if ui
+                                        .selectable_label(
+                                            self.theme_choice == choice,
+                                            choice.label_i18n(lang),
+                                        )
+                                        .clicked()
+                                    {
+                                        self.theme_choice = choice;
+                                        self.theme_choice.apply(ctx);
+                                        if let Ok(saved_path) = self.save_settings() {
+                                            self.status_msg = lang.tf(
+                                                "fmt.theme_saved",
+                                                &[&self.theme_choice.label_i18n(lang), &saved_path.display()],
+                                            );
+                                        }
+                                        ui.close();
+                                    }
+                                }
+                            });
 
                             ui.separator();
 
-                            // 2 & 3. TWO COLUMNS: DARK THEMES (LEFT) & LIGHT THEMES (RIGHT)
-                            ui.horizontal(|ui| {
-                                ui.vertical(|ui| {
-                                    ui.set_min_width(185.0);
-                                    ui.label(
-                                        RichText::new(lang.t("theme.group_dark"))
-                                            .strong()
-                                            .size(12.0),
-                                    );
-                                    for choice in ThemeChoice::DARK_THEMES {
-                                        if ui
-                                            .selectable_label(
-                                                self.theme_choice == choice,
-                                                choice.label_i18n(lang),
-                                            )
-                                            .clicked()
-                                        {
-                                            self.theme_choice = choice;
-                                            self.theme_choice.apply(ctx);
-                                            if let Ok(saved_path) = self.save_settings() {
-                                                self.status_msg = lang.tf(
-                                                    "fmt.theme_saved",
-                                                    &[&self.theme_choice.label_i18n(lang), &saved_path.display()],
-                                                );
-                                            }
-                                            ui.memory_mut(|m| m.close_popup());
+                            ui.vertical(|ui| {
+                                ui.set_min_width(185.0);
+                                ui.label(
+                                    RichText::new(lang.t("theme.group_light"))
+                                        .strong()
+                                        .size(12.0),
+                                );
+                                for choice in ThemeChoice::LIGHT_THEMES {
+                                    if ui
+                                        .selectable_label(
+                                            self.theme_choice == choice,
+                                            choice.label_i18n(lang),
+                                        )
+                                        .clicked()
+                                    {
+                                        self.theme_choice = choice;
+                                        self.theme_choice.apply(ctx);
+                                        if let Ok(saved_path) = self.save_settings() {
+                                            self.status_msg = lang.tf(
+                                                "fmt.theme_saved",
+                                                &[&self.theme_choice.label_i18n(lang), &saved_path.display()],
+                                            );
                                         }
+                                        ui.close();
                                     }
-                                });
-
-                                ui.separator();
-
-                                ui.vertical(|ui| {
-                                    ui.set_min_width(185.0);
-                                    ui.label(
-                                        RichText::new(lang.t("theme.group_light"))
-                                            .strong()
-                                            .size(12.0),
-                                    );
-                                    for choice in ThemeChoice::LIGHT_THEMES {
-                                        if ui
-                                            .selectable_label(
-                                                self.theme_choice == choice,
-                                                choice.label_i18n(lang),
-                                            )
-                                            .clicked()
-                                        {
-                                            self.theme_choice = choice;
-                                            self.theme_choice.apply(ctx);
-                                            if let Ok(saved_path) = self.save_settings() {
-                                                self.status_msg = lang.tf(
-                                                    "fmt.theme_saved",
-                                                    &[&self.theme_choice.label_i18n(lang), &saved_path.display()],
-                                                );
-                                            }
-                                            ui.memory_mut(|m| m.close_popup());
-                                        }
-                                    }
-                                });
+                                }
                             });
-                        },
-                    );
+                        });
+                    });
                     theme_btn_resp.on_hover_text(format!(
                         "{}: {}",
                         lang.t("Theme preference is saved in"),
@@ -2179,9 +2180,9 @@ impl eframe::App for QuadFurnApp {
         // ROW 2: Workspace Mode Tabs Bar (Designer, Specification, Cutting, Materials)
         // =========================================================================
         if has_open_docs {
-            egui::TopBottomPanel::top("mode_tabs_bar")
-                .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(egui::Margin::symmetric(8.0, 3.0)))
-                .show(ctx, |ui| {
+            egui::Panel::top("mode_tabs_bar")
+                .frame(egui::Frame::side_top_panel(&ctx.global_style()).inner_margin(egui::Margin::symmetric(8, 3)))
+                .show(ui, |ui| {
                     ui.spacing_mut().interact_size.y = 22.0;
                     ui.spacing_mut().item_spacing.x = 6.0;
                     ui.horizontal_wrapped(|ui| {
@@ -2268,9 +2269,9 @@ impl eframe::App for QuadFurnApp {
         // ROW 3: Furniture Product Document Tabs Bar
         // =========================================================================
         if has_open_docs {
-            egui::TopBottomPanel::top("furniture_objects_tab_bar")
-                .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(egui::Margin::symmetric(8.0, 3.0)))
-                .show(ctx, |ui| {
+            egui::Panel::top("furniture_objects_tab_bar")
+                .frame(egui::Frame::side_top_panel(&ctx.global_style()).inner_margin(egui::Margin::symmetric(8, 3)))
+                .show(ui, |ui| {
                     ui.spacing_mut().interact_size.y = 22.0;
                     ui.spacing_mut().item_spacing.x = 6.0;
                     ui.horizontal_wrapped(|ui| {
@@ -2311,11 +2312,11 @@ impl eframe::App for QuadFurnApp {
                                 egui::Stroke::NONE
                             };
 
-                            egui::Frame::none()
+                            egui::Frame::NONE
                                 .fill(tab_fill)
                                 .stroke(tab_stroke)
-                                .rounding(4.0)
-                                .inner_margin(egui::Margin::symmetric(6.0, 1.0))
+                                .corner_radius(4)
+                                .inner_margin(egui::Margin::symmetric(6, 1))
                                 .show(ui, |ui| {
                                     ui.spacing_mut().interact_size.y = 20.0;
                                     ui.spacing_mut().item_spacing.x = 3.0;
@@ -2418,7 +2419,7 @@ impl eframe::App for QuadFurnApp {
                     .collapsible(false)
                     .resizable(false)
                     .pivot(egui::Align2::CENTER_CENTER)
-                    .default_pos(ctx.screen_rect().center())
+                    .default_pos(ctx.viewport_rect().center())
                     .show(ctx, |ui| {
                         ui.set_width(440.0);
                         ui.vertical_centered(|ui| {
@@ -2572,7 +2573,7 @@ impl eframe::App for QuadFurnApp {
                     .collapsible(false)
                     .resizable(false)
                     .pivot(egui::Align2::CENTER_CENTER)
-                    .default_pos(ctx.screen_rect().center())
+                    .default_pos(ctx.viewport_rect().center())
                     .show(ctx, |ui| {
                         ui.set_width(430.0);
                         ui.vertical_centered(|ui| {
@@ -2686,7 +2687,7 @@ impl eframe::App for QuadFurnApp {
                     .collapsible(false)
                     .resizable(false)
                     .pivot(egui::Align2::CENTER_CENTER)
-                    .default_pos(ctx.screen_rect().center())
+                    .default_pos(ctx.viewport_rect().center())
                     .show(ctx, |ui| {
                         ui.set_width(420.0);
                         ui.vertical_centered(|ui| {
@@ -2874,7 +2875,7 @@ impl eframe::App for QuadFurnApp {
 
         // If no products are open yet — show bottom status bar and Start Page
         if self.documents.is_empty() {
-            egui::TopBottomPanel::bottom("status_footer").show(ctx, |ui| {
+            egui::Panel::bottom("status_footer").show(ui, |ui| {
                 ui.horizontal(|ui| {
                     ui.label(&self.status_msg);
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -2883,7 +2884,7 @@ impl eframe::App for QuadFurnApp {
                 });
             });
 
-            egui::CentralPanel::default().show(ctx, |ui| {
+            egui::CentralPanel::default().show(ui, |ui| {
                 self.render_start_page(ctx, ui);
             });
             return;
@@ -2897,7 +2898,7 @@ impl eframe::App for QuadFurnApp {
         // Bottom status bar
         {
             let doc = &self.documents[self.active_doc_idx];
-            egui::TopBottomPanel::bottom("status_footer").show(ctx, |ui| {
+            egui::Panel::bottom("status_footer").show(ui, |ui| {
                 ui.horizontal(|ui| {
                     ui.label(&self.status_msg);
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
@@ -2919,15 +2920,15 @@ impl eframe::App for QuadFurnApp {
         let mut save_settings_after_dock = false;
         if self.active_tab == AppTab::Designer4View {
             let dock_margin = if self.tools_two_columns {
-                egui::Margin::symmetric(8.0, 8.0)
+                egui::Margin::symmetric(8, 8)
             } else {
-                egui::Margin::symmetric(7.0, 8.0)
+                egui::Margin::symmetric(7, 8)
             };
-            egui::SidePanel::left("left_tools_dock")
+            egui::Panel::left("left_tools_dock")
                 .resizable(false)
-                .exact_width(left_dock_width)
-                .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(dock_margin))
-                .show(ctx, |ui| {
+                .exact_size(left_dock_width)
+                .frame(egui::Frame::side_top_panel(&ctx.global_style()).inner_margin(dock_margin))
+                .show(ui, |ui| {
                     let doc = &mut self.documents[self.active_doc_idx];
                     doc.viewport_ctrl.lang = lang;
                     let undo_ref = &mut doc.undo_stack;
@@ -2966,9 +2967,9 @@ impl eframe::App for QuadFurnApp {
             match self.active_tab {
                 AppTab::Designer4View => {
                     // ROW 4: Top transform toolbar for precise dimensions, coordinates, and snapping
-                    egui::TopBottomPanel::top("top_transform_bar")
-                        .frame(egui::Frame::side_top_panel(&ctx.style()).inner_margin(egui::Margin::symmetric(8.0, 3.0)))
-                        .show(ctx, |ui| {
+                    egui::Panel::top("top_transform_bar")
+                        .frame(egui::Frame::side_top_panel(&ctx.global_style()).inner_margin(egui::Margin::symmetric(8, 3)))
+                        .show(ui, |ui| {
                         let undo_ref = &mut doc.undo_stack;
                         ui_top_transform_toolbar(
                             ui,
@@ -2981,12 +2982,11 @@ impl eframe::App for QuadFurnApp {
                     });
 
                     // RIGHT INSPECTOR DOCK: Collapsible sections, vertically resizable tree, Move Up/Down
-                    egui::SidePanel::right("right_block_inspector")
-                        .default_width(335.0)
-                        .min_width(275.0)
-                        .max_width(480.0)
+                    egui::Panel::right("right_block_inspector")
+                        .default_size(335.0)
+                        .size_range(275.0..=480.0)
                         .resizable(true)
-                        .show(ctx, |ui| {
+                        .show(ui, |ui| {
                             let undo_ref = &mut doc.undo_stack;
                             ui_right_inspector(
                                 ui,
@@ -3010,8 +3010,8 @@ impl eframe::App for QuadFurnApp {
                     // Central viewports: 4 views (Top XY, 3D Orbit/Z-Noclip, Front XZ, Side YZ)
                     // Viewport background stays dark across all themes
                     egui::CentralPanel::default()
-                        .frame(egui::Frame::none().fill(Color32::from_rgb(14, 17, 21)))
-                        .show(ctx, |ui| {
+                        .frame(egui::Frame::NONE.fill(Color32::from_rgb(14, 17, 21)))
+                        .show(ui, |ui| {
                             let undo_ref = &mut doc.undo_stack;
                             doc.viewport_ctrl.ui_quad_viewports(
                                 ui,
@@ -3024,13 +3024,13 @@ impl eframe::App for QuadFurnApp {
                         });
                 }
                 AppTab::Specification => {
-                    egui::CentralPanel::default().show(ctx, |ui| {
+                    egui::CentralPanel::default().show(ui, |ui| {
                         ui_specification_tab(ui, &mut doc.project, &mut self.status_msg, lang);
                     });
                 }
                 AppTab::CuttingLayout => {
                     ui_cutting_layout_tab(
-                        ctx,
+                        ui,
                         &mut doc.project,
                         &mut doc.selected_sheet_idx,
                         &mut doc.hovered_cutting_part,
@@ -3040,7 +3040,7 @@ impl eframe::App for QuadFurnApp {
                     );
                 }
                 AppTab::MaterialsManager => {
-                    egui::CentralPanel::default().show(ctx, |ui| {
+                    egui::CentralPanel::default().show(ui, |ui| {
                         ui_materials_manager_tab(
                             ui,
                             &mut doc.project,
@@ -3071,7 +3071,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
     const FA_SOLID_TTF: &[u8] = include_bytes!("../assets/fonts/fa-solid-900.ttf");
     fonts.font_data.insert(
         "fa-solid-900".to_owned(),
-        egui::FontData::from_static(FA_SOLID_TTF),
+        egui::FontData::from_static(FA_SOLID_TTF).into(),
     );
     if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
         vec.push("fa-solid-900".to_owned());
@@ -3084,7 +3084,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
     if let Some(bytes) = crate::export::read_system_font_bytes("C:\\Windows\\Fonts\\seguiemj.ttf") {
         fonts
             .font_data
-            .insert("seguiemj".to_owned(), egui::FontData::from_owned(bytes));
+            .insert("seguiemj".to_owned(), egui::FontData::from_owned(bytes).into());
         if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
             vec.insert(0, "seguiemj".to_owned());
         }
@@ -3097,7 +3097,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
     if let Some(bytes) = crate::export::read_system_font_bytes("C:\\Windows\\Fonts\\seguisym.ttf") {
         fonts
             .font_data
-            .insert("seguisym".to_owned(), egui::FontData::from_owned(bytes));
+            .insert("seguisym".to_owned(), egui::FontData::from_owned(bytes).into());
         if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
             vec.insert(0, "seguisym".to_owned());
         }
@@ -3130,7 +3130,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
-                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf));
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
             if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
                 vec.insert(0, font_key.to_owned());
             }
@@ -3157,7 +3157,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
-                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf));
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
             if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Monospace) {
                 vec.insert(0, font_key.to_owned());
             }
@@ -3185,7 +3185,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
-                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf));
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
             if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
                 vec.push(font_key.to_owned());
             }
@@ -3227,7 +3227,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
             let ttf = crate::export::ensure_ttf_bytes(raw);
             fonts
                 .font_data
-                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf));
+                .insert(font_key.to_owned(), egui::FontData::from_owned(ttf).into());
             if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
                 vec.push(font_key.to_owned());
             }
@@ -3242,7 +3242,7 @@ pub fn configure_fonts(ctx: &egui::Context) {
         let ttf = crate::export::ensure_ttf_bytes(font_bytes);
         fonts
             .font_data
-            .insert(font_key.clone(), egui::FontData::from_owned(ttf));
+            .insert(font_key.clone(), egui::FontData::from_owned(ttf).into());
         if let Some(vec) = fonts.families.get_mut(&egui::FontFamily::Proportional) {
             vec.push(font_key.clone());
         }
@@ -3301,7 +3301,6 @@ fn main() -> eframe::Result<()> {
 
     let native_options = eframe::NativeOptions {
         viewport,
-        vsync: true,
         ..Default::default()
     };
 
@@ -3576,8 +3575,8 @@ mod icon_tests {
             crate::theme::FA_ARROW_DOWN,
             crate::theme::FA_PALETTE,
         ];
-        let _ = ctx.run(egui::RawInput::default(), |ctx| {
-            ctx.fonts(|f| {
+        let _ = ctx.run_ui(egui::RawInput::default(), |ui| {
+            ui.ctx().fonts_mut(|f| {
                 let notdef_galley = f.layout_no_wrap(
                     "\u{FFFD}".to_string(),
                     egui::FontId::proportional(16.0),

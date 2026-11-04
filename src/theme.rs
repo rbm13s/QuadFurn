@@ -1,5 +1,5 @@
 use crate::i18n::AppLanguage;
-use egui::{Color32, Rounding, Stroke, Visuals};
+use egui::{Color32, CornerRadius, Stroke, Visuals};
 use serde::{Deserialize, Serialize};
 
 // Font Awesome 6 Free Solid Unicode Private Use Area codepoints (`fa-solid-900.ttf`)
@@ -178,7 +178,7 @@ fn build_visuals(spec: &ThemeSpec) -> Visuals {
         Visuals::light()
     };
 
-    let r = Rounding::same(spec.rounding);
+    let r = CornerRadius::same(spec.rounding.round() as u8);
 
     v.panel_fill = spec.panel_bg;
     v.window_fill = spec.window_bg;
@@ -186,39 +186,39 @@ fn build_visuals(spec: &ThemeSpec) -> Visuals {
     v.faint_bg_color = spec.faint_bg;
     v.code_bg_color = spec.code_bg;
 
-    v.window_rounding = Rounding::same((spec.rounding + 2.0).min(8.0));
-    v.menu_rounding = Rounding::same((spec.rounding + 1.0).min(6.0));
+    v.window_corner_radius = CornerRadius::same(((spec.rounding + 2.0).min(8.0).round()) as u8);
+    v.menu_corner_radius = CornerRadius::same(((spec.rounding + 1.0).min(6.0).round()) as u8);
     v.window_stroke = Stroke::new(1.0, spec.border);
 
     v.widgets.noninteractive.bg_fill = spec.widget_noninteractive_bg;
     v.widgets.noninteractive.weak_bg_fill = spec.widget_noninteractive_bg;
     v.widgets.noninteractive.bg_stroke = Stroke::new(1.0, spec.border);
     v.widgets.noninteractive.fg_stroke = Stroke::new(1.0, spec.text_primary);
-    v.widgets.noninteractive.rounding = r;
+    v.widgets.noninteractive.corner_radius = r;
 
     v.widgets.inactive.bg_fill = spec.widget_inactive_bg;
     v.widgets.inactive.weak_bg_fill = spec.widget_inactive_bg;
     v.widgets.inactive.bg_stroke = Stroke::new(1.0, spec.border);
     v.widgets.inactive.fg_stroke = Stroke::new(1.0, spec.text_primary);
-    v.widgets.inactive.rounding = r;
+    v.widgets.inactive.corner_radius = r;
 
     v.widgets.hovered.bg_fill = spec.widget_hovered_bg;
     v.widgets.hovered.weak_bg_fill = spec.widget_hovered_bg;
     v.widgets.hovered.bg_stroke = Stroke::new(1.2, spec.accent);
     v.widgets.hovered.fg_stroke = Stroke::new(1.5, spec.text_bright);
-    v.widgets.hovered.rounding = r;
+    v.widgets.hovered.corner_radius = r;
 
     v.widgets.active.bg_fill = spec.widget_active_bg;
     v.widgets.active.weak_bg_fill = spec.widget_active_bg;
     v.widgets.active.bg_stroke = Stroke::new(1.5, spec.accent);
     v.widgets.active.fg_stroke = Stroke::new(2.0, spec.text_bright);
-    v.widgets.active.rounding = r;
+    v.widgets.active.corner_radius = r;
 
     v.widgets.open.bg_fill = spec.widget_active_bg;
     v.widgets.open.weak_bg_fill = spec.widget_active_bg;
     v.widgets.open.bg_stroke = Stroke::new(1.2, spec.accent);
     v.widgets.open.fg_stroke = Stroke::new(1.5, spec.text_bright);
-    v.widgets.open.rounding = r;
+    v.widgets.open.corner_radius = r;
 
     v.selection.bg_fill = spec.accent;
     v.selection.stroke = Stroke::new(1.0, spec.accent_fg);

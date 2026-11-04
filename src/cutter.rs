@@ -184,6 +184,7 @@ pub struct CutLine {
 /// One cut sheet of material.
 #[derive(Clone, Debug)]
 pub struct SheetLayout {
+    #[allow(dead_code)]
     pub sheet_number: usize,
     pub material_id: MaterialId,
     pub material_name: String,
