@@ -2,15 +2,8 @@ name: Build & Release (Linux, macOS, Windows)
 
 on:
   push:
-    branches:
-      - main
-      - master
     tags:
       - 'v*'
-  pull_request:
-    branches:
-      - main
-      - master
   workflow_dispatch:
 
 permissions:
@@ -30,10 +23,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install system dependencies (X11, Wayland, GTK3, Fonts)
+      - name: Install system dependencies (X11, Wayland, GTK3)
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             build-essential \
             pkg-config \
             libxcb-render0-dev \
@@ -43,15 +36,7 @@ jobs:
             libxkbcommon-x11-dev \
             libssl-dev \
             libgtk-3-dev \
-            libglib2.0-dev \
-            libatk1.0-dev \
-            libgdk-pixbuf-2.0-dev \
-            libcairo2-dev \
-            libpango1.0-dev \
             libgl1-mesa-dev \
-            fonts-dejavu-core \
-            fonts-liberation \
-            fonts-noto-cjk \
             imagemagick
 
       - name: Install Rust toolchain
