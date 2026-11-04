@@ -9,7 +9,7 @@
 [![Build & Release](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml/badge.svg)](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml)
 [![Downloads](https://img.shields.io/github/downloads/rbm13s/QuadFurn/total?logo=github&color=blue)](https://github.com/rbm13s/QuadFurn/releases)
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
-[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
+[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.37-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
 [![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-тэмы-афармлення-і-лакалізацыя-на-37-моў)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS_%7C_Web-0078D6)](#хуткі-старт)
@@ -234,9 +234,9 @@ QuadFurn спалучае тры важныя вытворчыя інструм�
 ### Гатовыя зборкі (GitHub Actions / Рэлізы)
 - **Windows (`x86_64`)**: `QuadFurn-windows-x86_64.zip` — партатыўны выканальны файл `QuadFurn.exe` з убудаванай іконкай.
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
-  - `quadfurn_0.3.0_amd64.deb` — установачны пакет для Debian / Ubuntu:
+  - `quadfurn_0.3.1_amd64.deb` — установачны пакет для Debian / Ubuntu:
     ```bash
-    sudo apt install ./quadfurn_0.3.0_amd64.deb
+    sudo apt install ./quadfurn_0.3.1_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — партатыўны архіў.
 - **macOS (`Universal: Apple Silicon + Intel`)**: `QuadFurn-macos-universal.zip` — натыўны бандл `QuadFurn.app`.

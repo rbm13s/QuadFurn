@@ -9,7 +9,7 @@
 [![Build & Release](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml/badge.svg)](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml)
 [![Downloads](https://img.shields.io/github/downloads/rbm13s/QuadFurn/total?logo=github&color=blue)](https://github.com/rbm13s/QuadFurn/releases)
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
-[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
+[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.37-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
 [![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-테마-설정-및-22개-언어-다국어-지원)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#시작하기)
@@ -291,7 +291,7 @@ QuadFurn은 널리 검증된 3가지 전문 도구의 장점을 결합하여 설
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<버전>_amd64.deb` — 공식 Debian/Ubuntu 설치 패키지 (실행 바이너리, 메뉴 등록 및 시스템 아이콘 자동 구성):
     ```bash
-    sudo apt install ./quadfurn_0.3.0_amd64.deb
+    sudo apt install ./quadfurn_0.3.1_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — 독립 실행형 포터블 Linux 압축 파일.
 - **macOS (`Universal 통합 아키텍처: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — Retina 아이콘이 포함된 네이티브 `QuadFurn.app`.

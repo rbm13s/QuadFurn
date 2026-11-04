@@ -9,7 +9,7 @@
 [![Build & Release](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml/badge.svg)](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml)
 [![Downloads](https://img.shields.io/github/downloads/rbm13s/QuadFurn/total?logo=github&color=blue)](https://github.com/rbm13s/QuadFurn/releases)
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
-[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
+[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.37-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
 [![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-темы-оформления-и-локализация-на-37-языков)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS_%7C_Web-0078D6)](#быстрый-старт)
@@ -310,7 +310,7 @@ QuadFurn объединяет ключевые возможности проек
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<version>_amd64.deb` — установочный пакет Debian/Ubuntu (устанавливает бинарник, пункт в системном меню и иконку):
     ```bash
-    sudo apt install ./quadfurn_0.3.0_amd64.deb
+    sudo apt install ./quadfurn_0.3.1_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — портативный standalone-архив.
 - **macOS (`Universal: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — нативный бандл `QuadFurn.app` с Retina-иконкой `.icns`.

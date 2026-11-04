@@ -9,7 +9,7 @@
 [![Build & Release](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml/badge.svg)](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml)
 [![Downloads](https://img.shields.io/github/downloads/rbm13s/QuadFurn/total?logo=github&color=blue)](https://github.com/rbm13s/QuadFurn/releases)
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
-[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
+[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.37-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
 [![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-teemad-ja-lokaliseerimine-37-keelde)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS_%7C_Web-0078D6)](#kiire-algus)

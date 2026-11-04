@@ -9,7 +9,7 @@
 [![Build & Release](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml/badge.svg)](https://github.com/rbm13s/QuadFurn/actions/workflows/build.yml)
 [![Downloads](https://img.shields.io/github/downloads/rbm13s/QuadFurn/total?logo=github&color=blue)](https://github.com/rbm13s/QuadFurn/releases)
 [![Rust](https://img.shields.io/badge/Rust-2021_Edition-orange?logo=rust)](https://www.rust-lang.org/)
-[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.29-blue)](https://github.com/emilk/egui)
+[![GUI](https://img.shields.io/badge/GUI-egui_%2F_eframe_0.37-blue)](https://github.com/emilk/egui)
 [![Graphics](https://img.shields.io/badge/Renderer-wgpu-green)](https://wgpu.rs/)
 [![Languages](https://img.shields.io/badge/Languages-37_Locales-purple)](#8-visuele-themas-en-lokalisatie-in-22-talen)
 [![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-0078D6)](#aan-de-slag)
@@ -291,7 +291,7 @@ Elke release bouwt automatisch direct te gebruiken pakketten via [GitHub Actions
 - **Linux (`Debian 12+ / Ubuntu 22.04+ x86_64`)**:
   - `quadfurn_<versie>_amd64.deb` — officieel installatiepakket voor Debian/Ubuntu (installeert het programma, menukoppeling en systeemiconen):
     ```bash
-    sudo apt install ./quadfurn_0.3.0_amd64.deb
+    sudo apt install ./quadfurn_0.3.1_amd64.deb
     ```
   - `QuadFurn-linux-x86_64.tar.gz` — draagbaar Linux-archief.
 - **macOS (`Universeel: Apple Silicon M1–M4 + Intel x86_64`)**: `QuadFurn-macos-universal.zip` — native `QuadFurn.app` met Retina-pictogram.
